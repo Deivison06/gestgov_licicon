@@ -164,20 +164,13 @@
             Objeto:<br> {!! strip_tags($processo->objeto) !!}
         </p>
         <p style="text-align: justify; text-justify: inter-word; line-height: 1; margin-top: 10;">
-            O EDITAL e maiores informações poderão no Setor de Licitações na {{ $processo->prefeitura->endereco }}, no horário de 07:3h às 13:00h.
+            O EDITAL e maiores informações poderão ser solicitadas no Setor de Licitações na {{ $processo->prefeitura->endereco }}, no horário de 07:30h às 13:00h.
         </p>
         <p style="text-align: justify; text-justify: inter-word; line-height: 1; margin-top: 10;">
             ABERTURA DAS PROPOSTAS: dia {{ $detalhe->data_hora->translatedFormat('d \d\e F \d\e Y') }}, às {{ $detalhe->data_hora->format('H:i') }}hs ({{ $detalhe->data_hora->locale('pt_BR')->translatedFormat('l') }}),
             na plataforma {{ $detalhe->portal }}.
         </p>
-        @if ($detalhe->tipo_srp == 'nao')
-        <p style="text-align: justify; text-justify: inter-word; line-height: 1; margin-top: 10;">
-            Esclarecendo que as despesas decorrentes da contratação correrão à conta dos recursos do Orçamento do FPM e/ou Recursos Próprios, ICMS, Dotação Orçamentária,
-        </p>
-        @else {
-            {!! $detalhe->dotacao_orcamentaria !!}.
-        }
-        @endif
+
     </div>
 
     {{-- Bloco de data e assinatura --}}
@@ -220,7 +213,10 @@
         <p style="text-align: justify; text-justify: inter-word; line-height: 1; margin: 0;">
             O Município de {{ $processo->prefeitura->cidade }}, através de seu Agente de Contratação / Pregoeiro e equipe de Apoio instituída pela Portaria nº {{ $primeiroAssinante['numero_portaria'] }}, de {{ !empty($primeiroAssinante['data_portaria'])
             ? \Carbon\Carbon::parse($primeiroAssinante['data_portaria'])->translatedFormat('d \d\e F \d\e Y')
-            : '____________________' }}, torna público, para conhecimento dos interessados que realizará procedimento licitatório na modalidade {{ $processo->modalidade->getDisplayName() }}, tipo {{ $processo->tipo_contratacao->getDisplayName() }}, objeto: {!! strip_tags($processo->objeto) !!}, conforme as normas Gerais da Lei Federal nº. 14.133/2021, Decretos Municipais, Lei Complementar nº 123/06, alterada pela Lei Complementar nº 147/2014, de 07 de agosto de 2014 e demais normas regulamentares aplicáveis à espécie. Informações pelo E-mail: {{ $processo->prefeitura->email }}, e/ou na sede da Prefeitura no horário de 07:30hs às 13:00hs no mesmo endereço, Agente de Contratação / Pregoeiro {{ $processo->prefeitura->endereco }}, {{ $detalhe->data_hora->translatedFormat('d \d\e F \d\e Y') }}.
+            : '____________________' }}, torna público, para conhecimento dos interessados que realizará procedimento licitatório na modalidade
+             {{ $processo->modalidade->getDisplayName() }}, tipo {{ $processo->tipo_contratacao->getDisplayName() }}, objeto: {!! strip_tags($processo->objeto) !!},
+             conforme as normas Gerais da Lei Federal nº. 14.133/2021, Decretos Municipais, Lei Complementar nº 123/06, alterada pela Lei Complementar nº 147/2014, de 07 de agosto de 2014 e
+             demais normas regulamentares aplicáveis à espécie. Informações pelo E-mail: {{ $processo->prefeitura->email }}, e/ou na sede da Prefeitura no horário de 07:30hs às 13:00hs {{ $processo->prefeitura->endereco }}, {{ $detalhe->data_hora->translatedFormat('d \d\e F \d\e Y') }}.
         </p>
 
     </div>

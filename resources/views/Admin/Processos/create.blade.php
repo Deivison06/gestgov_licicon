@@ -109,16 +109,7 @@
                                 <div class="w-full md:w-1/3">
                                     <select name="unidade_numeracao" id="unidade_numeracao" class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">
                                         <option value="">Selecione a unidade</option>
-                                        @foreach ($prefeituras as $prefeitura)
-                                            @foreach ($prefeitura->unidades as $unidade)
-                                            <option value="{{ $unidade->nome }}"
-                                                    data-responsavel="{{ $unidade->servidor_responsavel }}"
-                                                    data-portaria="{{ $unidade->numero_portaria }}"
-                                                    {{ old('unidade_numeracao') == $unidade->nome ? 'selected' : '' }}>
-                                                {{ $unidade->nome }}
-                                            </option>
-                                            @endforeach
-                                        @endforeach
+                                        {{-- As opções serão carregadas via JavaScript --}}
                                     </select>
                                     @error('unidade_numeracao')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -128,8 +119,8 @@
                                 {{-- Responsável --}}
                                 <div class="w-full md:w-1/3">
                                     <input type="text" name="responsavel_numeracao" id="responsavel_numeracao"
-                                           value="{{ old('responsavel_numeracao') }}"
-                                           class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496] bg-gray-50">
+                                        value="{{ old('responsavel_numeracao') }}"
+                                        class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496] bg-gray-50">
                                     @error('responsavel_numeracao')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
@@ -138,8 +129,8 @@
                                 {{-- Nº Portaria --}}
                                 <div class="w-full md:w-1/3">
                                     <input type="text" name="portaria_numeracao" id="portaria_numeracao"
-                                           value="{{ old('portaria_numeracao') }}"
-                                           class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496] bg-gray-50">
+                                        value="{{ old('portaria_numeracao') }}"
+                                        class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496] bg-gray-50">
                                     @error('portaria_numeracao')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
@@ -189,25 +180,72 @@
             }
         });
 
-        // Preenchimento automático dos campos de responsável
-        const unidadeSelect = document.getElementById('unidade_numeracao');
-        const responsavelInput = document.getElementById('responsavel_numeracao');
-        const portariaInput = document.getElementById('portaria_numeracao');
+        // Dados das unidades organizadas por prefeitura
+    const unidadesPorPrefeitura = {!! $prefeituras->mapWithKeys(function($prefeitura) {
+        return [
+            $prefeitura->id => $prefeitura->unidades->map(function($unidade) {
+                return [
+                    'id' => $unidade->id,
+                    'nome' => $unidade->nome,
+                    'responsavel' => $unidade->servidor_responsavel,
+                    'portaria' => $unidade->numero_portaria,
+                ];
+            })
+        ];
+    })->toJson() !!};
 
-        if (unidadeSelect) {
-            unidadeSelect.addEventListener('change', function() {
-                const selectedOption = this.options[this.selectedIndex];
-                if (selectedOption) {
-                    responsavelInput.value = selectedOption.getAttribute('data-responsavel') || '';
-                    portariaInput.value = selectedOption.getAttribute('data-portaria') || '';
-                }
+    const prefeituraSelect = document.getElementById('prefeitura_id');
+    const unidadeSelect = document.getElementById('unidade_numeracao');
+    const responsavelInput = document.getElementById('responsavel_numeracao');
+    const portariaInput = document.getElementById('portaria_numeracao');
+
+    // Função para carregar unidades baseadas na prefeitura selecionada
+    function carregarUnidades() {
+        const prefeituraId = prefeituraSelect.value;
+
+        // Limpar selects anteriores
+        unidadeSelect.innerHTML = '<option value="">Selecione a unidade</option>';
+        responsavelInput.value = '';
+        portariaInput.value = '';
+
+        if (prefeituraId && unidadesPorPrefeitura[prefeituraId]) {
+            // Adicionar opções das unidades da prefeitura selecionada
+            unidadesPorPrefeitura[prefeituraId].forEach(unidade => {
+                const option = document.createElement('option');
+                option.value = unidade.nome;
+                option.textContent = unidade.nome;
+                option.setAttribute('data-responsavel', unidade.responsavel);
+                option.setAttribute('data-portaria', unidade.portaria);
+                unidadeSelect.appendChild(option);
             });
-
-            if (unidadeSelect.value) {
-                unidadeSelect.dispatchEvent(new Event('change'));
-            }
         }
+    }
 
+    // Event listener para mudança na prefeitura
+    prefeituraSelect.addEventListener('change', carregarUnidades);
+
+    // Event listener para mudança na unidade
+    unidadeSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        if (selectedOption) {
+            responsavelInput.value = selectedOption.getAttribute('data-responsavel') || '';
+            portariaInput.value = selectedOption.getAttribute('data-portaria') || '';
+        }
+    });
+
+    // Carregar unidades iniciais se já houver uma prefeitura selecionada
+    if (prefeituraSelect.value) {
+        carregarUnidades();
+
+        // Se houver um valor antigo (old) para unidade, restaurá-lo
+        const oldUnidade = "{{ old('unidade_numeracao') }}";
+        if (oldUnidade) {
+            setTimeout(() => {
+                unidadeSelect.value = oldUnidade;
+                unidadeSelect.dispatchEvent(new Event('change'));
+            }, 100);
+        }
+    }
         // Ocultar campos tipo quando modalidade for "Concorrência"
         const modalidadeSelect = document.getElementById('modalidade');
         const tipoProcedimentoDiv = document.getElementById('tipo_procedimento_wrapper');

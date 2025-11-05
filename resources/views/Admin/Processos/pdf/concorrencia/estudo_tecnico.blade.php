@@ -305,7 +305,7 @@
 
         <p style=" text-indent: 30px; text-align: justify;">
             A {{ $prefeitura->nome }} enfrenta um problema significativo relacionado à
-            {!! strip_tags($processo->objeto) !!} A contínua demanda por {!! strip_tags($detalhe->descricao_necessidade) !!}
+            {!! strip_tags($processo->objeto) !!}  {!! strip_tags($detalhe->descricao_necessidade) !!}
             expõe a fragilidade atual dos recursos disponíveis.
         </p>
 
@@ -325,47 +325,48 @@
             </div>
 
             <p style="text-align: justify;">
-                Nos termos do art. 17, § 1º, da Lei nº 14.133/2021, a Administração tem a prerrogativa de optar pela
-                inversão das fases do processo licitatório, começando com o julgamento das propostas e, posteriormente,
-                analisando a habilitação do licitante melhor classificado.<br>
-
-                No entanto, para a presente contratação, recomenda-se <strong>manter a ordem tradicional das fases
-                    (habilitação antes do julgamento das propostas)</strong>, com fundamento nos seguintes
-                aspectos:<br>
+                Nos termos da Lei nº 14.133/2021, na qual se realiza primeiramente o julgamento das propostas
+                para, somente após, proceder à análise da habilitação da licitante mais bem classificada, constitui
+                a regra geral para os processos licitatórios (art. 17). No entanto, a própria legislação prevê a
+                possibilidade de a fase de habilitação anteceder a fase de apresentação de propostas e lances e
+                de julgamento, mediante justificativa técnica devidamente fundamentada e previsão expressa no
+                edital, conforme dispõe o art. 17, § 1º. <br>
+                Portanto, para a presente contratação, recomenda-se a adoção da inversão de fases, com
+                fundamento nos seguintes aspectos:
 
                 <strong>Justificativa:</strong>
             </p>
 
             <ol style="text-align: justify;">
                 <li>
-                    <strong>Complexidade da habilitação exigida:</strong> Trata-se de contratação que demanda análise
-                        detalhada e criteriosa da documentação de habilitação, especialmente quanto à capacidade
-                        técnica, regularidade fiscal e requisitos de qualificação econômico-financeira. A avaliação
-                        prévia garante maior segurança jurídica e evita que se avance no julgamento de propostas
-                        de licitantes que possam ser inabilitados posteriormente.
+                    <strong>Complexidade da habilitação exigida:</strong> Trata-se de contratação que demanda
+                    análise detalhada e criteriosa da documentação de habilitação, especialmente quanto à
+                    capacidade técnica, regularidade fiscal e requisitos de qualificação econômico-financeira.
+                    A avaliação prévia garante maior segurança jurídica e evita que se avance no julgamento
+                    de propostas de licitantes que possam ser inabilitados posteriormente.
                 </li>
                 <li>
                     <strong>Mitigação de riscos:</strong> A habilitação prévia reduz o risco de retrabalho e eventual
-                        anulação do procedimento, assegurando que apenas concorram na etapa de propostas os licitantes
-                        que efetivamente atendam a todos os requisitos legais e técnicos.
+                    anulação do procedimento, assegurando que apenas concorram na etapa de propostas
+                    os licitantes que efetivamente atendam a todos os requisitos legais e técnicos.
                 </li>
                 <li>
-                    <strong>Transparência e confiabilidade:</strong> A ordem tradicional favorece a credibilidade do
-                        processo, uma vez que os participantes e órgãos de controle verificam, desde o início, que
-                        apenas
-                        empresas habilitadas estarão aptas a disputar.
+                    <strong>Transparência e confiabilidade:</strong> A inversão de fases favorece a credibilidade do
+                    processo, uma vez que os participantes e órgãos de controle verificam, desde o início,
+                    que apenas empresas habilitadas estarão aptas a disputar.
                 </li>
                 <li>
                     <strong>Alinhamento com o interesse público:</strong> A opção contribui para maior lisura do
-                        certame, assegurando que a Administração se dedique exclusivamente à análise das propostas de
-                        licitantes plenamente habilitados, reduzindo riscos de impugnações e contestações posteriores.
+                    certame, assegurando que a Administração se dedique exclusivamente à análise das
+                    propostas de licitantes plenamente habilitados, reduzindo riscos de impugnações e
+                    contestações posteriores.
                 </li>
             </ol>
 
             <p style="text-align: justify;">
                 Nos certames conduzidos por esta Administração, tem-se verificado um <strong>alto índice de
-                    licitantes que participam da fase de lances/propostas sem, contudo, apresentar ou
-                    comprovar adequadamente a documentação de habilitação</strong>.
+                licitantes que participam da fase de lances/propostas sem, contudo, apresentar ou
+                comprovar adequadamente a documentação de habilitação.</strong>.
             </p>
 
             <span style="font-weight: bold; display: block; margin-top: 10px; text-align: justify;">
@@ -374,21 +375,21 @@
 
             <ul style="text-align: justify; margin-left: 20px;">
                 <li><strong>Retrabalho</strong> para a equipe de apoio e para o pregoeiro, que precisam inabilitar
-                    sucessivamente os licitantes melhor classificados por falta de documentos;</li>
-                <li><strong>Atrasos na conclusão do certame</strong>, em razão da necessidade de convocar repetidamente
-                    os classificados subsequentes;</li>
+                    sucessivamente os licitantes melhor classificados por falta de documentos;
+                </li>
+                <li><strong>Atrasos na conclusão do certame</strong>, em razão da necessidade de convocar
+                repetidamente os classificados subsequentes;</li>
                 <li><strong>Risco de frustração da licitação</strong>, caso não haja concorrentes habilitados ao final
-                    do procedimento.</li>
+                do procedimento.</li>
             </ul>
 
             <p style="text-align: justify;">
                 A habilitação prévia garante que <strong>apenas empresas com documentação válida e condições
-                    reais de contratar</strong> participem da fase competitiva, aumentando a segurança do processo e
+                reais de contratar</strong> participem da fase competitiva, aumentando a segurança do processo e
                 reduzindo a possibilidade de lances artificiais ou propostas inexequíveis apresentadas por
                 licitantes que não têm intenção ou capacidade de assumir o contrato.
             </p>
         @endif
-
 
     </div>
 
@@ -639,12 +640,12 @@
     {{-- BLOCO 6: RESULTADOS PRETENDIDOS --}}
     {{-- ====================================================================== --}}
     <div id="mapa-gerenciamento-risco">
-        <p style="text-align: center; font-size:16px; font-weight: 700;">MAPA DE GERENCIAMENTO DE RISCOS</p>
+        <p style="text-align: center;  font-weight: 700;">MAPA DE GERENCIAMENTO DE RISCOS</p>
         <p style="text-indent: 30px; text-align: justify;">O documento visa a elaboração de um MAPA DE GERANCIAMENTO DE
             RISCOS para a
             {!! strip_tags($processo->objeto) !!}, de forma a melhor atender as necessidades do município de
             {{ $processo->prefeitura->cidade }}.</p>
-        <p style="font-size:16px; font-weight: 700; text-indent: 20px;">1- INTRODUÇÃO</p>
+        <p style=" font-weight: 700; text-indent: 20px;">1- INTRODUÇÃO</p>
 
         <div style="text-indent: 30px; text-align: justify;">
             O gerenciamento de riscos permite ações contínuas de planejamento, organização e
@@ -942,7 +943,7 @@
             100), entende-se como nível de risco muito alto (risco extremo).
         </p>
 
-        <p style="font-size:16px; font-weight: 700; text-indent: 20px;">2- IDENTIFICAÇÃO E ANÁLISE DOS PRINCIPAIS
+        <p style=" font-weight: 700; text-indent: 20px;">2- IDENTIFICAÇÃO E ANÁLISE DOS PRINCIPAIS
             RISCOS</p>
 
         <table
@@ -1025,10 +1026,10 @@
             </tbody>
         </table>
 
-        <p style="font-size:16px; font-weight: 700; text-indent: 20px;">3- AVALIAÇÃO E TRATAMENTO DOS RISCOS
+        <p style=" font-weight: 700; text-indent: 20px;">3- AVALIAÇÃO E TRATAMENTO DOS RISCOS
             IDENTIFICADOS </p>
 
-        <p style="font-size:16px; font-weight: 700; text-indent: 30px;">3.1- Riscos relacionados à fase de Planejamento
+        <p style=" font-weight: 700; text-indent: 30px;">3.1- Riscos relacionados à fase de Planejamento
             da Contratação:</p>
         {{-- RISCO 01 --}}
         <table style="border-collapse: collapse; width: 100%; border: 2px solid black;  font-size: 10pt;">
@@ -1431,7 +1432,7 @@
             </tbody>
         </table>
         <br>
-        <p style="font-size:16px; font-weight: 700; text-indent: 30px;">3.2. Riscos relacionados à fase de Seleção do
+        <p style=" font-weight: 700; text-indent: 30px;">3.2. Riscos relacionados à fase de Seleção do
             Fornecedor:</p>
         {{-- RISCO 05 --}}
         <table style="border-collapse: collapse; width: 100%; border: 2px solid black;  font-size: 10pt;">
@@ -1616,7 +1617,7 @@
         </table>
         <br>
         {!! str_replace('<p>', '<p style="text-indent:30px; text-align: justify;">', $detalhe->riscos_extra) !!}
-        <p style="font-size:16px; font-weight: 700; text-indent: 20px;">4 - APROVAÇÃO E ASSINATURA</p>
+        <p style=" font-weight: 700; text-indent: 20px;">4 - APROVAÇÃO E ASSINATURA</p>
         @php
             // Verifica se a variável $assinantes existe e tem itens
             $hasSelectedAssinantes = isset($assinantes) && count($assinantes) > 0;
@@ -1634,7 +1635,7 @@
         @endphp
 
         <p style="text-align: justify; text-indent: 30px;">
-            O {{ $primeiroAssinante['responsavel'] ?? '____________________' }},
+            O {{ $primeiroAssinante['unidade_nome'] ?? '____________________' }},
             nos termos da Portaria nº{{  $primeiroAssinante['numero_portaria'] }},
             de
             {{
@@ -1680,7 +1681,7 @@
     {{-- BLOCO 7: ALINHAMENTO AO PLANO DE CONTRATAÇÃO ANUAL (PCA) --}}
     {{-- ====================================================================== --}}
     <div id="alinhamento-pca">
-        <p style="text-align: center; font-size:16px; font-weight: 700;">ALINHAMENTO AO PLANO DE CONTRATAÇÃO ANUAL (PCA) </p>
+        <p style="text-align: center;  font-weight: 700;">ALINHAMENTO AO PLANO DE CONTRATAÇÃO ANUAL (PCA) </p>
         <p style="text-align: center; font-size:14px; font-weight: 700;">DECLARAÇÃO</p>
         @if ($detalhe->prevista_plano_anual == 'sim')
             <p>
@@ -1839,9 +1840,9 @@
             contém classificação direcionada à marca ou empresa e nem possui características de
             luxo determino:
         </p>
-        <p> Encaminhe-se à {{ $detalhe->encaminhamento_pesquisa_preco }} para a ELABORAÇÀO DE PROJETO BÁSICO. </p>
+        <p> Encaminhe-se à {{ $detalhe->encaminhamento_elaborar_projeto_basico }} para a ELABORAÇÀO DE PROJETO BÁSICO. </p>
         <p>Encaminhe-se à {{ $detalhe->encaminhamento_doacao_orcamentaria }} para a VERIFICAÇÃO DE DOTACÃO ORÇAMENTÁRIA EXISTENTE. </p>
-        <p>☒ Encaminhe-se à XXXXXXX para a ELABORAÇÃO DE EDITAL E MINUTA DE CONTRATO. </p>
+        <p>☒ Encaminhe-se à {{$detalhe->encaminhamento_elaborar_editais}} para a ELABORAÇÃO DE EDITAL E MINUTA DE CONTRATO. </p>
         <table style="border-collapse: collapse; width: auto; border: 1px solid black; font-size: 10pt;">
             <tr>
                 <td style="border: 1px solid black; padding: 6px; font-weight: normal;">

@@ -80,7 +80,8 @@ class ProcessoDetalhe extends Model
         'pregoeiro',
         'numero_items',
         'projeto_basico_pdf',
-        'agente_contratacao'
+        'agente_contratacao',
+        'encaminhamento_elaborar_projeto_basico'
     ];
 
     protected $casts = [

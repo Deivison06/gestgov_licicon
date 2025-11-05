@@ -28,7 +28,7 @@
 
         body {
             margin: 0;
-            padding: 4cm 2cm;
+            padding: 3cm 2cm;
             font-size: 11pt;
             font-family: 'Aptos', sans-serif;
             /* Adiciona o timbre como background */
@@ -257,7 +257,7 @@
             DOCUMENTO FORMALIZAÇÃO DE DEMANDA
         </div>
 
-        <table class="form-table">
+        <table class="form-table" style="font-size: 10pt">
             <tr>
                 <td colspan="1" class="section-header">1 – IDENTIFICAÇÃO DO ÓRGÃO REQUISITANTE</td>
             </tr>
@@ -281,7 +281,7 @@
             </tr>
         </table>
 
-        <table class="form-table">
+        <table class="form-table" style="font-size: 10pt">
             <tr>
                 <td class="section-header">2 – IDENTIFICAÇÃO DO OBJETO</td>
             </tr>

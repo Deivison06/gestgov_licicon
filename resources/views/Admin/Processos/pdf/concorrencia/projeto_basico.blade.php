@@ -138,11 +138,10 @@
         <p style="font-weight: bold; text-align: center;">SECRETARIA MUNICIPAL DE OBRAS</p>
 
         <p style="text-indent: 30px; text-align: justify;">
-            Considerando a necessidade de Contratação de XXXXXXXXXXXXXXXXXXXXXXX, segue em
-            anexo PROJETO BÁSICO desenvolvido por essa XXXXXXXXXX.
+            Considerando a necessidade de {!! strip_tags($processo->objeto) !!}, segue em anexo PROJETO BÁSICO desenvolvido por essa secretaria.
         </p>
         <p style="text-indent: 30px; text-align: justify;">
-            Encaminhe-se à XXXXXXXXXXX para a ELABORAÇÃO DE MINUTA DO EDITAL E MINUTA DO CONTRATO.
+            Encaminhe-se à {{ $detalhe->encaminhamento_elaborar_editais }} para a ELABORAÇÃO DE MINUTA DO EDITAL E MINUTA DO CONTRATO.
         </p>
 
         @php

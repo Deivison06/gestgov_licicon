@@ -272,11 +272,11 @@
                     </ul>
                 </li>
                 <li style="text-align: justify;">
-                    Além disso, o parcelamento da contratação em lotes favorece uma competição saudável
+                    Além disso, o parcelamento da contratação em itens favorece uma competição saudável
                     entre fornecedores, o que pode resultar em custos mais baixos e condições mais
                     vantajosas para a Administração Pública. Ao permitir que empresas ofereçam suas
                     propostas por ITEM, a Prefeitura pode beneficiar-se da especialização dos
-                    fornecedores, garantindo aquisição de XXXXXXXXX de melhor qualidade. Essa dinâmica
+                    fornecedores, garantindo aquisições de melhor qualidade. Essa dinâmica
                     também contribui para minimizar riscos, uma vez que cada item pode ser ajustado
                     conforme a resposta do mercado e as demandas emergentes facilitando adaptações ao
                     longo do fornecimento.
@@ -293,7 +293,12 @@
                 </li>
 
                 <li style="margin-bottom: 6px;">
-                    Fase de lances: Nesta fase, os licitantes que cumprirem a exigências contidas na alínea “a”, irão estabelecer lances sucessivos, obedecendo o critério de menor preço global, dentro do tempo limite de 10 (dez) minutos estabelecidos pelo edital, assim como, suas respectivas prorrogações de 2 (dois) minutos, os quais serão sistematicamente controlados pelo Sistema Eletrônico do Portal BNC;
+                    Fase de lances: Nesta fase, os licitantes que cumprirem a exigências contidas na
+                    alínea “a”, irão estabelecer lances sucessivos, obedecendo o critério de menor
+                    preço global, dentro do tempo limite de 10 (dez) minutos estabelecidos pelo edital,
+                    assim como, suas respectivas prorrogações de 2 (dois) minutos, os quais serão
+                    sistematicamente controlados pelo Sistema Eletrônico do portal designado para a
+                    realização da sessão;
                 </li>
 
                 <li style="margin-bottom: 6px;">
@@ -356,11 +361,11 @@
                     necessários, ficando resguardado apenas os critérios de inexequibilidade de
                     proposta, que serão devidamente verificados na fase de habilitação.
                     <br><br>
-                    Na fase recursal, após o inicial da contagem do tempo de 30 (trinta) minutos,
+                    1.6. Na fase recursal, após o inicial da contagem do tempo de 30 (trinta) minutos,
                     será aberto campo específico para que as manifestações dos licitantes sejam
-                    devidamente registradas e reconhecidas pelo Sistema do BNC, não sendo aceitas,
-                    em nenhuma hipótese, manifestações recursais inseridas dentro do campo de
-                    “chat”.
+                    devidamente registradas e reconhecidas pelo Sistema do portal designado para a
+                    realização da sessão, não sendo aceitas, em nenhuma hipótese, manifestações
+                    recursais inseridas dentro do campo de “chat”
                 </li>
             </ol>
             @endif
@@ -602,16 +607,37 @@
                 4.6. Até a abertura da sessão, as licitantes poderão retirar ou substituir a proposta anteriormente apresentada.
             </p>
             <p style="text-align: justify;">
-                4.7. Ao encaminhar a proposta de preços na forma prevista pelo sistema eletrônico, a licitante deverá preencher as informações no campo “CADASTRO PROPOSTA” e anexar FICHA TÉCNICA em arquivo PDF no campo apropriado do sistema da Bolsa Nacional de Compras - BNC, sendo vedada a identificação do licitante por qualquer meio.
+                4.7. Ao encaminhar a proposta de preços na forma prevista pelo sistema eletrônico, a licitante deverá preencher as informações no campo “CADASTRO PROPOSTA” e anexar FICHA TÉCNICA em arquivo PDF no campo apropriado do sistema da Bolsa Nacional de Compras - {{ $detalhe->portal }}, sendo vedada a identificação do licitante por qualquer meio.
             </p>
             <p style="text-align: justify;">
                 4.8. Na ficha técnica de preços não deve conter identificação do licitante como: nome, razão social ou timbre do proponente, endereço, telefone, fax e endereço de correio eletrônico, nome do representante, carteira de identidade e cargo na empresa ou qualquer outra forma que possa identificar a proposta.
             </p>
             <p style="text-align: justify;">
-                4.9. Deve conter o detalhamento dos produtos ofertados, indicando, marca, fabricante, modelo, prazo de validade ou de garantia, prazo máximo da entrega acondicionamento.
+                4.9. Ao encaminhar a proposta de preços na forma prevista pelo sistema eletrônico,
+                a licitante deverá preencher as informações no campo “CADASTRO PROPOSTA” e
+                anexar FICHA TÉCNICA em arquivo PDF no campo apropriado do sistema do portal
+                designado para a realização da sessão, sendo vedada a identificação do licitante
+                por qualquer meio.
             </p>
             <p style="text-align: justify;">
-                4.10. Preço unitário do item, cotando-se cada produto discriminado no item, em moeda corrente nacional, em algarismo com até 02 (duas) casas decimais após a vírgula e por extenso. O preço total deverá ser indicado em algarismos e por extenso. Nos preços propostos deverão estar incluídos, além do lucro, todas as despesas e custos, como por exemplo: transportes (fretes), montagem e instalação, tributos de qualquer natureza e todas as despesas, diretas ou indiretas, relacionadas com o perfeito fornecimento do objeto desta licitação.
+                4.10. Na ficha técnica de preços não deve conter identificação do licitante como:
+                nome, razão social ou timbre do proponente, endereço, telefone, fax e endereço de
+                correio eletrônico, nome do representante, carteira de identidade e cargo na
+                empresa ou qualquer outra forma que possa identificar a proposta.
+            </p>
+            <p style="text-align: justify;">
+                4.11. Deve conter o detalhamento dos produtos ofertados, indicando, marca,
+                modelo, fabricante, prazo de garantia ou validade, prazo de entrega e
+                acondicionamento.
+            </p>
+            <p style="text-align: justify;">
+                4.12. Preço unitário do item, cotando-se cada produto discriminado no item, em
+                moeda corrente nacional, em algarismo com até 02 (duas) casas decimais após a
+                vírgula e por extenso. O preço total deverá ser indicado em algarismos e por
+                extenso. Nos preços propostos deverão estar incluídos, além do lucro, todas as
+                despesas e custos, como por exemplo: transportes (fretes), montagem e
+                instalação, tributos de qualquer natureza e todas as despesas, diretas ou indiretas,
+                relacionadas com o perfeito fornecimento do objeto desta licitação.
             </p>
         </div>
         <div>
@@ -761,6 +787,56 @@
                 aceitabilidade da proposta ou lance ofertado pelo segundo classificado. Seguir-se-á com a verificação da(s) amostra(s) e,
                 assim, sucessivamente, até a verificação de uma que atenda às especificações constantes no Termo de Referência.
             </p>
+            <p style="text-align: justify;">
+                5.29. O pregoeiro solicitará ao licitante mais bem classificado que, no prazo de 2
+                (duas) horas, envie a proposta adequada ao último lance ofertado após a
+                negociação realizada, acompanhada, se for o caso, dos documentos
+                complementares, quando necessários à confirmação daqueles exigidos neste
+                Edital e já apresentados, com as seguintes informações:
+                <ul type="a">
+                    <li>valor do item;  </li>
+                    <li>Marca;  </li>
+                    <li>
+                        Descrição do objeto, contendo as informações similares à especificação
+                        do Termo de Referência;
+                    </li>
+                    <li>Validade do Produto ou Prazo de Garantia; </li>
+                    <li>
+                        Na proposta de preços readequado, a empresa deverá apresentar, o
+                        percentual de despesas diretas e indiretas de cada item a ser fornecido, assim
+                        como, também, o percentual de imposto incidente.
+                    </li>
+                </ul>
+            </p>
+            <p style="text-align: justify;">
+                5.30. Será desclassificada a proposta vencedora que:
+                <ul type="a">
+                    <li>contiver vícios insanáveis;</li>
+                    <li>não obedecer às especificações técnicas contidas no Termo de Referência; </li>
+                    <li>
+                        apresentar preços inexequíveis ou permanecerem acima do preço máximo
+                        definido para a contratação;
+                    </li>
+                    <li>não tiverem sua exequibilidade demonstrada, quando exigido pela
+                        Administração; </li>
+                    <li>
+                        apresentar desconformidade com quaisquer outras exigências deste Edital
+                        ou seus anexos, desde que insanável.
+                    </li>
+                </ul>
+            </p>
+            <p style="text-align: justify;">
+                5.31. Na elaboração da proposta adequada ao seu lance final, os licitantes deverão
+                obrigatoriamente apresentar proposta readequada com percentual de desconto
+                fixo e linear sobre os preços de todos os ITENS/LOTES. A exigência busca evitar o a
+                manipulação e jogo de planilhas, além disso, busca garantir a isonomia entre os
+                licitantes.
+            </p>
+            <p style="text-align: justify;">
+                5.32. A licitante deverá, dentro do prazo estipulado para envio da Proposta
+                Readequada, realizar a redefinição dos valores unitários junto a plataforma onde
+                será realizada a licitação, seguindo o exigido no ITEM 5.31, sob pena de inabilitação.
+            </p>
         </div>
         <div>
             <p style="display: flex; align-items: center; font-weight: bold; ">
@@ -871,10 +947,6 @@
                     Apresentar comprovante de que a licitante forneceu, sem restrição, produtos semelhantes ao objeto do presente
                     Edital, através da apresentação de 01 (um) ou mais Atestados de Capacidade Técnica, fornecido por pessoa jurídica de
                     direito público ou privado, devidamente datado e assinado por responsável da área, com nome legível.
-                </li>
-                <li style="margin-bottom: 6px;">
-                    Para fins da comprovação de que trata este subitem, os atestados deverão dizer respeito a contratos executados
-                    com as seguintes características mínimas:
                 </li>
                 {!! preg_replace('/<\/?ul[^>]*>/', '', $detalhe->exigencias_tecnicas) !!}
             </ol>
@@ -1074,15 +1146,20 @@
                     O Órgão Carona fará o contato com o vencedor do certame, conforme Termo de Adjudicação;
                 </li>
             </ol>
+            <p style="text-align: justify;">
+                10.8. A previsão de aquisição ou contratação pelo Órgão Carona deverá ser de até
+                90 (noventa) dias após a autorização, observando o prazo de vigência da ata.
+            </p>
             @endif
             <p style="font-weight: bold;">
                 DAS DISPOSIÇÕES GERAIS
             </p>
             <p style="text-align: justify;">
-                A previsão de aquisição ou contratação pelo Órgão Carona deverá ser de até
-                A presente licitação não importa necessariamente em contratação, podendo a Administração, revogá-la, no todo ou em
-                parte, por razões de interesse público, derivado de fato superveniente comprovado ou anulá-la por ilegalidade, de ofício ou
-                por provocação mediante ato escrito e fundamentado disponibilizado no sistema para conhecimento dos participantes
+                A presente licitação não importa necessariamente em contratação, podendo a
+                Administração, revogá-la, no todo ou em parte, por razões de interesse público,
+                derivado de fato superveniente comprovado ou anulá-la por ilegalidade, de ofício
+                ou por provocação mediante ato escrito e fundamentado disponibilizado no
+                sistema para conhecimento dos participantes
             </p>
             <p style="text-align: justify;">
                 É facultado ao Pregoeiro ou à Autoridade Superior, em qualquer fase da licitação, promover diligências com vistas a

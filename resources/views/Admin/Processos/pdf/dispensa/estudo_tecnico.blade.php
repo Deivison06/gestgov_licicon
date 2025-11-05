@@ -305,7 +305,7 @@
 
         <p style=" text-indent: 30px; text-align: justify;">
             A {{ $prefeitura->nome }} enfrenta um problema significativo relacionado à
-            {!! strip_tags($processo->objeto) !!} A contínua demanda por {!! strip_tags($detalhe->descricao_necessidade) !!}
+            {!! strip_tags($processo->objeto) !!}  {!! strip_tags($detalhe->descricao_necessidade) !!}
             expõe a fragilidade atual dos recursos disponíveis.
         </p>
 
@@ -683,12 +683,12 @@
     {{-- BLOCO 6: RESULTADOS PRETENDIDOS --}}
     {{-- ====================================================================== --}}
     <div id="mapa-gerenciamento-risco">
-        <p style="text-align: center; font-size:16px; font-weight: 700;">MAPA DE GERENCIAMENTO DE RISCOS</p>
+        <p style="text-align: center;  font-weight: 700;">MAPA DE GERENCIAMENTO DE RISCOS</p>
         <p style="text-indent: 30px; text-align: justify;">O documento visa a elaboração de um MAPA DE GERANCIAMENTO DE
             RISCOS para a
             {!! strip_tags($processo->objeto) !!}, de forma a melhor atender as necessidades do município de
             {{ $processo->prefeitura->cidade }}.</p>
-        <p style="font-size:16px; font-weight: 700; text-indent: 20px;">1- INTRODUÇÃO</p>
+        <p style=" font-weight: 700; text-indent: 20px;">1- INTRODUÇÃO</p>
 
         <div style="text-indent: 30px; text-align: justify;">
             O gerenciamento de riscos permite ações contínuas de planejamento, organização e
@@ -986,7 +986,7 @@
             100), entende-se como nível de risco muito alto (risco extremo).
         </p>
 
-        <p style="font-size:16px; font-weight: 700; text-indent: 20px;">2- IDENTIFICAÇÃO E ANÁLISE DOS PRINCIPAIS
+        <p style=" font-weight: 700; text-indent: 20px;">2- IDENTIFICAÇÃO E ANÁLISE DOS PRINCIPAIS
             RISCOS</p>
 
         <table
@@ -1069,10 +1069,10 @@
             </tbody>
         </table>
 
-        <p style="font-size:16px; font-weight: 700; text-indent: 20px;">3- AVALIAÇÃO E TRATAMENTO DOS RISCOS
+        <p style=" font-weight: 700; text-indent: 20px;">3- AVALIAÇÃO E TRATAMENTO DOS RISCOS
             IDENTIFICADOS </p>
 
-        <p style="font-size:16px; font-weight: 700; text-indent: 30px;">3.1- Riscos relacionados à fase de Planejamento
+        <p style=" font-weight: 700; text-indent: 30px;">3.1- Riscos relacionados à fase de Planejamento
             da Contratação:</p>
         {{-- RISCO 01 --}}
         <table style="border-collapse: collapse; width: 100%; border: 2px solid black;  font-size: 10pt;">
@@ -1475,7 +1475,7 @@
             </tbody>
         </table>
         <br>
-        <p style="font-size:16px; font-weight: 700; text-indent: 30px;">3.2. Riscos relacionados à fase de Seleção do
+        <p style=" font-weight: 700; text-indent: 30px;">3.2. Riscos relacionados à fase de Seleção do
             Fornecedor:</p>
         {{-- RISCO 05 --}}
         <table style="border-collapse: collapse; width: 100%; border: 2px solid black;  font-size: 10pt;">
@@ -1660,7 +1660,7 @@
         </table>
         <br>
         {!! str_replace('<p>', '<p style="text-indent:30px; text-align: justify;">', $detalhe->riscos_extra) !!}
-        <p style="font-size:16px; font-weight: 700; text-indent: 20px;">4 - APROVAÇÃO E ASSINATURA</p>
+        <p style=" font-weight: 700; text-indent: 20px;">4 - APROVAÇÃO E ASSINATURA</p>
         @php
             // Verifica se a variável $assinantes existe e tem itens
             $hasSelectedAssinantes = isset($assinantes) && count($assinantes) > 0;
@@ -1724,7 +1724,7 @@
     {{-- BLOCO 7: ALINHAMENTO AO PLANO DE CONTRATAÇÃO ANUAL (PCA) --}}
     {{-- ====================================================================== --}}
     <div id="alinhamento-pca">
-        <p style="text-align: center; font-size:16px; font-weight: 700;">ALINHAMENTO AO PLANO DE CONTRATAÇÃO ANUAL (PCA) </p>
+        <p style="text-align: center;  font-weight: 700;">ALINHAMENTO AO PLANO DE CONTRATAÇÃO ANUAL (PCA) </p>
         <p style="text-align: center; font-size:14px; font-weight: 700;">DECLARAÇÃO</p>
         @if ($detalhe->prevista_plano_anual == 'sim')
             <p>

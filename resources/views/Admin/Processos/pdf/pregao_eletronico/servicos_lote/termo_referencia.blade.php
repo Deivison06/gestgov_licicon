@@ -236,7 +236,7 @@
                             <td class="content">
                                 <div style=" font-weight: bold; margin-bottom: 3px;">VALOR PREVISTO</div>
                                 <div>
-                                    {{ $detalhe->valor_estimado }}
+                                    R$ {{ $detalhe->valor_estimado }}
                                 </div>
                             </td>
                         </tr>
@@ -281,7 +281,95 @@
             1.3. Este procedimento licitatório adotará como critério de julgamento, a forma de adjudicação por {{ $processo->tipo_contratacao->getDisplayName() }}, com base nas
             justificativas:
         </p>
-        {!! str_replace('<p>', '<p style="text-indent:30px; text-align: justify;">', $detalhe->justificativa) !!}
+        <p style="text-align: justify;">
+            A licitação será dividida em grupos, formados por um ou mais itens, conforme tabela constante
+            do Termo de Referência, facultando-se ao licitante a participação em quantos grupos forem de seu
+            interesse, devendo oferecer proposta para todos os itens que os compõem o lote, conforme
+            justificativa abaixo:
+        </p>
+        <p style="text-align: justify;">
+            A presente justificativa tem por objetivo demonstrar a vantajosidade da contratação do objeto em
+            LOTES, ao invés da aquisição ou contratação individualizada por itens, conforme os princípios e
+            diretrizes estabelecidos pela Lei nº 14.133/2021, especialmente no art. 5º (princípios da eficiência
+            e planejamento) e no art. 40, §1º, que dispõe:
+        </p>
+        <p style="text-align: justify;">
+            “A administração pública poderá dividir o objeto da contratação em lotes, sempre que técnica e
+            economicamente viável, visando à ampliação da competitividade e ao desenvolvimento do
+            mercado local, regional ou nacional, conforme o caso.”
+        </p>
+        <p style="text-indent: 30px;">A contratação por lotes permite:</p>
+        <ul>
+            <li>
+                Melhor organização e gestão contratual, ao reduzir o número de fornecedores e simplificar
+                o acompanhamento das entregas ou da prestação dos serviços;
+            </li>
+            <li>
+                Centralização de responsabilidades, evitando múltiplos prazos, locais de entrega e agentes
+                executores;
+            </li>
+            <li>
+                Facilidade logística, pois os lotes são organizados por natureza ou destinação dos itens (ex:
+                lotes por tipo de material, setor usuário ou região de entrega);
+            </li>
+            <li>
+                Adoção de cronogramas otimizados, com menos risco de atrasos por fragmentação
+                excessiva de contratos.
+            </li>
+        </ul>
+        <p style="text-indent: 30px; font-weight: bold;">VANTAGENS ECONÔMICAS</p>
+        <ul>
+            <li>
+                Redução de custos operacionais, tanto para a Administração quanto para os fornecedores
+                (ex: transporte, emissão de notas, gestão de pedidos);
+            </li>
+            <li>
+                Estimulação da competitividade saudável, uma vez que empresas de médio porte podem
+                participar de lotes especializados, e empresas menores de lotes regionais ou setoriais.
+            </li>
+        </ul>
+        <p style="text-indent: 30px; font-weight: bold;">ANTAGENS NA FISCALIZAÇÃO E CONTROLE </p>
+        <ul>
+            <li>
+                Facilidade de fiscalização: menos contratos a serem monitorados e maior coerência entre
+                os itens de cada lote;
+            </li>
+            <li>
+                Redução de inconsistências entre entregas: evitando divergências de padrões ou prazos
+                quando múltiplas empresas atuam em paralelo em itens correlatos.
+            </li>
+        </ul>
+        <p style="text-indent: 30px; text-align: justify;">
+            A análise técnica e econômica da contratação indica que a divisão do objeto em lotes
+            representa a solução mais vantajosa para a Administração Pública, ao permitir:
+        </p>
+        <ul>
+            <li>
+                Racionalização da contratação e execução;
+            </li>
+            <li>
+                Maior eficiência administrativa e operacional;
+            </li>
+            <li>
+                Aderência ao planejamento de compras centralizadas;
+            </li>
+            <li>
+                Observância dos princípios da economicidade, eficiência e interesse público.
+            </li>
+        </ul>
+        <p style="text-align: justify;">
+            Assim, justifica-se plenamente a adoção da contratação por lotes, em detrimento da contratação
+            por itens isolados
+        </p>
+        <p style="text-align: justify;">
+            Por fim, a adoção deste modelo impacta diretamente no atendimento ao interesse público e na
+            eficiência da contratação. A estrutura em lotes assegura que as necessidades imediatas da
+            população sejam atendidas de maneira mais célere, visto que diferentes tipos de itens poderão
+            estar disponíveis simultaneamente. Isso reduz o tempo de espera para o fornecimento, resultando
+            em melhorias tangíveis na qualidade do fornecimento pretendido. Assim, a estratégia de licitação
+            em lotes representa uma solução prática e eficiente para os desafios enfrentados pela Prefeitura,
+            refletindo um compromisso com a transparência e a máxima utilidade dos recursos públicos.
+        </p>
 
         <p style="text-align: justify;">
             1.4 Para a cotação de preços a ser realizada neste certame, esta administração coloca à disposição dos licitantes, as
@@ -333,9 +421,15 @@
             n° 14.133, de 2021.
         </p>
         @if($detalhe->objeto_continuado === 'sim')
-        <p style="text-align: justify;">
-            1.7. O fornecimento de bens é ou não é enquadrado como continuado sendo a vigência plurianual mais vantajosa.
-        </p>
+            <p style="text-align: justify;">
+                1.7. O fornecimento de bens é enquadrado como continuado sendo a vigência
+                plurianual mais vantajosa.
+            </p>
+        @else
+            <p style="text-align: justify;">
+                1.7. O fornecimento de bens não é enquadrado como continuado sendo a vigência
+                plurianual mais vantajosa.
+            </p>
         @endif
         <p style="text-align: justify;">
             1.8. O contrato oferece maior detalhamento das regras que serão aplicadas em relação à vigência da contratação.

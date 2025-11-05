@@ -321,7 +321,7 @@
             No uso de minhas atribuições, em <span style="font-weight: bold;">{{ \Carbon\Carbon::parse($dataSelecionada)->translatedFormat('d \d\e F \d\e Y') }}</span>, autuo o
             presente Processo de Contratação na modalidade Pregão Eletrônico, sob o número  {{ $processo->numero_procedimento }},
             originário do Processo Administrativo nº {{ $processo->numero_processo }}, que tem por finalidade
-            {!! strip_tags($processo->objeto) !!} com valor total estimado em {{ $detalhe->valor_estimado }}, e para
+            {!! strip_tags($processo->objeto) !!} com valor total estimado em R$ {{ $detalhe->valor_estimado }}, e para
             constar, lavro e assino o presente Termo de Autuação.
         </p>
         <table
@@ -381,7 +381,7 @@
                         VALOR ESTIMADO:
                     </td>
                     <td style="border: 1px solid black; padding: 5px;">
-                        {{ $detalhe->valor_estimado }}
+                        R$ {{ $detalhe->valor_estimado }}
                     </td>
                 </tr>
                 <tr>

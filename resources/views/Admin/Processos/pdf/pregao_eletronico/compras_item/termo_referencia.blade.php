@@ -236,7 +236,7 @@
                             <td class="content">
                                 <div style=" font-weight: bold; margin-bottom: 3px;">VALOR PREVISTO</div>
                                 <div>
-                                    {{ $detalhe->valor_estimado }}
+                                    R$ {{ $detalhe->valor_estimado }}
                                 </div>
                             </td>
                         </tr>
@@ -360,9 +360,15 @@
             n° 14.133, de 2021.
         </p>
         @if($detalhe->objeto_continuado === 'sim')
-        <p style="text-align: justify;">
-            1.7. O fornecimento de bens é ou não é enquadrado como continuado sendo a vigência plurianual mais vantajosa.
-        </p>
+            <p style="text-align: justify;">
+                1.7. O fornecimento de bens é enquadrado como continuado sendo a vigência
+                plurianual mais vantajosa.
+            </p>
+        @else
+            <p style="text-align: justify;">
+                1.7. O fornecimento de bens não é enquadrado como continuado sendo a vigência
+                plurianual mais vantajosa.
+            </p>
         @endif
         <p style="text-align: justify;">
             1.8. O contrato oferece maior detalhamento das regras que serão aplicadas em relação à vigência da contratação.

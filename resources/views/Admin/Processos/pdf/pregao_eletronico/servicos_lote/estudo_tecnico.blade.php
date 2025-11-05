@@ -305,7 +305,7 @@
 
         <p style=" text-indent: 30px; text-align: justify; font-size: 11pt;">
             A {{ $prefeitura->nome }} enfrenta um problema significativo relacionado à
-            {!! strip_tags($processo->objeto) !!} A contínua demanda por {!! strip_tags($detalhe->descricao_necessidade) !!}
+            {!! strip_tags($processo->objeto) !!}  {!! strip_tags($detalhe->descricao_necessidade) !!}
             expõe a fragilidade atual dos recursos disponíveis.
         </p>
 
@@ -410,44 +410,43 @@
             </p>
 
             <p style="text-align: justify; text-indent: 30px;">
-                Os Produtos deverão ser executados de forma parcelada, de acordo com as solicitações da CONTRATANTE, por
-                meio de suas respectivas OF.’s;
+                Os Serviços deverão ser executados de forma parcelada, de acordo com as solicitações da
+                CONTRATANTE, por meio de suas respectivas OS.’s;
             </p>
 
             <p style="text-align: justify; text-indent: 30px;">
-                Os Produtos deverão ser entregues em até 48 (quarenta e oito) horas contadas do envio do Pedido de
-                Fornecimento/serviço Empenho, devendo a contratada manter estoques compatíveis com as quantidades
-                solicitadas durante o prazo de vigência do contrato, evitando atrasos nas entregas/fornecimentos, sem a
-                exigência de valor ou quantitativo mínimo e sem custos adicionais.
+                Os Serviços deverão ser iniciados em até 48 (quarenta e oito) horas contadas do envio da Ordem
+                de Serviço, devendo a contratada manter estoques compatíveis com as quantidades solicitadas
+                durante o prazo de vigência do contrato, evitando atrasos na prestação do serviço contratado, sem
+                a exigência de sem custos adicionais.
             </p>
 
             <p style="text-align: justify; text-indent: 30px;">
-                Os produtos deverão ser executados/entregues nas respectivas Unidades e locais de indicação do
-                CONTRATANTE, em horários e datas previamente estabelecidas na respectiva Ordem de Serviço;
+                Os serviços deverão ser prestados nos locais de indicados pelo CONTRATANTE, em horários e
+                datas previamente estabelecidas na respectiva Ordem de Serviço;
             </p>
 
             <p style="text-align: justify; text-indent: 30px;">
-                A nota fiscal deverá ser apresentada no ato da entrega informado o número do Contrato correspondente no
-                campo “Dados Adicionais” e a ordem de fornecimento.
+                A nota fiscal deverá ser apresentada no ato da entrega informado o número do Contrato
+                correspondente no campo “Dados Adicionais”.
             </p>
 
             <p style="text-align: justify; text-indent: 30px;">
-                A Contratada deverá arcar com as despesas de alimentação, deslocamento e demais
-                despesas referentes às prestações dos serviços.
+                A Contratada deverá arcar com as despesas de alimentação, deslocamento e demais despesas
+                referentes às prestações dos serviços.
             </p>
 
             <p style="text-align: justify; text-indent: 30px;">
                 Serão exigidas comprovações de localização da sede da empresa, com apresentação de fotos da
                 infraestrutura interna, com objetivo precípuo de averiguar a veracidade sobre a real existência da
-                empresa, evitando a
-                contratação de empresas fantasmas ou de caráter inidôneo.
+                empresa, evitando a contratação de empresas fantasmas ou de caráter inidôneo
             </p>
 
             <p style="text-align: justify; text-indent: 30px;">
-                Serão exigidas composições de custos que reflitam a realidade econômica da empresa licitante, a ser
-                definido no próprio edital, que estabelecem critérios de custos com despesas diretas e indiretas;
+                Serão exigidas composições de custos que reflitam a realidade econômica da empresa licitante, a
+                ser definido no próprio edital, que estabelecem critérios de custos com despesas diretas e
+                indiretas;
             </p>
-
             <p style="text-align: justify; text-indent: 30px;">
                 Também será exigido garantia de proposta, nos termos do art. 96 e seguintes, visando estabelecer a
                 segurança do preço ofertado pelo licitante, garantindo assim, o seguro do custeio realizado pela
@@ -805,12 +804,12 @@
     {{-- BLOCO 6: RESULTADOS PRETENDIDOS --}}
     {{-- ====================================================================== --}}
     <div id="mapa-gerenciamento-risco">
-        <p style="text-align: center; font-size:16px; font-weight: 700;">MAPA DE GERENCIAMENTO DE RISCOS</p>
+        <p style="text-align: center;  font-weight: 700;">MAPA DE GERENCIAMENTO DE RISCOS</p>
         <p style="text-indent: 30px; text-align: justify; font-size: 11pt;">O documento visa a elaboração de um MAPA DE GERANCIAMENTO DE
             RISCOS para a
             {!! strip_tags($processo->objeto) !!}, de forma a melhor atender as necessidades do município de
             {{ $processo->prefeitura->cidade }}.</p>
-        <p style="font-size:16px; font-weight: 700; text-indent: 20px;">1- INTRODUÇÃO</p>
+        <p style=" font-weight: 700; text-indent: 20px;">1- INTRODUÇÃO</p>
 
         <div style="text-indent: 30px; text-align: justify;">
             O gerenciamento de riscos permite ações contínuas de planejamento, organização e
@@ -1108,7 +1107,7 @@
             100), entende-se como nível de risco muito alto (risco extremo).
         </p>
 
-        <p style="font-size:16px; font-weight: 700; text-indent: 20px;">2- IDENTIFICAÇÃO E ANÁLISE DOS PRINCIPAIS
+        <p style=" font-weight: 700; text-indent: 20px;">2- IDENTIFICAÇÃO E ANÁLISE DOS PRINCIPAIS
             RISCOS</p>
 
         <table
@@ -1191,10 +1190,10 @@
             </tbody>
         </table>
 
-        <p style="font-size:16px; font-weight: 700; text-indent: 20px;">3- AVALIAÇÃO E TRATAMENTO DOS RISCOS
+        <p style=" font-weight: 700; text-indent: 20px;">3- AVALIAÇÃO E TRATAMENTO DOS RISCOS
             IDENTIFICADOS </p>
 
-        <p style="font-size:16px; font-weight: 700; text-indent: 30px;">3.1- Riscos relacionados à fase de Planejamento
+        <p style=" font-weight: 700; text-indent: 30px;">3.1- Riscos relacionados à fase de Planejamento
             da Contratação:</p>
         {{-- RISCO 01 --}}
         <table style="border-collapse: collapse; width: 100%; border: 2px solid black;  font-size: 10pt;">
@@ -1592,7 +1591,7 @@
             </tbody>
         </table>
         <br>
-        <p style="font-size:16px; font-weight: 700; text-indent: 30px;">3.2. Riscos relacionados à fase de Seleção do
+        <p style=" font-weight: 700; text-indent: 30px;">3.2. Riscos relacionados à fase de Seleção do
             Fornecedor:</p>
         {{-- RISCO 05 --}}
         <table style="border-collapse: collapse; width: 100%; border: 2px solid black;  font-size: 10pt;">
@@ -1791,7 +1790,7 @@
         </table>
         <br>
         {!! str_replace('<p>', '<p style="text-indent:30px; text-align: justify; font-size: 11pt;">', $detalhe->riscos_extra) !!}
-        <p style="font-size:16px; font-weight: 700; text-indent: 20px;">4 - APROVAÇÃO E ASSINATURA</p>
+        <p style=" font-weight: 700; text-indent: 20px;">4 - APROVAÇÃO E ASSINATURA</p>
         @php
             // Verifica se a variável $assinantes existe e tem itens
             $hasSelectedAssinantes = isset($assinantes) && count($assinantes) > 0;
@@ -1855,7 +1854,7 @@
     {{-- BLOCO 7: ALINHAMENTO AO PLANO DE CONTRATAÇÃO ANUAL (PCA) --}}
     {{-- ====================================================================== --}}
     <div id="alinhamento-pca">
-        <p style="text-align: center; font-size:16px; font-weight: 700;">ALINHAMENTO AO PLANO DE CONTRATAÇÃO ANUAL (PCA) </p>
+        <p style="text-align: center;  font-weight: 700;">ALINHAMENTO AO PLANO DE CONTRATAÇÃO ANUAL (PCA) </p>
         <p style="text-align: center; font-size:14px; font-weight: 700;">DECLARAÇÃO</p>
         @if ($detalhe->prevista_plano_anual == 'sim')
             <p>

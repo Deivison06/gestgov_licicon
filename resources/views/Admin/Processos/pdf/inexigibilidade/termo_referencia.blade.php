@@ -236,7 +236,7 @@
                             <td class="content">
                                 <div style=" font-weight: bold; margin-bottom: 3px;">VALOR PREVISTO</div>
                                 <div>
-                                    {{ $detalhe->valor_estimado }}
+                                    R$ {{ $detalhe->valor_estimado }}
                                 </div>
                             </td>
                         </tr>

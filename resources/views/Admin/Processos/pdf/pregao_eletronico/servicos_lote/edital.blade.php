@@ -86,7 +86,7 @@
                             CRITÉRIO DE JULGAMENTO
                         </td>
                         <td style="border: 1px solid black; padding: 5px;">
-                            MENOR PREÇO POR ITEM
+                            MENOR PREÇO POR LOTE
                         </td>
                     </tr>
                     <tr>
@@ -94,7 +94,7 @@
                             FORMA DE ADJUDICAÇÃO
                         </td>
                         <td style="border: 1px solid black; padding: 5px;">
-                            POR ITEM
+                            POR LOTE
                         </td>
                     </tr>
                     <tr>
@@ -334,7 +334,12 @@
                 </li>
 
                 <li style="margin-bottom: 6px;">
-                    Fase de lances: Nesta fase, os licitantes que cumprirem a exigências contidas na alínea “a”, irão estabelecer lances sucessivos, obedecendo o critério de menor preço global, dentro do tempo limite de 10 (dez) minutos estabelecidos pelo edital, assim como, suas respectivas prorrogações de 2 (dois) minutos, os quais serão sistematicamente controlados pelo Sistema Eletrônico do Portal BNC;
+                    Fase de lances: Nesta fase, os licitantes que cumprirem a exigências contidas na
+                    alínea “a”, irão estabelecer lances sucessivos, obedecendo o critério de menor
+                    preço global, dentro do tempo limite de 10 (dez) minutos estabelecidos pelo edital,
+                    assim como, suas respectivas prorrogações de 2 (dois) minutos, os quais serão
+                    sistematicamente controlados pelo Sistema Eletrônico do portal designado para a
+                    realização da sessão;
                 </li>
 
                 <li style="margin-bottom: 6px;">
@@ -397,11 +402,11 @@
                     necessários, ficando resguardado apenas os critérios de inexequibilidade de
                     proposta, que serão devidamente verificados na fase de habilitação.
                     <br><br>
-                    Na fase recursal, após o inicial da contagem do tempo de 30 (trinta) minutos,
+                    1.6. Na fase recursal, após o inicial da contagem do tempo de 30 (trinta) minutos,
                     será aberto campo específico para que as manifestações dos licitantes sejam
-                    devidamente registradas e reconhecidas pelo Sistema do BNC, não sendo aceitas,
-                    em nenhuma hipótese, manifestações recursais inseridas dentro do campo de
-                    “chat”.
+                    devidamente registradas e reconhecidas pelo Sistema do portal designado para a
+                    realização da sessão, não sendo aceitas, em nenhuma hipótese, manifestações
+                    recursais inseridas dentro do campo de “chat”.
                 </li>
             </ol>
             @endif
@@ -440,7 +445,7 @@
                 para o microempreendedor individual - MEI, nos limites previstos da Lei Complementar nº 123, de 2006.
             </p>
 
-            @if($detalhe->participacao_exclusiva_mei_epp === 'nao')
+            @if($detalhe->participacao_exclusiva_mei_epp === 'sim')
             <p style="text-align: justify;">
                 2.7. Para os itens {{ $detalhe->numero_items }} a participação é exclusiva a microempresas e empresas de pequeno porte, nos termos do art.
                 48 da Lei Complementar nº 123, de 14 de dezembro de 2006
@@ -649,11 +654,30 @@
                 4.8. Na ficha técnica de preços não deve conter identificação do licitante como: nome, razão social ou timbre do proponente, endereço, telefone, fax e endereço de correio eletrônico, nome do representante, carteira de identidade e cargo na empresa ou qualquer outra forma que possa identificar a proposta.
             </p>
             <p style="text-align: justify;">
-                4.9. Deve conter o detalhamento dos Serviços, indicando características, prazo de
-                execução, prazo de validade ou de garantia, prazo de início da prestação dos serviços
+                4.9. Ao encaminhar a proposta de preços na forma prevista pelo sistema eletrônico,
+                a licitante deverá preencher as informações no campo “CADASTRO PROPOSTA” e
+                anexar FICHA TÉCNICA em arquivo PDF no campo apropriado do sistema do portal
+                designado para a realização da sessão, sendo vedada a identificação do licitante
+                por qualquer meio.
             </p>
             <p style="text-align: justify;">
-                4.10. Preço unitário do item, cotando-se cada produto discriminado no item, em moeda corrente nacional, em algarismo com até 02 (duas) casas decimais após a vírgula e por extenso. O preço total deverá ser indicado em algarismos e por extenso. Nos preços propostos deverão estar incluídos, além do lucro, todas as despesas e custos, como por exemplo: transportes (fretes), montagem e instalação, tributos de qualquer natureza e todas as despesas, diretas ou indiretas, relacionadas com o perfeito fornecimento do objeto desta licitação.
+                4.10. Na ficha técnica de preços não deve conter identificação do licitante como:
+                nome, razão social ou timbre do proponente, endereço, telefone, fax e endereço de
+                correio eletrônico, nome do representante, carteira de identidade e cargo na
+                empresa ou qualquer outra forma que possa identificar a proposta.
+            </p>
+            <p style="text-align: justify;">
+                4.11. Deve conter o detalhamento dos serviços ofertados, indicando, prazo de
+                garantia ou validade, e prazo de entrega.
+            </p>
+            <p style="text-align: justify;">
+                4.12. Preço unitário do item, cotando-se cada produto discriminado no item, em
+                moeda corrente nacional, em algarismo com até 02 (duas) casas decimais após a
+                vírgula e por extenso. O preço total deverá ser indicado em algarismos e por
+                extenso. Nos preços propostos deverão estar incluídos, além do lucro, todas as
+                despesas e custos, como por exemplo: transportes (fretes), montagem e
+                instalação, tributos de qualquer natureza e todas as despesas, diretas ou indiretas,
+                relacionadas com o perfeito fornecimento do objeto desta licitação.
             </p>
         </div>
         <div>
@@ -802,6 +826,56 @@
                 5.28. Se a(s) amostra(s) apresentada(s) pelo primeiro classificado não for(em) aceita(s), o Pregoeiro analisará a
                 aceitabilidade da proposta ou lance ofertado pelo segundo classificado. Seguir-se-á com a verificação da(s) amostra(s) e,
                 assim, sucessivamente, até a verificação de uma que atenda às especificações constantes no Termo de Referência.
+            </p>
+            <p style="text-align: justify;">
+                5.29. O pregoeiro solicitará ao licitante mais bem classificado que, no prazo de 2
+                (duas) horas, envie a proposta adequada ao último lance ofertado após a
+                negociação realizada, acompanhada, se for o caso, dos documentos
+                complementares, quando necessários à confirmação daqueles exigidos neste
+                Edital e já apresentados, com as seguintes informações:
+                <ul type="a">
+                    <li>valor do item;</li>
+                    <li>Descrição do objeto, contendo as informações similares à especificação
+                        do Termo de Referência;</li>
+                    <li>
+                        Prazo de Garantia;
+                    </li>
+                    <li>Validade do Produto ou Prazo de Garantia; </li>
+                    <li>
+                        Na proposta de preços readequado, a empresa deverá apresentar, o
+                        percentual de despesas diretas e indiretas de cada item a ser fornecido, assim
+                        como, também, o percentual de imposto incidente.
+                    </li>
+                </ul>
+            </p>
+            <p style="text-align: justify;">
+                5.30. Será desclassificada a proposta vencedora que:
+                <ul type="a">
+                    <li>contiver vícios insanáveis;</li>
+                    <li>não obedecer às especificações técnicas contidas no Termo de Referência; </li>
+                    <li>
+                        apresentar preços inexequíveis ou permanecerem acima do preço máximo
+                        definido para a contratação;
+                    </li>
+                    <li>não tiverem sua exequibilidade demonstrada, quando exigido pela
+                        Administração; </li>
+                    <li>
+                        apresentar desconformidade com quaisquer outras exigências deste Edital
+                        ou seus anexos, desde que insanável.
+                    </li>
+                </ul>
+            </p>
+            <p style="text-align: justify;">
+                5.31. Na elaboração da proposta adequada ao seu lance final, os licitantes deverão
+                obrigatoriamente apresentar proposta readequada com percentual de desconto
+                fixo e linear sobre os preços de todos os ITENS/LOTES. A exigência busca evitar o a
+                manipulação e jogo de planilhas, além disso, busca garantir a isonomia entre os
+                licitantes.
+            </p>
+            <p style="text-align: justify;">
+                5.32. A licitante deverá, dentro do prazo estipulado para envio da Proposta
+                Readequada, realizar a redefinição dos valores unitários junto a plataforma onde
+                será realizada a licitação, seguindo o exigido no ITEM 5.31, sob pena de inabilitação.
             </p>
         </div>
         <div>
@@ -1117,15 +1191,20 @@
                     O Órgão Carona fará o contato com o vencedor do certame, conforme Termo de Adjudicação;
                 </li>
             </ol>
+            <p style="text-align: justify;">
+                10.8. A previsão de aquisição ou contratação pelo Órgão Carona deverá ser de até
+                90 (noventa) dias após a autorização, observando o prazo de vigência da ata.
+            </p>
             @endif
             <p style="font-weight: bold;">
                 DAS DISPOSIÇÕES GERAIS
             </p>
             <p style="text-align: justify;">
-                A previsão de aquisição ou contratação pelo Órgão Carona deverá ser de até
-                A presente licitação não importa necessariamente em contratação, podendo a Administração, revogá-la, no todo ou em
-                parte, por razões de interesse público, derivado de fato superveniente comprovado ou anulá-la por ilegalidade, de ofício ou
-                por provocação mediante ato escrito e fundamentado disponibilizado no sistema para conhecimento dos participantes
+                A presente licitação não importa necessariamente em contratação, podendo a
+                Administração, revogá-la, no todo ou em parte, por razões de interesse público,
+                derivado de fato superveniente comprovado ou anulá-la por ilegalidade, de ofício
+                ou por provocação mediante ato escrito e fundamentado disponibilizado no
+                sistema para conhecimento dos participantes
             </p>
             <p style="text-align: justify;">
                 É facultado ao Pregoeiro ou à Autoridade Superior, em qualquer fase da licitação, promover diligências com vistas a

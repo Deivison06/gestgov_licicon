@@ -226,8 +226,6 @@
         </p>
         @endif
 
-        <p>Encaminhe-se ao DEMANDANTE para a elaboração do TERMO DE REFERÊNCIA</p>
-
         {{-- Bloco de data e assinatura --}}
         <div class="footer-signature">
             {{ $processo->prefeitura->cidade }},

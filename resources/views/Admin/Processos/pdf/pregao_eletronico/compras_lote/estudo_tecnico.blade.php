@@ -305,7 +305,7 @@
 
         <p style=" text-indent: 30px; text-align: justify; font-size: 11pt;">
             A {{ $prefeitura->nome }} enfrenta um problema significativo relacionado à
-            {!! strip_tags($processo->objeto) !!} A contínua demanda por {!! strip_tags($detalhe->descricao_necessidade) !!}
+            {!! strip_tags($processo->objeto) !!}  {!! strip_tags($detalhe->descricao_necessidade) !!}
             expõe a fragilidade atual dos recursos disponíveis.
         </p>
 

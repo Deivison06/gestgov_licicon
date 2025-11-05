@@ -305,7 +305,7 @@
 
         <p style=" text-indent: 30px; text-align: justify; font-size: 11pt;">
             A {{ $prefeitura->nome }} enfrenta um problema significativo relacionado à
-            {!! strip_tags($processo->objeto) !!} A contínua demanda por {!! strip_tags($detalhe->descricao_necessidade) !!}
+            {!! strip_tags($processo->objeto) !!}  {!! strip_tags($detalhe->descricao_necessidade) !!}
             expõe a fragilidade atual dos recursos disponíveis.
         </p>
 
@@ -613,11 +613,11 @@
                 </ul>
             </li>
             <li style="text-align: justify;">
-                Além disso, o parcelamento da contratação em lotes favorece uma competição saudável
+                Além disso, o parcelamento da contratação em itens favorece uma competição saudável
                 entre fornecedores, o que pode resultar em custos mais baixos e condições mais
                 vantajosas para a Administração Pública. Ao permitir que empresas ofereçam suas
                 propostas por ITEM, a Prefeitura pode beneficiar-se da especialização dos
-                fornecedores, garantindo aquisição de XXXXXXXXX de melhor qualidade. Essa dinâmica
+                fornecedores, garantindo aquisições de melhor qualidade. Essa dinâmica
                 também contribui para minimizar riscos, uma vez que cada item pode ser ajustado
                 conforme a resposta do mercado e as demandas emergentes facilitando adaptações ao
                 longo do fornecimento.
@@ -1155,7 +1155,7 @@
         <p style="font-weight: 700; text-indent: 30px;">3.1- Riscos relacionados à fase de Planejamento
             da Contratação:</p>
         {{-- RISCO 01 --}}
-        <table style="border-collapse: collapse; width: 100%; border: 2px solid black;  font-size: 10pt;">
+        <table style="border-collapse: collapse; width: 100%; border: 2px solid black;  font-size: 8pt;">
             <thead>
                 <tr>
                     <th colspan="3"
@@ -1235,7 +1235,7 @@
         </table>
         <br>
         {{-- RISCO 02 --}}
-        <table style="border-collapse: collapse; width: 100%; border: 2px solid black;  font-size: 10pt;">
+        <table style="border-collapse: collapse; width: 100%; border: 2px solid black; font-size: 8pt;">
             <thead>
                 <tr>
                     <th colspan="3"
@@ -1352,7 +1352,7 @@
         </table>
         <br>
         {{-- RISCO 03 --}}
-        <table style="border-collapse: collapse; width: 100%; border: 2px solid black;  font-size: 10pt;">
+        <table style="border-collapse: collapse; width: 100%; border: 2px solid black; font-size: 8pt;">
             <thead>
                 <tr>
                     <th colspan="3"
@@ -1447,7 +1447,7 @@
         </table>
         <br>
         {{-- RISCO 04 --}}
-        <table style="border-collapse: collapse; width: 100%; border: 2px solid black;  font-size: 10pt;">
+        <table style="border-collapse: collapse; width: 100%; border: 2px solid black; font-size: 8pt;">
             <thead>
                 <tr>
                     <th colspan="3"
@@ -1553,7 +1553,7 @@
         <p style="font-weight: 700; text-indent: 30px;">3.2. Riscos relacionados à fase de Seleção do
             Fornecedor:</p>
         {{-- RISCO 05 --}}
-        <table style="border-collapse: collapse; width: 100%; border: 2px solid black;  font-size: 10pt;">
+        <table style="border-collapse: collapse; width: 100%; border: 2px solid black; font-size: 8pt;">
             <thead>
                 <tr>
                     <th colspan="3"
@@ -1625,7 +1625,7 @@
         </table>
         <br>
         {{-- RISCO 06 --}}
-        <table style="border-collapse: collapse; width: 100%; border: 2px solid black; font-size: 10pt;">
+        <table style="border-collapse: collapse; width: 100%; border: 2px solid black; font-size: 8pt;">
             <thead>
                 <tr>
                     <th colspan="3"
@@ -1831,7 +1831,7 @@
         @else
             <p>A demanda não está prevista no Plano de Contratações Anual, porém se justifica pelo(s) seguinte(s)
                 motivo(s): </p>
-            <div style="border: 1px solid black; padding: 10px; font-size: 10pt;">
+            <div style="border: 1px solid black; padding: 10px; font-size: 8pt;">
                 <p>Fundamentação Legal: conforme Artigo 12, VII, da Lei nº 14.133.</p>
                 <p style="text-indent: 30px;">
                     É importante ressaltar que a ausência de um plano de contratações anual no município de
@@ -1865,8 +1865,8 @@
             style="text-align: center; font-weight: 700; border: 1px solid black; padding: 10px; background:#dadada; margin-top:20px;">
             ENCAMINHAMENTO PARA ÓRGÃO DEMANDANTE
         </p>
-        <div style="border: 1px solid black; padding: 10px;">
-            <p style="line-height: 1.6">Em conformidade com a legislação aplicável, encaminhamos o Presente Estudo
+        <div style="border: 1px solid black; padding: 10px; font-size: 8pt;">
+            <p>Em conformidade com a legislação aplicável, encaminhamos o Presente Estudo
                 Técnico Preliminar, Mapa
                 de Riscos e Alinhamento com o Plano de Contratação Anual (PCA) ao órgão solicitante para análise de
                 conveniência e oportunidade para a contratação e demais providências cabíveis. </p>
