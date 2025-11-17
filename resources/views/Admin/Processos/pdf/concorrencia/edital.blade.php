@@ -1168,15 +1168,10 @@
             <p style="text-align: justify;">
                 8.7.3. Quanto à capacitação técnico-profissional: comprovação da empresa
                 licitante de possuir em seu quadro, profissional (is) de nível superior ou outro(s)
-                reconhecido(s) pelo CREA, CAU, ou CRT, detentor (es) de atestado(s)de
-                responsabilidade técnica, devidamente registrado(s) na entidade profissional
-                competente(CREA, CAU, ou CRT) da região onde os serviços foram executados.
+                reconhecido(s) pelo CREA, CAU, ou CRT.
             </p>
             <p style="text-align: justify;">
-                8.7.6. A comprovação do vínculo do(s) profissional(is) detentor do acervo
-                técnico, do quadro da licitante, será atendida mediante a apresentação da
-                declaração formal de sua disponibilidade, acompanhada de comprovação da
-                anuência do profissional, ou através da apresentação dos documentos a seguir:
+                8.7.6. A comprovação do vínculo do(s) profissional(is), do quadro da licitante, será comprovada mediante a apresentação dos documentos a seguir:
             </p>
             <p style="text-align: justify;">
                 8.7.6.1. Empregado: Cópia do livro de registro de empregado registrado na
@@ -1216,6 +1211,9 @@
                 capacitação técnico-profissional deverão participar da obra ou serviço objeto
                 desta licitação, admitindo-se a substituição por profissionais de experiência
                 equivalente ou superior, desde que aprovado pela Contratante.
+            </p>
+            <p>
+                {!! $detalhe->exigencias_tecnicas !!}
             </p>
         </div>
         <div>

@@ -4,19 +4,20 @@ namespace App\Http\Controllers;
 
 use ZipArchive;
 use App\Models\Unidade;
-use setasign\Fpdi\Tcpdf\Fpdi;
 use App\Models\Processo;
 use App\Models\Documento;
 use App\Models\Prefeitura;
 use Illuminate\Http\Request;
+use setasign\Fpdi\Tcpdf\Fpdi;
 use App\Models\ProcessoDetalhe;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Services\ProcessoService;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
 use App\Http\Requests\ProcessoRequest;
+use setasign\Fpdi\PdfReader\PdfReader;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use App\Http\Requests\ProcessoDetalheRequest;
-use setasign\Fpdi\PdfReader\PdfReader;
 
 class ProcessoController extends Controller
 {
@@ -64,6 +65,8 @@ class ProcessoController extends Controller
                 'riscos_extra',
                 'tipo_srp',
                 'prevista_plano_anual',
+                'encaminhamento_elaborar_editais',
+                'encaminhamento_elaborar_projeto_basico',
                 'encaminhamento_pesquisa_preco',
                 'encaminhamento_doacao_orcamentaria',
                 'itens_e_seus_quantitativos_xml',
@@ -95,7 +98,6 @@ class ProcessoController extends Controller
             'cor' => 'bg-orange-500',
             'data_id' => 'data_termo_referencia',
             'campos' => [
-                'encaminhamento_elaborar_editais',
                 'encaminhamento_parecer_juridico',
                 'encaminhamento_autorizacao_abertura',
                 'itens_especificaca_quantitativos_xml'
@@ -180,7 +182,7 @@ class ProcessoController extends Controller
 
     public function index()
     {
-        $prefeituras = Prefeitura::all();
+        $prefeituras = Prefeitura::withCount('processos')->get();
         $query = Processo::with('prefeitura');
 
         if (request('prefeitura_id')) {
@@ -324,6 +326,7 @@ class ProcessoController extends Controller
             ], 500);
         }
     }
+
     public function baixarDocumento(Processo $processo, $tipo)
     {
         $documento = Documento::where('processo_id', $processo->id)
@@ -338,33 +341,45 @@ class ProcessoController extends Controller
         $ordem = $this->getOrdemDocumentos();
         $documentos = Documento::where('processo_id', $processo->id)->get()->keyBy('tipo_documento');
 
-        $pdf = new Fpdi();
-        $this->configurarFonte($pdf);
+        // Usar Ghostscript diretamente - mais confiável e rápido
+        return $this->baixarTodosDocumentosComGhostscript($processo, $ordem, $documentos);
+    }
 
-        list($pageCountTotal, $paginas) = $this->contarPaginas($pdf, $ordem, $documentos);
-        $paginaAtual = 1;
-
+    private function baixarTodosDocumentosComGhostscript(Processo $processo, array $ordem, $documentos)
+    {
+        // Preparar lista de arquivos na ordem correta
+        $arquivos = [];
         foreach ($ordem as $tipo) {
             if (!isset($documentos[$tipo])) continue;
-
             $caminho = public_path($documentos[$tipo]->caminho);
             if (!file_exists($caminho)) continue;
-
-            $numPages = $pdf->setSourceFile($caminho);
-            for ($i = 1; $i <= $numPages; $i++) {
-                $tplId = $pdf->importPage($i);
-                $pdf->AddPage();
-                $pdf->useTemplate($tplId);
-
-                if ($tipo !== 'capa') {
-                    $this->adicionarCarimbo($pdf, $processo, $paginaAtual, $pageCountTotal);
-                    $paginaAtual++;
-                }
-            }
+            $arquivos[] = $caminho;
         }
 
-        $caminhoArquivo = $this->salvarPdfCompleto($pdf, $processo);
-        return response()->download($caminhoArquivo)->deleteFileAfterSend(true);
+        if (empty($arquivos)) {
+            throw new \Exception('Nenhum documento encontrado para mesclar.');
+        }
+
+        $nomeArquivo = "processo_" . str_replace(['/', '\\'], '_', $processo->numero_processo) . "_todos_documentos_" . now()->format('Ymd_His') . '.pdf';
+        $caminhoArquivo = public_path('uploads/documentos/' . $nomeArquivo);
+
+        // Mesclar PDFs usando Ghostscript
+        $sucesso = $this->mesclarPdfsComGhostscript($arquivos, $caminhoArquivo);
+
+        if ($sucesso) {
+            // Adicionar carimbo ao PDF mesclado
+            $caminhoCarimbado = $this->adicionarCarimboAoPdfComGhostscript($caminhoArquivo, $processo);
+
+            if ($caminhoCarimbado) {
+                return response()->download($caminhoCarimbado)->deleteFileAfterSend(true);
+            } else {
+                // Se não conseguiu carimbar, retorna o arquivo sem carimbo
+                Log::warning('PDF mesclado com Ghostscript sem carimbo', ['processo_id' => $processo->id]);
+                return response()->download($caminhoArquivo)->deleteFileAfterSend(true);
+            }
+        } else {
+            throw new \Exception('Erro ao mesclar documentos com Ghostscript');
+        }
     }
 
     // =========================================================
@@ -642,20 +657,66 @@ class ProcessoController extends Controller
 
     private function processarAnexos(Processo $processo, string $documento, string $caminhoPrincipal): void
     {
-        if ($documento === 'edital') {
-            $this->juntarTermoReferenciaOuProjetoBasico($processo, $caminhoPrincipal);
-        }
+        Log::info("Iniciando processamento de anexos para: {$documento}", [
+            'caminho_principal' => $caminhoPrincipal,
+            'tamanho_inicial' => file_exists($caminhoPrincipal) ? filesize($caminhoPrincipal) : 0
+        ]);
 
-        $anexos = $this->obterAnexos($processo, $documento);
-        foreach ($anexos as $anexoPath) {
-            if ($anexoPath && file_exists($anexoPath)) {
-                $this->juntarPdfs($caminhoPrincipal, $anexoPath);
+        // Primeiro processa as junções específicas (como termo de referência)
+        if ($documento === 'edital') {
+            Log::info("Processando junção de termo/projeto básico para edital");
+            $this->juntarTermoReferenciaOuProjetoBasico($processo, $caminhoPrincipal);
+
+            // Verificar tamanho após junção
+            if (file_exists($caminhoPrincipal)) {
+                Log::info("Tamanho após junção termo/projeto: " . filesize($caminhoPrincipal));
             }
         }
 
-        if ($documento === 'edital' && $processo->detalhe->tipo_srp === 'sim') {
-            $this->gerarEJuntarAtaRegistroPreco($processo, $caminhoPrincipal);
+        // Depois processa os anexos regulares
+        $anexos = $this->obterAnexos($processo, $documento);
+
+        if (!empty($anexos)) {
+            Log::info("Processando anexos regulares para documento: {$documento}", [
+                'pdf_base' => $caminhoPrincipal,
+                'anexos' => $anexos,
+                'tamanho_base' => file_exists($caminhoPrincipal) ? filesize($caminhoPrincipal) : 0
+            ]);
+
+            $resultado = $this->juntarPdfsComGhostscript($caminhoPrincipal, $anexos);
+
+            if ($resultado) {
+                Log::info("Anexos regulares processados com sucesso", [
+                    'documento' => $documento,
+                    'arquivo_final' => $resultado,
+                    'tamanho_final' => filesize($resultado)
+                ]);
+            } else {
+                Log::error("Falha ao processar anexos regulares", [
+                    'documento' => $documento,
+                    'pdf_base' => $caminhoPrincipal
+                ]);
+            }
         }
+
+        // Processamento específico para SRP - DEVE SER O ÚLTIMO
+        if ($documento === 'edital' && $processo->detalhe->tipo_srp === 'sim') {
+            Log::info("Processando ATA de Registro de Preço para SRP");
+
+            // Verificar tamanho antes de adicionar ATA
+            if (file_exists($caminhoPrincipal)) {
+                Log::info("Tamanho antes da ATA: " . filesize($caminhoPrincipal));
+            }
+
+            $this->gerarEJuntarAtaRegistroPreco($processo, $caminhoPrincipal);
+
+            // Verificar tamanho final
+            if (file_exists($caminhoPrincipal)) {
+                Log::info("Tamanho final após ATA: " . filesize($caminhoPrincipal));
+            }
+        }
+
+        Log::info("Processamento de anexos concluído para: {$documento}");
     }
 
     private function juntarTermoReferenciaOuProjetoBasico(Processo $processo, string $caminhoEdital): void
@@ -669,7 +730,34 @@ class ProcessoController extends Controller
             ->first();
 
         if ($documento && file_exists(public_path($documento->caminho))) {
-            $this->juntarPdfs($caminhoEdital, public_path($documento->caminho));
+            $caminhoDocumento = public_path($documento->caminho);
+
+            Log::info("Juntando {$tipoDocumento} com edital", [
+                'edital' => $caminhoEdital,
+                'documento' => $caminhoDocumento,
+                'tamanho_edital' => filesize($caminhoEdital),
+                'tamanho_documento' => filesize($caminhoDocumento)
+            ]);
+
+            // CORREÇÃO: Usar juntarPdfsComGhostscript em vez de mesclarPdfsComGhostscript
+            $sucesso = $this->juntarPdfsComGhostscript($caminhoEdital, [$caminhoDocumento]);
+
+            if ($sucesso) {
+                Log::info("{$tipoDocumento} juntado com sucesso ao edital", [
+                    'caminho_final' => $caminhoEdital,
+                    'tamanho_final' => filesize($caminhoEdital)
+                ]);
+            } else {
+                Log::error('Falha ao juntar termo de referência/projeto básico com edital', [
+                    'edital' => $caminhoEdital,
+                    'documento' => $caminhoDocumento
+                ]);
+            }
+        } else {
+            Log::warning("Documento {$tipoDocumento} não encontrado para junção com edital", [
+                'processo_id' => $processo->id,
+                'tipo_documento' => $tipoDocumento
+            ]);
         }
     }
 
@@ -700,83 +788,331 @@ class ProcessoController extends Controller
 
         return $anexos;
     }
-    private function juntarPdfs(string $pdfPrincipal, string $pdfAnexo): void
+
+    private function juntarPdfsComGhostscript(string $pdfBasePath, array $anexoPaths): ?string
     {
-        $tempFile = tempnam(sys_get_temp_dir(), 'merged_pdf_') . '.pdf';
-        $fpdi = new Fpdi();
+        try {
+            // Verificar se o arquivo base existe e é válido
+            if (!file_exists($pdfBasePath) || filesize($pdfBasePath) === 0) {
+                Log::error('Arquivo base não encontrado ou vazio', ['caminho' => $pdfBasePath]);
+                return null;
+            }
+
+            // Filtrar apenas anexos válidos
+            $anexosValidos = [];
+            foreach ($anexoPaths as $anexoPath) {
+                if (file_exists($anexoPath) && filesize($anexoPath) > 0) {
+                    $anexosValidos[] = $anexoPath;
+                    Log::info("Anexo válido encontrado", [
+                        'caminho' => $anexoPath,
+                        'tamanho' => filesize($anexoPath)
+                    ]);
+                } else {
+                    Log::warning('Anexo ignorado (não existe ou está vazio)', ['caminho' => $anexoPath]);
+                }
+            }
+
+            // Se não há anexos válidos, retornar o base original
+            if (empty($anexosValidos)) {
+                Log::info('Nenhum anexo válido para mesclar', ['base' => $pdfBasePath]);
+                return $pdfBasePath;
+            }
+
+            // Criar arquivo temporário para o resultado
+            $tempOutput = tempnam(sys_get_temp_dir(), 'merged_pdf_') . '.pdf';
+
+            // Juntar base + anexos - ORDEM CORRETA: base primeiro, depois anexos
+            $todosArquivos = array_merge([$pdfBasePath], $anexosValidos);
+
+            Log::info("Mesclando PDFs com Ghostscript - INÍCIO", [
+                'arquivo_base' => $pdfBasePath,
+                'tamanho_base' => filesize($pdfBasePath),
+                'anexos_validos' => $anexosValidos,
+                'total_arquivos' => count($todosArquivos),
+                'arquivo_saida_temp' => $tempOutput
+            ]);
+
+            $sucesso = $this->mesclarPdfsComGhostscript($todosArquivos, $tempOutput);
+
+            if ($sucesso && file_exists($tempOutput) && filesize($tempOutput) > 0) {
+                // Verificar se o arquivo temporário tem conteúdo
+                $tamanhoTemp = filesize($tempOutput);
+                Log::info("Arquivo temporário gerado com sucesso", [
+                    'caminho_temp' => $tempOutput,
+                    'tamanho_temp' => $tamanhoTemp
+                ]);
+
+                // Substituir o arquivo base pelo resultado mesclado
+                copy($tempOutput, $pdfBasePath);
+                unlink($tempOutput);
+
+                $tamanhoFinal = filesize($pdfBasePath);
+                Log::info("PDFs mesclados com sucesso - FIM", [
+                    'arquivo_final' => $pdfBasePath,
+                    'tamanho_final' => $tamanhoFinal,
+                    'tamanho_esperado' => filesize($pdfBasePath) + array_sum(array_map('filesize', $anexosValidos))
+                ]);
+
+                return $pdfBasePath;
+            } else {
+                Log::error('Falha ao mesclar PDFs com Ghostscript', [
+                    'sucesso' => $sucesso,
+                    'temp_output_existe' => file_exists($tempOutput),
+                    'temp_output_tamanho' => file_exists($tempOutput) ? filesize($tempOutput) : 0,
+                    'arquivos_entrada' => $todosArquivos
+                ]);
+
+                // Limpar arquivo temporário em caso de erro
+                if (file_exists($tempOutput)) {
+                    unlink($tempOutput);
+                }
+                return null;
+            }
+        } catch (\Exception $e) {
+            Log::error('Exceção ao mesclar PDFs com Ghostscript', [
+                'erro' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'pdf_base' => $pdfBasePath,
+                'anexos' => $anexoPaths
+            ]);
+            return null;
+        }
+    }
+
+    private function mesclarPdfsComGhostscript(array $arquivos, string $outputPath): bool
+    {
+        $listaArquivos = null;
 
         try {
-            Log::info("Iniciando junção de PDFs", [
-                'pdf_principal' => $pdfPrincipal,
-                'pdf_anexo' => $pdfAnexo,
-                'temp_file' => $tempFile
+            // VERIFICAÇÃO CRÍTICA: garantir que todos os arquivos existem e são válidos
+            $arquivosValidos = [];
+            foreach ($arquivos as $index => $arquivo) {
+                if (!file_exists($arquivo)) {
+                    Log::error('Arquivo não encontrado para mesclagem', [
+                        'arquivo' => $arquivo,
+                        'index' => $index,
+                        'todos_arquivos' => $arquivos
+                    ]);
+                    return false;
+                }
+
+                $tamanho = filesize($arquivo);
+                if ($tamanho === 0) {
+                    Log::error('Arquivo vazio encontrado', [
+                        'arquivo' => $arquivo,
+                        'index' => $index,
+                        'tamanho' => $tamanho
+                    ]);
+                    return false;
+                }
+
+                $arquivosValidos[] = $arquivo;
+                Log::debug("Arquivo validado para mesclagem", [
+                    'arquivo' => $arquivo,
+                    'tamanho' => $tamanho,
+                    'index' => $index
+                ]);
+            }
+
+            // Criar arquivo de lista para Ghostscript
+            $listaArquivos = tempnam(sys_get_temp_dir(), 'gs_list_');
+            file_put_contents($listaArquivos, implode("\n", $arquivosValidos));
+
+            $comando = sprintf(
+                'gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -dPDFSETTINGS=/prepress -sOutputFile="%s" @"%s"',
+                $outputPath,
+                $listaArquivos
+            );
+
+            Log::info('Executando Ghostscript - COMANDO', [
+                'comando' => $comando,
+                'arquivos_entrada' => $arquivosValidos,
+                'quantidade_arquivos' => count($arquivosValidos),
+                'arquivo_saida' => $outputPath
             ]);
 
-            // Adiciona páginas do PDF principal
-            $numPagesPrincipal = $fpdi->setSourceFile($pdfPrincipal);
-            Log::info("PDF principal tem {$numPagesPrincipal} páginas");
+            $output = [];
+            $returnCode = 0;
+            exec($comando . ' 2>&1', $output, $returnCode);
 
-            for ($pageNo = 1; $pageNo <= $numPagesPrincipal; $pageNo++) {
-                $templateId = $fpdi->importPage($pageNo);
-                $size = $fpdi->getTemplateSize($templateId);
-                $orientation = ($size['width'] > $size['height']) ? 'L' : 'P';
-                $fpdi->AddPage($orientation, [$size['width'], $size['height']]);
-                $fpdi->useTemplate($templateId);
+            // Aguardar um pouco para garantir que o processo terminou
+            sleep(2);
+
+            $outputExiste = file_exists($outputPath);
+            $outputTamanho = $outputExiste ? filesize($outputPath) : 0;
+
+            if ($returnCode === 0 && $outputExiste && $outputTamanho > 0) {
+                Log::info('PDFs mesclados com sucesso usando Ghostscript', [
+                    'arquivo_saida' => $outputPath,
+                    'tamanho' => $outputTamanho,
+                    'return_code' => $returnCode,
+                    'output_ghostscript' => implode("\n", array_slice($output, 0, 10)) // Primeiras 10 linhas do output
+                ]);
+                return true;
+            } else {
+                Log::error('Erro ao mesclar PDFs com Ghostscript', [
+                    'return_code' => $returnCode,
+                    'output' => implode("\n", $output),
+                    'arquivos_entrada' => $arquivosValidos,
+                    'arquivo_saida_existe' => $outputExiste,
+                    'arquivo_saida_tamanho' => $outputTamanho
+                ]);
+                return false;
             }
-
-            // Adiciona páginas do anexo
-            $numPagesAnexo = $fpdi->setSourceFile($pdfAnexo);
-            Log::info("PDF anexo tem {$numPagesAnexo} páginas");
-
-            for ($pageNo = 1; $pageNo <= $numPagesAnexo; $pageNo++) {
-                $templateId = $fpdi->importPage($pageNo);
-                $size = $fpdi->getTemplateSize($templateId);
-                $orientation = ($size['width'] > $size['height']) ? 'L' : 'P';
-                $fpdi->AddPage($orientation, [$size['width'], $size['height']]);
-                $fpdi->useTemplate($templateId);
-            }
-
-            // Salva o PDF mesclado em um arquivo temporário
-            $fpdi->Output($tempFile, 'F');
-
-            // Substitui o PDF principal pelo mesclado
-            if (!copy($tempFile, $pdfPrincipal)) {
-                throw new \Exception("Falha ao substituir o PDF principal pelo mesclado.");
-            }
-
-            Log::info("PDFs juntados com sucesso");
-        } catch (\Throwable $e) {
-            Log::error('Erro ao juntar PDFs', [
-                'pdf_principal' => $pdfPrincipal,
-                'pdf_anexo' => $pdfAnexo,
-                'erro' => $e->getMessage()
+        } catch (\Exception $e) {
+            Log::error('Exceção ao mesclar PDFs com Ghostscript', [
+                'erro' => $e->getMessage(),
+                'arquivos' => $arquivos
             ]);
-
-            throw new \Exception('Erro ao processar anexos do PDF: ' . $e->getMessage());
+            return false;
         } finally {
-            // Limpa o arquivo temporário
-            if (file_exists($tempFile)) {
-                unlink($tempFile);
+            if ($listaArquivos && file_exists($listaArquivos)) {
+                unlink($listaArquivos);
             }
         }
     }
 
     private function gerarEJuntarAtaRegistroPreco(Processo $processo, string $caminhoPrincipal): void
     {
-        $viewAta = $this->determinarViewPdf($processo, 'ata_registro_preco');
-        $data = $this->prepararDadosPdf($processo, [
-            'dataSelecionada' => now()->format('Y-m-d'),
-            'assinantes' => [],
-            'parecerSelecionado' => null,
-        ]);
+        try {
+            Log::info("Gerando ATA de Registro de Preço", ['processo_id' => $processo->id]);
 
-        $pdfAta = Pdf::loadView($viewAta, $data)->setPaper('a4', 'portrait');
-        $arquivoAta = storage_path('app/temp_ata_' . $processo->id . '.pdf');
-        $pdfAta->save($arquivoAta);
+            // Verificar se o arquivo principal ainda existe e é válido
+            if (!file_exists($caminhoPrincipal) || filesize($caminhoPrincipal) === 0) {
+                Log::error('Arquivo principal não encontrado ou vazio antes de gerar ATA', [
+                    'caminho' => $caminhoPrincipal
+                ]);
+                return;
+            }
 
-        if (file_exists($arquivoAta)) {
-            $this->juntarPdfs($caminhoPrincipal, $arquivoAta);
-            unlink($arquivoAta);
+            $viewAta = $this->determinarViewPdf($processo, 'ata_registro_preco');
+            $data = $this->prepararDadosPdf($processo, [
+                'dataSelecionada' => now()->format('Y-m-d'),
+                'assinantes' => [],
+                'parecerSelecionado' => null,
+            ]);
+
+            $pdfAta = Pdf::loadView($viewAta, $data)->setPaper('a4', 'portrait');
+            $arquivoAta = storage_path('app/temp_ata_' . $processo->id . '_' . uniqid() . '.pdf');
+            $pdfAta->save($arquivoAta);
+
+            if (file_exists($arquivoAta) && filesize($arquivoAta) > 0) {
+                Log::info("ATA gerada com sucesso", [
+                    'caminho_ata' => $arquivoAta,
+                    'tamanho_ata' => filesize($arquivoAta),
+                    'caminho_principal' => $caminhoPrincipal,
+                    'tamanho_principal' => filesize($caminhoPrincipal)
+                ]);
+
+                // Juntar principal + ATA (não substituir!)
+                $sucesso = $this->juntarPdfsComGhostscript($caminhoPrincipal, [$arquivoAta]);
+
+                if ($sucesso) {
+                    Log::info("ATA juntada com sucesso ao edital", [
+                        'caminho_final' => $caminhoPrincipal,
+                        'tamanho_final' => filesize($caminhoPrincipal)
+                    ]);
+                } else {
+                    Log::error('Falha ao juntar ata de registro de preço', [
+                        'principal' => $caminhoPrincipal,
+                        'ata' => $arquivoAta
+                    ]);
+                }
+
+                // Limpar arquivo temporário
+                unlink($arquivoAta);
+            } else {
+                Log::error('ATA não foi gerada corretamente', [
+                    'arquivo_ata' => $arquivoAta,
+                    'existe' => file_exists($arquivoAta),
+                    'tamanho' => file_exists($arquivoAta) ? filesize($arquivoAta) : 0
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('Erro ao gerar e juntar ATA de registro de preço', [
+                'processo_id' => $processo->id,
+                'erro' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+        }
+    }
+
+    // =========================================================
+    // MÉTODOS PRIVADOS - CARIMBAGEM DE PDF
+    // =========================================================
+
+    private function adicionarCarimboAoPdfComGhostscript(string $caminhoPdf, Processo $processo): ?string
+    {
+        $paginasTemp = [];
+
+        try {
+            // Primeiro, contar as páginas do PDF
+            $pageCount = $this->contarPaginasPdf($caminhoPdf);
+
+            if ($pageCount === 0) {
+                Log::error('PDF vazio ou inválido', ['caminho' => $caminhoPdf]);
+                return null;
+            }
+
+            $caminhoCarimbado = str_replace('.pdf', '_carimbado.pdf', $caminhoPdf);
+
+            // Para cada página, adicionar carimbo
+            for ($pagina = 1; $pagina <= $pageCount; $pagina++) {
+                $paginaAtual = $pagina;
+
+                // Criar PDF temporário com carimbo para esta página
+                $pdf = new Fpdi();
+                $this->configurarFonte($pdf);
+
+                $pdf->setSourceFile($caminhoPdf);
+                $tplId = $pdf->importPage($pagina);
+                $pdf->AddPage();
+                $pdf->useTemplate($tplId);
+
+                // Adicionar carimbo (assumindo que a capa é a primeira página)
+                if ($pagina !== 1) {
+                    $this->adicionarCarimbo($pdf, $processo, $paginaAtual - 1, $pageCount - 1);
+                }
+
+                $tempPath = sys_get_temp_dir() . "/pagina_{$pagina}_" . uniqid() . '.pdf';
+                $pdf->Output($tempPath, 'F');
+                $paginasTemp[] = $tempPath;
+            }
+
+            // Mesclar todas as páginas carimbadas
+            $sucesso = $this->mesclarPdfsComGhostscript($paginasTemp, $caminhoCarimbado);
+
+            if ($sucesso && file_exists($caminhoCarimbado) && filesize($caminhoCarimbado) > 0) {
+                // Substituir o arquivo original pelo carimbado
+                if (file_exists($caminhoPdf)) {
+                    unlink($caminhoPdf);
+                }
+                rename($caminhoCarimbado, $caminhoPdf);
+                return $caminhoPdf;
+            } else {
+                Log::error('Falha ao mesclar páginas carimbadas', [
+                    'caminho_original' => $caminhoPdf,
+                    'caminho_carimbado' => $caminhoCarimbado,
+                    'sucesso' => $sucesso,
+                    'arquivo_existe' => file_exists($caminhoCarimbado),
+                    'tamanho' => file_exists($caminhoCarimbado) ? filesize($caminhoCarimbado) : 0
+                ]);
+                return null;
+            }
+        } catch (\Exception $e) {
+            Log::error('Erro ao adicionar carimbo ao PDF com Ghostscript', [
+                'caminho' => $caminhoPdf,
+                'erro' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return null;
+        } finally {
+            // Limpar arquivos temporários
+            foreach ($paginasTemp as $tempFile) {
+                if (file_exists($tempFile)) {
+                    unlink($tempFile);
+                }
+            }
         }
     }
 
@@ -874,20 +1210,18 @@ class ProcessoController extends Controller
         $pdf->StopTransform();
     }
 
-    private function salvarPdfCompleto(Fpdi $pdf, Processo $processo): string
+    private function contarPaginasPdf(string $caminhoPdf): int
     {
-        $numeroProcessoLimpo = str_replace(['/', '\\'], '_', $processo->numero_processo);
-        $nomeArquivo = "processo_{$numeroProcessoLimpo}_todos_documentos_" . now()->format('Ymd_His') . '.pdf';
-
-        $diretorio = public_path('uploads/documentos/');
-        if (!file_exists($diretorio)) {
-            mkdir($diretorio, 0777, true);
+        try {
+            $pdf = new Fpdi();
+            return $pdf->setSourceFile($caminhoPdf);
+        } catch (\Exception $e) {
+            Log::error('Erro ao contar páginas do PDF', [
+                'caminho' => $caminhoPdf,
+                'erro' => $e->getMessage()
+            ]);
+            return 0;
         }
-
-        $caminhoArquivo = $diretorio . $nomeArquivo;
-        $pdf->Output($caminhoArquivo, 'F');
-
-        return $caminhoArquivo;
     }
 
     // =========================================================

@@ -31,22 +31,24 @@
         @endif
 
         <!-- Botão Voltar -->
-        <div id="btn-voltar-container" class="hidden mb-4">
-            <button id="btn-voltar"
-                class="px-4 py-2 text-sm font-medium text-white bg-[#009496] rounded-lg hover:bg-[#007a7a] transition-all duration-200">
-                ← Voltar
-            </button>
+        @if(request('prefeitura_id'))
+        <div class="mb-4">
+            <a href="{{ route('admin.processos.index') }}"
+                class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#009496] rounded-lg hover:bg-[#007a7a] transition-all duration-200">
+                ← Voltar para todas as prefeituras
+            </a>
         </div>
+        @endif
 
         <!-- Prefeituras Cards -->
-        <div id="prefeituras-cards" class="mb-8">
+        @if(!request('prefeitura_id'))
+        <div class="mb-8">
             <h2 class="mb-4 text-xl font-semibold text-gray-800">Selecione uma Prefeitura</h2>
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 @foreach ($prefeituras as $prefeitura)
-                <div class="prefeitura-card group relative p-6 bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg hover:border-[#009496] transition-all duration-300 transform hover:-translate-y-1 cursor-pointer"
-                    data-prefeitura-id="{{ $prefeitura->id }}">
-                    <div
-                        class="absolute transition-opacity duration-300 opacity-0 top-4 right-4 group-hover:opacity-100">
+                <a href="{{ route('admin.processos.index', ['prefeitura_id' => $prefeitura->id]) }}"
+                   class="prefeitura-card group relative p-6 bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg hover:border-[#009496] transition-all duration-300 transform hover:-translate-y-1 cursor-pointer block">
+                    <div class="absolute transition-opacity duration-300 opacity-0 top-4 right-4 group-hover:opacity-100">
                         <svg class="w-5 h-5 text-[#009496]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M9 5l7 7-7 7"></path>
@@ -67,19 +69,23 @@
                     <p class="mt-1 text-xs text-gray-500">{{ $prefeitura->email }}</p>
                     <div class="pt-3 mt-3 border-t border-gray-100">
                         <span class="text-xs font-medium text-[#009496] bg-[#009496]/10 px-2 py-1 rounded-full">
-                            {{ $processos->where('prefeitura_id', $prefeitura->id)->count() }} processos
+                            {{ $prefeitura->processos_count }} processos
                         </span>
                     </div>
-                </div>
+                </a>
                 @endforeach
             </div>
         </div>
+        @endif
 
-        <!-- Tabela de Processos (inicialmente oculta) -->
-        <div id="tabela-processos" class="hidden overflow-hidden transition-all duration-300 bg-white border border-gray-100 shadow-sm rounded-2xl">
+        <!-- Tabela de Processos (mostrada apenas quando há filtro de prefeitura) -->
+        @if(request('prefeitura_id'))
+        <div class="overflow-hidden transition-all duration-300 bg-white border border-gray-100 shadow-sm rounded-2xl">
             <div class="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
                 <div class="flex flex-col items-start justify-between lg:flex-row lg:items-center">
-                    <h3 class="text-xl font-semibold text-gray-800">Processos Licitatórios</h3>
+                    <h3 class="text-xl font-semibold text-gray-800">
+                        Processos da Prefeitura: {{ $prefeituras->find(request('prefeitura_id'))->nome ?? 'Selecionada' }}
+                    </h3>
                     <span class="mt-2 text-sm text-gray-500 lg:mt-0">
                         Total: {{ $processos->total() }} processos
                     </span>
@@ -90,9 +96,6 @@
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                                Prefeitura
-                            </th>
                             <th class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                                 Modalidade
                             </th>
@@ -115,24 +118,7 @@
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($processos as $processo)
-                        <tr class="transition-colors duration-200 hover:bg-gray-50"
-                            data-prefeitura-id="{{ $processo->prefeitura_id }}">
-                            <td class="px-6 py-4">
-                                <div class="flex items-center">
-                                    <div
-                                        class="flex-shrink-0 w-8 h-8 rounded-full bg-[#009496]/10 flex items-center justify-center">
-                                        <svg class="w-4 h-4 text-[#009496]" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-6 0H5m2 0h4M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
-                                            </path>
-                                        </svg>
-                                    </div>
-                                    <div class="ml-4 text-sm font-medium text-gray-900">
-                                        {{ $processo->prefeitura->nome }}
-                                    </div>
-                                </div>
-                            </td>
+                        <tr class="transition-colors duration-200 hover:bg-gray-50">
                             <td class="px-6 py-4">
                                 <span class="inline-flex px-2.5 py-0.5 text-xs font-medium rounded-full
                                     @if ($processo->modalidade->value === 'dispensa') bg-purple-100 text-purple-800
@@ -178,11 +164,11 @@
                             </td>
                         </tr>
                         @empty
-                        <tr>
-                            <td colspan="7" class="px-6 py-12 text-center text-gray-400">
-                                Nenhum processo encontrado
-                            </td>
-                        </tr>
+                            <tr>
+                                <td colspan="6" class="px-6 py-12 text-center text-gray-400">
+                                    Nenhum processo encontrado para esta prefeitura
+                                </td>
+                            </tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -190,44 +176,12 @@
 
             @if ($processos->hasPages())
             <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
-                {{ $processos->links() }}
+                {{ $processos->withQueryString()->links() }}
             </div>
             @endif
         </div>
+        @endif
 
     </div>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const cards = document.querySelectorAll('.prefeitura-card');
-    const tabela = document.getElementById('tabela-processos');
-    const btnVoltar = document.getElementById('btn-voltar');
-    const btnVoltarContainer = document.getElementById('btn-voltar-container');
-    const cardsContainer = document.getElementById('prefeituras-cards');
-
-    cards.forEach(card => {
-        card.addEventListener('click', () => {
-            const prefeituraId = card.dataset.prefeituraId;
-
-            // Esconde cards e mostra tabela
-            cardsContainer.classList.add('hidden');
-            btnVoltarContainer.classList.remove('hidden');
-            tabela.classList.remove('hidden');
-
-            // Mostra apenas os processos da prefeitura selecionada
-            document.querySelectorAll('#tabela-processos tbody tr').forEach(tr => {
-                const trPref = tr.dataset.prefeituraId;
-                tr.classList.toggle('hidden', trPref !== prefeituraId);
-            });
-        });
-    });
-
-    btnVoltar.addEventListener('click', () => {
-        tabela.classList.add('hidden');
-        btnVoltarContainer.classList.add('hidden');
-        cardsContainer.classList.remove('hidden');
-    });
-});
-</script>
 @endsection

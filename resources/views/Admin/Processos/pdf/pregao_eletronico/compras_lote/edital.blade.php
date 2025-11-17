@@ -94,7 +94,7 @@
                             FORMA DE ADJUDICAÇÃO
                         </td>
                         <td style="border: 1px solid black; padding: 5px;">
-                            POR ITEM
+                            POR LOTE
                         </td>
                     </tr>
                     <tr>
@@ -281,7 +281,7 @@
                     participar de lotes especializados, e empresas menores de lotes regionais ou setoriais.
                 </li>
             </ul>
-            <p style="text-indent: 30px; font-weight: bold;">ANTAGENS NA FISCALIZAÇÃO E CONTROLE </p>
+            <p style="text-indent: 30px; font-weight: bold;">VANTAGENS NA FISCALIZAÇÃO E CONTROLE </p>
             <ul>
                 <li>
                     Facilidade de fiscalização: menos contratos a serem monitorados e maior coerência entre

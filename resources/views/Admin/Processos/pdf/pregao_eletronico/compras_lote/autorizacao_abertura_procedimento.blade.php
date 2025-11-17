@@ -232,10 +232,11 @@
         <p>
             CLASSIFICAÇÃO DO OBJETO: {{ $processo->tipo_procedimento->getDisplayName() }}
         </p>
-        <p>
-            JUSTIFICATIVA DA CONTRATAÇÃO:
-            {!! str_replace('<p>', '<p style="text-align: justify;">', $detalhe->justificativa) !!}
+        <p style="text-align: justify; margin: 0;">
+            <strong>JUSTIFICATIVA DA CONTRATAÇÃO:</strong><br><br>
+            {!! strip_tags($detalhe->justificativa, '<p><span><b><i><u>') !!}
         </p>
+
 
         <p>MODALIDADE: {{ $processo->modalidade->getDisplayName() }}</p>
         <p>MODO DE DISPUTA: ABERTO</p>
