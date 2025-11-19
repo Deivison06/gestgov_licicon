@@ -791,6 +791,16 @@
                 f) O prazo de validade das propostas será de 90 (noventa) dias contado a partir da
                 data estabelecida para a entrega das mesmas, sujeita à revalidação por idêntico
                 período.
+                <br>
+                g) É vedada a apresentação de preços unitários distintos para um mesmo serviço,
+                devendo todos os componentes da proposta observar, obrigatoriamente, os
+                coeficientes definidos no Projeto Básico.
+                <br>
+                h) A diferença entre o valor final proposto e o valor estimado pela Administração
+                será considerada como coeficiente percentual de desconto, a ser aplicado de
+                forma uniforme sobre todos os itens constantes da planilha orçamentária. Tal
+                coeficiente permanecerá vigente durante toda a execução contratual, estendendose, inclusive, aos itens que vierem a ser acrescidos mediante celebração de termos
+                aditivos.
             </p>
             <p style="text-align: justify;">
                 7.6. A proposta inicial que não apresentar as especificações e exigências

@@ -750,6 +750,7 @@
                 numero_items: existing?.numero_items ?? '',
                 projeto_basico_pdf: existing?.projeto_basico_pdf ?? '',
                 agente_contratacao: existing?.agente_contratacao ?? '',
+                info_extras: existing?.info_extras ?? '',
 
                 // Campos separados para datetime
                 ...initialData,
@@ -881,6 +882,7 @@
                     numero_items: !!existing?.numero_items,
                     projeto_basico_pdf: !!existing?.projeto_basico_pdf,
                     agente_contratacao: !!existing?.agente_contratacao,
+                    info_extras: !!existing?.agente_contratacao,
                 },
 
                 onUnidadeChange() {
@@ -923,7 +925,7 @@
                         'solucoes_disponivel_mercado', 'incluir_requisito_cada_caso_concreto',
                         'justificativa_solucao_escolhida', 'impacto_ambiental', 'resultado_pretendidos',
                         'dotacao_orcamentaria', 'tratamento_diferenciado_MEs_eEPPs', 'riscos_extra',
-                        'exigencias_tecnicas', 'qualificacao_economica', 'regularidade_fisica'
+                        'exigencias_tecnicas', 'qualificacao_economica', 'regularidade_fisica', 'info_extras'
                     ];
 
                     if (tinyMceFields.includes(field)) {

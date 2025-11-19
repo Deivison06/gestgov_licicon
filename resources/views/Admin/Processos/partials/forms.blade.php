@@ -177,6 +177,9 @@
     @elseif($campo === 'itens_especificaca_quantitativos_xml')
     <x-form-field name="itens_especificaca_quantitativos_xml" label="📦 Itens e Seus quantitativos e especificações" type="file" accept=".xml, .xlsx, .xls, .csv" />
 
+    @elseif($campo === 'info_extras')
+    <x-form-field name="info_extras" label="Informações Extras" type="textarea" rows="5" />
+
     @elseif($campo === 'painel_preco_tce')
     <x-form-field name="painel_preco_tce" label="📊 Painel de Preço TCE" type="file" accept=".xlsx, .xls, .csv" />
 

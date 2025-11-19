@@ -325,48 +325,51 @@
             </div>
 
             <p style="text-align: justify;">
-                Nos termos da Lei nº 14.133/2021, na qual se realiza primeiramente o julgamento das propostas
-                para, somente após, proceder à análise da habilitação da licitante mais bem classificada, constitui
-                a regra geral para os processos licitatórios (art. 17). No entanto, a própria legislação prevê a
-                possibilidade de a fase de habilitação anteceder a fase de apresentação de propostas e lances e
-                de julgamento, mediante justificativa técnica devidamente fundamentada e previsão expressa no
-                edital, conforme dispõe o art. 17, § 1º. <br>
-                Portanto, para a presente contratação, recomenda-se a adoção da inversão de fases, com
-                fundamento nos seguintes aspectos:
-
-                <strong>Justificativa:</strong>
+                Nos termos da Lei nº 14.133/2021, na qual se realiza primeiramente o julgamento
+                das propostas para, somente após, proceder à análise da habilitação da licitante
+                mais bem classificada, constitui a regra geral para os processos licitatórios (art. 17).
+                No entanto, a própria legislação prevê a possibilidade de a fase de habilitação
+                anteceder a fase de apresentação de propostas e lances e de julgamento, mediante
+                justificativa técnica devidamente fundamentada e previsão expressa no edital,
+                conforme dispõe o art. 17, § 1º.
+            </p>
+            <p style="text-align: justify;">
+                Portanto, para a presente contratação, recomenda-se a adoção da inversão de
+                fases, com fundamento nos seguintes aspectos:
             </p>
 
             <ol style="text-align: justify;">
                 <li>
                     <strong>Complexidade da habilitação exigida:</strong> Trata-se de contratação que demanda
-                    análise detalhada e criteriosa da documentação de habilitação, especialmente quanto à
-                    capacidade técnica, regularidade fiscal e requisitos de qualificação econômico-financeira.
-                    A avaliação prévia garante maior segurança jurídica e evita que se avance no julgamento
-                    de propostas de licitantes que possam ser inabilitados posteriormente.
+                    análise detalhada e criteriosa da documentação de habilitação,
+                    especialmente quanto à capacidade técnica, regularidade fiscal e requisitos
+                    de qualificação econômico-financeira. A avaliação prévia garante maior
+                    segurança jurídica e evita que se avance no julgamento de propostas de
+                    licitantes que possam ser inabilitados posteriormente.
                 </li>
                 <li>
-                    <strong>Mitigação de riscos:</strong> A habilitação prévia reduz o risco de retrabalho e eventual
-                    anulação do procedimento, assegurando que apenas concorram na etapa de propostas
-                    os licitantes que efetivamente atendam a todos os requisitos legais e técnicos.
+                    <strong>Mitigação de riscos:</strong> A habilitação prévia reduz o risco de retrabalho e
+                    eventual anulação do procedimento, assegurando que apenas concorram
+                    na etapa de propostas os licitantes que efetivamente atendam a todos os
+                    requisitos legais e técnicos.
                 </li>
                 <li>
-                    <strong>Transparência e confiabilidade:</strong> A inversão de fases favorece a credibilidade do
-                    processo, uma vez que os participantes e órgãos de controle verificam, desde o início,
-                    que apenas empresas habilitadas estarão aptas a disputar.
+                    <strong>Transparência e confiabilidade:</strong> A inversão de fases favorece a credibilidade
+                    do processo, uma vez que os participantes e órgãos de controle verificam,
+                    desde o início, que apenas empresas habilitadas estarão aptas a disputar.
                 </li>
                 <li>
                     <strong>Alinhamento com o interesse público:</strong> A opção contribui para maior lisura do
-                    certame, assegurando que a Administração se dedique exclusivamente à análise das
-                    propostas de licitantes plenamente habilitados, reduzindo riscos de impugnações e
-                    contestações posteriores.
+                    certame, assegurando que a Administração se dedique exclusivamente à
+                    análise das propostas de licitantes plenamente habilitados, reduzindo
+                    riscos de impugnações e contestações posteriores.
                 </li>
             </ol>
 
             <p style="text-align: justify;">
-                Nos certames conduzidos por esta Administração, tem-se verificado um <strong>alto índice de
-                licitantes que participam da fase de lances/propostas sem, contudo, apresentar ou
-                comprovar adequadamente a documentação de habilitação.</strong>.
+                Nos certames conduzidos por esta Administração, tem-se verificado um alto índice
+                de licitantes que participam da fase de lances/propostas sem, contudo, apresentar
+                ou comprovar adequadamente a documentação de habilitação.
             </p>
 
             <span style="font-weight: bold; display: block; margin-top: 10px; text-align: justify;">
@@ -374,20 +377,22 @@
             </span>
 
             <ul style="text-align: justify; margin-left: 20px;">
-                <li><strong>Retrabalho</strong> para a equipe de apoio e para o pregoeiro, que precisam inabilitar
+                <li>Retrabalho para a equipe de apoio e para o pregoeiro, que precisam inabilitar
                     sucessivamente os licitantes melhor classificados por falta de documentos;
                 </li>
-                <li><strong>Atrasos na conclusão do certame</strong>, em razão da necessidade de convocar
-                repetidamente os classificados subsequentes;</li>
-                <li><strong>Risco de frustração da licitação</strong>, caso não haja concorrentes habilitados ao final
-                do procedimento.</li>
+                <li>Atrasos na conclusão do certame, em razão da necessidade de convocar
+                    repetidamente os classificados subsequentes;
+                </li>
+                <li>Risco de frustração da licitação, caso não haja concorrentes habilitados ao
+                final do procedimento.</li>
             </ul>
 
             <p style="text-align: justify;">
-                A habilitação prévia garante que <strong>apenas empresas com documentação válida e condições
-                reais de contratar</strong> participem da fase competitiva, aumentando a segurança do processo e
-                reduzindo a possibilidade de lances artificiais ou propostas inexequíveis apresentadas por
-                licitantes que não têm intenção ou capacidade de assumir o contrato.
+                A habilitação prévia garante que apenas empresas com documentação válida e
+                condições reais de contratar participem da fase competitiva, aumentando a
+                segurança do processo e reduzindo a possibilidade de lances artificiais ou
+                propostas inexequíveis apresentadas por licitantes que não têm intenção ou
+                capacidade de assumir o contrato.
             </p>
         @endif
 

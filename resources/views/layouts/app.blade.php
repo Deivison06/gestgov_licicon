@@ -85,12 +85,10 @@
 
         .sidebar-logo {
             padding: 1.2rem;
-            background: rgba(255, 255, 255, 0.9);
             border-radius: var(--border-radius);
             margin-bottom: 2rem;
             display: flex;
             justify-content: center;
-            box-shadow: var(--shadow);
             transition: var(--transition);
         }
 

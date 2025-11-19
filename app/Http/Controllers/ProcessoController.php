@@ -2,8 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use ZipArchive;
-use App\Models\Unidade;
+
 use App\Models\Processo;
 use App\Models\Documento;
 use App\Models\Prefeitura;
@@ -13,11 +12,8 @@ use App\Models\ProcessoDetalhe;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Services\ProcessoService;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Http;
 use App\Http\Requests\ProcessoRequest;
-use setasign\Fpdi\PdfReader\PdfReader;
 use PhpOffice\PhpSpreadsheet\IOFactory;
-use App\Http\Requests\ProcessoDetalheRequest;
 
 class ProcessoController extends Controller
 {
@@ -100,7 +96,8 @@ class ProcessoController extends Controller
             'campos' => [
                 'encaminhamento_parecer_juridico',
                 'encaminhamento_autorizacao_abertura',
-                'itens_especificaca_quantitativos_xml'
+                'itens_especificaca_quantitativos_xml',
+                'info_extras'
             ],
         ],
         'minutas' => [

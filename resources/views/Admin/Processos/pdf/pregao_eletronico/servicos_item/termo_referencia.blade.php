@@ -350,6 +350,7 @@
             </tbody>
         </table>
 
+        {!! str_replace('<p>', '<p style="text-indent:30px; text-align: justify; ">', $detalhe->info_extras) !!}
 
         <p style="text-align: justify;">
             1.5 Com base nos quantitativos e especificações acima, o valor global estimado para esta Licitação será de R$ {{ $detalhe->valor_estimado }}

@@ -287,7 +287,10 @@
             </tr>
             <tr>
                 <td>
-                    <span class="field-label">{!! strip_tags($processo->objeto) !!}</span>
+                    <span class="field-label" style="font-size: 10px !important;">
+                        {!! strip_tags($processo->objeto) !!}
+                    </span>
+
                     {{-- <div class="large-value-cell">
                             {!! str_replace('<p>', '<p style="text-indent:30px; text-align: justify;">', $detalhe->demanda) !!}
                         </div> --}}
@@ -299,7 +302,11 @@
                         Justificativa da necessidade da contratação:
                     </span>
 
-                    {!! str_replace('<p>', '<p style="text-indent:30px; text-align: justify; ">', $detalhe->justificativa) !!}
+                    <div style="font-size:11px !important; text-align: justify;">
+                        {!! $detalhe->justificativa !!}
+                    </div>
+
+
                 </td>
             </tr>
         </table>

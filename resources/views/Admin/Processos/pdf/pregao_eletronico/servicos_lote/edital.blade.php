@@ -330,12 +330,24 @@
             @if ($detalhe->inversao_fase === 'sim')
             <ol type="a" style="text-align: justify; ">
                 <li style="margin-bottom: 6px;">
-                    Fase de inserção do valor da proposta: Nesta fase, no período de divulgação do certame até o último minuto previsto para o fim do envio das propostas, prazo este improrrogável, os licitantes irão inserir o arquivo de ficha técnica exigido neste edital e os valores globais de sua proposta, os quais, em hipótese alguma, poderá ser superior ao valor global estimado pelo Edital, sob pena de desclassificação de sua proposta e consequente impossibilidade de disputar a fase de lances;
+                    Fase de inserção do valor da proposta e documentos de habilitação: Nesta fase,
+                    no período de divulgação do certame até o último minuto previsto para o fim do
+                    envio das propostas, prazo este improrrogável, os licitantes irão inserir o arquivo de
+                    ficha técnica e os valores globais de sua proposta, os quais, em hipótese alguma,
+                    poderá ser superior ao valor global estimado pelo Edital, além de apresentar toda a
+                    documentação de habilitação exigida neste Edital, sob pena de desclassificação de
+                    sua proposta e consequente impossibilidade de disputar a fase de lances;
+                </li>
+
+                <li style="margin-bottom: 6px;">
+                    Fase de Habilitação: Nesta fase, será analisada a Proposta Inicial, documentos
+                    de habilitação e demais exigências contidas neste edital e no Termo de Referência,
+                    analisadas para efeito de classificação e prosseguimento para a fase seguinte;
                 </li>
 
                 <li style="margin-bottom: 6px;">
                     Fase de lances: Nesta fase, os licitantes que cumprirem a exigências contidas na
-                    alínea “a”, irão estabelecer lances sucessivos, obedecendo o critério de menor
+                    alínea “b”, irão estabelecer lances sucessivos, obedecendo o critério de menor
                     preço global, dentro do tempo limite de 10 (dez) minutos estabelecidos pelo edital,
                     assim como, suas respectivas prorrogações de 2 (dois) minutos, os quais serão
                     sistematicamente controlados pelo Sistema Eletrônico do portal designado para a
@@ -343,17 +355,65 @@
                 </li>
 
                 <li style="margin-bottom: 6px;">
-                    Fase de Habilitação: Nesta fase, o licitante classificado em primeiro lugar, obedecendo o critério de menor preço por lote, terá sua proposta inicial, documentos de habilitação e demais exigências contidas neste edital e no Termo de Referência, analisadas para efeito de classificação e prosseguimento para a fase seguinte. Também será analisado nesta fase, a respectiva exequibilidade da proposta informada na fase de lances, a qual deverá obedecer aos critérios legais previstos na Lei 14.133/2021 e no próprio edital;
+                    Fase de Julgamento: Encerrada a fase de lances, será analisada a proposta
+                    classificada em primeiro lugar, assim como a verificação da exequibilidade da
+                    proposta, a qual deverá obedecer aos critérios legais previstos na Lei 14.133/2021
+                    e no próprio edital;
                 </li>
 
                 <li style="margin-bottom: 6px;">
-                    Fase de Recursos: As empresas licitantes que discordarem das decisões proferidas poderão registrar as razões de seu recurso em campo específico do sistema, vedada a manifestação via “chat”, dentro do prazo de 30 (trinta) minutos improrrogáveis, a contar da autorização do pregoeiro;
-                </li>
-
-                <li style="margin-bottom: 6px;">
-                    Fase de Adjudicação: Nesta fase, o licitante que for declarado habilitado na fase de documentos de habilitação, terá o objeto adjudicado a seu favor, sendo posteriormente declarado vencedor do certame.
+                    Fase de Recursos: As empresas licitantes que discordarem das decisões
+                    proferidas poderão registrar as razões de seu recurso em campo específico do
+                    sistema, vedada a manifestação via “chat”, dentro do prazo de 30 (trinta) minutos
+                    improrrogáveis, a contar da autorização do pregoeiro;
                 </li>
             </ol>
+            <div style="margin-left: 30px">
+                <p style="text-align: justify;">
+                    1.3.1. Entre os principais fundamentos para essa escolha, destacam-se:
+                </p>
+
+                <ul>
+                    <li style="text-align: justify;">
+                        Maior segurança jurídica e técnica na seleção das propostas: Ao verificar
+                        previamente a capacidade técnica e documental dos licitantes, a
+                        Administração garante que apenas empresas efetivamente aptas disputem
+                        o fornecimento do objeto, reduzindo riscos de desclassificações posteriores
+                        que comprometeriam a efetividade do certame;
+                    </li>
+                    <li style="text-align: justify;">
+                        Histórico de processos com problemas na fase de habilitação: Em certames
+                        anteriores, observou-se a recorrência de propostas vantajosas
+                        apresentadas por empresas que, ao final, foram inabilitadas por não
+                        atenderem aos requisitos técnicos ou legais. Esse cenário resultou em
+                        atrasos processuais, necessidade de reavaliação de lances, e até mesmo
+                        anulação de etapas, o que comprometeu a eficiência da contratação;
+                    </li>
+                    <li style="text-align: justify;">
+                        Prevenção à atuação de licitantes de fachada: Conforme alerta o jurista
+                        Marçal Justen Filho, há risco da participação de empresas sem capacidade
+                        real de execução, que se utilizam do certame para criar embaraços ou
+                        participar de maneira simulada. A análise prévia da habilitação funciona
+                        como um filtro eficaz contra tais práticas.
+                    </li>
+                </ul>
+
+                <p style="text-align: justify;">
+                    1.4. Nenhum licitante passará para a fase seguinte, sem o devido cumprimento das
+                    exigências contidas em cada fase, sob pena de desclassificação ou inabilitação.
+                </p>
+                <p style="text-align: justify;">
+                    1.5. Na fase de lances, cada empresa licitante poderá inserir quantos lances forem
+                    necessários, ficando resguardado apenas os critérios de inexequibilidade de
+                    proposta, que serão devidamente verificados na fase subsequente.
+                </p>
+                <p style="text-align: justify;">
+                    1.6. Na fase recursal, após o inicial da contagem do tempo de 30 (trinta) minutos,
+                    será aberto campo específico para que as manifestações dos licitantes sejam
+                    devidamente registradas e reconhecidas pelo sistema, não sendo aceitas, em
+                    nenhuma hipótese, manifestações recursais inseridas dentro do campo de “chat”.
+                </p>
+            </div>
             @else
             <ol type="a" style="text-align: justify; padding-left: 20px;">
                 <li style="margin-bottom: 6px;">
