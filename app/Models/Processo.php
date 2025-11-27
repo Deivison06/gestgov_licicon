@@ -6,6 +6,7 @@ use App\Enums\ModalidadeEnum;
 use App\Enums\TipoContratacaoEnum;
 use App\Enums\TipoProcedimentoEnum;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Processo extends Model
@@ -25,6 +26,7 @@ class Processo extends Model
         'unidade_numeracao',
         'responsavel_numeracao',
         'portaria_numeracao',
+        'user_id',
     ];
 
     protected $casts = [
@@ -39,9 +41,18 @@ class Processo extends Model
         return $this->belongsTo(Prefeitura::class);
     }
 
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
     public function detalhe()
     {
         return $this->hasOne(ProcessoDetalhe::class);
+    }
+    public function finalizacao()
+    {
+        return $this->hasOne(Finalizacao::class);
     }
 
     public function documentos()
@@ -57,6 +68,34 @@ class Processo extends Model
     public function getTipoProcedimentoNomeAttribute(): string
     {
         return $this->tipo_procedimento?->getDisplayName() ?? '—';
+    }
+
+     /**
+     * Get the vencedores for the processo.
+     */
+    public function vencedores(): HasMany
+    {
+        return $this->hasMany(Vencedor::class)->orderBy('ordem');
+    }
+
+    /**
+     * Get all lotes from all vencedores of this processo
+     */
+    public function getAllLotesAttribute()
+    {
+        return $this->vencedores->flatMap(function ($vencedor) {
+            return $vencedor->lotes;
+        });
+    }
+
+    /**
+     * Get total value from all vencedores
+     */
+    public function getValorTotalVencedoresAttribute(): float
+    {
+        return $this->vencedores->sum(function ($vencedor) {
+            return $vencedor->valor_total;
+        });
     }
 
     // Accessor para garantir que campos nullable retornem null quando vazios

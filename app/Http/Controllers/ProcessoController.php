@@ -135,6 +135,7 @@ class ProcessoController extends Controller
             'cor' => 'bg-indigo-500',
             'data_id' => 'data_edital',
             'campos' => [
+                'exige_atestado',
                 'data_hora_limite_edital',
                 'data_hora_fase_edital',
                 'pregoeiro',
@@ -437,8 +438,8 @@ class ProcessoController extends Controller
                 'especificacoes'    => $row[1] ?? null,
                 'unidade'           => $row[2] ?? null,
                 'quantidade'        => $row[3] ?? null,
-                'valor_unitario'    => $row[4] ?? null,
-                'valor_total'       => $row[5] ?? null,
+                'valor_unitario'    => $this->normalizarValor($row[4] ?? null),
+                'valor_total'       =>$this->normalizarValor($row[5] ?? null),
             ];
         }
 
@@ -457,15 +458,46 @@ class ProcessoController extends Controller
             $painelPrecos[] = [
                 'item' => $row[0] ?? null,
                 'valor_tce_1' => $row[1] ?? null,
-                'valor_tce_2' => $row[2] ?? null,
-                'valor_tce_3' => $row[3] ?? null,
-                'fornecedor_local' => $row[4] ?? null,
-                'media' => $row[5] ?? null,
+                'valor_tce_2' => $this->normalizarValor($row[2] ?? null),
+                'valor_tce_3' => $this->normalizarValor($row[3] ?? null),
+                'fornecedor_local' => $this->normalizarValor($row[4] ?? null),
+                'media' => $this->normalizarValor($row[5] ?? null),
             ];
         }
 
         $detalhe->{$campo} = json_encode($painelPrecos, JSON_UNESCAPED_UNICODE);
     }
+
+    private function normalizarValor($valor)
+    {
+        if (is_null($valor)) return null;
+
+        // Remove espaços e converte para string
+        $valor = trim((string)$valor);
+
+        // Caso venha número puro (ex: 135)
+        if (is_numeric($valor)) {
+            return number_format((float)$valor, 2, ',', '.');
+        }
+
+        // Se vier no formato americano (1,323.20)
+        if (preg_match('/^\d{1,3}(,\d{3})*\.\d{2}$/', $valor)) {
+            $valor = str_replace(',', '', $valor); // remove separador de milhar americano
+            return number_format((float)$valor, 2, ',', '.');
+        }
+
+        // Se vier no formato brasileiro, apenas padroniza
+        if (preg_match('/^\d{1,3}(\.\d{3})*,\d{2}$/', $valor)) {
+            return $valor;
+        }
+
+        // Último caso: troca ponto ↔ vírgula
+        $valor = str_replace(['.', ','], ['#', '.'], $valor);
+        $valor = str_replace('#', ',', $valor);
+
+        return $valor;
+    }
+
 
     private function salvarAnexo($file, ProcessoDetalhe $detalhe, string $campo): void
     {
@@ -1147,28 +1179,6 @@ class ProcessoController extends Controller
         } else {
             $pdf->SetFont('helvetica', '', 6);
         }
-    }
-
-    private function contarPaginas(Fpdi $pdf, array $ordem, $documentos): array
-    {
-        $pageCountTotal = 0;
-        $paginas = [];
-
-        foreach ($ordem as $tipo) {
-            if (!isset($documentos[$tipo])) continue;
-            $caminho = public_path($documentos[$tipo]->caminho);
-            if (file_exists($caminho)) {
-                $numPages = $pdf->setSourceFile($caminho);
-                $paginas[$tipo] = $numPages;
-                $pageCountTotal += $numPages;
-            }
-        }
-
-        if (isset($paginas['capa'])) {
-            $pageCountTotal -= $paginas['capa'];
-        }
-
-        return [$pageCountTotal, $paginas];
     }
 
     private function adicionarCarimbo(Fpdi $pdf, Processo $processo, int $paginaAtual, int $pageCountTotal): void

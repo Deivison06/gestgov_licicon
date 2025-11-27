@@ -937,6 +937,13 @@
                 Readequada, realizar a redefinição dos valores unitários junto a plataforma onde
                 será realizada a licitação, seguindo o exigido no ITEM 5.31, sob pena de inabilitação.
             </p>
+            <p style="text-align: justify;">
+                5.33. A diferença entre o valor final proposto e o valor estimado pela Administração será
+                considerada como coeficiente percentual de desconto, a ser aplicado de forma uniforme sobre
+                todos os itens constantes no Termo de Referência e na Proposta Readequada apresentada pela licitante.
+                Tal coeficiente permanecerá vigente durante toda a execução contratual, estendendo-se, inclusive,
+                aos itens que vierem a ser acrescidos mediante celebração de termos aditivos.
+            </p>
         </div>
         <div>
             <p style="display: flex; align-items: center; font-weight: bold; ">
@@ -1039,6 +1046,7 @@
                 </li>
                 {!! preg_replace('/<\/?ul[^>]*>/', '', $detalhe->qualificacao_economica) !!}
             </ol>
+            @if ($detalhe->exige_atestado == 'sim')
             <p style="text-align: justify; font-weight: bold;">
                 6.7 Qualificação Técnica:
             </p>
@@ -1054,19 +1062,20 @@
                 </li>
                 {!! preg_replace('/<\/?ul[^>]*>/', '', $detalhe->exigencias_tecnicas) !!}
             </ol>
+            @endif
             <p style="text-align: justify;">
-                6.8. O Pregoeiro fará a análise dos documentos de habilitação do licitante, será aberto o prazo para manifestação da intenção
+                @if ($detalhe->exige_atestado == 'sim')6.8. @else 6.7 @endif  O Pregoeiro fará a análise dos documentos de habilitação do licitante, será aberto o prazo para manifestação da intenção
                 de interposição de recurso. O não cumprimento do envio dos documentos de habilitação dentro dos prazos estabelecidos,
                 acarretará a desclassificação e/ou inabilitação da licitante, bem como as sanções previstas neste Edital, podendo o
                 Pregoeiro convocar a empresa que apresentou a proposta ou o lance subsequente.
             </p>
             <p style="text-align: justify;">
-                6.9. Os documentos eletrônicos produzidos com a utilização de processo de certificação disponibilizada pela ICP-Brasil, nos
+                @if ($detalhe->exige_atestado == 'sim')6.9. @else 6.8. @endif Os documentos eletrônicos produzidos com a utilização de processo de certificação disponibilizada pela ICP-Brasil, nos
                 termos da Medida Provisória nº 2200-2, de 24 de agosto de 2001, serão recebidos e presumir-se-ão verdadeiros em relação
                 aos signatários, dispensando-se o envio de documentos originais e cópias autenticadas em papel.
             </p>
             <p style="text-align: justify;">
-                6.10. O Pregoeiro reserva-se o direito de solicitar da licitante, em qualquer tempo, no curso da licitação, quaisquer
+                @if ($detalhe->exige_atestado == 'sim')6.10. @else 6.9. @endif O Pregoeiro reserva-se o direito de solicitar da licitante, em qualquer tempo, no curso da licitação, quaisquer
                 esclarecimentos sobre documentos já entregues, fixando-lhe prazo para atendimento.
             </p>
         </div>

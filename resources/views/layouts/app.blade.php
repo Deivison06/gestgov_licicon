@@ -30,8 +30,6 @@
             --primary: #1D9698;
             --primary-light: #4fb6b8;
             --primary-extra-light: #e6f4f4;
-            --accent: #ff6b35;
-            --accent-light: #ffe0d4;
             --text-dark: #1e2a32;
             --text-light: #64748b;
             --background: #f8fafc;
@@ -439,17 +437,6 @@
             background: var(--primary-dark);
             transform: translateY(-2px);
             box-shadow: 0 6px 12px rgba(0, 148, 150, 0.2);
-        }
-
-        .btn-accent {
-            background: var(--accent);
-            color: white;
-        }
-
-        .btn-accent:hover {
-            background: #e55a2b;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(255, 107, 53, 0.2);
         }
 
         .btn-outline {

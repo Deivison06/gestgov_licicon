@@ -82,7 +82,8 @@ class ProcessoDetalhe extends Model
         'projeto_basico_pdf',
         'agente_contratacao',
         'encaminhamento_elaborar_projeto_basico',
-        'info_extras'
+        'info_extras',
+        'exige_atestado'
     ];
 
     protected $casts = [

@@ -14,13 +14,16 @@ class ProcessoService
      */
     public function create(array $data): Processo
     {
-        // Converte a modalidade para enum caso necessário
         if (isset($data['modalidade']) && is_int($data['modalidade'])) {
             $data['modalidade'] = ModalidadeEnum::from($data['modalidade']);
         }
 
+        // Adiciona automaticamente o usuário logado
+        $data['user_id'] = auth()->id();
+
         return Processo::create($data);
     }
+
 
     public function createDetalhe(array $data): ProcessoDetalhe
     {

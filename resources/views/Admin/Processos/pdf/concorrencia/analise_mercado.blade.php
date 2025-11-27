@@ -195,8 +195,8 @@
             style="border-collapse: collapse; width: 100%; text-align: center; font-size: 8pt;">
             <thead>
                 <tr>
-                    <th style="width: 25%;">ITEM</th>
-                    <th style="width: 15%;">VALOR TCE</th>
+                    <th style="width: 5%;">ITEM</th>
+                    <th style="width: 30%;">VALOR TCE</th>
                     <th style="width: 15%;">VALOR TCE</th>
                     <th style="width: 15%;">VALOR TCE</th>
                     <th style="width: 15%;">FORNECEDOR </th>

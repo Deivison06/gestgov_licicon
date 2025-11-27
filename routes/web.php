@@ -6,6 +6,7 @@ use App\Http\Controllers\UnidadeController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\ProcessoController;
 use App\Http\Controllers\PrefeituraController;
+use App\Http\Controllers\FinalizacaoProcessoController;
 
 // Rotas de perfil (usuário logado)
 Route::middleware('auth')->group(function () {
@@ -74,10 +75,28 @@ Route::prefix('admin')
         Route::post('processos/{processo}/iniciar', [ProcessoController::class, 'storeDetalhe'])->name('processos.detalhes.store');
         Route::get('processos/{processo}/pdf', [ProcessoController::class, 'gerarPdf'])->name('processos.pdf');
         Route::get('/processos/{processo}/visualizar-pdf', [ProcessoController::class, 'visualizarPdf'])
-         ->name('processos.visualizar-pdf');
+        ->name('processos.visualizar-pdf');
         Route::get('/processo/{processo}/documento/{tipo}/baixar', [ProcessoController::class, 'baixarDocumento'])->name('processo.documento.dowload');
         Route::get('/processo/{processo}/documentos/baixar-todos', [ProcessoController::class, 'baixarTodosDocumentos'])->name('processo.documento.dowload-all');
 
+        // Rota extra para Finalizar processo (se não for o mesmo que create)
+        Route::get('processos/{processo}/finalizar', [FinalizacaoProcessoController::class, 'finalizar'])->name('processos.finalizar');
+        Route::Post('processos/{processo}/finalizar', [FinalizacaoProcessoController::class, 'storeFinalizacao'])->name('processos.finalizacao.store');
+        Route::get('finalizacao/processos/{processo}/pdf', [FinalizacaoProcessoController::class, 'gerarPdf'])->name('processos.finalizacao.pdf');
+        Route::get('/finalizacao/processo/{processo}/documento/{tipo}/baixar', [FinalizacaoProcessoController::class, 'baixarDocumento'])->name('processo.finalizacao.documento.dowload');
+        Route::get('/finalizacao/processo/{processo}/documentos/baixar-todos', [FinalizacaoProcessoController::class, 'baixarTodosDocumentos'])->name('processo.finalizacao.documento.dowload-all');
+
+        // Novas rotas para vencedores
+    Route::post('/{processo}/vencedores', [FinalizacaoProcessoController::class, 'storeVencedores'])
+        ->name('processos.finalizacao.vencedores.store');
+
+    Route::get('/{processo}/vencedores', [FinalizacaoProcessoController::class, 'getVencedores'])
+        ->name('processos.finalizacao.vencedores.get');
+
+       // CORREÇÃO: Adicione o parâmetro {processo} na rota
+        Route::post('/processos/{processo}/finalizacao/importar-excel', [FinalizacaoProcessoController::class, 'importarExcel'])
+            ->name('processos.finalizacao.importar-excel');
     });
+
 
 require __DIR__ . '/auth.php';

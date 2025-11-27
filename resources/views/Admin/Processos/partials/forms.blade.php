@@ -224,6 +224,10 @@
         label="📅 Data e Hora - ENTREGA E ABERTURA DAS PROPOSTAS"
         type="datetime"
     />
+
+    @elseif($campo === 'exige_atestado')
+    <x-form-field name="exige_atestado" label="O Edital exigira Atestado de Capacidade Técnica?" type="radio" :options="['sim' => 'Sim', 'nao' => 'Não']" />
+
     {{-- No forms.blade.php --}}
     @elseif($campo === 'data_hora_limite_edital')
     <x-form-field
