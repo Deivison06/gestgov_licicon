@@ -225,232 +225,338 @@
             </div>
 
             <!-- Seção de Vencedores -->
-<div class="mb-8">
-    <div class="overflow-hidden bg-white border border-gray-100 shadow-sm rounded-2xl">
-        <!-- Header -->
-        <div class="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
-            <div class="flex flex-col items-start justify-between lg:flex-row lg:items-center">
-                <h3 class="text-xl font-semibold text-gray-800">Vencedores do Processo</h3>
-                <button type="button"
-                        onclick="abrirModalVencedor()"
-                        class="px-4 py-2 mt-2 text-sm font-medium text-white bg-green-600 rounded-md lg:mt-0 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
-                    ➕ Adicionar Vencedor
-                </button>
-            </div>
-        </div>
+            <div class="mb-8">
+                <div class="overflow-hidden bg-white border border-gray-100 shadow-sm rounded-2xl">
+                    <!-- Header -->
+                    <div class="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
+                        <div class="flex flex-col items-start justify-between lg:flex-row lg:items-center">
+                            <h3 class="text-xl font-semibold text-gray-800">Vencedores do Processo</h3>
+                            <button type="button"
+                                    onclick="abrirModalVencedor()"
+                                    class="px-4 py-2 mt-2 text-sm font-medium text-white bg-green-600 rounded-md lg:mt-0 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                                ➕ Adicionar Vencedor
+                            </button>
+                        </div>
+                    </div>
 
-        <!-- Tabela de Vencedores -->
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                            Razão Social
-                        </th>
-                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                            CNPJ
-                        </th>
-                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                            Representante
-                        </th>
-                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                            CPF
-                        </th>
-                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                            Itens/Lotes
-                        </th>
-                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-center text-gray-500 uppercase">
-                            Ações
-                        </th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200" id="vencedores-tbody">
-                    @if(isset($processo->vencedores) && count($processo->vencedores) > 0)
-                        @foreach($processo->vencedores as $index => $vencedor)
-                        <tr class="vencedor-row" data-vencedor-id="{{ $vencedor->id ?? '' }}">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900">{{ $vencedor->razao_social }}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">{{ $vencedor->cnpj }}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">{{ $vencedor->representante }}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">{{ $vencedor->cpf }}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">
+                    <!-- Tabela de Vencedores -->
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                        Razão Social
+                                    </th>
+                                    <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                        CNPJ
+                                    </th>
+                                    <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                        Representante
+                                    </th>
+                                    <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                        CPF
+                                    </th>
+                                    <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                        Itens/Lotes
+                                    </th>
+                                    <th class="px-6 py-3 text-xs font-medium tracking-wider text-center text-gray-500 uppercase">
+                                        Ações
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200" id="vencedores-tbody">
+                                @if(isset($processo->vencedores) && count($processo->vencedores) > 0)
+                                    @foreach($processo->vencedores as $index => $vencedor)
+                                    <tr class="vencedor-row" data-vencedor-id="{{ $vencedor->id ?? '' }}">
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm font-medium text-gray-900">{{ $vencedor->razao_social }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900">{{ $vencedor->cnpj }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900">{{ $vencedor->representante }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900">{{ $vencedor->cpf }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900">
+                                                @if(isset($vencedor->lotes) && count($vencedor->lotes) > 0)
+                                                    {{ count($vencedor->lotes) }} {{ $processo->tipo_contratacao === 'LOTE' ? 'lotes' : 'itens' }}
+                                                @else
+                                                    <span class="text-gray-400">Nenhum</span>
+                                                @endif
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex justify-center space-x-2">
+                                                <button type="button"
+                                                        onclick="editarVencedor({{ $index }})"
+                                                        class="px-3 py-1 text-sm text-blue-600 bg-blue-100 rounded-md hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                                    ✏️ Editar
+                                                </button>
+                                                <button type="button"
+                                                        onclick="importarItensVencedor({{ $index }})"
+                                                        class="px-3 py-1 text-sm text-green-600 bg-green-100 rounded-md hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-500">
+                                                    📊 Importar Itens
+                                                </button>
+                                                <button type="button"
+                                                        onclick="removerVencedor({{ $index }})"
+                                                        class="px-3 py-1 text-sm text-red-600 bg-red-100 rounded-md hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500">
+                                                    🗑️ Remover
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+
+                                    <!-- Linha expansível com os itens/lotes do vencedor -->
                                     @if(isset($vencedor->lotes) && count($vencedor->lotes) > 0)
-                                        {{ count($vencedor->lotes) }} {{ $processo->tipo_contratacao === 'LOTE' ? 'lotes' : 'itens' }}
-                                    @else
-                                        <span class="text-gray-400">Nenhum</span>
-                                    @endif
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex justify-center space-x-2">
-                                    <button type="button"
-                                            onclick="editarVencedor({{ $index }})"
-                                            class="px-3 py-1 text-sm text-blue-600 bg-blue-100 rounded-md hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                        ✏️ Editar
-                                    </button>
-                                    <button type="button"
-                                            onclick="importarItensVencedor({{ $index }})"
-                                            class="px-3 py-1 text-sm text-green-600 bg-green-100 rounded-md hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-500">
-                                        📊 Importar Itens
-                                    </button>
-                                    <button type="button"
-                                            onclick="removerVencedor({{ $index }})"
-                                            class="px-3 py-1 text-sm text-red-600 bg-red-100 rounded-md hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500">
-                                        🗑️ Remover
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
+                                    <tr class="bg-gray-50">
+                                        <td colspan="6" class="px-6 py-4">
+                                            <div class="lotes-container">
+                                                <div class="flex items-center justify-between mb-3">
+                                                    <h4 class="text-lg font-semibold text-gray-800">
+                                                        {{ $processo->tipo_contratacao === 'LOTE' ? 'Lotes' : 'Itens' }} do Vencedor
+                                                    </h4>
+                                                    <button type="button"
+                                                            onclick="toggleLotes({{ $index }})"
+                                                            class="flex items-center text-sm text-blue-600 hover:text-blue-800">
+                                                        <span id="toggle-text-{{ $index }}">Mostrar Detalhes</span>
+                                                        <svg id="toggle-icon-{{ $index }}" class="w-4 h-4 ml-1 transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                                        </svg>
+                                                    </button>
+                                                </div>
 
-                        <!-- Linha expansível com os itens/lotes do vencedor -->
-                        @if(isset($vencedor->lotes) && count($vencedor->lotes) > 0)
-                        <tr class="bg-gray-50">
-                            <td colspan="6" class="px-6 py-4">
-                                <div class="lotes-container">
-                                    <div class="flex items-center justify-between mb-3">
-                                        <h4 class="text-lg font-semibold text-gray-800">
-                                            {{ $processo->tipo_contratacao === 'LOTE' ? 'Lotes' : 'Itens' }} do Vencedor
-                                        </h4>
-                                        <button type="button"
-                                                onclick="toggleLotes({{ $index }})"
-                                                class="flex items-center text-sm text-blue-600 hover:text-blue-800">
-                                            <span id="toggle-text-{{ $index }}">Mostrar Detalhes</span>
-                                            <svg id="toggle-icon-{{ $index }}" class="w-4 h-4 ml-1 transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                            </svg>
-                                        </button>
-                                    </div>
+                                                <div id="lotes-details-{{ $index }}" class="hidden">
+                                                    @if($processo->tipo_contratacao === \App\Enums\TipoContratacaoEnum::LOTE)
+                                                        <!-- Estrutura para LOTE - Agrupar por número do lote -->
+                                                        @php
+                                                            $lotesAgrupados = $vencedor->lotes->groupBy('lote');
+                                                        @endphp
 
-                                    <div id="lotes-details-{{ $index }}" class="hidden">
-                                        <div class="overflow-x-auto">
-                                            <table class="min-w-full divide-y divide-gray-200">
-                                                <thead class="bg-gray-100">
-                                                    <tr>
-                                                        @if($processo->tipo_contratacao === 'LOTE')
-                                                        <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
-                                                            LOTE
-                                                        </th>
-                                                        @endif
-                                                        <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
-                                                            Status
-                                                        </th>
-                                                        <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
-                                                            Item
-                                                        </th>
-                                                        <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
-                                                            Descrição
-                                                        </th>
-                                                        <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
-                                                            UNIDADE
-                                                        </th>
-                                                        <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
-                                                            Marca
-                                                        </th>
-                                                        <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
-                                                            Modelo
-                                                        </th>
-                                                        <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
-                                                            Quantidade
-                                                        </th>
-                                                        <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
-                                                            Vl. Unit
-                                                        </th>
-                                                        <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
-                                                            Vl. Total
-                                                        </th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody class="bg-white divide-y divide-gray-200">
-                                                    @foreach($vencedor->lotes as $lote)
-                                                    <tr class="hover:bg-gray-50">
-                                                        @if($processo->tipo_contratacao === 'LOTE')
-                                                        <td class="px-4 py-2 text-sm text-gray-900">
-                                                            {{ $lote->lote }}
-                                                        </td>
-                                                        @endif
-                                                        <td class="px-4 py-2 text-sm text-gray-900">
-                                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
-                                                                @if($lote->status === 'HOMOLOGADO') bg-green-100 text-green-800
-                                                                @elseif($lote->status === 'ADJUDICADO') bg-blue-100 text-blue-800
-                                                                @else bg-gray-100 text-gray-800 @endif">
-                                                                {{ $lote->status }}
-                                                            </span>
-                                                        </td>
-                                                        <td class="px-4 py-2 text-sm text-gray-900">
-                                                            {{ $lote->item }}
-                                                        </td>
-                                                        <td class="px-4 py-2 text-sm text-gray-900">
-                                                            <div class="max-w-xs truncate" title="{{ $lote->descricao }}">
-                                                                {{ $lote->descricao }}
+                                                        @foreach($lotesAgrupados as $numeroLote => $itensLote)
+                                                        <div class="mb-6 border border-gray-200 rounded-lg">
+                                                            <div class="px-4 py-3 bg-gray-100 border-b border-gray-200">
+                                                                <h5 class="font-semibold text-gray-800">
+                                                                    LOTE {{ $numeroLote }}
+                                                                </h5>
                                                             </div>
-                                                        </td>
-                                                        <td class="px-4 py-2 text-sm text-gray-900">
-                                                            {{ $lote->unidade }}
-                                                        </td>
-                                                        <td class="px-4 py-2 text-sm text-gray-900">
-                                                            {{ $lote->marca }}
-                                                        </td>
-                                                        <td class="px-4 py-2 text-sm text-gray-900">
-                                                            {{ $lote->modelo }}
-                                                        </td>
-                                                        <td class="px-4 py-2 text-sm text-right text-gray-900">
-                                                            {{ number_format($lote->quantidade, 0, ',', '.') }}
-                                                        </td>
-                                                        <td class="px-4 py-2 text-sm text-right text-gray-900">
-                                                            R$ {{ number_format($lote->vl_unit, 2, ',', '.') }}
-                                                        </td>
-                                                        <td class="px-4 py-2 text-sm font-semibold text-right text-gray-900">
-                                                            R$ {{ number_format($lote->vl_total, 2, ',', '.') }}
-                                                        </td>
-                                                    </tr>
-                                                    @endforeach
-                                                    <!-- Linha de totais -->
-                                                    <tr class="font-semibold bg-gray-100">
-                                                        @if($processo->tipo_contratacao === 'LOTE')
-                                                        <td class="px-4 py-2 text-sm text-gray-900" colspan="1"></td>
-                                                        @endif
-                                                        <td class="px-4 py-2 text-sm text-gray-900" colspan="{{ $processo->tipo_contratacao === 'LOTE' ? '6' : '5' }}">
-                                                            TOTAL GERAL
-                                                        </td>
-                                                        <td class="px-4 py-2 text-sm text-right text-gray-900">
-                                                            {{ number_format($vencedor->lotes->sum('quantidade'), 0, ',', '.') }}
-                                                        </td>
-                                                        <td class="px-4 py-2 text-sm text-right text-gray-900">
-                                                            -
-                                                        </td>
-                                                        <td class="px-4 py-2 text-sm text-right text-green-700">
-                                                            R$ {{ number_format($vencedor->lotes->sum('vl_total'), 2, ',', '.') }}
-                                                        </td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
-                        @endif
-                        @endforeach
-                    @else
-                    <tr>
-                        <td colspan="6" class="px-6 py-4 text-sm text-center text-gray-500">
-                            Nenhum vencedor cadastrado
-                        </td>
-                    </tr>
-                    @endif
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
+                                                            <div class="overflow-x-auto">
+                                                                <table class="min-w-full divide-y divide-gray-200">
+                                                                    <thead class="bg-gray-50">
+                                                                        <tr>
+                                                                            <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                                                Status
+                                                                            </th>
+                                                                            <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                                                Item
+                                                                            </th>
+                                                                            <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                                                Descrição
+                                                                            </th>
+                                                                            <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                                                UNIDADE
+                                                                            </th>
+                                                                            <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                                                Marca
+                                                                            </th>
+                                                                            <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                                                Modelo
+                                                                            </th>
+                                                                            <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                                                Quantidade
+                                                                            </th>
+                                                                            <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                                                Vl. Unit
+                                                                            </th>
+                                                                            <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                                                Vl. Total
+                                                                            </th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody class="bg-white divide-y divide-gray-200">
+                                                                        @foreach($itensLote as $lote)
+                                                                        <tr class="hover:bg-gray-50">
+                                                                            <td class="px-4 py-2 text-sm text-gray-900">
+                                                                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
+                                                                                    @if($lote->status === 'HOMOLOGADO') bg-green-100 text-green-800
+                                                                                    @elseif($lote->status === 'ADJUDICADO') bg-blue-100 text-blue-800
+                                                                                    @else bg-gray-100 text-gray-800 @endif">
+                                                                                    {{ $lote->status }}
+                                                                                </span>
+                                                                            </td>
+                                                                            <td class="px-4 py-2 text-sm text-gray-900">
+                                                                                {{ $lote->item }}
+                                                                            </td>
+                                                                            <td class="px-4 py-2 text-sm text-gray-900">
+                                                                                <div class="max-w-xs truncate" title="{{ $lote->descricao }}">
+                                                                                    {{ $lote->descricao }}
+                                                                                </div>
+                                                                            </td>
+                                                                            <td class="px-4 py-2 text-sm text-gray-900">
+                                                                                {{ $lote->unidade }}
+                                                                            </td>
+                                                                            <td class="px-4 py-2 text-sm text-gray-900">
+                                                                                {{ $lote->marca }}
+                                                                            </td>
+                                                                            <td class="px-4 py-2 text-sm text-gray-900">
+                                                                                {{ $lote->modelo }}
+                                                                            </td>
+                                                                            <td class="px-4 py-2 text-sm text-right text-gray-900">
+                                                                                {{ number_format($lote->quantidade, 0, ',', '.') }}
+                                                                            </td>
+                                                                            <td class="px-4 py-2 text-sm text-right text-gray-900">
+                                                                                R$ {{ number_format($lote->vl_unit, 2, ',', '.') }}
+                                                                            </td>
+                                                                            <td class="px-4 py-2 text-sm font-semibold text-right text-gray-900">
+                                                                                R$ {{ number_format($lote->vl_total, 2, ',', '.') }}
+                                                                            </td>
+                                                                        </tr>
+                                                                        @endforeach
+                                                                        <!-- Linha de totais do lote -->
+                                                                        <tr class="font-semibold bg-gray-100">
+                                                                            <td class="px-4 py-2 text-sm text-gray-900" colspan="6">
+                                                                                TOTAL DO LOTE {{ $numeroLote }}
+                                                                            </td>
+                                                                            <td class="px-4 py-2 text-sm text-right text-gray-900">
+                                                                                {{ number_format($itensLote->sum('quantidade'), 0, ',', '.') }}
+                                                                            </td>
+                                                                            <td class="px-4 py-2 text-sm text-right text-gray-900">
+                                                                                -
+                                                                            </td>
+                                                                            <td class="px-4 py-2 text-sm text-right text-green-700">
+                                                                                R$ {{ number_format($itensLote->sum('vl_total'), 2, ',', '.') }}
+                                                                            </td>
+                                                                        </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                        @endforeach
+
+                                                        <!-- Total geral do vencedor -->
+                                                        <div class="p-4 mt-4 border border-blue-200 rounded-lg bg-blue-50">
+                                                            <div class="flex items-center justify-between">
+                                                                <span class="text-lg font-bold text-blue-800">TOTAL GERAL DO VENCEDOR</span>
+                                                                <span class="text-lg font-bold text-blue-800">
+                                                                    R$ {{ number_format($vencedor->lotes->sum('vl_total'), 2, ',', '.') }}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+
+                                                    @else
+                                                        <!-- Estrutura para ITEM - Listar todos os itens -->
+                                                        <div class="overflow-x-auto">
+                                                            <table class="min-w-full divide-y divide-gray-200">
+                                                                <thead class="bg-gray-100">
+                                                                    <tr>
+                                                                        <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                                            Status
+                                                                        </th>
+                                                                        <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                                            Item
+                                                                        </th>
+                                                                        <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                                            Descrição
+                                                                        </th>
+                                                                        <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                                            UNIDADE
+                                                                        </th>
+                                                                        <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                                            Marca
+                                                                        </th>
+                                                                        <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                                            Modelo
+                                                                        </th>
+                                                                        <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                                            Quantidade
+                                                                        </th>
+                                                                        <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                                            Vl. Unit
+                                                                        </th>
+                                                                        <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                                            Vl. Total
+                                                                        </th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody class="bg-white divide-y divide-gray-200">
+                                                                    @foreach($vencedor->lotes as $lote)
+                                                                    <tr class="hover:bg-gray-50">
+                                                                        <td class="px-4 py-2 text-sm text-gray-900">
+                                                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
+                                                                                @if($lote->status === 'HOMOLOGADO') bg-green-100 text-green-800
+                                                                                @elseif($lote->status === 'ADJUDICADO') bg-blue-100 text-blue-800
+                                                                                @else bg-gray-100 text-gray-800 @endif">
+                                                                                {{ $lote->status }}
+                                                                            </span>
+                                                                        </td>
+                                                                        <td class="px-4 py-2 text-sm text-gray-900">
+                                                                            {{ $lote->item }}
+                                                                        </td>
+                                                                        <td class="px-4 py-2 text-sm text-gray-900">
+                                                                            <div class="max-w-xs truncate" title="{{ $lote->descricao }}">
+                                                                                {{ $lote->descricao }}
+                                                                            </div>
+                                                                        </td>
+                                                                        <td class="px-4 py-2 text-sm text-gray-900">
+                                                                            {{ $lote->unidade }}
+                                                                        </td>
+                                                                        <td class="px-4 py-2 text-sm text-gray-900">
+                                                                            {{ $lote->marca }}
+                                                                        </td>
+                                                                        <td class="px-4 py-2 text-sm text-gray-900">
+                                                                            {{ $lote->modelo }}
+                                                                        </td>
+                                                                        <td class="px-4 py-2 text-sm text-right text-gray-900">
+                                                                            {{ number_format($lote->quantidade, 0, ',', '.') }}
+                                                                        </td>
+                                                                        <td class="px-4 py-2 text-sm text-right text-gray-900">
+                                                                            R$ {{ number_format($lote->vl_unit, 2, ',', '.') }}
+                                                                        </td>
+                                                                        <td class="px-4 py-2 text-sm font-semibold text-right text-gray-900">
+                                                                            R$ {{ number_format($lote->vl_total, 2, ',', '.') }}
+                                                                        </td>
+                                                                    </tr>
+                                                                    @endforeach
+                                                                    <!-- Linha de totais -->
+                                                                    <tr class="font-semibold bg-gray-100">
+                                                                        <td class="px-4 py-2 text-sm text-gray-900" colspan="6">
+                                                                            TOTAL GERAL
+                                                                        </td>
+                                                                        <td class="px-4 py-2 text-sm text-right text-gray-900">
+                                                                            {{ number_format($vencedor->lotes->sum('quantidade'), 0, ',', '.') }}
+                                                                        </td>
+                                                                        <td class="px-4 py-2 text-sm text-right text-gray-900">
+                                                                            -
+                                                                        </td>
+                                                                        <td class="px-4 py-2 text-sm text-right text-green-700">
+                                                                            R$ {{ number_format($vencedor->lotes->sum('vl_total'), 2, ',', '.') }}
+                                                                        </td>
+                                                                    </tr>
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    @endif
+                                    @endforeach
+                                @else
+                                <tr>
+                                    <td colspan="6" class="px-6 py-4 text-sm text-center text-gray-500">
+                                        Nenhum vencedor cadastrado
+                                    </td>
+                                </tr>
+                                @endif
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -822,133 +928,233 @@
 
                             let lotesHtml = '';
                             if (hasLotes) {
-                                lotesHtml = `
-                                    <tr class="bg-gray-50">
-                                        <td colspan="6" class="px-6 py-4">
-                                            <div class="lotes-container">
-                                                <div class="flex items-center justify-between mb-3">
-                                                    <h4 class="text-lg font-semibold text-gray-800">
-                                                        ${tipoItem === 'lotes' ? 'Lotes' : 'Itens'} do Vencedor
-                                                    </h4>
-                                                    <button type="button"
-                                                            onclick="toggleLotes(${index})"
-                                                            class="flex items-center text-sm text-blue-600 hover:text-blue-800">
-                                                        <span id="toggle-text-${index}">Mostrar Detalhes</span>
-                                                        <svg id="toggle-icon-${index}" class="w-4 h-4 ml-1 transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                                        </svg>
-                                                    </button>
-                                                </div>
+                                // Agrupar por lote se for tipo LOTE
+                                if ('{{ $processo->tipo_contratacao === 'LOTE' }}') {
+                                    const lotesAgrupados = vencedor.lotes.reduce((acc, lote) => {
+                                        const loteNumero = lote.lote || 'Sem Lote';
+                                        if (!acc[loteNumero]) {
+                                            acc[loteNumero] = [];
+                                        }
+                                        acc[loteNumero].push(lote);
+                                        return acc;
+                                    }, {});
 
-                                                <div id="lotes-details-${index}" class="hidden">
-                                                    <div class="overflow-x-auto">
-                                                        <table class="min-w-full divide-y divide-gray-200">
-                                                            <thead class="bg-gray-100">
-                                                                <tr>
-                                                                    ${tipoItem === 'lotes' ? `
-                                                                    <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
-                                                                        LOTE
-                                                                    </th>
-                                                                    ` : ''}
-                                                                    <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
-                                                                        Status
-                                                                    </th>
-                                                                    <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
-                                                                        Item
-                                                                    </th>
-                                                                    <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
-                                                                        Descrição
-                                                                    </th>
-                                                                    <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
-                                                                        UNIDADE
-                                                                    </th>
-                                                                    <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
-                                                                        Marca
-                                                                    </th>
-                                                                    <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
-                                                                        Modelo
-                                                                    </th>
-                                                                    <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
-                                                                        Quantidade
-                                                                    </th>
-                                                                    <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
-                                                                        Vl. Unit
-                                                                    </th>
-                                                                    <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
-                                                                        Vl. Total
-                                                                    </th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody class="bg-white divide-y divide-gray-200">
-                                                                ${vencedor.lotes.map(lote => `
-                                                                <tr class="hover:bg-gray-50">
-                                                                    ${tipoItem === 'lotes' ? `
-                                                                    <td class="px-4 py-2 text-sm text-gray-900">
-                                                                        ${lote.lote || '-'}
-                                                                    </td>
-                                                                    ` : ''}
-                                                                    <td class="px-4 py-2 text-sm text-gray-900">
-                                                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
-                                                                            ${lote.status === 'HOMOLOGADO' ? 'bg-green-100 text-green-800' :
-                                                                            lote.status === 'ADJUDICADO' ? 'bg-blue-100 text-blue-800' :
-                                                                            'bg-gray-100 text-gray-800'}">
-                                                                            ${lote.status}
-                                                                        </span>
-                                                                    </td>
-                                                                    <td class="px-4 py-2 text-sm text-gray-900">
-                                                                        ${lote.item}
-                                                                    </td>
-                                                                    <td class="px-4 py-2 text-sm text-gray-900">
-                                                                        <div class="max-w-xs truncate" title="${lote.descricao}">
-                                                                            ${lote.descricao}
-                                                                        </div>
-                                                                    </td>
-                                                                    <td class="px-4 py-2 text-sm text-gray-900">
-                                                                        ${lote.unidade}
-                                                                    </td>
-                                                                    <td class="px-4 py-2 text-sm text-gray-900">
-                                                                        ${lote.marca || '-'}
-                                                                    </td>
-                                                                    <td class="px-4 py-2 text-sm text-gray-900">
-                                                                        ${lote.modelo || '-'}
-                                                                    </td>
-                                                                    <td class="px-4 py-2 text-sm text-right text-gray-900">
-                                                                        ${parseFloat(lote.quantidade).toLocaleString('pt-BR')}
-                                                                    </td>
-                                                                    <td class="px-4 py-2 text-sm text-right text-gray-900">
-                                                                        R$ ${parseFloat(lote.vl_unit).toLocaleString('pt-BR', {minimumFractionDigits: 2})}
-                                                                    </td>
-                                                                    <td class="px-4 py-2 text-sm font-semibold text-right text-gray-900">
-                                                                        R$ ${parseFloat(lote.vl_total).toLocaleString('pt-BR', {minimumFractionDigits: 2})}
-                                                                    </td>
-                                                                </tr>
-                                                                `).join('')}
-                                                                <!-- Linha de totais -->
-                                                                <tr class="font-semibold bg-gray-100">
-                                                                    ${tipoItem === 'lotes' ? `
-                                                                    <td class="px-4 py-2 text-sm text-gray-900" colspan="1"></td>
-                                                                    ` : ''}
-                                                                    <td class="px-4 py-2 text-sm text-gray-900" colspan="${tipoItem === 'lotes' ? '6' : '5'}">
-                                                                        TOTAL GERAL
-                                                                    </td>
-                                                                    <td class="px-4 py-2 text-sm text-right text-gray-900">
-                                                                        ${vencedor.lotes.reduce((sum, lote) => sum + parseFloat(lote.quantidade), 0).toLocaleString('pt-BR')}
-                                                                    </td>
-                                                                    <td class="px-4 py-2 text-sm text-right text-gray-900">
-                                                                        -
-                                                                    </td>
-                                                                    <td class="px-4 py-2 text-sm text-right text-green-700">
-                                                                        R$ ${vencedor.lotes.reduce((sum, lote) => sum + parseFloat(lote.vl_total), 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}
-                                                                    </td>
-                                                                </tr>
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
+                                    const lotesAgrupadosHtml = Object.entries(lotesAgrupados).map(([numeroLote, itensLote]) => {
+                                        const totalLote = itensLote.reduce((sum, item) => sum + parseFloat(item.vl_total), 0);
+                                        const quantidadeLote = itensLote.reduce((sum, item) => sum + parseFloat(item.quantidade), 0);
+
+                                        return `
+                                            <div class="mb-6 border border-gray-200 rounded-lg">
+                                                <div class="px-4 py-3 bg-gray-100 border-b border-gray-200">
+                                                    <h5 class="font-semibold text-gray-800">
+                                                        LOTE ${numeroLote}
+                                                    </h5>
+                                                </div>
+                                                <div class="overflow-x-auto">
+                                                    <table class="min-w-full divide-y divide-gray-200">
+                                                        <thead class="bg-gray-50">
+                                                            <tr>
+                                                                <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                                    Status
+                                                                </th>
+                                                                <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                                    Item
+                                                                </th>
+                                                                <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                                    Descrição
+                                                                </th>
+                                                                <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                                    UNIDADE
+                                                                </th>
+                                                                <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                                    Marca
+                                                                </th>
+                                                                <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                                    Modelo
+                                                                </th>
+                                                                <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                                    Quantidade
+                                                                </th>
+                                                                <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                                    Vl. Unit
+                                                                </th>
+                                                                <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                                    Vl. Total
+                                                                </th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody class="bg-white divide-y divide-gray-200">
+                                                            ${itensLote.map(lote => `
+                                                            <tr class="hover:bg-gray-50">
+                                                                <td class="px-4 py-2 text-sm text-gray-900">
+                                                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
+                                                                        ${lote.status === 'HOMOLOGADO' ? 'bg-green-100 text-green-800' :
+                                                                        lote.status === 'ADJUDICADO' ? 'bg-blue-100 text-blue-800' :
+                                                                        'bg-gray-100 text-gray-800'}">
+                                                                        ${lote.status}
+                                                                    </span>
+                                                                </td>
+                                                                <td class="px-4 py-2 text-sm text-gray-900">
+                                                                    ${lote.item}
+                                                                </td>
+                                                                <td class="px-4 py-2 text-sm text-gray-900">
+                                                                    <div class="max-w-xs truncate" title="${lote.descricao}">
+                                                                        ${lote.descricao}
+                                                                    </div>
+                                                                </td>
+                                                                <td class="px-4 py-2 text-sm text-gray-900">
+                                                                    ${lote.unidade}
+                                                                </td>
+                                                                <td class="px-4 py-2 text-sm text-gray-900">
+                                                                    ${lote.marca || '-'}
+                                                                </td>
+                                                                <td class="px-4 py-2 text-sm text-gray-900">
+                                                                    ${lote.modelo || '-'}
+                                                                </td>
+                                                                <td class="px-4 py-2 text-sm text-right text-gray-900">
+                                                                    ${parseFloat(lote.quantidade).toLocaleString('pt-BR')}
+                                                                </td>
+                                                                <td class="px-4 py-2 text-sm text-right text-gray-900">
+                                                                    R$ ${parseFloat(lote.vl_unit).toLocaleString('pt-BR', {minimumFractionDigits: 2})}
+                                                                </td>
+                                                                <td class="px-4 py-2 text-sm font-semibold text-right text-gray-900">
+                                                                    R$ ${parseFloat(lote.vl_total).toLocaleString('pt-BR', {minimumFractionDigits: 2})}
+                                                                </td>
+                                                            </tr>
+                                                            `).join('')}
+                                                            <!-- Linha de totais do lote -->
+                                                            <tr class="font-semibold bg-gray-100">
+                                                                <td class="px-4 py-2 text-sm text-gray-900" colspan="6">
+                                                                    TOTAL DO LOTE ${numeroLote}
+                                                                </td>
+                                                                <td class="px-4 py-2 text-sm text-right text-gray-900">
+                                                                    ${quantidadeLote.toLocaleString('pt-BR')}
+                                                                </td>
+                                                                <td class="px-4 py-2 text-sm text-right text-gray-900">
+                                                                    -
+                                                                </td>
+                                                                <td class="px-4 py-2 text-sm text-right text-green-700">
+                                                                    R$ ${totalLote.toLocaleString('pt-BR', {minimumFractionDigits: 2})}
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
                                                 </div>
                                             </div>
-                                        </td>
-                                    </tr>
-                                `;
+                                        `;
+                                    }).join('');
+
+                                    const totalGeral = vencedor.lotes.reduce((sum, lote) => sum + parseFloat(lote.vl_total), 0);
+
+                                    lotesHtml = `
+                                        ${lotesAgrupadosHtml}
+                                        <div class="p-4 mt-4 border border-blue-200 rounded-lg bg-blue-50">
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-lg font-bold text-blue-800">TOTAL GERAL DO VENCEDOR</span>
+                                                <span class="text-lg font-bold text-blue-800">
+                                                    R$ ${totalGeral.toLocaleString('pt-BR', {minimumFractionDigits: 2})}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    `;
+                                } else {
+                                    // Estrutura para ITEM
+                                    const totalGeral = vencedor.lotes.reduce((sum, lote) => sum + parseFloat(lote.vl_total), 0);
+                                    const quantidadeGeral = vencedor.lotes.reduce((sum, lote) => sum + parseFloat(lote.quantidade), 0);
+
+                                    lotesHtml = `
+                                        <div class="overflow-x-auto">
+                                            <table class="min-w-full divide-y divide-gray-200">
+                                                <thead class="bg-gray-100">
+                                                    <tr>
+                                                        <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                            Status
+                                                        </th>
+                                                        <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                            Item
+                                                        </th>
+                                                        <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                            Descrição
+                                                        </th>
+                                                        <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                            UNIDADE
+                                                        </th>
+                                                        <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                            Marca
+                                                        </th>
+                                                        <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                            Modelo
+                                                        </th>
+                                                        <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                            Quantidade
+                                                        </th>
+                                                        <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                            Vl. Unit
+                                                        </th>
+                                                        <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                            Vl. Total
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="bg-white divide-y divide-gray-200">
+                                                    ${vencedor.lotes.map(lote => `
+                                                    <tr class="hover:bg-gray-50">
+                                                        <td class="px-4 py-2 text-sm text-gray-900">
+                                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
+                                                                ${lote.status === 'HOMOLOGADO' ? 'bg-green-100 text-green-800' :
+                                                                lote.status === 'ADJUDICADO' ? 'bg-blue-100 text-blue-800' :
+                                                                'bg-gray-100 text-gray-800'}">
+                                                                ${lote.status}
+                                                            </span>
+                                                        </td>
+                                                        <td class="px-4 py-2 text-sm text-gray-900">
+                                                            ${lote.item}
+                                                        </td>
+                                                        <td class="px-4 py-2 text-sm text-gray-900">
+                                                            <div class="max-w-xs truncate" title="${lote.descricao}">
+                                                                ${lote.descricao}
+                                                            </div>
+                                                        </td>
+                                                        <td class="px-4 py-2 text-sm text-gray-900">
+                                                            ${lote.unidade}
+                                                        </td>
+                                                        <td class="px-4 py-2 text-sm text-gray-900">
+                                                            ${lote.marca || '-'}
+                                                        </td>
+                                                        <td class="px-4 py-2 text-sm text-gray-900">
+                                                            ${lote.modelo || '-'}
+                                                        </td>
+                                                        <td class="px-4 py-2 text-sm text-right text-gray-900">
+                                                            ${parseFloat(lote.quantidade).toLocaleString('pt-BR')}
+                                                        </td>
+                                                        <td class="px-4 py-2 text-sm text-right text-gray-900">
+                                                            R$ ${parseFloat(lote.vl_unit).toLocaleString('pt-BR', {minimumFractionDigits: 2})}
+                                                        </td>
+                                                        <td class="px-4 py-2 text-sm font-semibold text-right text-gray-900">
+                                                            R$ ${parseFloat(lote.vl_total).toLocaleString('pt-BR', {minimumFractionDigits: 2})}
+                                                        </td>
+                                                    </tr>
+                                                    `).join('')}
+                                                    <!-- Linha de totais -->
+                                                    <tr class="font-semibold bg-gray-100">
+                                                        <td class="px-4 py-2 text-sm text-gray-900" colspan="6">
+                                                            TOTAL GERAL
+                                                        </td>
+                                                        <td class="px-4 py-2 text-sm text-right text-gray-900">
+                                                            ${quantidadeGeral.toLocaleString('pt-BR')}
+                                                        </td>
+                                                        <td class="px-4 py-2 text-sm text-right text-gray-900">
+                                                            -
+                                                        </td>
+                                                        <td class="px-4 py-2 text-sm text-right text-green-700">
+                                                            R$ ${totalGeral.toLocaleString('pt-BR', {minimumFractionDigits: 2})}
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    `;
+                                }
                             }
 
                             return `
@@ -992,7 +1198,31 @@
                                         </div>
                                     </td>
                                 </tr>
-                                ${lotesHtml}
+                                ${hasLotes ? `
+                                <tr class="bg-gray-50">
+                                    <td colspan="6" class="px-6 py-4">
+                                        <div class="lotes-container">
+                                            <div class="flex items-center justify-between mb-3">
+                                                <h4 class="text-lg font-semibold text-gray-800">
+                                                    ${tipoItem === 'lotes' ? 'Lotes' : 'Itens'} do Vencedor
+                                                </h4>
+                                                <button type="button"
+                                                        onclick="toggleLotes(${index})"
+                                                        class="flex items-center text-sm text-blue-600 hover:text-blue-800">
+                                                    <span id="toggle-text-${index}">Mostrar Detalhes</span>
+                                                    <svg id="toggle-icon-${index}" class="w-4 h-4 ml-1 transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                                    </svg>
+                                                </button>
+                                            </div>
+
+                                            <div id="lotes-details-${index}" class="hidden">
+                                                ${lotesHtml}
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                ` : ''}
                             `;
                         }).join('');
                     }

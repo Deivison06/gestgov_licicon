@@ -382,6 +382,7 @@ class FinalizacaoProcessoController extends Controller
             // [6] => Unidade, [7] => Marca, [8] => Modelo, [9] => Quantidade, [10] => Vl. Unit., [11] => Vl. Total
 
             $dado = [
+                'lote' => $this->obterValorColuna($linha, 2, ''),
                 'status' => $this->obterValorColuna($linha, 3, 'HOMOLOGADO'), // Coluna 3: Status
                 'item' => $this->obterValorColuna($linha, 4, ''), // Coluna 4: Item
                 'descricao' => $this->obterValorColuna($linha, 5, ''), // Coluna 5: Descrição
@@ -392,10 +393,10 @@ class FinalizacaoProcessoController extends Controller
                 'vl_unit' => $this->parseFloat($this->obterValorColuna($linha, 10, 0)), // Coluna 10: Vl. Unit.
             ];
 
-            // Adicionar lote se for do tipo LOTE
-            if ($tipoContratacao === 'LOTE') {
-                $dado['lote'] = $this->obterValorColuna($linha, 2, ''); // Coluna 2: Lote
-            }
+            // // Adicionar lote se for do tipo LOTE
+            // if ($tipoContratacao === 'LOTE') {
+            //     $dado['lote'] = $this->obterValorColuna($linha, 2, ''); // Coluna 2: Lote
+            // }
 
             // Validar dados obrigatórios
             if (empty($dado['item']) || empty($dado['descricao']) || $dado['quantidade'] <= 0 || $dado['vl_unit'] <= 0) {
@@ -407,7 +408,11 @@ class FinalizacaoProcessoController extends Controller
             $dado['vl_total'] = $dado['quantidade'] * $dado['vl_unit'];
 
             $processados[] = $dado;
-            Log::info('Linha processada com sucesso', ['linha' => $i + 1, 'dado' => $dado]);
+            Log::info('Linha processada com sucesso', [
+                'linha' => $i + 1,
+                'dado' => $dado,
+                'lote_valor' => $dado['lote'] // Log específico para debug do lote
+            ]);
         }
 
         Log::info('Processamento concluído', ['linhas_processadas' => count($processados)]);
@@ -426,6 +431,11 @@ class FinalizacaoProcessoController extends Controller
         // Se for nulo ou string vazia, retorna default
         if (is_null($valor) || $valor === '') {
             return $default;
+        }
+
+        // CORREÇÃO: Para campo lote, preservar como string mesmo se for numérico
+        if ($indice === 2) { // Coluna do lote
+            return (string)$valor;
         }
 
         // Se for numérico, converte para string para manter consistência
@@ -706,12 +716,13 @@ class FinalizacaoProcessoController extends Controller
 
     private function prepararDadosPdf(Processo $processo, array $validatedData): array
     {
-        $processo->load(['finalizacao', 'prefeitura']);
+        $processo->load(['finalizacao', 'prefeitura', 'vencedores.lotes']);
 
         return [
             'processo' => $processo,
             'prefeitura' => $processo->prefeitura,
             'finalizacao' => $processo->finalizacao,
+            'vencedores' => $processo->vencedores, // ADICIONE ESTA LINHA
             'dataGeracao' => now()->format('d/m/Y H:i:s'),
             'dataSelecionada' => $validatedData['dataSelecionada'],
             'assinantes' => $validatedData['assinantes'],
