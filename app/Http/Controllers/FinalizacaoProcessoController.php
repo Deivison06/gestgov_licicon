@@ -23,42 +23,56 @@ class FinalizacaoProcessoController extends Controller
             'titulo' => 'ATOS DA SESSÃO',
             'cor' => 'bg-red-500',
             'campos' => ['anexo_atos_sessao'],
+            'requer_assinatura' => false,
         ],
         'proposta' => [
             'titulo' => 'PROPOSTAS',
             'cor' => 'bg-blue-500',
             'campos' => ['anexo_proposta'],
+            'requer_assinatura' => false,
         ],
         'proposta_readequada' => [
             'titulo' => 'PROPOSTA VENCEDORA READEQUADA',
             'cor' => 'bg-purple-500',
             'campos' => ['anexo_proposta_readequada'],
+            'requer_assinatura' => false,
         ],
         'documento_habilitacao_empresa_vencedora' => [
             'titulo' => 'DOCUMENTOS DE HABILITAÇÃO EMPRESA VENCEDORA',
             'cor' => 'bg-green-500',
             'campos' => ['anexo_habilitacao'],
+            'requer_assinatura' => false,
         ],
         'recurso_contratacoes_decisao_recursos' => [
             'titulo' => 'RECURSOS, CONTRARAZÕES E DECISÃO DOS RECURSOS',
             'cor' => 'bg-green-500',
             'campos' => ['anexo_recurso_contratacoes'],
+            'requer_assinatura' => false,
         ],
-        'termo_ajusdicacao' => [
+        'termo_adjudicacao' => [
             'titulo' => 'TERMO DE ADJUDICAÇÃO',
             'cor' => 'bg-yellow-500',
-            'campos' => ['anexo_planilha'],
+            'campos' => [
+                'orgao_responsavel',
+                'cnpj',
+                'endereco',
+                'responsavel',
+                'cpf_responsavel',
+            ],
+            'requer_assinatura' => true,
         ],
         'parecer_controle_interno' => [
             'titulo' => 'PARECER DO CONTROLE INTERNO',
             'cor' => 'bg-orange-500',
             'campos' => [],
+            'requer_assinatura' => true,
         ],
         'termo_homologacao' => [
             'titulo' => 'TERMO DE HOMOLOGAÇÃO',
             'cor' => 'bg-pink-500',
             'campos' => [],
-        ]
+            'requer_assinatura' => true,
+            ]
     ];
 
     // Mapeamento de anexos
@@ -68,15 +82,107 @@ class FinalizacaoProcessoController extends Controller
         'proposta_readequada' => 'anexo_proposta_readequada',
         'documento_habilitacao_empresa_vencedora' => 'anexo_habilitacao',
         'recurso_contratacoes_decisao_recursos' => 'anexo_recurso_contratacoes',
-        'termo_ajusdicacao' => 'anexo_planilha',
+        'termo_adjudicacao' => 'anexo_planilha',
     ];
 
     public function finalizar(Processo $processo)
     {
-        $processo->load('prefeitura.unidades');
+        $processo->load(['prefeitura.unidades', 'detalhe']);
+
+        // Inicia com os documentos base
         $documentos = $this->documentos;
+
+        // VERIFICA SE É CONCORRÊNCIA COM INVERSÃO DE FASE
+        $isConcorrenciaComInversao = $processo->modalidade === \App\Enums\ModalidadeEnum::CONCORRENCIA &&
+                                     $processo->detalhe->inversao_fase === "sim";
+
+        if ($isConcorrenciaComInversao) {
+            // ORDEM ESPECIAL PARA CONCORRÊNCIA COM INVERSÃO DE FASE
+            $documentos = $this->getOrdemConcorrenciaComInversao();
+        }
+
+        // Adiciona campos extras para concorrência (independente da inversão)
+        if ($processo->modalidade === \App\Enums\ModalidadeEnum::CONCORRENCIA) {
+            $camposConcorrencia = [
+                'razao_social',
+                'cnpj_empresa_vencedora',
+                'endereco_empresa_vencedora',
+                'representante_legal_empresa',
+                'cpf_representante',
+                'valor_total',
+            ];
+
+            // Adiciona os campos extras ao termo de adjudicação
+            $documentos['termo_adjudicacao']['campos'] = array_merge(
+                $documentos['termo_adjudicacao']['campos'],
+                $camposConcorrencia
+            );
+        }
+
         return view('Admin.Processos.finalizar', compact('processo', 'documentos'));
     }
+
+    private function getOrdemConcorrenciaComInversao(): array
+    {
+        return [
+            'atos_sessao' => [
+                'titulo' => 'ATOS DA SESSÃO',
+                'cor' => 'bg-red-500',
+                'campos' => ['anexo_atos_sessao'],
+                'requer_assinatura' => false,
+            ],
+            'documento_habilitacao_empresa_vencedora' => [
+                'titulo' => 'DOCUMENTOS DE HABILITAÇÃO EMPRESA VENCEDORA',
+                'cor' => 'bg-green-500',
+                'campos' => ['anexo_habilitacao'],
+                'requer_assinatura' => false,
+            ],
+            'proposta' => [
+                'titulo' => 'PROPOSTAS',
+                'cor' => 'bg-blue-500',
+                'campos' => ['anexo_proposta'],
+                'requer_assinatura' => false,
+            ],
+            'proposta_readequada' => [
+                'titulo' => 'PROPOSTA VENCEDORA READEQUADA',
+                'cor' => 'bg-purple-500',
+                'campos' => ['anexo_proposta_readequada'],
+                'requer_assinatura' => false,
+            ],
+            'termo_adjudicacao' => [
+                'titulo' => 'TERMO DE ADJUDICAÇÃO',
+                'cor' => 'bg-yellow-500',
+                'campos' => [
+                    'orgao_responsavel',
+                    'cnpj',
+                    'endereco',
+                    'responsavel',
+                    'cpf_responsavel',
+                ],
+                'requer_assinatura' => true,
+            ],
+            'recurso_contratacoes_decisao_recursos' => [
+                'titulo' => 'RECURSOS, CONTRARAZÕES E DECISÃO DOS RECURSOS',
+                'cor' => 'bg-green-500',
+                'campos' => ['anexo_recurso_contratacoes'],
+                'requer_assinatura' => false,
+            ],
+            'parecer_controle_interno' => [
+                'titulo' => 'PARECER DO CONTROLE INTERNO',
+                'cor' => 'bg-orange-500',
+                'campos' => [],
+                'requer_assinatura' => true,
+            ],
+            'termo_homologacao' => [
+                'titulo' => 'TERMO DE HOMOLOGAÇÃO',
+                'cor' => 'bg-pink-500',
+                'campos' => [],
+                'requer_assinatura' => true,
+            ]
+        ];
+    }
+
+
 
     public function storeFinalizacao(Request $request, Processo $processo)
     {
@@ -531,7 +637,7 @@ class FinalizacaoProcessoController extends Controller
 
             $validatedData = $this->validarRequisicaoPdf($request, $processo);
             $data = $this->prepararDadosPdf($processo, $validatedData);
-            $view = $this->determinarViewPdf($validatedData['documento']);
+            $view = $this->determinarViewPdf($processo, $validatedData['documento']);
 
             Log::info('View selecionada para PDF', ['view' => $view]);
 
@@ -580,10 +686,46 @@ class FinalizacaoProcessoController extends Controller
 
     public function baixarTodosDocumentos(Processo $processo)
     {
-        $ordem = $this->getOrdemDocumentos();
+        $ordem = $this->getOrdemDocumentos($processo);
         $documentos = Documento::where('processo_id', $processo->id)->get()->keyBy('tipo_documento');
 
         return $this->baixarTodosDocumentosComGhostscript($processo, $ordem, $documentos);
+    }
+
+    /**
+     * Obtém a ordem dos documentos para download/mesclagem
+     */
+    private function getOrdemDocumentos(Processo $processo): array
+    {
+        $isConcorrenciaComInversao = $processo->modalidade === \App\Enums\ModalidadeEnum::CONCORRENCIA &&
+                                   $processo->detalhe &&
+                                   $processo->detalhe->inversao_fase === "sim";
+
+        if ($isConcorrenciaComInversao) {
+            // Ordem especial para concorrência com inversão
+            return [
+                'atos_sessao',
+                'documento_habilitacao_empresa_vencedora',
+                'proposta',
+                'proposta_readequada',
+                'termo_adjudicacao',
+                'recurso_contratacoes_decisao_recursos',
+                'parecer_controle_interno',
+                'termo_homologacao'
+            ];
+        }
+
+        // Ordem padrão
+        return [
+            'atos_sessao',
+            'proposta',
+            'proposta_readequada',
+            'documento_habilitacao_empresa_vencedora',
+            'recurso_contratacoes_decisao_recursos',
+            'termo_adjudicacao',
+            'parecer_controle_interno',
+            'termo_homologacao'
+        ];
     }
 
     private function baixarTodosDocumentosComGhostscript(Processo $processo, array $ordem, $documentos)
@@ -718,20 +860,27 @@ class FinalizacaoProcessoController extends Controller
     {
         $processo->load(['finalizacao', 'prefeitura', 'vencedores.lotes']);
 
+        // Calcular se há assinantes selecionados
+        $hasSelectedAssinantes = !empty($validatedData['assinantes']);
+
         return [
             'processo' => $processo,
             'prefeitura' => $processo->prefeitura,
             'finalizacao' => $processo->finalizacao,
-            'vencedores' => $processo->vencedores, // ADICIONE ESTA LINHA
+            'vencedores' => $processo->vencedores,
             'dataGeracao' => now()->format('d/m/Y H:i:s'),
             'dataSelecionada' => $validatedData['dataSelecionada'],
             'assinantes' => $validatedData['assinantes'],
+            'hasSelectedAssinantes' => $hasSelectedAssinantes, // ADICIONE ESTA LINHA
         ];
     }
 
-    private function determinarViewPdf(string $documento): string
+    private function determinarViewPdf(Processo $processo, string $documento): string
     {
-        $view = "Admin.Processos.pdf-finalizacao.{$documento}";
+        $viewBase = "Admin.Processos.pdf-finalizacao";
+
+        $modalidade = $this->formatarNomeArquivo($processo->modalidade?->name ?? '');
+        $view = "{$viewBase}.{$modalidade}.{$documento}";
 
         if (!view()->exists($view)) {
             throw new \Exception("O modelo de PDF para o documento '{$documento}' não foi encontrado. View: {$view}");
@@ -739,6 +888,13 @@ class FinalizacaoProcessoController extends Controller
 
         return $view;
     }
+
+    private function formatarNomeArquivo(string $nome): string
+    {
+        $nome = strtolower(iconv('UTF-8', 'ASCII//TRANSLIT', $nome));
+        return str_replace(' ', '_', $nome);
+    }
+
 
     private function salvarDocumento(Processo $processo, $pdf, array $validatedData): string
     {
@@ -1128,19 +1284,19 @@ class FinalizacaoProcessoController extends Controller
     // MÉTODOS AUXILIARES
     // =========================================================
 
-    private function getOrdemDocumentos(): array
-    {
-        return [
-            'atos_sessao',
-            'proposta',
-            'proposta_readequada',
-            'documento_habilitacao_empresa_vencedora',
-            'recurso_contratacoes_decisao_recursos',
-            'termo_ajusdicacao',
-            'parecer_controle_interno',
-            'termo_homologacao'
-        ];
-    }
+    // private function getOrdemDocumentos(): array
+    // {
+    //     return [
+    //         'atos_sessao',
+    //         'proposta',
+    //         'proposta_readequada',
+    //         'documento_habilitacao_empresa_vencedora',
+    //         'recurso_contratacoes_decisao_recursos',
+    //         'termo_adjudicacao',
+    //         'parecer_controle_interno',
+    //         'termo_homologacao'
+    //     ];
+    // }
 
     private function configurarFonte(Fpdi $pdf): void
     {

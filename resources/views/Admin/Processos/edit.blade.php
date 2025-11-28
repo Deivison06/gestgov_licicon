@@ -169,54 +169,67 @@
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    // Configuração TinyMCE
-    tinymce.init({
-        selector: 'textarea#objeto',
-        plugins: 'lists link table code charmap emoticons',
-        toolbar: 'undo redo | bold italic underline | bullist numlist | link table | emoticons charmap | code',
-        menubar: false,
-        branding: false,
-        height: 300,
-        setup: function(editor) {
-            editor.on('change', function() {
-                editor.save();
-            });
+    document.addEventListener("DOMContentLoaded", function() {
+
+        const unidadesPorPrefeitura = {!! $prefeituras->mapWithKeys(function($prefeitura) {
+            return [
+                $prefeitura->id => $prefeitura->unidades->map(function($unidade) {
+                    return [
+                        'id' => $unidade->id,
+                        'nome' => $unidade->nome,
+                        'responsavel' => $unidade->servidor_responsavel,
+                        'portaria' => $unidade->numero_portaria,
+                    ];
+                })
+            ];
+        })->toJson() !!};
+
+        const prefeituraSelect = document.getElementById('prefeitura_id');
+        const unidadeSelect = document.getElementById('unidade_numeracao');
+        const responsavelInput = document.getElementById('responsavel_numeracao');
+        const portariaInput = document.getElementById('portaria_numeracao');
+
+        function carregarUnidades() {
+            const prefeituraId = prefeituraSelect.value;
+
+            unidadeSelect.innerHTML = '<option value="">Selecione a unidade</option>';
+            responsavelInput.value = '';
+            portariaInput.value = '';
+
+            if (prefeituraId && unidadesPorPrefeitura[prefeituraId]) {
+                unidadesPorPrefeitura[prefeituraId].forEach(unidade => {
+                    const option = document.createElement('option');
+                    option.value = unidade.nome;
+                    option.textContent = unidade.nome;
+                    option.dataset.responsavel = unidade.responsavel;
+                    option.dataset.portaria = unidade.portaria;
+                    unidadeSelect.appendChild(option);
+                });
+            }
         }
-    });
 
-    // Preenchimento automático dos campos de responsável
-    const unidadeSelect = document.getElementById('unidade_numeracao');
-    const responsavelInput = document.getElementById('responsavel_numeracao');
-    const portariaInput = document.getElementById('portaria_numeracao');
+        prefeituraSelect.addEventListener('change', carregarUnidades);
 
-    if (unidadeSelect) {
         unidadeSelect.addEventListener('change', function() {
             const opt = this.options[this.selectedIndex];
-            responsavelInput.value = opt?.dataset.responsavel || '';
-            portariaInput.value = opt?.dataset.portaria || '';
+            responsavelInput.value = opt.dataset.responsavel ?? '';
+            portariaInput.value = opt.dataset.portaria ?? '';
         });
-        if (unidadeSelect.value) unidadeSelect.dispatchEvent(new Event('change'));
-    }
 
-    // Ocultar campos de tipo quando modalidade for "Concorrência"
-    const modalidadeSelect = document.getElementById('modalidade');
-    const tipoProcedimentoDiv = document.getElementById('tipo_procedimento_wrapper');
-    const tipoContratacaoDiv = document.getElementById('tipo_contratacao_wrapper');
+        // Carrega automático quando está editando
+        if (prefeituraSelect.value) {
+            carregarUnidades();
 
-    function atualizarVisibilidadeTipos() {
-        const valor = modalidadeSelect.value;
-        if (valor == "1") { // 1 = Concorrência
-            tipoProcedimentoDiv.style.display = 'none';
-            tipoContratacaoDiv.style.display = 'none';
-        } else {
-            tipoProcedimentoDiv.style.display = '';
-            tipoContratacaoDiv.style.display = '';
+            const unidadeSalva = "{{ old('unidade_numeracao', $processo->unidade_numeracao) }}";
+
+            if (unidadeSalva) {
+                setTimeout(() => {
+                    unidadeSelect.value = unidadeSalva;
+                    unidadeSelect.dispatchEvent(new Event('change'));
+                }, 100);
+            }
         }
-    }
-
-    modalidadeSelect.addEventListener('change', atualizarVisibilidadeTipos);
-    atualizarVisibilidadeTipos(); // Executa ao carregar
-});
+    });
 </script>
+
 @endsection

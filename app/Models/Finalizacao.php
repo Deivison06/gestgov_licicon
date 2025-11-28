@@ -14,10 +14,22 @@ class Finalizacao extends Model
         'anexo_habilitacao',
         'anexo_recurso_contratacoes',
         'anexo_planilha',
+
+        'orgao_responsavel',
+        'cnpj',
+        'endereco',
+        'responsavel',
+        'cpf_responsavel',
+        'razao_social',
+        'cnpj_empresa_vencedora',
+        'endereco_empresa_vencedora',
+        'representante_legal_empresa',
+        'cpf_representante',
+        'valor_total',
     ];
 
     public function processo()
     {
-        return $this->belongsTo(Processo::class);
+        return $this->belongsTo(Processo::class, 'processo_id');
     }
 }

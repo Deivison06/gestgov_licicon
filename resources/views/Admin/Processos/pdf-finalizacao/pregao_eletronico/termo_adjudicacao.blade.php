@@ -139,11 +139,11 @@
         <div style="text-align: center;">TERMO DE ADJUDICAÇÃO</div>
         <table style="width:100%; table-layout:fixed; border-collapse:collapse;">
             <tr>
-                <td style="width:60%; padding:8px; vertical-align:top; word-wrap:break-word; white-space:normal;">
+                <td style="width:40%; padding:8px; vertical-align:top; word-wrap:break-word; white-space:normal;">
                 <!-- Conteúdo da primeira célula -->
                 </td>
-                <td style="width:40%; padding:8px; vertical-align:top; word-wrap:break-word; white-space:normal;">
-                OBJETO: {!! strip_tags($processo->objeto) !!}, conforme especificações técnicas do Edital, Termo de Referência e Anexos.
+                <td style="width:60%; padding:8px; vertical-align:top; word-wrap:break-word; white-space:normal;">
+                    OBJETO: <span style="font-size: 12px;">{!! strip_tags($processo->objeto) !!}</span>, conforme especificações técnicas do Edital, Termo de Referência e Anexos.
                 </td>
             </tr>
         </table>
@@ -377,14 +377,31 @@
             {{ \Carbon\Carbon::parse($dataSelecionada)->translatedFormat('d \d\e F \d\e Y') }}
         </div>
 
-        <div style="margin-top: 40px; text-align: center;">
-            <div class="signature-block" style="display: inline-block; margin: 0 40px;">
+        @if ($hasSelectedAssinantes)
+            {{-- Renderiza APENAS O PRIMEIRO assinante da lista --}}
+            @php
+                $primeiroAssinante = $assinantes[0]; // Pega o segundo item
+            @endphp
+
+            <div style="margin-top: 40px; text-align: center;">
+                <div class="signature-block" style="display: inline-block; margin: 0 40px;">
+                    ___________________________________<br>
+                    <p style="line-height: 1.2;">
+                        {{ $primeiroAssinante['responsavel'] }} <br>
+                        <span>{{ $primeiroAssinante['unidade_nome'] }}</span>
+                    </p>
+                </div>
+            </div>
+        @else
+            {{-- Bloco Padrão (Fallback) --}}
+            <div class="signature-block" style="margin-top: 40px; text-align: center;">
                 ___________________________________<br>
                 <p style="line-height: 1.2;">
-                    XXXXXXXXXXXXXXXXXXXXXXXXXX
+                    {{ $processo->prefeitura->autoridade_competente }} <br>
+                    <span style="color: red;">[Cargo/Título Padrão - A ser ajustado]</span>
                 </p>
             </div>
-        </div>
+        @endif
         {{-- QUEBRA DE PÁGINA --}}
         <div class="page-break"></div>
     </div>
@@ -419,14 +436,31 @@
             {{ \Carbon\Carbon::parse($dataSelecionada)->translatedFormat('d \d\e F \d\e Y') }}
         </div>
 
-        <div style="margin-top: 40px; text-align: center;">
-            <div class="signature-block" style="display: inline-block; margin: 0 40px;">
+        @if ($hasSelectedAssinantes)
+            {{-- Renderiza APENAS O PRIMEIRO assinante da lista --}}
+            @php
+                $primeiroAssinante = $assinantes[0]; // Pega o segundo item
+            @endphp
+
+            <div style="margin-top: 40px; text-align: center;">
+                <div class="signature-block" style="display: inline-block; margin: 0 40px;">
+                    ___________________________________<br>
+                    <p style="line-height: 1.2;">
+                        {{ $primeiroAssinante['responsavel'] }} <br>
+                        <span>{{ $primeiroAssinante['unidade_nome'] }}</span>
+                    </p>
+                </div>
+            </div>
+        @else
+            {{-- Bloco Padrão (Fallback) --}}
+            <div class="signature-block" style="margin-top: 40px; text-align: center;">
                 ___________________________________<br>
                 <p style="line-height: 1.2;">
-                    XXXXXXXXXXXXXXXXXXXXXXXXXX
+                    {{ $processo->prefeitura->autoridade_competente }} <br>
+                    <span style="color: red;">[Cargo/Título Padrão - A ser ajustado]</span>
                 </p>
             </div>
-        </div>
+        @endif
     </div>
 
 </body>
