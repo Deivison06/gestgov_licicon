@@ -93,51 +93,57 @@
             </div>
 
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
+                <table class="w-full overflow-hidden divide-y divide-gray-200 rounded-lg shadow-sm">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Nº Processo</th>
-                            <th class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Nº Procedimento</th>
-                            <th class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Tipo Contratação</th>
-                            <th class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Tipo Procedimento</th>
-                            <th class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Modalidade</th>
-                            <th class="px-6 py-4 text-xs font-medium tracking-wider text-center text-gray-500 uppercase">Ações</th>
+                            <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">Nº Processo</th>
+                            <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">Nº Procedimento</th>
+                            <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">Tipo Contratação</th>
+                            <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">Tipo Procedimento</th>
+                            <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">Modalidade</th>
+                            <th class="px-4 py-3 text-xs font-semibold tracking-wider text-center text-gray-600 uppercase">Ações</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($processos as $processo)
-                        <tr class="transition-colors duration-200 hover:bg-gray-50">
-                            <td class="px-6 py-4 font-mono text-sm text-gray-900">{{ $processo->numero_processo }}</td>
-                            <td class="px-6 py-4 font-mono text-sm text-gray-900">{{ $processo->numero_procedimento }}</td>
-                            <td class="px-6 py-4 text-sm text-gray-900">{{ $processo->tipo_contratacao_nome }}</td>
-                            <td class="px-6 py-4 text-sm text-gray-900">{{ $processo->tipo_procedimento_nome }}</td>
-                            <td class="px-6 py-4">
-                                <span class="inline-flex px-2.5 py-0.5 text-xs font-medium rounded-full
-                                    @if ($processo->modalidade->value === 'dispensa') bg-purple-100 text-purple-800
-                                    @elseif($processo->modalidade->value === 'inexigibilidade') bg-pink-100 text-pink-800
-                                    @elseif($processo->modalidade->value === 'pregão') bg-blue-100 text-blue-800
-                                    @elseif($processo->modalidade->value === 'concorrência') bg-green-100 text-green-800
-                                    @else bg-gray-100 text-gray-800 @endif">
+                        <tr class="transition-colors duration-200 hover:bg-gray-50/80">
+                            <td class="px-4 py-3 font-mono text-sm text-gray-900 whitespace-nowrap">{{ $processo->numero_processo }}</td>
+                            <td class="px-4 py-3 font-mono text-sm text-gray-900 whitespace-nowrap">{{ $processo->numero_procedimento }}</td>
+                            <td class="px-4 py-3 text-sm text-gray-900">{{ $processo->tipo_contratacao_nome }}</td>
+                            <td class="px-4 py-3 text-sm text-gray-900">{{ $processo->tipo_procedimento_nome }}</td>
+                            <td class="px-4 py-3">
+                                <span class="inline-flex px-2.5 py-0.5 text-xs font-semibold rounded-full
+                                    @if ($processo->modalidade->value === 'dispensa') bg-purple-100 text-purple-800 border border-purple-200
+                                    @elseif($processo->modalidade->value === 'inexigibilidade') bg-pink-100 text-pink-800 border border-pink-200
+                                    @elseif($processo->modalidade->value === 'pregão') bg-blue-100 text-blue-800 border border-blue-200
+                                    @elseif($processo->modalidade->value === 'concorrência') bg-green-100 text-green-800 border border-green-200
+                                    @else bg-gray-100 text-gray-800 border border-gray-200 @endif">
                                     {{ $processo->modalidade->getDisplayName() }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4">
-                                <div class="flex justify-center space-x-2">
-                                    <a href="{{ route('admin.processos.edit', $processo->id) }}"
-                                        class="p-2 text-gray-600 transition-colors duration-200 rounded-lg hover:bg-gray-100 hover:text-[#009496]"
-                                        title="Editar processo">✏️</a>
-
+                            <td class="px-4 py-3">
+                                <div class="flex justify-center space-x-1.5">
                                     <a href="{{ route('admin.processos.iniciar', $processo->id) }}"
-                                        class="px-3 py-2 text-sm text-white transition-colors duration-200 bg-[#062F43] rounded-lg hover:bg-[#065f8b]"
+                                        class="px-3 py-1.5 text-xs font-medium text-white transition-colors duration-200 bg-[#062F43] rounded-md hover:bg-[#065f8b] focus:outline-none focus:ring-2 focus:ring-[#062F43] focus:ring-offset-1"
                                         title="Iniciar processo">
                                         Iniciar
                                     </a>
 
                                     <a href="{{ route('admin.processos.finalizar', $processo->id) }}"
-                                        class="px-3 py-2 text-sm text-white transition-colors duration-200 bg-green-600 rounded-lg hover:bg-green-700"
+                                        class="px-3 py-1.5 text-xs font-medium text-white transition-colors duration-200 bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-1"
                                         title="Finalizar processo">
                                         Finalizar
                                     </a>
+
+                                    <a href="{{ route('admin.processos.contrato', $processo->id) }}"
+                                        class="px-3 py-1.5 text-xs font-medium text-white transition-colors duration-200 bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-1"
+                                        title="Emitir Contrato">
+                                        Contrato
+                                    </a>
+
+                                    <a href="{{ route('admin.processos.edit', $processo->id) }}"
+                                        class="p-1.5 text-gray-600 transition-colors duration-200 rounded-md hover:bg-gray-100 hover:text-[#009496] focus:outline-none focus:ring-2 focus:ring-[#009496] focus:ring-offset-1"
+                                        title="Editar processo">✏️</a>
 
                                     <form action="{{ route('admin.processos.destroy', $processo->id) }}" method="POST"
                                         class="inline" id="delete-form-{{ $processo->id }}">
@@ -146,22 +152,29 @@
                                         <button
                                             type="button"
                                             onclick="confirmDelete({{ $processo->id }}, '{{ $processo->numero_processo }}')"
-                                            class="p-2 text-gray-600 transition-colors duration-200 rounded-lg hover:bg-red-100 hover:text-red-600"
+                                            class="p-1.5 text-gray-600 transition-colors duration-200 rounded-md hover:bg-red-100 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-1"
                                             title="Excluir processo">🗑️</button>
                                     </form>
                                 </div>
                             </td>
                         </tr>
-                        <tr class="bg-gray-50">
-                            <td colspan="6" class="px-6 py-4 text-sm text-gray-700">
-                                <strong>Objeto:</strong> {!! strip_tags($processo->objeto) !!} <br>
-                                Criado Por: {{ $processo->user->name ?? 'N/A' }}
+                        <tr class="bg-gray-50/50">
+                            <td colspan="6" class="px-4 py-3 text-sm text-gray-700">
+                                <div class="space-y-1">
+                                    <div><strong class="text-gray-900">Objeto:</strong> {!! strip_tags($processo->objeto) !!}</div>
+                                    <div class="text-xs text-gray-500">Criado Por: {{ $processo->user->name ?? 'N/A' }}</div>
+                                </div>
                             </td>
                         </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-6 py-12 text-center text-gray-400">
-                                    Nenhum processo encontrado para esta prefeitura
+                                <td colspan="6" class="px-6 py-16 text-center text-gray-500">
+                                    <div class="flex flex-col items-center justify-center space-y-2">
+                                        <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                        </svg>
+                                        <span class="text-sm font-medium">Nenhum processo encontrado para esta prefeitura</span>
+                                    </div>
                                 </td>
                             </tr>
                         @endforelse

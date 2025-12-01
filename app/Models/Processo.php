@@ -27,6 +27,7 @@ class Processo extends Model
         'responsavel_numeracao',
         'portaria_numeracao',
         'user_id',
+        'contTotalPage'
     ];
 
     protected $casts = [
@@ -41,6 +42,7 @@ class Processo extends Model
         return $this->belongsTo(Prefeitura::class);
     }
 
+
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -50,9 +52,15 @@ class Processo extends Model
     {
         return $this->hasOne(ProcessoDetalhe::class);
     }
+
     public function finalizacao()
     {
         return $this->hasOne(Finalizacao::class);
+    }
+
+    public function contrato()
+    {
+        return $this->hasOne(Contrato::class);
     }
 
     public function documentos()

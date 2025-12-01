@@ -365,6 +365,10 @@ class ProcessoController extends Controller
         $sucesso = $this->mesclarPdfsComGhostscript($arquivos, $caminhoArquivo);
 
         if ($sucesso) {
+            // CONTAR PÁGINAS DO ARQUIVO FINAL E SALVAR NO BANCO
+            $totalPaginas = $this->contarPaginasPdf($caminhoArquivo);
+            $this->salvarTotalPaginas($processo, $totalPaginas);
+
             // Adicionar carimbo ao PDF mesclado
             $caminhoCarimbado = $this->adicionarCarimboAoPdfComGhostscript($caminhoArquivo, $processo);
 
@@ -377,6 +381,31 @@ class ProcessoController extends Controller
             }
         } else {
             throw new \Exception('Erro ao mesclar documentos com Ghostscript');
+        }
+    }
+
+    private function salvarTotalPaginas(Processo $processo, int $totalPaginas): void
+    {
+        try {
+            // Atualizar o total de páginas no processo
+            $processo->contTotalPage = $totalPaginas;
+            $processo->save();
+
+            // Atualizar também todos os documentos do processo com o total de páginas
+            Documento::where('processo_id', $processo->id)
+                ->update(['contTotalPage' => $totalPaginas]);
+
+            Log::info('Total de páginas salvo no banco', [
+                'processo_id' => $processo->id,
+                'total_paginas' => $totalPaginas
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Erro ao salvar total de páginas no banco', [
+                'processo_id' => $processo->id,
+                'total_paginas' => $totalPaginas,
+                'erro' => $e->getMessage()
+            ]);
         }
     }
 
@@ -1181,7 +1210,7 @@ class ProcessoController extends Controller
         }
     }
 
-    private function adicionarCarimbo(Fpdi $pdf, Processo $processo, int $paginaAtual, int $pageCountTotal): void
+    private function adicionarCarimbo(Fpdi $pdf, Processo $processo, int $paginaAtual, int $pageCountTotal, int $paginaInicial = 1): void
     {
         $pageWidth = $pdf->GetPageWidth();
         $pageHeight = $pdf->GetPageHeight();
@@ -1196,11 +1225,15 @@ class ProcessoController extends Controller
         $pdf->Rect($x, $y, $boxWidth, $boxHeight, 'D');
         $pdf->SetTextColor(0, 0, 0);
 
+        // CALCULAR PÁGINA ABSOLUTA (inicialização)
+        $paginaAbsoluta = $paginaInicial + $paginaAtual;
+        $totalAbsoluto = $paginaInicial + $pageCountTotal;
+
         $codigoAutenticacao = $processo->prefeitura->id . now()->format('HisdmY');
         $textoCarimbo = "Processo numerado por: {$processo->responsavel_numeracao} " .
             "Cargo: {$processo->unidade_numeracao} " .
             "Portaria nº {$processo->portaria_numeracao} " .
-            "Pág. {$paginaAtual} / {$pageCountTotal} - " .
+            "Pág. {$paginaAbsoluta} / {$totalAbsoluto} - " .
             "Documento gerado na Plataforma GestGov - Licenciado para Prefeitura de {$processo->prefeitura->cidade}. " .
             "Cod. de Autenticação: {$codigoAutenticacao} - Para autenticar acesse gestgov.com.br/autenticacao";
 

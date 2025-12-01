@@ -16,7 +16,7 @@ class Documento extends Model
         'tipo_documento',
         'data_selecionada',
         'caminho',
-        'gerado_em'
+        'gerado_em',
     ];
 
     // Relacionamento com Processo

@@ -142,11 +142,11 @@
         </p>
         <h4>I. RELATÓRIO:</h4>
         <p style="text-indent: 30px; text-align: justify;">
-            Versa o presente parecer acerca de pedido originário da {{ $detalhe->secretaria }},
+            Versa o presente parecer acerca de pedido originário da {{ $processo->detalhe->secretaria }},
             que solicitou a contratação de {!! strip_tags($processo->objeto) !!} para atendimento do objeto acima especificado.
         </p>
         <p style="text-indent: 30px; text-align: justify;">
-            Após o pedido feito pela {{ $detalhe->secretaria }}, foi
+            Após o pedido feito pela {{ $processo->detalhe->secretaria }}, foi
             solicitado ao setor de engenharia o Projeto Básico, conforme documentos acostados aos autos.
         </p>
         <p style="text-indent: 30px; text-align: justify;">

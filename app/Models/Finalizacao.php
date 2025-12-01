@@ -14,6 +14,7 @@ class Finalizacao extends Model
         'anexo_habilitacao',
         'anexo_recurso_contratacoes',
         'anexo_planilha',
+        'anexo_publicacoes',
 
         'orgao_responsavel',
         'cnpj',

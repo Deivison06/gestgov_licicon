@@ -6,6 +6,7 @@ use App\Http\Controllers\UnidadeController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\ProcessoController;
 use App\Http\Controllers\PrefeituraController;
+use App\Http\Controllers\ContratoProcessoController;
 use App\Http\Controllers\FinalizacaoProcessoController;
 
 // Rotas de perfil (usuário logado)
@@ -87,15 +88,24 @@ Route::prefix('admin')
         Route::get('/finalizacao/processo/{processo}/documentos/baixar-todos', [FinalizacaoProcessoController::class, 'baixarTodosDocumentos'])->name('processo.finalizacao.documento.dowload-all');
 
         // Novas rotas para vencedores
-    Route::post('/{processo}/vencedores', [FinalizacaoProcessoController::class, 'storeVencedores'])
-        ->name('processos.finalizacao.vencedores.store');
+        Route::post('/{processo}/vencedores', [FinalizacaoProcessoController::class, 'storeVencedores'])
+            ->name('processos.finalizacao.vencedores.store');
 
-    Route::get('/{processo}/vencedores', [FinalizacaoProcessoController::class, 'getVencedores'])
-        ->name('processos.finalizacao.vencedores.get');
+        Route::get('/{processo}/vencedores', [FinalizacaoProcessoController::class, 'getVencedores'])
+            ->name('processos.finalizacao.vencedores.get');
 
        // CORREÇÃO: Adicione o parâmetro {processo} na rota
         Route::post('/processos/{processo}/finalizacao/importar-excel', [FinalizacaoProcessoController::class, 'importarExcel'])
             ->name('processos.finalizacao.importar-excel');
+
+            // Rota para exibir a view de contrato
+        Route::get('processos/{processo}/contrato', [ContratoProcessoController::class, 'contrato'])->name('processos.contrato');
+
+        // Rota para gerar PDF do contrato
+        Route::get('contrato/processos/{processo}/pdf', [ContratoProcessoController::class, 'gerarPdf'])->name('processos.contrato.pdf');
+
+        // Rota para baixar contrato específico
+        Route::get('/contrato/processo/{processo}/baixar', [ContratoProcessoController::class, 'baixarContrato'])->name('processo.contrato.download');
     });
 
 

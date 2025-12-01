@@ -72,7 +72,13 @@ class FinalizacaoProcessoController extends Controller
             'cor' => 'bg-pink-500',
             'campos' => [],
             'requer_assinatura' => true,
-            ]
+        ],
+        'publicacoes' => [
+            'titulo' => 'PUBLICAÇÕES',
+            'cor' => 'bg-pink-500',
+            'campos' => ['anexo_publicacoes'],
+            'requer_assinatura' => false,
+        ]
     ];
 
     // Mapeamento de anexos
@@ -83,6 +89,7 @@ class FinalizacaoProcessoController extends Controller
         'documento_habilitacao_empresa_vencedora' => 'anexo_habilitacao',
         'recurso_contratacoes_decisao_recursos' => 'anexo_recurso_contratacoes',
         'termo_adjudicacao' => 'anexo_planilha',
+        'publicacoes' => 'anexo_publicacoes',
     ];
 
     public function finalizar(Processo $processo)
@@ -132,7 +139,7 @@ class FinalizacaoProcessoController extends Controller
                 'requer_assinatura' => false,
             ],
             'documento_habilitacao_empresa_vencedora' => [
-                'titulo' => 'DOCUMENTOS DE HABILITAÇÃO EMPRESA VENCEDORA',
+                'titulo' => 'DOCUMENTOS DE HABILITAÇÃO',
                 'cor' => 'bg-green-500',
                 'campos' => ['anexo_habilitacao'],
                 'requer_assinatura' => false,
@@ -149,6 +156,12 @@ class FinalizacaoProcessoController extends Controller
                 'campos' => ['anexo_proposta_readequada'],
                 'requer_assinatura' => false,
             ],
+            'recurso_contratacoes_decisao_recursos' => [
+                'titulo' => 'RECURSOS, CONTRARAZÕES E DECISÃO DOS RECURSOS',
+                'cor' => 'bg-green-500',
+                'campos' => ['anexo_recurso_contratacoes'],
+                'requer_assinatura' => false,
+            ],
             'termo_adjudicacao' => [
                 'titulo' => 'TERMO DE ADJUDICAÇÃO',
                 'cor' => 'bg-yellow-500',
@@ -161,12 +174,7 @@ class FinalizacaoProcessoController extends Controller
                 ],
                 'requer_assinatura' => true,
             ],
-            'recurso_contratacoes_decisao_recursos' => [
-                'titulo' => 'RECURSOS, CONTRARAZÕES E DECISÃO DOS RECURSOS',
-                'cor' => 'bg-green-500',
-                'campos' => ['anexo_recurso_contratacoes'],
-                'requer_assinatura' => false,
-            ],
+
             'parecer_controle_interno' => [
                 'titulo' => 'PARECER DO CONTROLE INTERNO',
                 'cor' => 'bg-orange-500',
@@ -178,6 +186,12 @@ class FinalizacaoProcessoController extends Controller
                 'cor' => 'bg-pink-500',
                 'campos' => [],
                 'requer_assinatura' => true,
+            ],
+            'publicacoes' => [
+                'titulo' => 'PUBLICAÇÕES',
+                'cor' => 'bg-pink-500',
+                'campos' => ['anexo_publicacoes'],
+                'requer_assinatura' => false,
             ]
         ];
     }
@@ -708,10 +722,11 @@ class FinalizacaoProcessoController extends Controller
                 'documento_habilitacao_empresa_vencedora',
                 'proposta',
                 'proposta_readequada',
-                'termo_adjudicacao',
                 'recurso_contratacoes_decisao_recursos',
+                'termo_adjudicacao',
                 'parecer_controle_interno',
-                'termo_homologacao'
+                'termo_homologacao',
+                'publicacoes'
             ];
         }
 
@@ -724,7 +739,8 @@ class FinalizacaoProcessoController extends Controller
             'recurso_contratacoes_decisao_recursos',
             'termo_adjudicacao',
             'parecer_controle_interno',
-            'termo_homologacao'
+            'termo_homologacao',
+            'publicacoes'
         ];
     }
 
@@ -812,7 +828,8 @@ class FinalizacaoProcessoController extends Controller
             'anexo_proposta_readequada',
             'anexo_habilitacao',
             'anexo_recurso_contratacoes',
-            'anexo_planilha'
+            'anexo_planilha',
+            'anexo_publicacoes'
         ];
     }
 
@@ -1233,6 +1250,9 @@ class FinalizacaoProcessoController extends Controller
 
             $caminhoCarimbado = str_replace('.pdf', '_carimbado.pdf', $caminhoPdf);
 
+            // OBTER PÁGINA INICIAL DA FINALIZAÇÃO
+            $paginaInicial = $processo->contTotalPage ?? 0;
+
             for ($pagina = 1; $pagina <= $pageCount; $pagina++) {
                 $paginaAtual = $pagina;
 
@@ -1256,6 +1276,9 @@ class FinalizacaoProcessoController extends Controller
             $sucesso = $this->mesclarPdfsComGhostscript($paginasTemp, $caminhoCarimbado);
 
             if ($sucesso && file_exists($caminhoCarimbado) && filesize($caminhoCarimbado) > 0) {
+                // ATUALIZAR O CONTADOR DE PÁGINAS PARA O CONTRATO
+                $this->atualizarContadorContrato($processo, $pageCount);
+
                 if (file_exists($caminhoPdf)) {
                     unlink($caminhoPdf);
                 }
@@ -1279,6 +1302,32 @@ class FinalizacaoProcessoController extends Controller
             }
         }
     }
+
+    private function atualizarContadorContrato(Processo $processo, int $paginasFinalizacao): void
+    {
+        try {
+            // Calcular total de páginas (inicialização + finalização)
+            $totalPaginas = ($processo->contTotalPage ?? 0) + $paginasFinalizacao;
+
+            // Atualizar no processo
+            $processo->contTotalPage = $totalPaginas;
+            $processo->save();
+
+            Log::info('Contador atualizado para contrato', [
+                'processo_id' => $processo->id,
+                'paginas_inicializacao' => $processo->contTotalPage ?? 0,
+                'paginas_finalizacao' => $paginasFinalizacao,
+                'total_para_contrato' => $totalPaginas
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Erro ao atualizar contador para contrato', [
+                'processo_id' => $processo->id,
+                'erro' => $e->getMessage()
+            ]);
+        }
+    }
+
 
     // =========================================================
     // MÉTODOS AUXILIARES
@@ -1324,11 +1373,18 @@ class FinalizacaoProcessoController extends Controller
         $pdf->Rect($x, $y, $boxWidth, $boxHeight, 'D');
         $pdf->SetTextColor(0, 0, 0);
 
+        // OBTER PÁGINA INICIAL DA FINALIZAÇÃO (continuação da inicialização)
+        $paginaInicial = $processo->contTotalPage ?? 0;
+
+        // CALCULAR PÁGINA ABSOLUTA (finalização)
+        $paginaAbsoluta = $paginaInicial + $paginaAtual;
+        $totalAbsoluto = $paginaInicial + $pageCountTotal;
+
         $codigoAutenticacao = $processo->prefeitura->id . now()->format('HisdmY');
         $textoCarimbo = "Processo numerado por: {$processo->responsavel_numeracao} " .
             "Cargo: {$processo->unidade_numeracao} " .
             "Portaria nº {$processo->portaria_numeracao} " .
-            "Pág. {$paginaAtual} / {$pageCountTotal} - " .
+            "Pág. {$paginaAbsoluta} / {$totalAbsoluto} - " .
             "Documento gerado na Plataforma GestGov - Licenciado para Prefeitura de {$processo->prefeitura->cidade}. " .
             "Cod. de Autenticação: {$codigoAutenticacao} - Para autenticar acesse gestgov.com.br/autenticacao";
 
@@ -1344,6 +1400,7 @@ class FinalizacaoProcessoController extends Controller
         $pdf->MultiCell($boxHeight, $boxWidth, $textoCarimbo, 0, 'C', false, 1, '', '', true, 0, false, true, 0, 'T', false);
         $pdf->StopTransform();
     }
+
 
     private function contarPaginasPdf(string $caminhoPdf): int
     {

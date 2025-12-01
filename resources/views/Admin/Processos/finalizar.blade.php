@@ -1699,6 +1699,7 @@
                 anexo_proposta_readequada: existing?.anexo_proposta_readequada ?? '',
                 anexo_habilitacao: existing?.anexo_habilitacao ?? '',
                 anexo_recurso_contratacoes: existing?.anexo_recurso_contratacoes ?? '',
+                anexo_publicacoes: existing?.anexo_publicacoes ?? '',
                 orgao_responsavel: existing?.orgao_responsavel ?? '',
                 cnpj: existing?.cnpj ?? '',
                 endereco: existing?.endereco ?? '',
@@ -1718,6 +1719,7 @@
                     anexo_proposta_readequada: !!existing?.anexo_proposta_readequada,
                     anexo_habilitacao: !!existing?.anexo_habilitacao,
                     anexo_recurso_contratacoes: !!existing?.anexo_recurso_contratacoes,
+                    anexo_publicacoes: !!existing?.anexo_publicacoes,
                     orgao_responsavel: !!existing?.orgao_responsavel,
                     cnpj: !!existing?.cnpj,
                     endereco: !!existing?.endereco,
@@ -1751,6 +1753,7 @@
                         'anexo_habilitacao',
                         'anexo_recurso_contratacoes',
                         'anexo_planilha',
+                        'anexo_publicacoes',
 
                         // Campos de texto
                         'orgao_responsavel',

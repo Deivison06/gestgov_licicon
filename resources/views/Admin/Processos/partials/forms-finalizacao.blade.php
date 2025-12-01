@@ -16,6 +16,9 @@
     @elseif($campo === 'anexo_recurso_contratacoes')
     <x-form-field name="anexo_recurso_contratacoes" label="📎 Anexar PDF Projeto Básico" type="file" accept="application/pdf" />
 
+    @elseif($campo === 'anexo_publicacoes')
+    <x-form-field name="anexo_publicacoes" label="📎 Anexar PDF Projeto Básico" type="file" accept="application/pdf" />
+
     {{-- campos STRING --}}
 
     @elseif($campo === 'orgao_responsavel')
