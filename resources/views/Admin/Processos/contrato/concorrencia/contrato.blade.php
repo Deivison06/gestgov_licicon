@@ -171,7 +171,7 @@
                             <td class="content">
                                 <div style=" font-weight: bold; margin-bottom: 3px;">Contratante</div>
                                 <div style="">
-                                    Prefeitura Municipal de {{ $processo->finalizacao->orgao_responsavel }}, com sede no(a) {{ $processo->prefeitura->endereco }}, na
+                                    {{ $processo->finalizacao->orgao_responsavel }}, com sede no(a) {{ $processo->prefeitura->endereco }}, na
                                     cidade de {{ $processo->prefeitura->cidade }}, inscrito(a) no CNPJ sob o nº {{ $processo->finalizacao->cnpj }},
                                     neste ato representado(a) pelo(a) {{ $processo->finalizacao->responsavel }}, inscrito no CPF sob n°
                                     {{ $processo->finalizacao->cpf_responsavel }}.
@@ -316,7 +316,7 @@
         </div>
 
         <p style="text-align: justify;">
-            1.1 Contratação de empresa para {!! strip_tags($processo->objeto) !!}
+            1.1 {!! strip_tags($processo->objeto) !!}
         </p>
 
         <div style="margin-bottom: 20px;">

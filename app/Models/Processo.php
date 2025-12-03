@@ -86,6 +86,11 @@ class Processo extends Model
         return $this->hasMany(Vencedor::class)->orderBy('ordem');
     }
 
+    public function reservas()
+    {
+        return $this->hasMany(Reserva::class)->orderBy('ordem');
+    }
+
     /**
      * Get all lotes from all vencedores of this processo
      */

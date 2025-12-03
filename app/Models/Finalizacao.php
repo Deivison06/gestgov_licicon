@@ -27,6 +27,9 @@ class Finalizacao extends Model
         'representante_legal_empresa',
         'cpf_representante',
         'valor_total',
+        'numero_ata_registro_precos',
+        'cargo_controle_interno',
+        'cargo_responsavel',
     ];
 
     public function processo()

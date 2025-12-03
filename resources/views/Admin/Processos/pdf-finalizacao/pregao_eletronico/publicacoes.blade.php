@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>DOCUMENTOS DE HABILITAÇÃO EMPRESA VENCEDORA  - Processo {{ $processo->numero_processo ?? $processo->id }}</title>
+    <title>Publicacoes - Processo {{ $processo->numero_processo ?? $processo->id }}</title>
     <style type="text/css">
         @font-face {
             font-family: 'Aptos';
@@ -109,7 +109,6 @@
             display: block;
             /* Garante que o strong ocupe a largura total */
         }
-
     </style>
 </head>
 
@@ -121,13 +120,12 @@
     <div id="cover-page">
         <img src="{{ public_path('icons/capa-documento.png') }}" alt="Martelo da Justiça" class="cover-image">
         <div class="cover-title">
-            @if($processo->detalhe->inversao_fase === "sim")
-                DOCUMENTOS DE HABILITAÇÃO
-            @else
-                DOCUMENTOS DE HABILITAÇÃO EMPRESA VENCEDORA
-                @endif
+            PUBLICAÇÕES
         </div>
     </div>
+
+    {{-- QUEBRA DE PÁGINA
+    <div class="page-break"></div> --}}
 
 </body>
 

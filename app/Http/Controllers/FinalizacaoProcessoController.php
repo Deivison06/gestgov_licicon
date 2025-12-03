@@ -9,6 +9,7 @@ use App\Models\Documento;
 use App\Models\Finalizacao;
 use App\Imports\LotesImport;
 use Illuminate\Http\Request;
+use App\Enums\ModalidadeEnum;
 use setasign\Fpdi\Tcpdf\Fpdi;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +19,7 @@ use Maatwebsite\Excel\Facades\Excel;
 class FinalizacaoProcessoController extends Controller
 {
     // Documentos configuration
-    protected $documentos = [
+    protected $documentosBase = [
         'atos_sessao' => [
             'titulo' => 'ATOS DA SESSÃO',
             'cor' => 'bg-red-500',
@@ -38,7 +39,7 @@ class FinalizacaoProcessoController extends Controller
             'requer_assinatura' => false,
         ],
         'documento_habilitacao_empresa_vencedora' => [
-            'titulo' => 'DOCUMENTOS DE HABILITAÇÃO EMPRESA VENCEDORA',
+            'titulo' => 'DOCUMENTOS DE HABILITAÇÃO DA EMPRESA VENCEDORA',
             'cor' => 'bg-green-500',
             'campos' => ['anexo_habilitacao'],
             'requer_assinatura' => false,
@@ -54,6 +55,7 @@ class FinalizacaoProcessoController extends Controller
             'cor' => 'bg-yellow-500',
             'campos' => [
                 'orgao_responsavel',
+                'cargo_responsavel',
                 'cnpj',
                 'endereco',
                 'responsavel',
@@ -75,9 +77,15 @@ class FinalizacaoProcessoController extends Controller
         ],
         'publicacoes' => [
             'titulo' => 'PUBLICAÇÕES',
-            'cor' => 'bg-pink-500',
+            'cor' => 'bg-indigo-500',
             'campos' => ['anexo_publicacoes'],
             'requer_assinatura' => false,
+        ],
+        'ata_registro_precos' => [
+            'titulo' => 'ATA DE REGISTRO DE PREÇOS',
+            'cor' => 'bg-teal-500',
+            'campos' => ['numero_ata_registro_precos', 'cargo_controle_interno'],
+            'requer_assinatura' => true,
         ]
     ];
 
@@ -96,20 +104,11 @@ class FinalizacaoProcessoController extends Controller
     {
         $processo->load(['prefeitura.unidades', 'detalhe']);
 
-        // Inicia com os documentos base
-        $documentos = $this->documentos;
-
-        // VERIFICA SE É CONCORRÊNCIA COM INVERSÃO DE FASE
-        $isConcorrenciaComInversao = $processo->modalidade === \App\Enums\ModalidadeEnum::CONCORRENCIA &&
-                                     $processo->detalhe->inversao_fase === "sim";
-
-        if ($isConcorrenciaComInversao) {
-            // ORDEM ESPECIAL PARA CONCORRÊNCIA COM INVERSÃO DE FASE
-            $documentos = $this->getOrdemConcorrenciaComInversao();
-        }
+        // Obtém os documentos organizados conforme o tipo de procedimento
+        $documentos = $this->getDocumentosOrganizados($processo);
 
         // Adiciona campos extras para concorrência (independente da inversão)
-        if ($processo->modalidade === \App\Enums\ModalidadeEnum::CONCORRENCIA) {
+        if ($processo->modalidade === ModalidadeEnum::CONCORRENCIA) {
             $camposConcorrencia = [
                 'razao_social',
                 'cnpj_empresa_vencedora',
@@ -120,83 +119,210 @@ class FinalizacaoProcessoController extends Controller
             ];
 
             // Adiciona os campos extras ao termo de adjudicação
-            $documentos['termo_adjudicacao']['campos'] = array_merge(
-                $documentos['termo_adjudicacao']['campos'],
-                $camposConcorrencia
-            );
+            if (isset($documentos['termo_adjudicacao'])) {
+                $documentos['termo_adjudicacao']['campos'] = array_merge(
+                    $documentos['termo_adjudicacao']['campos'],
+                    $camposConcorrencia
+                );
+            }
         }
 
         return view('Admin.Processos.finalizar', compact('processo', 'documentos'));
     }
 
-    private function getOrdemConcorrenciaComInversao(): array
+    private function getDocumentosOrganizados(Processo $processo): array
     {
-        return [
-            'atos_sessao' => [
-                'titulo' => 'ATOS DA SESSÃO',
-                'cor' => 'bg-red-500',
-                'campos' => ['anexo_atos_sessao'],
-                'requer_assinatura' => false,
-            ],
-            'documento_habilitacao_empresa_vencedora' => [
-                'titulo' => 'DOCUMENTOS DE HABILITAÇÃO',
-                'cor' => 'bg-green-500',
-                'campos' => ['anexo_habilitacao'],
-                'requer_assinatura' => false,
-            ],
-            'proposta' => [
-                'titulo' => 'PROPOSTAS',
-                'cor' => 'bg-blue-500',
-                'campos' => ['anexo_proposta'],
-                'requer_assinatura' => false,
-            ],
-            'proposta_readequada' => [
-                'titulo' => 'PROPOSTA VENCEDORA READEQUADA',
-                'cor' => 'bg-purple-500',
-                'campos' => ['anexo_proposta_readequada'],
-                'requer_assinatura' => false,
-            ],
-            'recurso_contratacoes_decisao_recursos' => [
-                'titulo' => 'RECURSOS, CONTRARAZÕES E DECISÃO DOS RECURSOS',
-                'cor' => 'bg-green-500',
-                'campos' => ['anexo_recurso_contratacoes'],
-                'requer_assinatura' => false,
-            ],
-            'termo_adjudicacao' => [
-                'titulo' => 'TERMO DE ADJUDICAÇÃO',
-                'cor' => 'bg-yellow-500',
-                'campos' => [
-                    'orgao_responsavel',
-                    'cnpj',
-                    'endereco',
-                    'responsavel',
-                    'cpf_responsavel',
-                ],
-                'requer_assinatura' => true,
-            ],
+        // Verifica se é SRP (Sistema de Registro de Preços)
+        $isSRP = $processo->detalhe->tipo_srp === 'sim';
 
-            'parecer_controle_interno' => [
-                'titulo' => 'PARECER DO CONTROLE INTERNO',
-                'cor' => 'bg-orange-500',
-                'campos' => [],
-                'requer_assinatura' => true,
-            ],
-            'termo_homologacao' => [
-                'titulo' => 'TERMO DE HOMOLOGAÇÃO',
-                'cor' => 'bg-pink-500',
-                'campos' => [],
-                'requer_assinatura' => true,
-            ],
-            'publicacoes' => [
-                'titulo' => 'PUBLICAÇÕES',
-                'cor' => 'bg-pink-500',
-                'campos' => ['anexo_publicacoes'],
-                'requer_assinatura' => false,
-            ]
-        ];
+        // Verifica se tem inversão de fases
+        $hasInversaoFase = $processo->detalhe && $processo->detalhe->inversao_fase === 'sim';
+
+        // Verifica se é concorrência
+        $isConcorrencia = $processo->modalidade === ModalidadeEnum::CONCORRENCIA;
+
+        // Se for concorrência com inversão de fase
+        if ($isConcorrencia && $hasInversaoFase) {
+            return $this->getOrdemConcorrenciaComInversao($isSRP);
+        }
+
+        // Se for SRP
+        if ($isSRP) {
+            return $this->getOrdemSRP($hasInversaoFase);
+        }
+
+        // Se for PREGÃO (comum ou inversão)
+        return $this->getOrdemPregao($hasInversaoFase);
     }
 
+    /**
+     * Ordem para PREGÃO COMUM
+     */
+    private function getOrdemPregao(bool $hasInversaoFase = false): array
+    {
+        $documentos = $this->documentosBase;
 
+        if ($hasInversaoFase) {
+            // Pregão com inversão de fases
+            $ordem = [
+                'atos_sessao',
+                'documento_habilitacao_empresa_vencedora',
+                'proposta',
+                'proposta_readequada',
+                'recurso_contratacoes_decisao_recursos',
+                'termo_adjudicacao',
+                'parecer_controle_interno',
+                'termo_homologacao',
+                'publicacoes'
+            ];
+        } else {
+            // Pregão comum
+            $ordem = [
+                'atos_sessao',
+                'proposta',
+                'proposta_readequada',
+                'documento_habilitacao_empresa_vencedora',
+                'recurso_contratacoes_decisao_recursos',
+                'termo_adjudicacao',
+                'parecer_controle_interno',
+                'termo_homologacao',
+                'publicacoes'
+            ];
+        }
+
+        // Reorganiza os documentos conforme a ordem definida
+        $documentosOrdenados = [];
+        foreach ($ordem as $key) {
+            if (isset($documentos[$key])) {
+                $documentosOrdenados[$key] = $documentos[$key];
+            }
+        }
+
+        return $documentosOrdenados;
+    }
+
+    /**
+     * Ordem para PREGÃO SRP (Sistema de Registro de Preços)
+     */
+    private function getOrdemSRP(bool $hasInversaoFase = false): array
+    {
+        $documentos = $this->documentosBase;
+
+        // Adiciona Ata de Registro de Preços
+        $documentos['ata_registro_precos'] = [
+            'titulo' => 'ATA DE REGISTRO DE PREÇOS',
+            'cor' => 'bg-teal-500',
+            'campos' => ['numero_ata_registro_precos', 'cargo_controle_interno'],
+            'requer_assinatura' => true,
+        ];
+
+        if ($hasInversaoFase) {
+            // SRP com inversão de fases
+            $ordem = [
+                'atos_sessao',
+                'documento_habilitacao_empresa_vencedora',
+                'proposta',
+                'proposta_readequada',
+                'recurso_contratacoes_decisao_recursos',
+                'termo_adjudicacao',
+                'parecer_controle_interno',
+                'termo_homologacao',
+                'ata_registro_precos',
+                'publicacoes'
+            ];
+        } else {
+            // SRP comum
+            $ordem = [
+                'atos_sessao',
+                'proposta',
+                'proposta_readequada',
+                'documento_habilitacao_empresa_vencedora',
+                'recurso_contratacoes_decisao_recursos',
+                'termo_adjudicacao',
+                'parecer_controle_interno',
+                'termo_homologacao',
+                'ata_registro_precos',
+                'publicacoes'
+            ];
+        }
+
+        // Reorganiza os documentos conforme a ordem definida
+        $documentosOrdenados = [];
+        foreach ($ordem as $key) {
+            if (isset($documentos[$key])) {
+                $documentosOrdenados[$key] = $documentos[$key];
+            }
+        }
+
+        return $documentosOrdenados;
+    }
+
+    /**
+     * Ordem para CONCORRÊNCIA COM INVERSÃO DE FASE
+     */
+    private function getOrdemConcorrenciaComInversao(bool $isSRP = false): array
+    {
+        $documentos = $this->documentosBase;
+
+        // Ajusta o título do documento de habilitação
+        $documentos['documento_habilitacao_empresa_vencedora']['titulo'] = 'DOCUMENTOS DE HABILITAÇÃO';
+
+        if ($isSRP) {
+            // Concorrência SRP com inversão
+            $ordem = [
+                'atos_sessao',
+                'documento_habilitacao_empresa_vencedora',
+                'proposta',
+                'proposta_readequada',
+                'recurso_contratacoes_decisao_recursos',
+                'termo_adjudicacao',
+                'parecer_controle_interno',
+                'termo_homologacao',
+                'ata_registro_precos',
+                'publicacoes'
+            ];
+
+            // Adiciona Ata de Registro de Preços
+            $documentos['ata_registro_precos'] = [
+                'titulo' => 'ATA DE REGISTRO DE PREÇOS',
+                'cor' => 'bg-teal-500',
+                'campos' => ['numero_ata_registro_precos', 'cargo_controle_interno'],
+                'requer_assinatura' => true,
+            ];
+        } else {
+            // Concorrência comum com inversão
+            $ordem = [
+                'atos_sessao',
+                'documento_habilitacao_empresa_vencedora',
+                'proposta',
+                'proposta_readequada',
+                'recurso_contratacoes_decisao_recursos',
+                'termo_adjudicacao',
+                'parecer_controle_interno',
+                'termo_homologacao',
+                'publicacoes'
+            ];
+        }
+
+        // Reorganiza os documentos conforme a ordem definida
+        $documentosOrdenados = [];
+        foreach ($ordem as $key) {
+            if (isset($documentos[$key])) {
+                $documentosOrdenados[$key] = $documentos[$key];
+            }
+        }
+
+        return $documentosOrdenados;
+    }
+
+    /**
+     * Obtém a ordem dos documentos para download/mesclagem
+     */
+    private function getOrdemDocumentos(Processo $processo): array
+    {
+        $documentosOrganizados = $this->getDocumentosOrganizados($processo);
+        return array_keys($documentosOrganizados);
+    }
 
     public function storeFinalizacao(Request $request, Processo $processo)
     {
@@ -612,7 +738,6 @@ class FinalizacaoProcessoController extends Controller
         return $result;
     }
 
-
     /**
      * Buscar vencedores do processo
      */
@@ -709,40 +834,40 @@ class FinalizacaoProcessoController extends Controller
     /**
      * Obtém a ordem dos documentos para download/mesclagem
      */
-    private function getOrdemDocumentos(Processo $processo): array
-    {
-        $isConcorrenciaComInversao = $processo->modalidade === \App\Enums\ModalidadeEnum::CONCORRENCIA &&
-                                   $processo->detalhe &&
-                                   $processo->detalhe->inversao_fase === "sim";
+    // private function getOrdemDocumentos(Processo $processo): array
+    // {
+    //     $isConcorrenciaComInversao = $processo->modalidade === \App\Enums\ModalidadeEnum::CONCORRENCIA &&
+    //                                $processo->detalhe &&
+    //                                $processo->detalhe->inversao_fase === "sim";
 
-        if ($isConcorrenciaComInversao) {
-            // Ordem especial para concorrência com inversão
-            return [
-                'atos_sessao',
-                'documento_habilitacao_empresa_vencedora',
-                'proposta',
-                'proposta_readequada',
-                'recurso_contratacoes_decisao_recursos',
-                'termo_adjudicacao',
-                'parecer_controle_interno',
-                'termo_homologacao',
-                'publicacoes'
-            ];
-        }
+    //     if ($isConcorrenciaComInversao) {
+    //         // Ordem especial para concorrência com inversão
+    //         return [
+    //             'atos_sessao',
+    //             'documento_habilitacao_empresa_vencedora',
+    //             'proposta',
+    //             'proposta_readequada',
+    //             'recurso_contratacoes_decisao_recursos',
+    //             'termo_adjudicacao',
+    //             'parecer_controle_interno',
+    //             'termo_homologacao',
+    //             'publicacoes'
+    //         ];
+    //     }
 
-        // Ordem padrão
-        return [
-            'atos_sessao',
-            'proposta',
-            'proposta_readequada',
-            'documento_habilitacao_empresa_vencedora',
-            'recurso_contratacoes_decisao_recursos',
-            'termo_adjudicacao',
-            'parecer_controle_interno',
-            'termo_homologacao',
-            'publicacoes'
-        ];
-    }
+    //     // Ordem padrão
+    //     return [
+    //         'atos_sessao',
+    //         'proposta',
+    //         'proposta_readequada',
+    //         'documento_habilitacao_empresa_vencedora',
+    //         'recurso_contratacoes_decisao_recursos',
+    //         'termo_adjudicacao',
+    //         'parecer_controle_interno',
+    //         'termo_homologacao',
+    //         'publicacoes'
+    //     ];
+    // }
 
     private function baixarTodosDocumentosComGhostscript(Processo $processo, array $ordem, $documentos)
     {
@@ -793,7 +918,8 @@ class FinalizacaoProcessoController extends Controller
             'anexo_proposta_readequada' => 'salvarAnexo',
             'anexo_habilitacao' => 'salvarAnexo',
             'anexo_recurso_contratacoes' => 'salvarAnexo',
-            'anexo_planilha' => 'salvarAnexo'
+            'anexo_planilha' => 'salvarAnexo',
+            'anexo_publicacoes' => 'salvarAnexo'
         ];
 
         foreach ($arquivos as $campo => $metodo) {
@@ -843,6 +969,7 @@ class FinalizacaoProcessoController extends Controller
 
         // Data não é mais obrigatória - usa data atual se não for fornecida
         $dataSelecionada = $request->query('data', now()->format('Y-m-d'));
+        $parecerSelecionado = $request->query('parecer');
 
         // Assinantes não são mais obrigatórios - processa se existirem
         $assinantes = $this->processarAssinantes($request);
@@ -850,6 +977,7 @@ class FinalizacaoProcessoController extends Controller
         return [
             'documento' => $documento,
             'dataSelecionada' => $dataSelecionada,
+            'parecerSelecionado' => $parecerSelecionado,
             'assinantes' => $assinantes
         ];
     }
@@ -889,6 +1017,7 @@ class FinalizacaoProcessoController extends Controller
             'dataSelecionada' => $validatedData['dataSelecionada'],
             'assinantes' => $validatedData['assinantes'],
             'hasSelectedAssinantes' => $hasSelectedAssinantes, // ADICIONE ESTA LINHA
+            'parecer' => $validatedData['parecerSelecionado'],
         ];
     }
 
@@ -1327,25 +1456,6 @@ class FinalizacaoProcessoController extends Controller
             ]);
         }
     }
-
-
-    // =========================================================
-    // MÉTODOS AUXILIARES
-    // =========================================================
-
-    // private function getOrdemDocumentos(): array
-    // {
-    //     return [
-    //         'atos_sessao',
-    //         'proposta',
-    //         'proposta_readequada',
-    //         'documento_habilitacao_empresa_vencedora',
-    //         'recurso_contratacoes_decisao_recursos',
-    //         'termo_adjudicacao',
-    //         'parecer_controle_interno',
-    //         'termo_homologacao'
-    //     ];
-    // }
 
     private function configurarFonte(Fpdi $pdf): void
     {

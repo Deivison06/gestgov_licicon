@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>TERMO DE ADJUDICAÇÃO - Processo {{ $processo->numero_processo ?? $processo->id }}</title>
+    <title>TERMO DE HOMOLOGAÇÃO - Processo {{ $processo->numero_processo ?? $processo->id }}</title>
     <style type="text/css">
         @font-face {
             font-family: 'Aptos';
@@ -121,7 +121,7 @@
     <div id="cover-page">
         <img src="{{ public_path('icons/capa-documento.png') }}" alt="Martelo da Justiça" class="cover-image">
         <div class="cover-title">
-            TERMO DE ADJUDICAÇÃO
+            TERMO DE HOMOLOGAÇÃO
         </div>
     </div>
 
@@ -132,11 +132,11 @@
     {{-- BLOCO 2: TERMO DE RECEBIMENTO --}}
     {{-- ====================================================================== --}}
     <div>
-        <p>
+        <p style="font-weight: bold;">
             PROCESSO ADMINISTRATIVO Nº {{ $processo->numero_processo }} <br>
-            PREGÃO ELETRÔNICO Nº. {{ $processo->numero_procedimento }}
+            CONCORRÊNCIA Nº. {{ $processo->numero_procedimento }}
         </p>
-        <div style="text-align: center;">TERMO DE ADJUDICAÇÃO</div>
+        <div style="text-align: center;">TERMO DE HOMOLOGAÇÃO</div>
         <table style="width:100%; table-layout:fixed; border-collapse:collapse;">
             <tr>
                 <td style="width:40%; padding:8px; vertical-align:top; word-wrap:break-word; white-space:normal;">
@@ -149,15 +149,10 @@
         </table>
 
         <p style="text-indent: 30px; text-align: justify;">
-            O Prefeito Municipal da Prefeitura de {{ $processo->prefeitura->cidade }}, no uso de suas
-            atribuições legais, e considerando o Resultado do Processo Administrativo nº {{ $processo->numero_processo }},
-            {{ $processo->modalidade->getDisplayName() }} nº {{ $processo->numero_procedimento }}, depois de transcorridas todas as fases do certame, solucionadas
-            todas as dúvidas e questionamentos inerentes, conforme apurado no processo de licitação, e
-            depois de obedecidas as normas e regulamentações dispostas na Lei Federal Lei Federal nº
-            14.133/21, com alterações posteriores, Lei Complementar nº 123/06, alterada pela Lei
-            Complementar nº 147/2014, de 07 de agosto de 2014, e demais normas regulamentares aplicáveis
-            à espécie e tendo respeitado todos os Princípios Administrativos, resolve ADJUDICAR o certame
-            nos seguintes termos:
+            Considerando a decisão do Pregoeiro e membros da Comissão de Licitação, Ata de Abertura e
+            julgamento da Documentação e Propostas da empresas licitantes, confirmo a classificação e HOMOLOGO
+            o resultado da presente Licitação na modalidade CONCORRÊNCIA sob o nº {{ $processo->numero_procedimento }}, nos seguintes
+            termos e valores:
         </p>
 
         @if($processo->tipo_contratacao === \App\Enums\TipoContratacaoEnum::LOTE)
@@ -251,13 +246,8 @@
                                 <td colspan="3" style="padding:6px; text-align:right;">
                                     TOTAL DO LOTE {{ $numeroLote }}:
                                 </td>
-                                <td style="padding:6px; text-align:center;">
-                                    {{ number_format($quantidadeTotalLote, 0, ',', '.') }}
-                                </td>
-                                <td style="padding:6px; text-align:center;">
-                                    -
-                                </td>
-                                <td style="padding:6px; text-align:right; color:#d00;">
+
+                                <td colspan="3" style="padding:6px; text-align:right; color:#d00;">
                                     R$ {{ number_format($totalLote, 2, ',', '.') }}
                                 </td>
                             </tr>
@@ -348,21 +338,28 @@
                         $quantidadeTotal = $vencedor->lotes->sum('quantidade');
                     @endphp
                     <tr style="background-color:#f0f0f0; font-weight:bold;">
-                                <td colspan="3" style="padding:6px; text-align:right;">
-                                    TOTAL DO LOTE {{ $numeroLote }}:
-                                </td>
-
-                                <td colspan="3" style="padding:6px; text-align:right; color:#d00;">
-                                    R$ {{ number_format($totalLote, 2, ',', '.') }}
-                                </td>
-                            </tr>
+                        <td colspan="3" style="padding:6px; text-align:right;">
+                            TOTAL GERAL:
+                        </td>
+                        <td style="padding:6px; text-align:center;">
+                            {{ number_format($quantidadeTotal, 0, ',', '.') }}
+                        </td>
+                        <td style="padding:6px; text-align:center;">
+                            -
+                        </td>
+                        <td style="padding:6px; text-align:right; color:#d00;">
+                            R$ {{ number_format($totalGeral, 2, ',', '.') }}
+                        </td>
+                    </tr>
 
                 </table>
             @endforeach
         @endif
 
         <p style="text-indent: 30px; text-align: justify;">
-            Os autos do processo licitatório estão com vistas franqueadas aos interessados a partir desta publicação.
+            Autorizo ultimar os procedimentos com vista à assinatura do contrato, com o licitante vencedor e
+            determino que a Secretária Municipal de Administração providencie o necessário ao cumprimento desta
+            homologação.
         </p>
 
         {{-- Bloco de data e assinatura --}}
@@ -396,67 +393,7 @@
                 </p>
             </div>
         @endif
-        {{-- QUEBRA DE PÁGINA --}}
-        <div class="page-break"></div>
     </div>
-    <div>
-        <p>
-            Ao Exmos. Sr. <br>
-            Controlador(a) <br>
-            Prefeitura de {{ $processo->prefeitura->cidade }}
-        </p>
-        <p>
-            Assunto: Emissão de Parecer da Controladoria Interna.
-        </p>
-        <p style="text-indent: 30px;">
-            Senhor Controlador,
-        </p>
-        <p style="text-indent: 30px; text-align: justify;">
-            Visando o controle de legalidade dos atos da licitação, solicitamos o parecer do controle interno
-            referente a {!! strip_tags($processo->objeto) !!},
-            através do Processo Administrativo nº {{ $processo->numero_processo }}, Modalidade: {{ $processo->modalidade->getDisplayName() }} nº {{ $processo->numero_procedimento }}.
-        </p>
-        <p style="text-indent: 30px; text-align: justify;">
-            Devido à complexidade Jurídica no sentido da contratação com base na Lei Federal nº.
-            14.133/2021, Lei Complementar nº 123/06, que institui o Estatuto Nacional da Microempresa e da
-            Empresa de Pequeno Porte, alterada pela Lei Complementar nº 147/2014, de 07 de agosto de
-            2014 e demais normas regulamentares aplicáveis à espécie, indagamos esta Controladoria Interna
-            para consulta sobre a legalidade do Procedimento
-        </p>
-
-        {{-- Bloco de data e assinatura --}}
-        <div style="margin-top: 60px; text-align: right;">
-            {{ $processo->prefeitura->cidade }},
-            {{ \Carbon\Carbon::parse($dataSelecionada)->translatedFormat('d \d\e F \d\e Y') }}
-        </div>
-
-        @if ($hasSelectedAssinantes)
-            {{-- Renderiza APENAS O PRIMEIRO assinante da lista --}}
-            @php
-                $primeiroAssinante = $assinantes[0]; // Pega o segundo item
-            @endphp
-
-            <div style="margin-top: 40px; text-align: center;">
-                <div class="signature-block" style="display: inline-block; margin: 0 40px;">
-                    ___________________________________<br>
-                    <p style="line-height: 1.2;">
-                        {{ $primeiroAssinante['responsavel'] }} <br>
-                        <span>{{ $primeiroAssinante['unidade_nome'] }}</span>
-                    </p>
-                </div>
-            </div>
-        @else
-            {{-- Bloco Padrão (Fallback) --}}
-            <div class="signature-block" style="margin-top: 40px; text-align: center;">
-                ___________________________________<br>
-                <p style="line-height: 1.2;">
-                    {{ $processo->prefeitura->autoridade_competente }} <br>
-                    <span style="color: red;">[Cargo/Título Padrão - A ser ajustado]</span>
-                </p>
-            </div>
-        @endif
-    </div>
-
 </body>
 
 </html>

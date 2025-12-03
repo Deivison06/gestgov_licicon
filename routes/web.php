@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReservaController;
 use App\Http\Controllers\UnidadeController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\ProcessoController;
@@ -106,6 +107,13 @@ Route::prefix('admin')
 
         // Rota para baixar contrato específico
         Route::get('/contrato/processo/{processo}/baixar', [ContratoProcessoController::class, 'baixarContrato'])->name('processo.contrato.download');
+
+        // Rotas para reservas
+        Route::post('/processos/{processo}/finalizacao/reservas', [ReservaController::class, 'store'])
+            ->name('processos.finalizacao.reservas.store');
+
+        Route::get('/processos/{processo}/finalizacao/reservas', [ReservaController::class, 'getReservas'])
+            ->name('processos.finalizacao.reservas.get');
     });
 
 

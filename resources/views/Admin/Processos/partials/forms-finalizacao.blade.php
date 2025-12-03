@@ -24,6 +24,9 @@
     @elseif($campo === 'orgao_responsavel')
     <x-form-field name="orgao_responsavel" label="Órgão Responsável pela Assinatura do Contrato" type="text" />
 
+    @elseif($campo === 'cargo_responsavel')
+    <x-form-field name="cargo_responsavel" label="Cargo do Responsavel" type="text" />
+
     @elseif($campo === 'cnpj')
     <x-form-field name="cnpj" label="CNPJ" type="text" />
 
@@ -50,7 +53,14 @@
 
     @elseif($campo === 'cpf_representante')
     <x-form-field name="cpf_representante" label="CPF do Representante" type="text" />
+
     @elseif($campo === 'valor_total')
     <x-form-field name="valor_total" label="Valor Total" type="text" />
+
+    @elseif($campo === 'numero_ata_registro_precos')
+    <x-form-field name="numero_ata_registro_precos" label="Numero ATA" type="text" />
+
+    @elseif($campo === 'cargo_controle_interno')
+    <x-form-field name="cargo_controle_interno" label="Cargo controle interno" type="select" :options="$processo->prefeitura->unidades->pluck('nome', 'servidor_responsavel')->toArray()" placeholder="Selecione um Responsavel" />
     @endif
 </div>
