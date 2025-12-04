@@ -177,7 +177,6 @@
             VALIDADE: 12 (DOZE) MESES.
         </p>
         @php
-            use Carbon\Carbon;
 
             $data = Carbon::parse($dataSelecionada)->locale('pt_BR');
 

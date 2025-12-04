@@ -14,10 +14,10 @@
     <x-form-field name="anexo_habilitacao" label="📎 Anexar PDF Habilitação" type="file" accept="application/pdf" />
 
     @elseif($campo === 'anexo_recurso_contratacoes')
-    <x-form-field name="anexo_recurso_contratacoes" label="📎 Anexar PDF Projeto Básico" type="file" accept="application/pdf" />
+    <x-form-field name="anexo_recurso_contratacoes" label="📎 Anexar PDF Recursos, contrarrazões e decisão dos recursos" type="file" accept="application/pdf" />
 
     @elseif($campo === 'anexo_publicacoes')
-    <x-form-field name="anexo_publicacoes" label="📎 Anexar PDF Projeto Básico" type="file" accept="application/pdf" />
+    <x-form-field name="anexo_publicacoes" label="📎 Anexar PDF Publicações" type="file" accept="application/pdf" />
 
     {{-- campos STRING --}}
 

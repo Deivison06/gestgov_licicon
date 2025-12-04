@@ -342,20 +342,20 @@
                         </tr>
                     @endforeach
 
-                    <!-- Total Geral -->
+                    {{-- <!-- Total Geral -->
                     @php
                         $totalGeral = $vencedor->lotes->sum('vl_total');
                         $quantidadeTotal = $vencedor->lotes->sum('quantidade');
                     @endphp
                     <tr style="background-color:#f0f0f0; font-weight:bold;">
-                                <td colspan="3" style="padding:6px; text-align:right;">
-                                    TOTAL DO LOTE {{ $numeroLote }}:
-                                </td>
+                        <td colspan="3" style="padding:6px; text-align:right;">
+                            TOTAL DO LOTE {{ $numeroLote }}:
+                        </td>
 
-                                <td colspan="3" style="padding:6px; text-align:right; color:#d00;">
-                                    R$ {{ number_format($totalLote, 2, ',', '.') }}
-                                </td>
-                            </tr>
+                        <td colspan="3" style="padding:6px; text-align:right; color:#d00;">
+                            R$ {{ number_format($totalLote, 2, ',', '.') }}
+                        </td>
+                    </tr> --}}
 
                 </table>
             @endforeach

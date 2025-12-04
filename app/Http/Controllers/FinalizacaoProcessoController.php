@@ -45,7 +45,7 @@ class FinalizacaoProcessoController extends Controller
             'requer_assinatura' => false,
         ],
         'recurso_contratacoes_decisao_recursos' => [
-            'titulo' => 'RECURSOS, CONTRARAZÕES E DECISÃO DOS RECURSOS',
+            'titulo' => 'RECURSOS, CONTRARRAZÕES E DECISÃO DOS RECURSOS',
             'cor' => 'bg-green-500',
             'campos' => ['anexo_recurso_contratacoes'],
             'requer_assinatura' => false,

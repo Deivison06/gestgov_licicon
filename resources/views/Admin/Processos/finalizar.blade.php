@@ -2283,6 +2283,7 @@
                         'anexo_proposta_readequada',
                         'anexo_habilitacao',
                         'anexo_recurso_contratacoes',
+                        'anexo_publicacoes',
                     ];
                     return fileFields.includes(field);
                 },
