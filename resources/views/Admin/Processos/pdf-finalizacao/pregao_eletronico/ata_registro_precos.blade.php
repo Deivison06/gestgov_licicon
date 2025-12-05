@@ -171,7 +171,7 @@
         @if ($processo->detalhe->tipo_srp == 'sim')
         <p style="font-weight: bold; text-align: center;">ATA DE REGISTRO DE PREÇOS</p>
         <p style="font-weight: bold;">
-            ATA DE REGISTRO DE PREÇOS {{ $processo->finalizacao->numero_ata_registro_precos }}<br>
+            ATA DE REGISTRO DE PREÇOS Nº {{ $processo->finalizacao->numero_ata_registro_precos }}<br>
             PREGÃO ELETRÔNICO SRP Nº {{ $processo->numero_procedimento }}<br>
             PROCESSO ADMINISTRATIVO Nº {{ $processo->numero_processo }}– {{ $processo->prefeitura->cidade }}<br>
             VALIDADE: 12 (DOZE) MESES.
@@ -208,8 +208,7 @@
             1.1. {!! strip_tags($processo->objeto) !!}
         </p>
         <p style="text-align: justify;">
-            1.2. A Administração ou Gerenciamento da presente ata caberá à Secretaria
-            Municipal de {{ $processo->finalizacao->orgao_responsavel }}.
+            1.2. A administração ou Gerenciamento da presenta Ata ficara a cargo da Prefeitura municipal ou Secretaria Demandante.
         </p>
         <p style="font-weight: bold;">2. DOS PREÇOS, ESPECIFICAÇÕES E QUANTITATIVOS</p>
         <p style="text-align: justify;">
@@ -427,7 +426,7 @@
         </p>
 
         <p style="text-align: justify;">
-            3.1. O órgão gerenciador será o {{ $processo->finalizacao->orgao_responsavel }}
+            3.1. O Órgão gerenciador será a Prefeitura Municipal de {{ $processo->prefeitura->cidade }} ou a Secretaria Demandante.
         </p>
         <p style="font-weight: bold;">
             4. DA ADESÃO À ATA DE REGISTRO DE PREÇOS
