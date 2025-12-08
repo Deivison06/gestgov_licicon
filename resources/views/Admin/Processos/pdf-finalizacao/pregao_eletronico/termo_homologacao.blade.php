@@ -134,7 +134,7 @@
     <div>
         <p style="font-weight: bold;">
             PROCESSO ADMINISTRATIVO Nº {{ $processo->numero_processo }} <br>
-            CONCORRÊNCIA Nº. {{ $processo->numero_procedimento }}
+            PREGÃO ELETRÔNICO Nº. {{ $processo->numero_procedimento }}
         </p>
         <div style="text-align: center;">TERMO DE HOMOLOGAÇÃO</div>
         <table style="width:100%; table-layout:fixed; border-collapse:collapse;">
@@ -151,7 +151,7 @@
         <p style="text-indent: 30px; text-align: justify;">
             Considerando a decisão do Pregoeiro e membros da Comissão de Licitação, Ata de Abertura e
             julgamento da Documentação e Propostas da empresas licitantes, confirmo a classificação e HOMOLOGO
-            o resultado da presente Licitação na modalidade CONCORRÊNCIA sob o nº {{ $processo->numero_procedimento }}, nos seguintes
+            o resultado da presente Licitação na modalidade PREGÃO ELETRÔNICO sob o nº {{ $processo->numero_procedimento }}, nos seguintes
             termos e valores:
         </p>
 

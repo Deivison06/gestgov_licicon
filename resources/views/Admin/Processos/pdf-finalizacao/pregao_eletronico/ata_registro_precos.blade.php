@@ -178,7 +178,7 @@
         </p>
         @php
 
-            $data = Carbon::parse($dataSelecionada)->locale('pt_BR');
+            $data = \Carbon\Carbon::parse($dataSelecionada)->locale('pt_BR');
 
             // Dia por extenso
             $diaExtenso = $data->isoFormat('D'); // Número do dia

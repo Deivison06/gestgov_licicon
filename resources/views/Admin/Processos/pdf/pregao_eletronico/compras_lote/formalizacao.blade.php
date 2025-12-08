@@ -281,7 +281,7 @@
             </tr>
         </table>
 
-        <table class="form-table">
+        <table class="form-table" style="font-size: 10pt">
             <tr>
                 <td class="section-header">2 – IDENTIFICAÇÃO DO OBJETO</td>
             </tr>
@@ -290,26 +290,29 @@
                     <span class="field-label" style="font-size: 10px !important;">
                         {!! strip_tags($processo->objeto) !!}
                     </span>
-
                     {{-- <div class="large-value-cell">
                             {!! str_replace('<p>', '<p style="text-indent:30px; text-align: justify;">', $detalhe->demanda) !!}
                         </div> --}}
                 </td>
             </tr>
-            <tr>
-                <td style="padding: 10px;">
-                    <span style="display:block; text-align:center; font-weight:bold;">
-                        Justificativa da necessidade da contratação:
-                    </span>
-
-                    <div style="font-size:11px !important; text-align: justify;">
-                        {!! $detalhe->justificativa !!}
-                    </div>
-
-
-                </td>
-            </tr>
         </table>
+        <div style="
+            border: 1px solid #000;
+            padding: 8px;
+            font-size:11px;
+            text-align: justify;
+            margin-top: 10px;
+            page-break-inside: auto;
+            page-break-before: auto;
+        ">
+            <span style="display:block; text-align:center; font-weight:bold;">
+                Justificativa da necessidade da contratação:
+            </span>
+
+            <div style="font-size:11px !important; text-align: justify;">
+                {!! $detalhe->justificativa !!}
+            </div>
+        </div>
 
         <table style="width: 100%; border-collapse: collapse; border: 1px solid #000 !important; margin-bottom: 15px; page-break-inside: avoid; font-family: Arial, sans-serif; font-size: 12px;">
             <tr>

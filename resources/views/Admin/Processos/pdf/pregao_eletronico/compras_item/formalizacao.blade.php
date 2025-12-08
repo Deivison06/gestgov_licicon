@@ -281,6 +281,30 @@
             </tr>
         </table>
 
+        <table class="form-table">
+            <tr>
+                <td colspan="1" class="section-header">1 – IDENTIFICAÇÃO DO ÓRGÃO REQUISITANTE</td>
+            </tr>
+            <tr>
+                <td>
+                    <span class="field-label">Secretaria:
+                        {{ $detalhe->secretaria ?? 'SECRETARIA DE EDUCACAO' }}</span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <span class="field-label">Unidade/Setor/Departamento:
+                        {{ $detalhe->unidade_setor ?? 'Unidade 1' }}</span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <span class="field-label">Servidor responsável pela demanda:
+                        {{ $detalhe->servidor_responsavel ?? 'Deivison' }}</span>
+                </td>
+            </tr>
+        </table>
+
         <table class="form-table" style="font-size: 10pt">
             <tr>
                 <td class="section-header">2 – IDENTIFICAÇÃO DO OBJETO</td>
@@ -295,18 +319,24 @@
                         </div> --}}
                 </td>
             </tr>
-            <tr>
-                <td style="padding: 10px;">
-                    <span style="display:block; text-align:center; font-weight:bold;">
-                        Justificativa da necessidade da contratação:
-                    </span>
-
-                    <div style="font-size:11px !important; text-align: justify;">
-                        {!! $detalhe->justificativa !!}
-                    </div>
-                </td>
-            </tr>
         </table>
+        <div style="
+            border: 1px solid #000;
+            padding: 8px;
+            font-size:11px;
+            text-align: justify;
+            margin-top: 10px;
+            page-break-inside: auto;
+            page-break-before: auto;
+        ">
+            <span style="display:block; text-align:center; font-weight:bold;">
+                Justificativa da necessidade da contratação:
+            </span>
+
+            <div style="font-size:11px !important; text-align: justify;">
+                {!! $detalhe->justificativa !!}
+            </div>
+        </div>
 
         <table style="width: 100%; border-collapse: collapse; border: 1px solid #000 !important; margin-bottom: 15px; page-break-inside: avoid; font-family: Arial, sans-serif; font-size: 12px;">
             <tr>
