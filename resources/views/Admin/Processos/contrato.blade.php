@@ -179,280 +179,281 @@
                 </div>
 
                 <!-- Painel 2: Contratação de Itens -->
-                <div class="bg-white border border-gray-200 shadow-sm rounded-xl">
-                    <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-purple-100">
-                        <div class="flex flex-col justify-between md:flex-row md:items-center">
-                            <div class="flex items-center">
-                                <div class="flex items-center justify-center w-10 h-10 mr-3 bg-white rounded-lg shadow-sm">
-                                    <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                @if($processo->modalidade === \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO)
+                    <div class="bg-white border border-gray-200 shadow-sm rounded-xl">
+                        <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-purple-100">
+                            <div class="flex flex-col justify-between md:flex-row md:items-center">
+                                <div class="flex items-center">
+                                    <div class="flex items-center justify-center w-10 h-10 mr-3 bg-white rounded-lg shadow-sm">
+                                        <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h2 class="text-lg font-semibold text-gray-800">Contratação de Itens</h2>
+                                        <p class="text-sm text-gray-600">Gerencie os itens a serem contratados</p>
+                                    </div>
+                                </div>
+                                <button type="button"
+                                        onclick="abrirModalContratacao()"
+                                        class="flex items-center px-4 py-2 mt-3 text-sm font-medium text-white bg-purple-600 rounded-lg md:mt-0 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                     </svg>
-                                </div>
-                                <div>
-                                    <h2 class="text-lg font-semibold text-gray-800">Contratação de Itens</h2>
-                                    <p class="text-sm text-gray-600">Gerencie os itens a serem contratados</p>
-                                </div>
-                            </div>
-                            <button type="button"
-                                    onclick="abrirModalContratacao()"
-                                    class="flex items-center px-4 py-2 mt-3 text-sm font-medium text-white bg-purple-600 rounded-lg md:mt-0 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                </svg>
-                                Adicionar Contratação
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Área de Mensagens -->
-                    <div id="message-container-contratacao" class="p-4"></div>
-
-                    <!-- Conteúdo -->
-                    <div class="p-6">
-                        @if($contratacoes->isEmpty())
-                        <!-- Estado vazio -->
-                        <div class="px-6 py-8 text-center">
-                            <div class="flex flex-col items-center justify-center text-gray-500">
-                                <svg class="w-12 h-12 mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
-                                </svg>
-                                <p class="mb-2 text-sm font-medium">Nenhuma contratação realizada</p>
-                                <p class="text-xs">Clique em "Adicionar Contratação" para começar</p>
+                                    Adicionar Contratação
+                                </button>
                             </div>
                         </div>
-                        @else
-                        <!-- Lista de Vencedores com Acordeões -->
-                        <div class="space-y-4" id="contratacoes-container">
-                            @foreach($processo->vencedores as $vencedor)
-                                @php
-                                    $vencedorContratacoes = $contratacoes[$vencedor->id] ?? collect([]);
-                                    $vencedorIdSafe = str_replace(['.', '#', '[', ']'], '', (string) $vencedor->id);
-                                    $accordionId = "accordion-vencedor-{$vencedorIdSafe}";
-                                @endphp
 
-                                @if($vencedorContratacoes->isNotEmpty())
+                        <!-- Área de Mensagens -->
+                        <div id="message-container-contratacao" class="p-4"></div>
+
+                        <!-- Conteúdo -->
+                        <div class="p-6">
+                            @if($contratacoes->isEmpty())
+                            <!-- Estado vazio -->
+                            <div class="px-6 py-8 text-center">
+                                <div class="flex flex-col items-center justify-center text-gray-500">
+                                    <svg class="w-12 h-12 mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                                    </svg>
+                                    <p class="mb-2 text-sm font-medium">Nenhuma contratação realizada</p>
+                                    <p class="text-xs">Clique em "Adicionar Contratação" para começar</p>
+                                </div>
+                            </div>
+                            @else
+                            <!-- Lista de Vencedores com Acordeões -->
+                            <div class="space-y-4" id="contratacoes-container">
+                                @foreach($processo->vencedores as $vencedor)
                                     @php
-                                        // Calcular totais para este vencedor
-                                        $totalVencedor = $vencedorContratacoes->sum('valor_total');
-                                        $totalQuantidadeVencedor = $vencedorContratacoes->sum('quantidade_contratada');
-                                        $contratacoesCount = $vencedorContratacoes->count();
+                                        $vencedorContratacoes = $contratacoes[$vencedor->id] ?? collect([]);
+                                        $vencedorIdSafe = str_replace(['.', '#', '[', ']'], '', (string) $vencedor->id);
+                                        $accordionId = "accordion-vencedor-{$vencedorIdSafe}";
                                     @endphp
 
-                                    <!-- Acordeão do Vencedor -->
-                                    <div class="transition-colors duration-200 border border-gray-200 rounded-lg hover:border-gray-300">
-                                        <!-- Cabeçalho do Acordeão -->
-                                        <div class="p-4">
-                                            <button type="button"
-                                                    class="flex items-center justify-between w-full text-left"
-                                                    onclick="toggleAccordionVencedor('{{ $accordionId }}')">
-                                                <div class="flex items-center">
-                                                    <div class="flex items-center justify-center w-8 h-8 mr-3 bg-purple-100 rounded-lg">
-                                                        <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    @if($vencedorContratacoes->isNotEmpty())
+                                        @php
+                                            // Calcular totais para este vencedor
+                                            $totalVencedor = $vencedorContratacoes->sum('valor_total');
+                                            $totalQuantidadeVencedor = $vencedorContratacoes->sum('quantidade_contratada');
+                                            $contratacoesCount = $vencedorContratacoes->count();
+                                        @endphp
+
+                                        <!-- Acordeão do Vencedor -->
+                                        <div class="transition-colors duration-200 border border-gray-200 rounded-lg hover:border-gray-300">
+                                            <!-- Cabeçalho do Acordeão -->
+                                            <div class="p-4">
+                                                <button type="button"
+                                                        class="flex items-center justify-between w-full text-left"
+                                                        onclick="toggleAccordionVencedor('{{ $accordionId }}')">
+                                                    <div class="flex items-center">
+                                                        <div class="flex items-center justify-center w-8 h-8 mr-3 bg-purple-100 rounded-lg">
+                                                            <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                            </svg>
+                                                        </div>
+                                                        <div>
+                                                            <h3 class="text-sm font-semibold text-gray-900">{{ $vencedor->razao_social }}</h3>
+                                                            <p class="text-xs text-gray-500">{{ $vencedor->cnpj }}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="flex items-center space-x-4">
+                                                        <!-- Resumo Financeiro -->
+                                                        <div class="hidden text-right sm:block">
+                                                            <div class="text-xs font-medium text-gray-500">Total: R$ {{ number_format($totalVencedor, 2, ',', '.') }}</div>
+                                                            <div class="text-xs text-gray-500">{{ $contratacoesCount }} item(ns)</div>
+                                                        </div>
+                                                        <!-- Ícone do Acordeão -->
+                                                        <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" id="icon-{{ $accordionId }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                                         </svg>
                                                     </div>
-                                                    <div>
-                                                        <h3 class="text-sm font-semibold text-gray-900">{{ $vencedor->razao_social }}</h3>
-                                                        <p class="text-xs text-gray-500">{{ $vencedor->cnpj }}</p>
-                                                    </div>
-                                                </div>
-                                                <div class="flex items-center space-x-4">
-                                                    <!-- Resumo Financeiro -->
-                                                    <div class="hidden text-right sm:block">
-                                                        <div class="text-xs font-medium text-gray-500">Total: R$ {{ number_format($totalVencedor, 2, ',', '.') }}</div>
-                                                        <div class="text-xs text-gray-500">{{ $contratacoesCount }} item(ns)</div>
-                                                    </div>
-                                                    <!-- Ícone do Acordeão -->
-                                                    <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" id="icon-{{ $accordionId }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                                    </svg>
-                                                </div>
-                                            </button>
-                                        </div>
+                                                </button>
+                                            </div>
 
-                                        <!-- Conteúdo do Acordeão -->
-                                        <div id="{{ $accordionId }}" class="hidden border-t border-gray-200">
-                                            <!-- Tabela de Itens do Vencedor -->
-                                            <div class="p-4">
-                                                <div class="overflow-x-auto">
-                                                    <table class="w-full">
-                                                        <thead>
-                                                            <tr class="text-xs font-medium text-gray-500 uppercase border-b border-gray-200">
-                                                                <th class="px-4 py-3 text-left">Item/Lote</th>
-                                                                <th class="px-4 py-3 text-left">Quantidade</th>
-                                                                <th class="px-4 py-3 text-left">Valor Unit.</th>
-                                                                <th class="px-4 py-3 text-left">Total</th>
-                                                                <th class="px-4 py-3 text-left">Status</th>
-                                                                <th class="px-4 py-3 text-center">Ações</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody class="divide-y divide-gray-200">
-                                                            @foreach($vencedorContratacoes as $contratacao)
-                                                            <tr class="contratacao-row hover:bg-gray-50" data-contratacao-id="{{ $contratacao->id }}">
-                                                                <td class="px-4 py-3">
-                                                                    <div class="flex items-start">
-                                                                        <div class="flex-shrink-0 w-2 h-2 mt-2 mr-2 bg-blue-500 rounded-full"></div>
-                                                                        <div>
-                                                                            <div class="text-sm font-medium text-gray-900">
-                                                                                {{ $contratacao->lote->item }}
-                                                                                @if($contratacao->lote->lote)
-                                                                                <span class="text-xs text-gray-500">(Lote: {{ $contratacao->lote->lote }})</span>
-                                                                                @endif
-                                                                            </div>
-                                                                            <div class="max-w-xs text-xs text-gray-500 truncate">
-                                                                                {{ $contratacao->lote->descricao }}
+                                            <!-- Conteúdo do Acordeão -->
+                                            <div id="{{ $accordionId }}" class="hidden border-t border-gray-200">
+                                                <!-- Tabela de Itens do Vencedor -->
+                                                <div class="p-4">
+                                                    <div class="overflow-x-auto">
+                                                        <table class="w-full">
+                                                            <thead>
+                                                                <tr class="text-xs font-medium text-gray-500 uppercase border-b border-gray-200">
+                                                                    <th class="px-4 py-3 text-left">Item/Lote</th>
+                                                                    <th class="px-4 py-3 text-left">Quantidade</th>
+                                                                    <th class="px-4 py-3 text-left">Valor Unit.</th>
+                                                                    <th class="px-4 py-3 text-left">Total</th>
+                                                                    <th class="px-4 py-3 text-left">Status</th>
+                                                                    <th class="px-4 py-3 text-center">Ações</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody class="divide-y divide-gray-200">
+                                                                @foreach($vencedorContratacoes as $contratacao)
+                                                                <tr class="contratacao-row hover:bg-gray-50" data-contratacao-id="{{ $contratacao->id }}">
+                                                                    <td class="px-4 py-3">
+                                                                        <div class="flex items-start">
+                                                                            <div class="flex-shrink-0 w-2 h-2 mt-2 mr-2 bg-blue-500 rounded-full"></div>
+                                                                            <div>
+                                                                                <div class="text-sm font-medium text-gray-900">
+                                                                                    {{ $contratacao->lote->item }}
+                                                                                    @if($contratacao->lote->lote)
+                                                                                    <span class="text-xs text-gray-500">(Lote: {{ $contratacao->lote->lote }})</span>
+                                                                                    @endif
+                                                                                </div>
+                                                                                <div class="max-w-xs text-xs text-gray-500 truncate">
+                                                                                    {{ $contratacao->lote->descricao }}
+                                                                                </div>
                                                                             </div>
                                                                         </div>
-                                                                    </div>
-                                                                </td>
-                                                                <td class="px-4 py-3 text-sm text-gray-900">
-                                                                    <div class="flex flex-col">
-                                                                        <span class="font-semibold">
-                                                                            {{ number_format($contratacao->quantidade_contratada, 2, ',', '.') }}
+                                                                    </td>
+                                                                    <td class="px-4 py-3 text-sm text-gray-900">
+                                                                        <div class="flex flex-col">
+                                                                            <span class="font-semibold">
+                                                                                {{ number_format($contratacao->quantidade_contratada, 2, ',', '.') }}
+                                                                            </span>
+                                                                            <span class="text-xs text-gray-500">
+                                                                                Disp.: {{ number_format($contratacao->lote->quantidade_disponivel ?? $contratacao->lote->quantidade, 2, ',', '.') }}
+                                                                            </span>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td class="px-4 py-3 text-sm text-gray-900">
+                                                                        <span class="font-medium">
+                                                                            R$ {{ number_format($contratacao->valor_unitario, 2, ',', '.') }}
                                                                         </span>
-                                                                        <span class="text-xs text-gray-500">
-                                                                            Disp.: {{ number_format($contratacao->lote->quantidade_disponivel ?? $contratacao->lote->quantidade, 2, ',', '.') }}
+                                                                    </td>
+                                                                    <td class="px-4 py-3 text-sm font-semibold text-gray-900">
+                                                                        <span class="text-green-600">
+                                                                            R$ {{ number_format($contratacao->valor_total, 2, ',', '.') }}
                                                                         </span>
-                                                                    </div>
-                                                                </td>
-                                                                <td class="px-4 py-3 text-sm text-gray-900">
-                                                                    <span class="font-medium">
-                                                                        R$ {{ number_format($contratacao->valor_unitario, 2, ',', '.') }}
-                                                                    </span>
-                                                                </td>
-                                                                <td class="px-4 py-3 text-sm font-semibold text-gray-900">
-                                                                    <span class="text-green-600">
-                                                                        R$ {{ number_format($contratacao->valor_total, 2, ',', '.') }}
-                                                                    </span>
-                                                                </td>
-                                                                <td class="px-4 py-3">
-                                                                    @if($contratacao->status === 'CONTRATADO')
-                                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                                        <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                                                                        </svg>
-                                                                        CONTRATADO
-                                                                    </span>
-                                                                    @elseif($contratacao->status === 'PENDENTE')
-                                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                                                        <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
-                                                                        </svg>
-                                                                        PENDENTE
-                                                                    </span>
-                                                                    @else
-                                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                                                        {{ $contratacao->status }}
-                                                                    </span>
-                                                                    @endif
-                                                                </td>
-                                                                <td class="px-4 py-3">
-                                                                    <div class="flex justify-center space-x-2">
-                                                                        <button type="button"
-                                                                                onclick="editarContratacaoIndividual({{ $contratacao->id }})"
-                                                                                class="p-1.5 text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
-                                                                                title="Editar">
-                                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                                    </td>
+                                                                    <td class="px-4 py-3">
+                                                                        @if($contratacao->status === 'CONTRATADO')
+                                                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
                                                                             </svg>
-                                                                        </button>
-                                                                        @if($contratacao->status === 'PENDENTE')
-                                                                        <button type="button"
-                                                                                onclick="confirmarContratacao({{ $contratacao->id }})"
-                                                                                class="p-1.5 text-green-600 bg-green-100 rounded-md hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-400"
-                                                                                title="Confirmar">
-                                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                                            CONTRATADO
+                                                                        </span>
+                                                                        @elseif($contratacao->status === 'PENDENTE')
+                                                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
                                                                             </svg>
-                                                                        </button>
+                                                                            PENDENTE
+                                                                        </span>
+                                                                        @else
+                                                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                                                            {{ $contratacao->status }}
+                                                                        </span>
                                                                         @endif
-                                                                        <button type="button"
-                                                                                onclick="removerContratacao({{ $contratacao->id }})"
-                                                                                class="p-1.5 text-red-600 bg-red-100 rounded-md hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-400"
-                                                                                title="Remover">
-                                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                                                            </svg>
-                                                                        </button>
-                                                                    </div>
-                                                                </td>
-                                                            </tr>
-                                                            @endforeach
-                                                        </tbody>
-                                                        <!-- Rodapé do Vencedor -->
-                                                        <tfoot class="bg-gray-50">
-                                                            <tr>
-                                                                <td colspan="3" class="px-4 py-3 text-sm font-semibold text-right text-gray-700">
-                                                                    Total do Vencedor:
-                                                                </td>
-                                                                <td class="px-4 py-3 text-sm font-semibold text-green-700">
-                                                                    R$ {{ number_format($totalVencedor, 2, ',', '.') }}
-                                                                </td>
-                                                                <td colspan="2"></td>
-                                                            </tr>
-                                                        </tfoot>
-                                                    </table>
+                                                                    </td>
+                                                                    <td class="px-4 py-3">
+                                                                        <div class="flex justify-center space-x-2">
+                                                                            <button type="button"
+                                                                                    onclick="editarContratacaoIndividual({{ $contratacao->id }})"
+                                                                                    class="p-1.5 text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                                                                                    title="Editar">
+                                                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                                                </svg>
+                                                                            </button>
+                                                                            @if($contratacao->status === 'PENDENTE')
+                                                                            <button type="button"
+                                                                                    onclick="confirmarContratacao({{ $contratacao->id }})"
+                                                                                    class="p-1.5 text-green-600 bg-green-100 rounded-md hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-400"
+                                                                                    title="Confirmar">
+                                                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                                                </svg>
+                                                                            </button>
+                                                                            @endif
+                                                                            <button type="button"
+                                                                                    onclick="removerContratacao({{ $contratacao->id }})"
+                                                                                    class="p-1.5 text-red-600 bg-red-100 rounded-md hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-400"
+                                                                                    title="Remover">
+                                                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                                                </svg>
+                                                                            </button>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                                @endforeach
+                                                            </tbody>
+                                                            <!-- Rodapé do Vencedor -->
+                                                            <tfoot class="bg-gray-50">
+                                                                <tr>
+                                                                    <td colspan="3" class="px-4 py-3 text-sm font-semibold text-right text-gray-700">
+                                                                        Total do Vencedor:
+                                                                    </td>
+                                                                    <td class="px-4 py-3 text-sm font-semibold text-green-700">
+                                                                        R$ {{ number_format($totalVencedor, 2, ',', '.') }}
+                                                                    </td>
+                                                                    <td colspan="2"></td>
+                                                                </tr>
+                                                            </tfoot>
+                                                        </table>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                @endif
-                            @endforeach
-                        </div>
-                        @endif
+                                    @endif
+                                @endforeach
+                            </div>
+                            @endif
 
-                        <!-- Totais -->
-                        @php
-                            $totalContratacoes = \App\Models\LoteContratado::where('processo_id', $processo->id)->count();
-                            $totalQuantidade = \App\Models\LoteContratado::where('processo_id', $processo->id)->sum('quantidade_contratada');
-                            $totalValor = \App\Models\LoteContratado::where('processo_id', $processo->id)->sum('valor_total');
-                        @endphp
-                        <div class="grid grid-cols-1 gap-4 mt-6 md:grid-cols-3">
-                            <div class="p-4 bg-white border border-gray-200 rounded-lg">
-                                <div class="flex items-center">
-                                    <div class="flex-shrink-0 p-2 bg-purple-100 rounded-lg">
-                                        <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                    </div>
-                                    <div class="ml-4">
-                                        <div class="text-sm font-medium text-gray-500">Total de Contratações</div>
-                                        <div class="text-2xl font-bold text-purple-600 total-contratacoes">{{ $totalContratacoes }}</div>
+                            <!-- Totais -->
+                            @php
+                                $totalContratacoes = \App\Models\LoteContratado::where('processo_id', $processo->id)->count();
+                                $totalQuantidade = \App\Models\LoteContratado::where('processo_id', $processo->id)->sum('quantidade_contratada');
+                                $totalValor = \App\Models\LoteContratado::where('processo_id', $processo->id)->sum('valor_total');
+                            @endphp
+                            <div class="grid grid-cols-1 gap-4 mt-6 md:grid-cols-3">
+                                <div class="p-4 bg-white border border-gray-200 rounded-lg">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 p-2 bg-purple-100 rounded-lg">
+                                            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-gray-500">Total de Contratações</div>
+                                            <div class="text-2xl font-bold text-purple-600 total-contratacoes">{{ $totalContratacoes }}</div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <div class="p-4 bg-white border border-gray-200 rounded-lg">
-                                <div class="flex items-center">
-                                    <div class="flex-shrink-0 p-2 bg-green-100 rounded-lg">
-                                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-2.5L21 15m-10-5h.01M15 15h.01"></path>
-                                        </svg>
-                                    </div>
-                                    <div class="ml-4">
-                                        <div class="text-sm font-medium text-gray-500">Quantidade Total</div>
-                                        <div class="text-2xl font-bold text-green-600 total-quantidade">{{ number_format($totalQuantidade, 2, ',', '.') }}</div>
+                                <div class="p-4 bg-white border border-gray-200 rounded-lg">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 p-2 bg-green-100 rounded-lg">
+                                            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-2.5L21 15m-10-5h.01M15 15h.01"></path>
+                                            </svg>
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-gray-500">Quantidade Total</div>
+                                            <div class="text-2xl font-bold text-green-600 total-quantidade">{{ number_format($totalQuantidade, 2, ',', '.') }}</div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <div class="p-4 bg-white border border-gray-200 rounded-lg">
-                                <div class="flex items-center">
-                                    <div class="flex-shrink-0 p-2 bg-blue-100 rounded-lg">
-                                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                    </div>
-                                    <div class="ml-4">
-                                        <div class="text-sm font-medium text-gray-500">Valor Total</div>
-                                        <div class="text-2xl font-bold text-blue-600 total-valor">R$ {{ number_format($totalValor, 2, ',', '.') }}</div>
+                                <div class="p-4 bg-white border border-gray-200 rounded-lg">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 p-2 bg-blue-100 rounded-lg">
+                                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-gray-500">Valor Total</div>
+                                            <div class="text-2xl font-bold text-blue-600 total-valor">R$ {{ number_format($totalValor, 2, ',', '.') }}</div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-
+                @endif
                 <!-- Painel 3: Geração de Contrato -->
                 <div class="bg-white border border-gray-200 shadow-sm rounded-xl">
                     <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-green-50 to-green-100">
@@ -959,6 +960,13 @@
 
         // Funções do Modal de Contratação em Lote
         function abrirModalContratacao() {
+             // Verificar se é pregão
+            const modalidadePregão = @json($processo->modalidade === \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO);
+
+            if (!modalidadePregão) {
+                alert('Esta funcionalidade está disponível apenas para Pregão Eletrônico');
+                return;
+            }
             document.getElementById('contratacaoModalTitle').textContent = 'Contratar Itens';
             document.getElementById('contratacaoId').value = '';
 
