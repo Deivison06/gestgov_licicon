@@ -7,6 +7,7 @@ use App\Http\Controllers\UnidadeController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\ProcessoController;
 use App\Http\Controllers\PrefeituraController;
+use App\Http\Controllers\ContratacaoController;
 use App\Http\Controllers\ContratoProcessoController;
 use App\Http\Controllers\FinalizacaoProcessoController;
 
@@ -77,29 +78,29 @@ Route::prefix('admin')
         Route::post('processos/{processo}/iniciar', [ProcessoController::class, 'storeDetalhe'])->name('processos.detalhes.store');
         Route::get('processos/{processo}/pdf', [ProcessoController::class, 'gerarPdf'])->name('processos.pdf');
         Route::get('/processos/{processo}/visualizar-pdf', [ProcessoController::class, 'visualizarPdf'])
-        ->name('processos.visualizar-pdf');
+            ->name('processos.visualizar-pdf');
         Route::get('/processo/{processo}/documento/{tipo}/baixar', [ProcessoController::class, 'baixarDocumento'])->name('processo.documento.dowload');
         Route::get('/processo/{processo}/documentos/baixar-todos', [ProcessoController::class, 'baixarTodosDocumentos'])->name('processo.documento.dowload-all');
 
         // Rota extra para Finalizar processo (se não for o mesmo que create)
         Route::get('processos/{processo}/finalizar', [FinalizacaoProcessoController::class, 'finalizar'])->name('processos.finalizar');
-        Route::Post('processos/{processo}/finalizar', [FinalizacaoProcessoController::class, 'storeFinalizacao'])->name('processos.finalizacao.store');
+        Route::post('processos/{processo}/finalizar', [FinalizacaoProcessoController::class, 'storeFinalizacao'])->name('processos.finalizacao.store');
         Route::get('finalizacao/processos/{processo}/pdf', [FinalizacaoProcessoController::class, 'gerarPdf'])->name('processos.finalizacao.pdf');
         Route::get('/finalizacao/processo/{processo}/documento/{tipo}/baixar', [FinalizacaoProcessoController::class, 'baixarDocumento'])->name('processo.finalizacao.documento.dowload');
         Route::get('/finalizacao/processo/{processo}/documentos/baixar-todos', [FinalizacaoProcessoController::class, 'baixarTodosDocumentos'])->name('processo.finalizacao.documento.dowload-all');
 
         // Novas rotas para vencedores
-        Route::post('/{processo}/vencedores', [FinalizacaoProcessoController::class, 'storeVencedores'])
+        Route::post('/processos/{processo}/vencedores', [FinalizacaoProcessoController::class, 'storeVencedores'])
             ->name('processos.finalizacao.vencedores.store');
 
-        Route::get('/{processo}/vencedores', [FinalizacaoProcessoController::class, 'getVencedores'])
+        Route::get('/processos/{processo}/vencedores', [FinalizacaoProcessoController::class, 'getVencedores'])
             ->name('processos.finalizacao.vencedores.get');
 
-       // CORREÇÃO: Adicione o parâmetro {processo} na rota
+        // Rota para importar excel
         Route::post('/processos/{processo}/finalizacao/importar-excel', [FinalizacaoProcessoController::class, 'importarExcel'])
             ->name('processos.finalizacao.importar-excel');
 
-            // Rota para exibir a view de contrato
+        // Rota para exibir a view de contrato
         Route::get('processos/{processo}/contrato', [ContratoProcessoController::class, 'contrato'])->name('processos.contrato');
 
         // Rota para gerar PDF do contrato
@@ -114,7 +115,76 @@ Route::prefix('admin')
 
         Route::get('/processos/{processo}/finalizacao/reservas', [ReservaController::class, 'getReservas'])
             ->name('processos.finalizacao.reservas.get');
-    });
 
+        /**
+         * Contratações - Rotas específicas por processo
+         */
+        Route::prefix('processos/{processo}')->group(function () {
+            // Rotas de contratação
+            Route::post('contratacao', [ContratacaoController::class, 'store'])
+                ->name('processos.contratacao.store');
+
+            // ROTA NOVA: Contratações em lote (com checkboxes)
+            Route::post('contratacoes-em-lote', [ContratacaoController::class, 'storeEmLote'])
+                ->name('processos.contratacao.store-em-lote');
+
+            Route::get('contratacao/{contratacao}/edit', [ContratacaoController::class, 'edit'])
+                ->name('processos.contratacao.edit');
+
+            Route::put('contratacao/{contratacao}', [ContratacaoController::class, 'update'])
+                ->name('processos.contratacao.update');
+
+            Route::put('contratacao/{contratacao}/confirmar', [ContratacaoController::class, 'confirmar'])
+                ->name('processos.contratacao.confirmar');
+
+            Route::delete('contratacao/{contratacao}', [ContratacaoController::class, 'destroy'])
+                ->name('processos.contratacao.destroy');
+
+            Route::get('contratacao/listar', [ContratacaoController::class, 'listar'])
+                ->name('processos.contratacao.listar');
+
+            Route::get('vencedores/{vencedor}/lotes-disponiveis', [ContratacaoController::class, 'lotesDisponiveis'])
+                ->name('processos.contratacao.lotes-disponiveis');
+
+                // Nova rota para verificar disponibilidade
+    Route::post('estoque/verificar', [ContratacaoController::class, 'verificarDisponibilidade'])
+        ->name('processos.estoque.verificar');
+
+    // Rota para vincular contratações a contrato
+    Route::post('contratacoes/vincular-contrato', [ContratacaoController::class, 'vincularAoContrato'])
+        ->name('processos.contratacoes.vincular-contrato');
+
+    // Rota para relatório
+    Route::get('estoque/relatorio', [ContratacaoController::class, 'relatorio'])
+        ->name('processos.estoque.relatorio');
+
+    // Rota para recalcular estoque (admin)
+    Route::post('estoque/recalcular', [ContratacaoController::class, 'recalcularEstoque'])
+        ->name('processos.estoque.recalcular');
+
+    // Rota para dashboard de estoque
+    Route::get('estoque/dashboard', [ContratacaoController::class, 'dashboardEstoque'])
+        ->name('processos.estoque.dashboard');
+        });
+
+        /**
+         * Contratações - Rotas gerais (para compatibilidade com código existente)
+         * Mantenha essas rotas para não quebrar código que já referencia 'admin.processos.contratacao.*'
+         */
+        Route::get('contratacao', [ContratacaoController::class, 'index'])
+            ->name('admin.processos.contratacao.index');
+
+        Route::post('contratacao', [ContratacaoController::class, 'store'])
+            ->name('admin.processos.contratacao.store');
+
+        Route::get('contratacao/listar', [ContratacaoController::class, 'listar'])
+            ->name('admin.processos.contratacao.listar');
+
+        Route::put('contratacao/{contratacao}', [ContratacaoController::class, 'finalizar'])
+            ->name('admin.processos.contratacao.finalizar');
+
+        Route::delete('contratacao/{contratacao}', [ContratacaoController::class, 'destroy'])
+            ->name('admin.processos.contratacao.destroy');
+    });
 
 require __DIR__ . '/auth.php';

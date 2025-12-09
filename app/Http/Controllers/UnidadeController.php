@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Unidade;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use App\Http\Requests\UnidadeRequest;
 
 class UnidadeController extends Controller
@@ -62,18 +63,30 @@ class UnidadeController extends Controller
         }
     }
 
-    /**
-     * Remove a specific unidade.
-     */
     public function destroyUnidade($id)
     {
         try {
             $unidade = Unidade::findOrFail($id);
+
+            // Verificar se a unidade está sendo usada em algum processo antes de excluir
+            // Você pode adicionar uma verificação aqui se necessário
+
             $unidade->delete();
 
-            return response()->json(['success' => 'Unidade removida com sucesso!']);
+            return response()->json([
+                'success' => 'Unidade removida com sucesso!',
+                'message' => 'Unidade excluída com sucesso.'
+            ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'error' => 'Unidade não encontrada.'
+            ], 404);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Erro ao remover unidade: ' . $e->getMessage()], 500);
+            Log::error('Erro ao excluir unidade: ' . $e->getMessage());
+
+            return response()->json([
+                'error' => 'Erro ao remover unidade. Tente novamente.'
+            ], 500);
         }
     }
 

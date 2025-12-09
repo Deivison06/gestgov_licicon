@@ -7,6 +7,7 @@ use App\Models\Processo;
 use App\Models\Documento;
 use Illuminate\Http\Request;
 use setasign\Fpdi\Tcpdf\Fpdi;
+use App\Models\LoteContratado;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Log;
 
@@ -22,19 +23,22 @@ class ContratoProcessoController extends Controller
         ]
     ];
 
-    /**
-     * Exibe a view para gerar contrato
-    */
     public function contrato(Processo $processo)
     {
-        $processo->load(['prefeitura.unidades', 'detalhe', 'vencedores.lotes']);
+        $processo->load(['prefeitura.unidades', 'detalhe', 'vencedores.lotes.contratados']);
 
         // Carregar dados do contrato se existirem
         $contrato = Contrato::where('processo_id', $processo->id)->first();
 
+        // Carregar contratações
+        $contratacoes = LoteContratado::where('processo_id', $processo->id)
+            ->with(['lote', 'vencedor'])
+            ->get()
+            ->groupBy('vencedor_id');
+
         $documentos = $this->documentoConfig;
 
-        return view('Admin.Processos.contrato', compact('processo', 'documentos', 'contrato'));
+        return view('Admin.Processos.contrato', compact('processo', 'documentos', 'contrato', 'contratacoes'));
     }
 
     /**

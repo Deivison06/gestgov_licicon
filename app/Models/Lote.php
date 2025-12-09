@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Lote extends Model
 {
@@ -45,6 +46,46 @@ class Lote extends Model
     public function vencedor(): BelongsTo
     {
         return $this->belongsTo(Vencedor::class);
+    }
+
+    /**
+     * Relacionamento com LoteContratado
+     */
+    public function contratados(): HasMany
+    {
+        return $this->hasMany(LoteContratado::class);
+    }
+
+    /**
+     * Relacionamento com LoteContratado
+     */
+    public function estoque(): HasMany
+    {
+        return $this->hasMany(EstoqueLote::class);
+    }
+
+    /**
+     * Calcular quantidade total contratada
+     */
+    public function getQuantidadeContratadaAttribute(): float
+    {
+        return $this->contratados()->sum('quantidade_contratada');
+    }
+
+    /**
+     * Calcular quantidade disponível
+     */
+    public function getQuantidadeDisponivelAttribute(): float
+    {
+        return $this->quantidade - $this->quantidade_contratada;
+    }
+
+    /**
+     * Verificar se há quantidade disponível
+     */
+    public function hasQuantidadeDisponivel($quantidade): bool
+    {
+        return $this->quantidade_disponivel >= $quantidade;
     }
 
     /**

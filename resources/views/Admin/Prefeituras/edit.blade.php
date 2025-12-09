@@ -524,5 +524,66 @@
                 });
             }
         });
+
+        // Adicione este código dentro do seu event listener DOMContentLoaded, após a parte de edição
+
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('delete-unidade')) {
+                const id = e.target.getAttribute('data-id');
+
+                // Confirmação antes de excluir
+                if (confirm('Tem certeza que deseja excluir esta unidade? Esta ação não pode ser desfeita.')) {
+                    // Mostrar indicador de carregamento
+                    e.target.innerHTML = '<span class="animate-pulse">Excluindo...</span>';
+                    e.target.disabled = true;
+
+                    fetch(`/admin/unidades/${id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Erro na resposta do servidor');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            // Remover a linha da tabela
+                            const row = document.getElementById(`unidade-row-${id}`);
+                            if (row) {
+                                row.remove();
+                            }
+
+                            // Mostrar mensagem de sucesso
+                            alert('Unidade excluída com sucesso!');
+
+                            // Verificar se não há mais unidades
+                            const tbody = document.getElementById('unidades-table-body');
+                            if (tbody && tbody.children.length === 0) {
+                                location.reload(); // Recarregar para mostrar mensagem de "nenhuma unidade"
+                            }
+                        } else if (data.error) {
+                            alert('Erro ao excluir: ' + data.error);
+                            location.reload();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Erro ao excluir unidade. Verifique o console para mais detalhes.');
+                        location.reload();
+                    })
+                    .finally(() => {
+                        // Restaurar o botão
+                        e.target.innerHTML = 'Excluir';
+                        e.target.disabled = false;
+                    });
+                }
+            }
+        });
     </script>
 @endsection
