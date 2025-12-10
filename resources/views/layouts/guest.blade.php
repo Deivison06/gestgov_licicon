@@ -1,72 +1,143 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-
+<html lang="pt-BR">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-
     <title>GestGov - Login</title>
-
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-
-    <!-- Scripts -->
+    
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    
+    <style>
+        body {
+            background: 
+                /* Gradiente suave base */
+                linear-gradient(135deg, #f8fafc 0%, #f1f5f9 25%, #e2e8f0 100%),
+                /* Padrão geométrico sutil */
+                repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(5, 35, 35, 0.03) 10px, rgba(5, 35, 35, 0.03) 20px),
+                repeating-linear-gradient(-45deg, transparent, transparent 10px, rgba(45, 193, 151, 0.03) 10px, rgba(45, 193, 151, 0.03) 20px);
+            
+            /* Efeito de partículas/bolhas no fundo */
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(45, 193, 151, 0.08) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(5, 35, 35, 0.08) 0%, transparent 20%),
+                radial-gradient(circle at 50% 50%, rgba(5, 50, 42, 0.05) 0%, transparent 30%);
+            
+            background-attachment: fixed;
+            background-size: cover;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* Adicionando elementos decorativos no fundo */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                /* Linhas diagonais sutis */
+                linear-gradient(45deg, transparent 49.5%, rgba(5, 35, 35, 0.02) 49.5%, rgba(5, 35, 35, 0.02) 50.5%, transparent 50.5%),
+                linear-gradient(-45deg, transparent 49.5%, rgba(45, 193, 151, 0.02) 49.5%, rgba(45, 193, 151, 0.02) 50.5%, transparent 50.5%);
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        body::after {
+            content: '';
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80vw;
+            height: 80vh;
+            background: radial-gradient(circle, rgba(45, 193, 151, 0.04) 0%, transparent 70%);
+            filter: blur(40px);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        /* Animações sutis para o fundo */
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(10px, -10px) rotate(1deg); }
+            66% { transform: translate(-5px, 5px) rotate(-1deg); }
+        }
+        
+        .bg-float-element {
+            position: fixed;
+            border: 1px solid rgba(5, 35, 35, 0.1);
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(5px);
+            animation: float 20s ease-in-out infinite;
+            z-index: -1;
+        }
+        
+        /* Sombra mais destacada no container */
+        .shadow-xl {
+            box-shadow: 
+                0 20px 60px rgba(5, 35, 35, 0.15),
+                0 0 0 1px rgba(255, 255, 255, 0.9);
+        }
+    </style>
 </head>
 
-<body class="font-sans antialiased bg-gradient-to-br from-[#093f5a] to-[#062F43] min-h-screen flex items-center justify-center p-5 relative overflow-x-hidden">
-    <!-- Background pattern -->
-    <div class="absolute inset-0 opacity-50"
-        style="background-image: url('data:image/svg+xml,%3Csvg width=\'100\' height=\'100\' viewBox=\'0 0 100 100\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z\' fill=\'%23ffffff\' fill-opacity=\'0.03\' fill-rule=\'evenodd\'/%3E%3C/svg%3E');">
-    </div>
+<body class="min-h-screen flex items-center justify-center">
 
-    <div class="relative z-10 w-full max-w-md">
-        <div
-            class="bg-gradient-to-br from-[#128b8d] to-[#1D9698] rounded-2xl shadow-xl overflow-hidden transition-all duration-300 relative">
-            <!-- Efeito de brilho no card -->
-            <div
-                class="absolute -inset-48 bg-radial-circle bg-[radial-gradient(circle,_rgba(255,255,255,0.1)_0%,_transparent_60%)] rotate-30 -z-0">
+    <!-- Elementos decorativos flutuantes no fundo -->
+    <div class="bg-float-element w-40 h-40 top-1/4 left-10 opacity-20" style="animation-delay: -5s;"></div>
+    <div class="bg-float-element w-64 h-64 bottom-1/4 right-10 opacity-10" style="animation-delay: -10s;"></div>
+    <div class="bg-float-element w-32 h-32 top-10 right-1/4 opacity-15" style="animation-delay: -15s;"></div>
+    <div class="bg-float-element w-48 h-48 bottom-10 left-1/4 opacity-10" style="animation-delay: -7s;"></div>
+
+    <!-- Container principal com duas colunas (MANTIDO IGUAL) -->
+    <div class="w-full max-w-5xl h-[550px] bg-white shadow-xl grid grid-cols-2 rounded-lg overflow-hidden">
+
+        <!-- ============================
+             COLUNA ESQUERDA (fundo escuro) - MANTIDO IGUAL
+        ============================= -->
+        <div class="flex flex-col items-center justify-center relative px-10 bg-[#052323]"
+            style="background-image: url('{{ asset('Pattern-Login-GestGov.png') }}');
+                    background-size: cover;
+                    background-position: center;
+                    background-repeat: no-repeat;">
+            
+            <!-- LOGO -->
+            <img src="{{ url('logo/logo_gestgov_login.png') }}"
+                class="h-24 mb-8 select-none"
+                alt="GestGov">
+
+            <!-- TEXTO DESCRITIVO -->
+            <div class="bg-[#003333] text-white text-[10px] px-4 py-2 rounded-md text-center w-70">
+                DESENVOLVEMOS SISTEMAS QUE ORGANIZAM,<br>
+                MODERNIZAM E TORNAM A GESTÃO PÚBLICA <br>
+                MAIS EFICIENTE.
             </div>
+        </div>
 
-            <!-- Logo container -->
-            <div class="relative z-10 flex justify-center pt-6 pb-1 mt-4 bg-opacity-95 rounded-t-2xl">
-                <a href="/">
-                    @if (!empty($logo) && file_exists(public_path('storage/' . $logo)))
-                       <img src="{{ url('logo/logo_gestgov.png') }}" alt="Logo do Sistema" class="object-contain w-auto h-20">
-                    @else
-                        <img src="{{ url('logo/logo_gestgov.png') }}" alt="Logo Padrão" class="object-contain w-auto h-20">
-                    @endif
-                </a>
-            </div>
+        <!-- ============================
+             COLUNA DIREITA (fundo verde) - MANTIDO IGUAL
+        ============================= -->
+        <div class="bg-[#2DC197] flex flex-col items-center justify-center px-14 relative">
 
+            <!-- TÍTULO ENTRAR -->
+            <h2 class="text-3xl text-[#05322A] mb-6 tracking-wide" style="font-weight: 900">
+                ENTRAR
+            </h2>
 
-            <!-- Form container -->
-            <div class="relative z-10 p-8">
-                <h1 class="mb-6 text-2xl font-semibold text-center text-white drop-shadow-md">Acesse sua conta</h1>
+            <!-- FORMULÁRIO -->
+            {{ $slot }}
 
-                <!-- Validation Errors -->
-                @if ($errors->any())
-                    <div class="p-3 mb-4 text-sm text-red-100 bg-red-500 rounded-lg">
-                        <ul>
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
-
-                {{ $slot }}
-
-                <div class="relative my-6">
-                    <div class="absolute inset-0 flex items-center">
-                        <div class="w-full border-t border-white border-opacity-20"></div>
-                    </div>
-                </div>
+            <!-- RODAPÉ -->
+            <div class="absolute bottom-6 text-center text-[10px] text-[#05322A]">
+                PRECISA DE AJUDA?<br>
+                <a href="#" class="font-bold hover:underline">FALE COM A GENTE</a>
             </div>
         </div>
     </div>
-</body>
 
+</body>
 </html>

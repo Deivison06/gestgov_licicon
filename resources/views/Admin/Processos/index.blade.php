@@ -9,7 +9,7 @@
         <!-- Botão Novo Processo -->
         <div class="flex justify-end mb-8">
             <a href="{{ route('admin.processos.create') }}"
-                class="inline-flex items-center gap-3 px-6 py-3 text-sm font-semibold text-white transition-all duration-200 bg-gradient-to-r from-[#062F43] to-[#07405c] rounded-xl hover:from-[#07405c] hover:to-[#062F43] hover:shadow-lg hover:scale-105">
+                class="inline-flex items-center gap-3 px-6 py-3 text-sm font-semibold text-white transition-all duration-200 bg-gradient-to-r from-[#052323] to-[#052323] rounded-xl hover:shadow-lg hover:scale-105">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
@@ -129,13 +129,13 @@
                                         Iniciar
                                     </a>
 
-                                    <a href="{{ route('admin.processos.finalizar', $processo->id) }}"
+                                    <a href="{{ route('admin.processos.finalizacao.finalizar', $processo->id) }}"
                                         class="px-3 py-1.5 text-xs font-medium text-white transition-colors duration-200 bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-1"
                                         title="Finalizar processo">
                                         Finalizar
                                     </a>
 
-                                    <a href="{{ route('admin.processos.contrato', $processo->id) }}"
+                                    <a href="{{ route('admin.processos.contrato.index', $processo->id) }}"
                                         class="px-3 py-1.5 text-xs font-medium text-white transition-colors duration-200 bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-1"
                                         title="Emitir Contrato">
                                         Contrato

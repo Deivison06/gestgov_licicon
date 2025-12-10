@@ -12,6 +12,8 @@ class Contrato extends Model
         'data_assinatura_contrato',
         'numero_extrato',
         'comarca',
+        'fonte_recurso',
+        'subcontratacao'
     ];
 
     public function processo()

@@ -177,7 +177,7 @@
                 </td>
                 <td style="width:60%; padding:8px; vertical-align:top; word-wrap:break-word; white-space:normal;">
                     PREGÃO ELETRÔNICO Nº {{ $processo->numero_procedimento }}, QUE FAZEM ENTRE SI A
-                    PREFEITURA MUNICIPAL DE {{ $processo->prefeitura->cidade }} E XXXXXXXXXXXXX
+                    PREFEITURA MUNICIPAL DE {{ $processo->prefeitura->cidade }} E {{ $dadosContratado['razao_social'] }}
                 </td>
             </tr>
         </table>
@@ -207,8 +207,8 @@
                     <td class="content">
                         <div style=" font-weight: bold; margin-bottom: 3px;">Contratado</div>
                         <div style="">
-                            XXXXXXXXXXXXX, inscrito(a) no CNPJ/MF sob o nº {{ $processo->finalizacao->cnpj_empresa_vencedora }}, sediado(a) na {{ $processo->finalizacao->endereco }} neste
-                            ato representado(a) por {{ $processo->finalizacao->representante_legal_empresa }}, inscrito no CPF sob n° {{ $processo->finalizacao->cpf_representante }}.
+                            {{ $dadosContratado['razao_social'] }},  inscrito(a) no CNPJ/MF sob o nº {{ $dadosContratado['cnpj_formatado'] }}, sediado(a) na {{ $dadosContratado['endereco'] }} neste
+                            ato representado(a) por {{ $dadosContratado['representante'] }}, inscrito no CPF sob n° {{ $dadosContratado['cpf_representante_formatado'] }}.
                         </div>
                     </td>
                 </tr>
@@ -226,50 +226,46 @@
             1.1 {!! strip_tags($processo->objeto) !!}
         </p>
 
-        <table style="width:100%; border-collapse:collapse; font-family: Arial, sans-serif; font-size:12px;">
+        <table style="width:100%; border-collapse:collapse; font-size:8pt;">
             <thead>
                 <tr>
-                <th style="border:2px solid #000; padding:8px; text-align:left; font-weight:700; width:6%;">ITEM</th>
-                <th style="border:2px solid #000; padding:8px; text-align:left; font-weight:700; width:46%;">ESPECIFICAÇÃO</th>
-                <th style="border:2px solid #000; padding:8px; text-align:center; font-weight:700; width:16%;">UNIDADE<br>DE MEDIDA</th>
-                <th style="border:2px solid #000; padding:8px; text-align:center; font-weight:700; width:10%;">QUANTIDADE</th>
-                <th style="border:2px solid #000; padding:8px; text-align:center; font-weight:700; width:11%;">VALOR<br>UNITÁRIO</th>
-                <th style="border:2px solid #000; padding:8px; text-align:center; font-weight:700; width:11%;">VALOR<br>TOTAL</th>
+                    <th style="border:2px solid #000; padding:8px; text-align:left; font-weight:700; width:6%;">ITEM</th>
+                    <th style="border:2px solid #000; padding:8px; text-align:left; font-weight:700; width:46%;">ESPECIFICAÇÃO</th>
+                    <th style="border:2px solid #000; padding:8px; text-align:center; font-weight:700; width:16%;">UNIDADE<br>DE MEDIDA</th>
+                    <th style="border:2px solid #000; padding:8px; text-align:center; font-weight:700; width:10%;">QUANTIDADE</th>
+                    <th style="border:2px solid #000; padding:8px; text-align:center; font-weight:700; width:11%;">VALOR<br>UNITÁRIO</th>
+                    <th style="border:2px solid #000; padding:8px; text-align:center; font-weight:700; width:11%;">VALOR<br>TOTAL</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                <td style="border:1px solid #000; padding:14px; vertical-align:top;">1</td>
-                <td style="border:1px solid #000; padding:14px; vertical-align:top;"></td>
-                <td style="border:1px solid #000; padding:14px; vertical-align:top;"></td>
-                <td style="border:1px solid #000; padding:14px; vertical-align:top;"></td>
-                <td style="border:1px solid #000; padding:14px; vertical-align:top;"></td>
-                <td style="border:1px solid #000; padding:14px; vertical-align:top;"></td>
-                </tr>
-                <tr>
-                <td style="border:1px solid #000; padding:14px; vertical-align:top;">2</td>
-                <td style="border:1px solid #000; padding:14px; vertical-align:top;"></td>
-                <td style="border:1px solid #000; padding:14px; vertical-align:top;"></td>
-                <td style="border:1px solid #000; padding:14px; vertical-align:top;"></td>
-                <td style="border:1px solid #000; padding:14px; vertical-align:top;"></td>
-                <td style="border:1px solid #000; padding:14px; vertical-align:top;"></td>
-                </tr>
-                <tr>
-                <td style="border:1px solid #000; padding:14px; vertical-align:top;">3</td>
-                <td style="border:1px solid #000; padding:14px; vertical-align:top;"></td>
-                <td style="border:1px solid #000; padding:14px; vertical-align:top;"></td>
-                <td style="border:1px solid #000; padding:14px; vertical-align:top;"></td>
-                <td style="border:1px solid #000; padding:14px; vertical-align:top;"></td>
-                <td style="border:1px solid #000; padding:14px; vertical-align:top;"></td>
-                </tr>
-                <tr>
-                <td style="border:1px solid #000; padding:14px; vertical-align:top;">...</td>
-                <td style="border:1px solid #000; padding:14px; vertical-align:top;"></td>
-                <td style="border:1px solid #000; padding:14px; vertical-align:top;"></td>
-                <td style="border:1px solid #000; padding:14px; vertical-align:top;"></td>
-                <td style="border:1px solid #000; padding:14px; vertical-align:top;"></td>
-                <td style="border:1px solid #000; padding:14px; vertical-align:top;"></td>
-                </tr>
+                @if(count($itensTabela) > 0)
+                    @foreach($itensTabela as $item)
+                        <tr>
+                            <td style="border:1px solid #000; padding:14px; vertical-align:top; text-align:center;">{{ $item['item'] }}</td>
+                            <td style="border:1px solid #000; padding:14px; vertical-align:top;">{{ $item['especificacao'] }}</td>
+                            <td style="border:1px solid #000; padding:14px; vertical-align:top; text-align:center;">{{ $item['unidade_medida'] }}</td>
+                            <td style="border:1px solid #000; padding:14px; vertical-align:top; text-align:center;">{{ $item['quantidade'] }}</td>
+                            <td style="border:1px solid #000; padding:14px; vertical-align:top; text-align:right;">{{ $item['valor_unitario'] }}</td>
+                            <td style="border:1px solid #000; padding:14px; vertical-align:top; text-align:right;">{{ $item['valor_total'] }}</td>
+                        </tr>
+                    @endforeach
+                    
+                    <!-- Linha de totalização -->
+                    @php
+                        $totalGeral = $contratacoes->sum('valor_total');
+                        $quantidadeTotal = $contratacoes->sum('quantidade_contratada');
+                    @endphp
+                    <tr>
+                        <td colspan="3" style="border:1px solid #000; padding:14px; vertical-align:top; text-align:right; font-weight:bold;">TOTAL GERAL</td>
+                        <td colspan="3" style="border:1px solid #000; padding:14px; vertical-align:top; text-align:right; font-weight:bold;">R$ {{ number_format($totalGeral, 2, ',', '.') }}</td>
+                    </tr>
+                @else
+                    <tr>
+                        <td colspan="6" style="border:1px solid #000; padding:14px; text-align:center; color:red;">
+                            Nenhum item contratado encontrado.
+                        </td>
+                    </tr>
+                @endif
             </tbody>
         </table>
 
@@ -316,8 +312,8 @@
             }
         @endphp
         <p style="text-align: justify;">
-            9O prazo de vigência da contratação é de {{ $textoVigencia }} contados do(a)
-            ............................., prorrogável na forma dos artigos 106 e 107 da Lei n° 14.133, de 2021. <br>
+            9O prazo de vigência da contratação é de <span style="font-weight:bold; text-decoration:underline;"> {{ $textoVigencia }} </span>, 
+            contados contados da ordem de Serviços, prorrogável na forma dos artigos 106 e 107 da Lei n° 14.133, de 2021. <br>
             2.1.1. A prorrogação de que trata este item é condicionada ao ateste, pela autoridade
             competente, de que as condições e os preços permanecem vantajosos para a
             Administração, permitida a negociação com o contratado.
@@ -343,34 +339,36 @@
                 CLÁUSULA QUARTA – SUBCONTRATAÇÃO</h4>
         </div>
 
-        <p style="text-align: justify;">
-            4.1. Não será admitida a subcontratação do objeto contratual.
-        </p>
-        <h4>OU</h4>
-        <p style="text-align: justify; color: red;">
-            4.2. É permitida a subcontratação parcial do objeto, até o limite de ......% (..... por cento)
-            do valor total do contrato, nas seguintes condições:<br>
-            4.2.1. Em qualquer hipótese de subcontratação, permanece a responsabilidade integral
-            do contratado pela perfeita execução contratual, cabendo-lhe realizar a supervisão e
-            coordenação das atividades do subcontratado, bem como responder perante o
-            contratante pelo rigoroso cumprimento das obrigações contratuais correspondentes ao
-            objeto da subcontratação.
-            <br>
-            4.3. A subcontratação depende de autorização prévia do contratante, a quem incumbe
-            avaliar se o subcontratado cumpre os requisitos de qualificação técnica necessários para
-            a execução do objeto.
-            <br>
-            4.3.1. O contratado apresentará à Administração documentação que comprove a
-            capacidade técnica do subcontratado, que será avaliada e juntada aos autos do processo
-            correspondente.
-            <br>
-            4.4. É vedada a subcontratação de pessoa física ou jurídica, se aquela ou os dirigentes
-            desta mantiverem vínculo de natureza técnica, comercial, econômica, financeira,
-            trabalhista ou civil com dirigente do órgão ou entidade contratante ou com agente público
-            que desempenhe função na contratação ou atue na fiscalização ou na gestão do contrato,
-            ou se deles forem cônjuge, companheiro ou parente em linha reta, colateral, ou por
-            afinidade, até o terceiro grau.
-        </p>
+        @if ($processo->contrato->subcontratacao === "Nao")
+            <p style="text-align: justify;">
+                4.1. Não será admitida a subcontratação do objeto contratual.
+            </p>
+        @else
+            <p style="text-align: justify;">
+                4.2. É permitida a subcontratação parcial do objeto, até o limite de 50% (cinquenta por cento)
+                do valor total do contrato, nas seguintes condições:<br><br>
+                4.2.1. Em qualquer hipótese de subcontratação, permanece a responsabilidade integral
+                do contratado pela perfeita execução contratual, cabendo-lhe realizar a supervisão e
+                coordenação das atividades do subcontratado, bem como responder perante o
+                contratante pelo rigoroso cumprimento das obrigações contratuais correspondentes ao
+                objeto da subcontratação.
+                <br><br>
+                4.3. A subcontratação depende de autorização prévia do contratante, a quem incumbe
+                avaliar se o subcontratado cumpre os requisitos de qualificação técnica necessários para
+                a execução do objeto.
+                <br><br>
+                4.3.1. O contratado apresentará à Administração documentação que comprove a
+                capacidade técnica do subcontratado, que será avaliada e juntada aos autos do processo
+                correspondente.
+                <br><br>
+                4.4. É vedada a subcontratação de pessoa física ou jurídica, se aquela ou os dirigentes
+                desta mantiverem vínculo de natureza técnica, comercial, econômica, financeira,
+                trabalhista ou civil com dirigente do órgão ou entidade contratante ou com agente público
+                que desempenhe função na contratação ou atue na fiscalização ou na gestão do contrato,
+                ou se deles forem cônjuge, companheiro ou parente em linha reta, colateral, ou por
+                afinidade, até o terceiro grau.
+            </p>
+        @endif
 
         <div style="margin-bottom: 20px;">
             <img src="{{ public_path('icons/descricao-necessidade.png') }}" width="30px"
@@ -380,13 +378,13 @@
         </div>
 
         <p style="text-align: justify;">
-            5.1. O valor total da contratação é de R$.......... (.....)
-            <br>
+            5.1. O valor total da contratação é de R$ {{ number_format($totalGeral, 2, ',', '.') }} ({{ $valorTotalPorExtenso }}).
+            <br><br>
             5.2. No valor acima estão incluídas todas as despesas ordinárias diretas e indiretas
             decorrentes da execução do objeto, inclusive tributos e/ou impostos, encargos sociais,
             trabalhistas, previdenciários, fiscais e comerciais incidentes, taxa de administração, frete,
             seguro e outros necessários ao cumprimento integral do objeto da contratação.
-            <br>
+            <br><br>
             5.3. O valor acima é meramente estimativo, de forma que os pagamentos devidos ao
             contratado dependerão dos quantitativos efetivamente fornecidos.
         </p>
@@ -401,7 +399,7 @@
         <p style="text-align: justify;">
             6.1. Recebida a Nota Fiscal ou documento de cobrança equivalente, correrá o prazo de trinta dias
             para fins de liquidação, na forma
-            <br>
+            <br><br>
             6.2. O pagamento do(s) produto(s) será(ão) efetuado(s) pela CONTRATANTE, mediante a emissão
             de nota fiscal e recibo por parte da CONTRATADA com o visto do funcionário responsável pela
             fiscalização dos serviços.
@@ -417,31 +415,31 @@
         <p style="text-align: justify;">
             7.1. Os preços inicialmente contratados são fixos e irreajustáveis no prazo de um ano
             contado da data do orçamento estimado.
-            <br>
+            <br><br>
             7.2. Após o interregno de um ano, e independentemente de pedido do contratado, os
             preços iniciais serão reajustados, mediante a aplicação, pelo contratante, do índice
             Inflacionário, exclusivamente para as obrigações iniciadas e concluídas após a ocorrência
             da anualidade.
-            <br>
+            <br><br>
             7.3. Nos reajustes subsequentes ao primeiro, o interregno mínimo de um ano será
             contado a partir dos efeitos financeiros do último reajuste.
-            <br>
+            <br><br>
             7.4. No caso de atraso ou não divulgação do(s) índice (s) de reajustamento, o
             contratante pagará ao contratado a importância calculada pela última variação conhecida,
             liquidando a diferença correspondente tão logo seja(m) divulgado(s) o(s) índice(s)
             definitivo(s).
-            <br>
+            <br><br>
             7.5. Nas aferições finais, o(s) índice(s) utilizado(s) para reajuste será(ão),
             obrigatoriamente, o(s) definitivo(s).
-            <br>
+            <br><br>
             7.6. Caso o(s) índice(s) estabelecido(s) para reajustamento venha(m) a ser extinto(s) ou
             de qualquer forma não possa(m) mais ser utilizado(s), será(ão) adotado(s), em
             substituição, o(s) que vier(em) a ser determinado(s) pela legislação então em vigor.
-            <br>
+            <br><br>
             7.7. Na ausência de previsão legal quanto ao índice substituto, as partes elegerão novo
             índice oficial, para reajustamento do preço do valor remanescente, por meio de termo
             aditivo.
-            <br>
+            <br><br>
             7.8. O reajuste será realizado por apostilamento.
         </p>
 
@@ -454,42 +452,42 @@
 
         <p style="text-align: justify;">
             8.1. São obrigações do Contratante:
-            <br>
+            <br><br>
             8.2. Exigir o cumprimento de todas as obrigações assumidas pelo Contratado, de
             acordo com o contrato e seus anexos;
-            <br>
+            <br><br>
             8.3. Receber o objeto no prazo e condições estabelecidas no Termo de Referência;
-            <br>
+            <br><br>
             8.4. Notificar o Contratado, por escrito, sobre vícios, defeitos ou incorreções verificadas
             no objeto fornecido, para que seja por ele substituído, reparado ou corrigido, no total ou
             em parte, às suas expensas;
-            <br>
+            <br><br>
             8.5. Acompanhar e fiscalizar a execução do contrato e o cumprimento das obrigações
             pelo Contratado;
-            <br>
+            <br><br>
             8.6. Comunicar a empresa para emissão de Nota Fiscal no que pertine à parcela
             incontroversa da execução do objeto, para efeito de liquidação e pagamento, quando
             houver controvérsia sobre a execução do objeto, quanto à dimensão, qualidade e
             quantidade, conforme o art. 143 da Lei nº 14.133, de 2021;
-            <br>
+            <br><br>
             8.7. Efetuar o pagamento ao Contratado do valor correspondente ao fornecimento do
             objeto, no prazo, forma e condições estabelecidos no presente Contrato;
-            <br>
+            <br><br>
             8.8. Aplicar ao Contratado as sanções previstas na lei e neste Contrato;
-            <br>
+            <br><br>
             8.9. Cientificar o órgão de representação judicial da Advocacia-Geral da União para
             adoção das medidas cabíveis quando do descumprimento de obrigações pelo Contratado;
-            <br>
+            <br><br>
             8.10. Explicitamente emitir decisão sobre todas as solicitações e reclamações
             relacionadas à execução do presente Contrato, ressalvados os requerimentos
             manifestamente impertinentes, meramente protelatórios ou de nenhum interesse para a
             boa execução do ajuste.
-            <br>
+            <br><br>
             8.10.1. A Administração terá o prazo de 05 (cinco) dias, a contar da data do protocolo do
             requerimento para decidir, admitida a prorrogação motivada, por igual período.
-            <br>
+            <br><br>
             8.11. Responder eventuais pedidos de reestabelecimento do equilíbrio econômicofinanceiro feitos pelo contratado no prazo máximo de 30 (trinta) dias.
-            <br>
+            <br><br>
             8.12. A Administração não responderá por quaisquer compromissos assumidos pelo
             Contratado com terceiros, ainda que vinculados à execução do contrato, bem como por
             qualquer dano causado a terceiros em decorrência de ato do Contratado, de seus
@@ -508,28 +506,28 @@
             9.1. O Contratado deve cumprir todas as obrigações constantes deste Contrato e em
             seus anexos, assumindo como exclusivamente seus os riscos e as despesas decorrentes
             da boa e perfeita execução do objeto, observando, ainda, as obrigações a seguir dispostas:
-            <br>
+            <br><br>
             9.2. Responsabilizar-se pelos vícios e danos decorrentes do objeto, de acordo com o
             Código de Defesa do Consumidor (Lei nº 8.078, de 1990);
-            <br>
+            <br><br>
             9.3. Comunicar ao contratante, no prazo máximo de 24 (vinte e quatro) horas que
             antecede a data da entrega, os motivos que impossibilitem o cumprimento do prazo
             previsto, com a devida comprovação;
-            <br>
+            <br><br>
             9.4. Atender às determinações regulares emitidas pelo fiscal ou gestor do contrato ou
             autoridade superior (art. 137, II, da Lei n.º 14.133, de 2021) e prestar todo esclarecimento
             ou informação por eles solicitados;
-            <br>
+            <br><br>
             9.5. Reparar, corrigir, remover, reconstruir ou substituir, às suas expensas, no total ou
             em parte, no prazo fixado pelo fiscal do contrato, os bens nos quais se verificarem vícios,
             defeitos ou incorreções resultantes da execução ou dos materiais empregados;
-            <br>
+            <br><br>
             9.6. Responsabilizar-se pelos vícios e danos decorrentes da execução do objeto, bem
             como por todo e qualquer dano causado à Administração ou terceiros, não reduzindo essa
             responsabilidade a fiscalização ou o acompanhamento da execução contratual pelo
             contratante, que ficará autorizado a descontar dos pagamentos devidos ou da garantia,
             caso exigida, o valor correspondente aos danos sofridos;
-            <br>
+            <br><br>
             9.7. Quando não for possível a verificação da regularidade no Sistema de Cadastro de
             Fornecedores – SICAF, o contratado deverá entregar ao setor responsável pela fiscalização
             do contrato, junto com a Nota Fiscal para fins de pagamento, os seguintes documentos: 1)
@@ -537,89 +535,89 @@
             federais e à Dívida Ativa da União; 3) certidões que comprovem a regularidade perante a
             Fazenda Estadual ou Distrital do domicílio ou sede do contratado; 4) Certidão de
             Regularidade do FGTS – CRF; e 5) Certidão Negativa de Débitos Trabalhistas – CNDT;
-            <br>
+            <br><br>
             9.8. Responsabilizar-se pelo cumprimento de todas as obrigações trabalhistas,
             previdenciárias, fiscais, comerciais e as demais previstas em legislação específica, cuja
             inadimplência não transfere a responsabilidade ao contratante e não poderá onerar o
             objeto do contrato;
-            <br>
+            <br><br>
             9.9. Comunicar ao Fiscal do contrato, no prazo de 24 (vinte e quatro) horas, qualquer
             ocorrência anormal ou acidente que se verifique no local da execução do objeto contratual.
-            <br>
+            <br><br>
             9.10. Paralisar, por determinação do contratante, qualquer atividade que não esteja
             sendo executada de acordo com a boa técnica ou que ponha em risco a segurança de
             pessoas ou bens de terceiros.
-            <br>
+            <br><br>
             9.11. Manter durante toda a vigência do contrato, em compatibilidade com as obrigações
             assumidas, todas as condições exigidas para habilitação na licitação;
-            <br>
+            <br><br>
             9.12. Cumprir, durante todo o período de execução do contrato, a reserva de cargos
             prevista em lei para pessoa com deficiência, para reabilitado da Previdência Social ou para
             aprendiz, bem como as reservas de cargos previstas na legislação (art. 116, da Lei n.º
             14.133, de 2021);
-            <br>
+            <br><br>
             9.13. Comprovar a reserva de cargos a que se refere a cláusula acima, no prazo fixado
             pelo fiscal do contrato, com a indicação dos empregados que preencheram as referidas
             vagas (art. 116, parágrafo único, da Lei n.º 14.133, de 2021);
-            <br>
+            <br><br>
             9.14. Guardar sigilo sobre todas as informações obtidas em decorrência do
             cumprimento do contrato;
-            <br>
+            <br><br>
             9.15. Arcar com o ônus decorrente de eventual equívoco no dimensionamento dos
             quantitativos de sua proposta, inclusive quanto aos custos variáveis decorrentes de fatores
             futuros e incertos, devendo complementá-los, caso o previsto inicialmente em sua
             proposta não seja satisfatório para o atendimento do objeto da contratação, exceto
             quando ocorrer algum dos eventos arrolados no art. 124, II, d, da Lei nº 14.133, de 2021.
-            <br>
+            <br><br>
             9.16. Cumprir, além dos postulados legais vigentes de âmbito federal, estadual ou
             municipal, as normas de segurança do contratante;
-            <br>
+            <br><br>
             9.17. Alocar os empregados necessários, com habilitação e conhecimento adequados,
             ao perfeito cumprimento das cláusulas deste contrato, fornecendo os materiais,
             equipamentos, ferramentas e utensílios demandados, cuja quantidade, qualidade e
             tecnologia deverão atender às recomendações de boa técnica e a legislação de regência;
-            <br>
+            <br><br>
             9.18. Orientar e treinar seus empregados sobre os deveres previstos na Lei nº 13.709, de
             14 de agosto de 2018, adotando medidas eficazes para proteção de dados pessoais a que
             tenha acesso por força da execução deste contrato;
-            <br>
+            <br><br>
             9.19. Conduzir os trabalhos com estrita observância às normas da legislação pertinente,
             cumprindo as determinações dos Poderes Públicos, mantendo sempre limpo o local de
             execução do objeto e nas melhores condições de segurança, higiene e disciplina.
-            <br>
+            <br><br>
             9.20. Submeter previamente, por escrito, ao contratante, para análise e aprovação,
             quaisquer mudanças nos métodos executivos que fujam às especificações do memorial
             descritivo ou instrumento congênere.
-            <br>
+            <br><br>
             9.21. Não permitir a utilização de qualquer trabalho do menor de dezesseis anos, exceto
             na condição de aprendiz para os maiores de quatorze anos, nem permitir a utilização do
             trabalho do menor de dezoito anos em trabalho noturno, perigoso ou insalubre.
-            <br>
+            <br><br>
             9.22. As partes cooperarão entre si no cumprimento das obrigações referentes ao
             exercício dos direitos dos Titulares previstos na LGPD e nas Leis e Regulamentos de
             Proteção de Dados em vigor e também no atendimento de requisições e determinações do
             Poder Judiciário, Ministério Público, Órgãos de controle administrativo..
-            <br>
+            <br><br>
             9.23. As partes responderão administrativa e judicialmente, em caso de causarem danos
             patrimoniais, morais, individual ou coletivo, aos titulares de dados pessoais, repassados
             em decorrência da execução contratual, por inobservância à LGPD.
-            <br>
+            <br><br>
             9.24. Em atendimento ao disposto na Lei n. 13.709/2018 - Lei Geral de Proteção de Dados
             Pessoais (LGPD), a CONTRATANTE, para a execução do serviço objeto deste contrato, terá
             acesso a dados pessoais dos representantes da CONTRATADA, tais como: número do CPF
             e do RG, endereço eletrônico, e cópia do documento de identificação.
-            <br>
+            <br><br>
             9.25. A critério do Encarregado de Dados da CONTRATANTE, a CONTRATADA poderá ser
             provocada a colaborar na elaboração do relatório de impacto à proteção de dados
             pessoais (RIPD), conforme a sensibilidade e o risco inerente dos serviços objeto deste
             contrato, no tocante a dados pessoais.
-            <br>
+            <br><br>
             9.26. A CONTRATADA fica obrigada a comunicar ao CONTRATANTE, em até 24 (vinte e
             quatro) horas, qualquer incidente de acessos não autorizados aos dados pessoais,
             situações acidentais ou ilícitas de destruição, perda, alteração, comunicação ou qualquer
             forma de tratamento inadequado ou ilícito, bem como adotar as providências dispostas no
             art. 48 da LGPD.
-            <br>
+            <br><br>
             9.27. Encerrada a vigência do contrato ou não havendo mais necessidade de utilização
             dos dados pessoais, sensíveis ou não, a CONTRATADA interromperá o tratamento e, em no
             máximo 30 (trinta) dias, sob instruções e na medida do determinado pela CONTRATANTE,
@@ -627,61 +625,62 @@
             formato digital, físico ou outro qualquer), salvo quando necessite mantê-los para
             cumprimento de obrigação legal ou outra hipótese legal prevista na LGPD.
 
-            @if($condition)
+            @if ($processo->finalizacao->merenda_escolar === "Sim")
                 9.28. O prazo do fornecimento será imediatamente após apresentação da ordem de
                 fornecimento, em conformidade com o este Termo de Referência e a Emissão da ORDEM
                 DE FORNECIMENTO emitida pelo órgão demandante.
-                <br>
+                <br><br>
                 9.29. O fornecimento ocorrerá conforme a necessidade da Secretaria Municipal de
                 Educação;
-                <br>
+                <br><br>
                 9.30. Os itens deverão ser entregues diretamente nas escolas, conformes os pedidos;
-                <br>
+                <br><br>
                 9.31. As entregas correrão de forma semanal;
-                <br>
+                <br><br>
                 9.32. As entregas de carnes e frios deverão ser feitas em veículos refrigerados
                 objetivando a entrega adequada dos itens, os demais itens deverão ser transportados em
                 caminhão tipo baú específico para esse fim, devendo ser previamente higienizados e não
                 conter qualquer substância que possa acarretar lesão física, química ou biológica aos
                 alimentos.
-                <br>
+                <br><br>
                 9.33. O recebimento do objeto não exclui a responsabilidade da contratada pelos
                 prejuízos resultantes da incorreta execução do contrato.
-                <br>
+                <br><br>
                 9.34. No caso de produtos perecíveis, o prazo de validade na data da entrega não poderá
                 ser inferior a 30 (trinta) dias do prazo total recomendado pelo fabricante.
-                <br>
+                <br><br>
                 9.35. Os gêneros deverão estar sobrepostos em pallets e/ou em caixa de polietileno
                 higienizadas quando necessário, não sendo permitido o transporte de hortifrútis em caixas
                 de madeira ou papelão, com exceção dos ovos que poderão ser acondicionados em
                 embalagem de papelão e/ou isopor, e/ou polietileno atóxico.
-                <br>
+                <br><br>
                 9.36. Os entregadores deverão estar devidamente identificados com o nome da
                 empresa, uniformizados (camisa, sapato, calça, crachá, boné) com hábitos de higiene
                 satisfatórios (uniforme limpos, higiene pessoal adequada) conforme boas práticas de
                 fabricação/produção de alimentos possuindo boa conduta e relacionamento no local de
                 entrega.
+                <br><br>
             @endif
-            @if($condition)
-                9.37. O objeto deve ser entregue na sede da Prefeitura Municipal de XXXXXXXXXX,
-                localizada na XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX, no horário de 08h às 13h, ou em
+            @if ($processo->finalizacao->veiculos === "Sim")
+                9.28. O objeto deve ser entregue na sede da Prefeitura Municipal de {{ $processo->prefeitura->cidade }},
+                localizada na {{ $processo->prefeitura->endereco }}, no horário de 08h às 13h, ou em
                 local indicado pela administração, o objeto deve ser entregue conforme Ordem de
                 Fornecimento.
-                <br>
-                9.38. Para efeito de esclarecimento, a entrega do objeto deve ser feita utilizando
+                <br><br>
+                9.29. Para efeito de esclarecimento, a entrega do objeto deve ser feita utilizando
                 caminhão plataforma do tipo reboque, guincho ou cegonha, devendo o Fiscal de Contrato
                 proceder com a conferência do objeto no ato da entrega.
-                <br>
-                9.39. Antes da entrega do objeto, este não poderá sofrer deslocamento próprio (o veículo
+                <br><br>
+                9.30. Antes da entrega do objeto, este não poderá sofrer deslocamento próprio (o veículo
                 somente pode ser transportado em caminhão plataforma do tipo reboque), devendo ser
                 entregue com quilometragem “zero” ou com a quilometragem registrada que seja
                 decorrente de atividades de transporte ou de deslocamento no pátio da fábrica ou da
                 própria empresa fornecedora.
-                <br>
-                9.40. Entregar, juntamente com os veículos, o manual, certificados de garantia do
+                <br><br>
+                9.31. Entregar, juntamente com os veículos, o manual, certificados de garantia do
                 fabricante, notas fiscais e a relação da rede autorizada pelo fabricante;
-                <br>
-                9.41. Providenciar, independentemente de ser fabricante ou não fabricante, a correção
+                <br><br>
+                9.32. Providenciar, independentemente de ser fabricante ou não fabricante, a correção
                 ou substituição do todo ou em parte do material, peça, componente ou acessório, que
                 apresente defeitos de fabricação ou divergência com as especificações estabelecidas no
                 edital, sem ônus para administração, observando o contrato e a legislação vigente.
@@ -723,29 +722,29 @@
                 i. <span style="font-weight: bold">Advertência</span>, quando o contratado der causa à inexecução parcial do contrato,
                 sempre que não se justificar a imposição de penalidade mais grave (art. 156, §2º,
                 da Lei nº 14.133, de 2021);
-                <br>
+                <br><br>
                 ii.<span style="font-weight: bold">Impedimento de licitar e contratar</span>, quando praticadas as condutas descritas
                 nas alíneas “b”, “c” e “d” do subitem acima deste Contrato, sempre que não se
                 justificar a imposição de penalidade mais grave (art. 156, § 4º, da Lei nº 14.133, de
                 2021);
-                <br>
+                <br><br>
                 iii.<span style="font-weight: bold">Declaração de inidoneidade para licitar e contratar</span>, quando praticadas as
                 condutas descritas nas alíneas “e”, “f”, “g” e “h” do subitem acima deste
                 Contrato, bem como nas alíneas “b”, “c” e “d”, que justifiquem a imposição de
                 penalidade mais grave (art. 156, §5º, da Lei nº 14.133, de 2021).
-                <br>
+                <br><br>
                 iv.<span style="font-weight: bold">Multa:</span>
-                <br>
+                <br><br>
                 <div style="margin-left: 30px;">
                     1. moratória de 0,5 % (zero virgula cinco por cento) por dia de atraso
                     injustificado sobre o valor da parcela inadimplida, até o limite de 60
                     (sessenta) dias;
-                    <br>
+                    <br><br>
                     2. moratória de 0,5 % (zero virgula cinco por cento) por dia de atraso
                     injustificado sobre o valor total do contrato, até o máximo de 30% (trinta por
                     cento), pela inobservância do prazo fixado para apresentação,
                     suplementação ou reposição da garantia.
-                    <br>
+                    <br><br>
                     i.O atraso superior a 30 (trinta) dias autoriza a Administração a promover a
                     extinção do contrato por descumprimento ou cumprimento irregular de suas
                     cláusulas, conforme dispõe o inciso I do art. 137 da Lei n. 14.133, de 2021.
@@ -755,15 +754,15 @@
             <p>
                 11.3. A aplicação das sanções previstas neste Contrato não exclui, em hipótese alguma,
                 a obrigação de reparação integral do dano causado ao Contratante (art. 156, §9º, da Lei nº
-                14.133, de 2021) <br>
+                14.133, de 2021) <br><br>
                 11.4. Todas as sanções previstas neste Contrato poderão ser aplicadas
-                cumulativamente com a multa (art. 156, §7º, da Lei nº 14.133, de 2021).<br>
+                cumulativamente com a multa (art. 156, §7º, da Lei nº 14.133, de 2021).<br><br>
                 11.4.1. Antes da aplicação da multa será facultada a defesa do interessado no prazo de 15
-                (quinze) dias úteis, contado da data de sua intimação (art. 157, da Lei nº 14.133, de 2021)<br>
+                (quinze) dias úteis, contado da data de sua intimação (art. 157, da Lei nº 14.133, de 2021)<br><br>
                 11.4.2. Se a multa aplicada e as indenizações cabíveis forem superiores ao valor do
                 pagamento eventualmente devido pelo Contratante ao Contratado, além da perda desse
                 valor, a diferença será descontada da garantia prestada ou será cobrada judicialmente (art.
-                156, §8º, da Lei nº 14.133, de 2021).<br>
+                156, §8º, da Lei nº 14.133, de 2021).<br><br>
                 11.4.3. Previamente ao encaminhamento à cobrança judicial, a multa poderá ser recolhida
                 administrativamente no prazo máximo de 30 (trinta) dias, a contar da data do recebimento
                 da comunicação enviada pela autoridade competente.
@@ -878,14 +877,14 @@
 
         <p style="text-align: justify;">
             13.1. As despesas decorrentes da presente contratação correrão à conta de recursos
-            específicos consignados no Orçamento Geral da União deste exercício, na dotação abaixo
+            específicos consignados no Orçamento Geral deste exercício, na dotação abaixo
             discriminada:
         </p>
         <table style="border-collapse: collapse; width: 100%; border: 1px solid black;">
             <tr>
                 <!-- Coluna da esquerda -->
                 <td style="vertical-align: top; padding: 10px;">
-                    {!! str_replace('<p>', '<p style="text-indent:30px; text-align: justify;">', $processo->detalhe->dotacao_orcamentaria) !!}
+                    {!! str_replace('<p>', '<p style="text-indent:30px; text-align: justify;">', $processo->contrato->fonte_recurso) !!}
                 </td>
             </tr>
         </table>
@@ -985,7 +984,7 @@
         </div>
 
         <p style="text-align: justify;">
-            18.1. Fica eleito o Foro da Justiça de ......, para dirimir os litígios que decorrerem da
+            18.1. Fica eleito o Foro da Justiça de {{ $processo->contrato->comarca }}, para dirimir os litígios que decorrerem da
             execução deste Termo de Contrato que não puderem ser compostos pela conciliação,
             conforme art. 92, §1º, da Lei nº 14.133/21.
         </p>
@@ -1017,9 +1016,9 @@
             <div class="signature-block" style="display: inline-block; margin: 0 40px;">
                 ___________________________________<br>
                 <p style="line-height: 1.2;">
-                    XXXXXXXXXXXXX <br>
-                    {{ $processo->finalizacao->representante_legal_empresa }} <br>
-                    {{ $processo->finalizacao->cpf_representante }} <br>
+                    {{ $dadosContratado['razao_social'] }} <br>
+                    {{ $dadosContratado['representante'] }} <br>
+                    {{ $dadosContratado['cpf_representante_formatado'] }} <br>
                 </p>
             </div>
         </div>
@@ -1079,7 +1078,7 @@
                     CONTRATADO:
                 </td>
                 <td style="padding:6px;">
-                    XXXXXXXXXXXXX
+                     {{ $dadosContratado['razao_social'] }}
                 </td>
             </tr>
 
@@ -1089,7 +1088,7 @@
                     CNPJ (CONTRATADO):
                 </td>
                 <td style="padding:6px;">
-                    {{ $processo->finalizacao->cnpj_empresa_vencedora }}
+                     {{ $dadosContratado['cnpj_formatado'] }}
                 </td>
             </tr>
 
@@ -1099,7 +1098,7 @@
                     VALOR:
                 </td>
                 <td style="padding:6px;">
-                    {{ $processo->finalizacao->valor_total }}
+                    R$ {{ number_format($totalGeral, 2, ',', '.') }}
                 </td>
             </tr>
 
@@ -1138,7 +1137,7 @@
                     FONTE DOS RECURSOS:
                 </td>
                 <td style="padding:6px;">
-                    {!! strip_tags($processo->detalhe->dotacao_orcamentaria) !!}
+                    {!! strip_tags($processo->contrato->fonte_recurso) !!}
                 </td>
             </tr>
 
@@ -1170,7 +1169,7 @@
                     ASSINATURA (CONTRATADO):
                 </td>
                 <td style="padding:6px;">
-                    {{ $processo->finalizacao->representante_legal_empresa }}
+                    {{ $dadosContratado['representante'] }}
                 </td>
             </tr>
 

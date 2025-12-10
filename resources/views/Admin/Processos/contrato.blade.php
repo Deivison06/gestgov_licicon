@@ -654,6 +654,7 @@
                                                             <h5 class="mb-3 text-sm font-semibold text-gray-700">Campos do Contrato</h5>
                                                             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                                                 @foreach ($doc['campos'] as $campo)
+
                                                                     @if ($campo === 'numero_contrato')
                                                                         <div>
                                                                             <label for="numero_contrato" class="block mb-1 text-xs font-medium text-gray-600">
@@ -663,8 +664,10 @@
                                                                                 id="numero_contrato"
                                                                                 name="numero_contrato"
                                                                                 placeholder="Ex: 001/2024"
-                                                                                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                                                                                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg 
+                                                                                focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
                                                                         </div>
+
                                                                     @elseif($campo === 'data_assinatura_contrato')
                                                                         <div>
                                                                             <label for="data_assinatura_contrato" class="block mb-1 text-xs font-medium text-gray-600">
@@ -673,8 +676,10 @@
                                                                             <input type="date"
                                                                                 id="data_assinatura_contrato"
                                                                                 name="data_assinatura_contrato"
-                                                                                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                                                                                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg 
+                                                                                focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
                                                                         </div>
+
                                                                     @elseif($campo === 'numero_extrato')
                                                                         <div>
                                                                             <label for="numero_extrato" class="block mb-1 text-xs font-medium text-gray-600">
@@ -684,8 +689,10 @@
                                                                                 id="numero_extrato"
                                                                                 name="numero_extrato"
                                                                                 placeholder="Ex: EXT/001/2024"
-                                                                                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                                                                                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg 
+                                                                                focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
                                                                         </div>
+
                                                                     @elseif($campo === 'comarca')
                                                                         <div>
                                                                             <label for="comarca" class="block mb-1 text-xs font-medium text-gray-600">
@@ -695,11 +702,45 @@
                                                                                 id="comarca"
                                                                                 name="comarca"
                                                                                 placeholder="Ex: Comarca de São Paulo"
-                                                                                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                                                                                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg 
+                                                                                focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                                                                        </div>
+
+                                                                    {{-- ✔ Substituindo <x-form-field> (textarea) --}}
+                                                                    @elseif($campo === 'fonte_recurso')
+                                                                        <div class="sm:col-span-2">
+                                                                            <label for="fonte_recurso" class="block mb-1 text-xs font-medium text-gray-600">
+                                                                                Fonte de Recurso
+                                                                            </label>
+                                                                            <textarea
+                                                                                id="fonte_recurso"
+                                                                                name="fonte_recurso"
+                                                                                rows="5"
+                                                                                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg 
+                                                                                focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"></textarea>
+                                                                        </div>
+
+                                                                    {{-- ✔ Substituindo <x-form-field> (select) --}}
+                                                                    @elseif($campo === 'subcontratacao')
+                                                                        <div>
+                                                                            <label for="subcontratacao" class="block mb-1 text-xs font-medium text-gray-600">
+                                                                                Subcontratação?
+                                                                            </label>
+                                                                            <select
+                                                                                id="subcontratacao"
+                                                                                name="subcontratacao"
+                                                                                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg 
+                                                                                focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                                                                                <option value="" selected>Selecione uma opção</option>
+                                                                                <option value="1">Sim</option>
+                                                                                <option value="0">Não</option>
+                                                                            </select>
                                                                         </div>
                                                                     @endif
+
                                                                 @endforeach
                                                             </div>
+
                                                         </div>
                                                     @endif
                                                 </div>
@@ -960,7 +1001,7 @@
 
         // Funções do Modal de Contratação em Lote
         function abrirModalContratacao() {
-             // Verificar se é pregão
+            // Verificar se é pregão
             const modalidadePregão = @json($processo->modalidade === \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO);
 
             if (!modalidadePregão) {
@@ -1579,9 +1620,9 @@
         function showMessageContratacao(message, type) {
             const container = document.getElementById('message-container-contratacao');
             const bgColor = type === 'success' ? 'bg-green-100 border-green-400' :
-                           type === 'warning' ? 'bg-yellow-100 border-yellow-400' :
-                           type === 'info' ? 'bg-blue-100 border-blue-400' :
-                           'bg-red-100 border-red-400';
+                        type === 'warning' ? 'bg-yellow-100 border-yellow-400' :
+                        type === 'info' ? 'bg-blue-100 border-blue-400' :
+                        'bg-red-100 border-red-400';
             const textColor = type === 'success' ? 'text-green-800' :
                             type === 'warning' ? 'text-yellow-800' :
                             type === 'info' ? 'text-blue-800' :
@@ -1607,7 +1648,121 @@
             }, 6000);
         }
 
-        // Funções para gerenciar assinantes
+        // =================================================================
+        // NOVAS FUNÇÕES PARA GERENCIAR CAMPOS DO CONTRATO
+        // =================================================================
+
+        // Carregar dados salvos do contrato
+        document.addEventListener('DOMContentLoaded', function() {
+            carregarDadosContratoSalvos();
+            inicializarEventosCampos();
+        });
+
+        async function carregarDadosContratoSalvos() {
+            try {
+                const response = await fetch(`/admin/processos/${processoId}/contrato/dados`);
+                const data = await response.json();
+
+                if (data.success && data.dados) {
+                    preencherCamposContrato(data.dados);
+                }
+            } catch (error) {
+                console.error('Erro ao carregar dados do contrato:', error);
+            }
+        }
+
+        function preencherCamposContrato(dados) {
+            // Preencher campos do contrato
+            if (dados.numero_contrato) {
+                const input = document.getElementById('numero_contrato');
+                if (input) input.value = dados.numero_contrato;
+            }
+
+            if (dados.data_assinatura_contrato) {
+                const input = document.getElementById('data_assinatura_contrato');
+                if (input) {
+                    // Converter data do formato YYYY-MM-DD para o formato do input
+                    const data = new Date(dados.data_assinatura_contrato);
+                    if (!isNaN(data.getTime())) {
+                        input.value = data.toISOString().split('T')[0];
+                    }
+                }
+            }
+
+            if (dados.numero_extrato) {
+                const input = document.getElementById('numero_extrato');
+                if (input) input.value = dados.numero_extrato;
+            }
+
+            if (dados.comarca) {
+                const input = document.getElementById('comarca');
+                if (input) input.value = dados.comarca;
+            }
+
+            // Preencher outros campos se existirem
+            if (dados.fonte_recurso) {
+                const textarea = document.querySelector('[name="fonte_recurso"]');
+                if (textarea) textarea.value = dados.fonte_recurso;
+            }
+
+            if (dados.subcontratacao !== undefined) {
+                const select = document.querySelector('[name="subcontratacao"]');
+                if (select) select.value = dados.subcontratacao.toString();
+            }
+        }
+
+        function inicializarEventosCampos() {
+            // Adicionar eventos de blur para salvar automaticamente
+            const camposParaSalvar = [
+                'numero_contrato',
+                'data_assinatura_contrato', 
+                'numero_extrato',
+                'comarca',
+                'fonte_recurso',
+                'subcontratacao'
+            ];
+
+            camposParaSalvar.forEach(campoId => {
+                const elemento = document.getElementById(campoId) || 
+                            document.querySelector(`[name="${campoId}"]`);
+                
+                if (elemento) {
+                    elemento.addEventListener('blur', function() {
+                        salvarCampoContrato(campoId, this.value);
+                    });
+                }
+            });
+        }
+
+        async function salvarCampoContrato(campo, valor) {
+            try {
+                const response = await fetch(`/admin/processos/${processoId}/contrato/salvar-campo`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        campo: campo,
+                        valor: valor
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    console.warn(`Erro ao salvar campo ${campo}:`, data.message);
+                }
+            } catch (error) {
+                console.error('Erro ao salvar campo do contrato:', error);
+            }
+        }
+
+        // =================================================================
+        // FUNÇÕES PARA GERENCIAR ASSINANTES
+        // =================================================================
+
         function adicionarAssinante(tipoDocumento) {
             const container = document.getElementById(`assinantes-container-${tipoDocumento}`);
             const novoAssinante = document.createElement('div');
@@ -1635,10 +1790,10 @@
                             Responsável
                         </label>
                         <input type="text"
-                               name="assinante_responsavel[]"
-                               placeholder="Nome do Responsável"
-                               readonly
-                               class="w-full px-3 py-2 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded-lg responsavel-input">
+                            name="assinante_responsavel[]"
+                            placeholder="Nome do Responsável"
+                            readonly
+                            class="w-full px-3 py-2 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded-lg responsavel-input">
                     </div>
 
                     <!-- Número da Portaria -->
@@ -1647,10 +1802,10 @@
                             Nº Portaria
                         </label>
                         <input type="text"
-                               name="assinante_portaria[]"
-                               placeholder="Número da Portaria"
-                               readonly
-                               class="w-full px-3 py-2 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded-lg portaria-input">
+                            name="assinante_portaria[]"
+                            placeholder="Número da Portaria"
+                            readonly
+                            class="w-full px-3 py-2 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded-lg portaria-input">
                     </div>
 
                     <!-- Data da Portaria -->
@@ -1659,10 +1814,10 @@
                             Data Portaria
                         </label>
                         <input type="text"
-                               name="assinante_data_portaria[]"
-                               placeholder="Data da Portaria"
-                               readonly
-                               class="w-full px-3 py-2 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded-lg data-portaria-input">
+                            name="assinante_data_portaria[]"
+                            placeholder="Data da Portaria"
+                            readonly
+                            class="w-full px-3 py-2 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded-lg data-portaria-input">
                     </div>
                 </div>
 
@@ -1748,6 +1903,17 @@
             const comarcaInput = document.getElementById('comarca');
             if (comarcaInput && comarcaInput.value.trim() !== '') {
                 campos.comarca = comarcaInput.value.trim();
+            }
+
+            // Adicionar outros campos
+            const fonteRecursoInput = document.querySelector('[name="fonte_recurso"]');
+            if (fonteRecursoInput && fonteRecursoInput.value.trim() !== '') {
+                campos.fonte_recurso = fonteRecursoInput.value.trim();
+            }
+
+            const subcontratacaoInput = document.querySelector('[name="subcontratacao"]');
+            if (subcontratacaoInput && subcontratacaoInput.value.trim() !== '') {
+                campos.subcontratacao = subcontratacaoInput.value;
             }
 
             return campos;
@@ -1863,4 +2029,4 @@
         }
     </script>
 
-@endsection
+    @endsection

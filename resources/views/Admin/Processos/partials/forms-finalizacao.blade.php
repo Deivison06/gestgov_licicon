@@ -62,5 +62,32 @@
 
     @elseif($campo === 'cargo_controle_interno')
     <x-form-field name="cargo_controle_interno" label="Cargo controle interno" type="select" :options="$processo->prefeitura->unidades->pluck('nome', 'servidor_responsavel')->toArray()" placeholder="Selecione um Responsavel" />
+    
+    {{-- CAMPOS BOOLEANOS (SIM / NÃO) --}}
+
+    @elseif($campo === 'merenda_escolar')
+    <x-form-field 
+        name="merenda_escolar" 
+        label="Itens para Merenda Escolar (Verde)" 
+        type="select" 
+        :options="[
+            '1' => 'Sim',
+            '0' => 'Não'
+        ]"
+        placeholder="Selecione uma opção"
+    />
+
+    @elseif($campo === 'veiculos')
+    <x-form-field 
+        name="veiculos" 
+        label="Itens para Aquisição de Veículos (Vermelho)" 
+        type="select" 
+        :options="[
+            '1' => 'Sim',
+            '0' => 'Não'
+        ]"
+        placeholder="Selecione uma opção"
+    />
+
     @endif
 </div>

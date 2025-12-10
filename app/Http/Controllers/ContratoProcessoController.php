@@ -18,7 +18,7 @@ class ContratoProcessoController extends Controller
         'contrato' => [
             'titulo' => 'CONTRATO',
             'cor' => 'bg-blue-500',
-            'campos' => ['numero_contrato', 'data_assinatura_contrato', 'numero_extrato', 'comarca'],
+            'campos' => ['numero_contrato', 'data_assinatura_contrato', 'numero_extrato', 'comarca', 'fonte_recurso', 'subcontratacao'],
             'requer_assinatura' => true,
         ]
     ];
@@ -39,6 +39,120 @@ class ContratoProcessoController extends Controller
         $documentos = $this->documentoConfig;
 
         return view('Admin.Processos.contrato', compact('processo', 'documentos', 'contrato', 'contratacoes'));
+    }
+
+    /**
+     * Salvar campo individual do contrato
+     */
+    public function salvarCampoContrato(Request $request, Processo $processo)
+    {
+        try {
+            $request->validate([
+                'campo' => 'required|string',
+                'valor' => 'nullable|string'
+            ]);
+
+            $campo = $request->input('campo');
+            $valor = $request->input('valor');
+
+            // Verificar se o campo é válido
+            $camposPermitidos = [
+                'numero_contrato',
+                'data_assinatura_contrato',
+                'numero_extrato', 
+                'comarca',
+                'fonte_recurso',
+                'subcontratacao'
+            ];
+
+            if (!in_array($campo, $camposPermitidos)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Campo não permitido.'
+                ], 400);
+            }
+
+            // Verificar se já existe um contrato para este processo
+            $contrato = Contrato::where('processo_id', $processo->id)->first();
+
+            if (!$contrato) {
+                $contrato = Contrato::create([
+                    'processo_id' => $processo->id
+                ]);
+            }
+
+            // Processar campo específico
+            if ($campo === 'data_assinatura_contrato' && $valor) {
+                $valor = \Carbon\Carbon::parse($valor)->format('Y-m-d');
+            }
+
+            // Atualizar o campo
+            $contrato->update([$campo => $valor]);
+
+            Log::info('Campo do contrato salvo com sucesso', [
+                'processo_id' => $processo->id,
+                'campo' => $campo,
+                'valor' => $valor
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Campo salvo com sucesso.',
+                'data' => [$campo => $valor]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Erro ao salvar campo do contrato', [
+                'processo_id' => $processo->id,
+                'campo' => $request->input('campo'),
+                'erro' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao salvar campo: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Obter dados salvos do contrato
+     */
+    public function obterDadosContrato(Processo $processo)
+    {
+        try {
+            $contrato = Contrato::where('processo_id', $processo->id)->first();
+
+            if (!$contrato) {
+                return response()->json([
+                    'success' => true,
+                    'dados' => []
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'dados' => [
+                    'numero_contrato' => $contrato->numero_contrato,
+                    'data_assinatura_contrato' => $contrato->data_assinatura_contrato,
+                    'numero_extrato' => $contrato->numero_extrato,
+                    'comarca' => $contrato->comarca,
+                    'fonte_recurso' => $contrato->fonte_recurso,
+                    'subcontratacao' => $contrato->subcontratacao,
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Erro ao obter dados do contrato', [
+                'processo_id' => $processo->id,
+                'erro' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao obter dados do contrato.'
+            ], 500);
+        }
     }
 
     /**
@@ -94,8 +208,8 @@ class ContratoProcessoController extends Controller
     }
 
     /**
-        * Salva ou atualiza os campos do contrato no banco de dados
-    */
+     * Salva ou atualiza os campos do contrato no banco de dados
+     */
     private function salvarCamposContrato($processoId, array $campos): void
     {
         try {
@@ -111,6 +225,8 @@ class ContratoProcessoController extends Controller
                     : null,
                 'numero_extrato' => $campos['numero_extrato'] ?? null,
                 'comarca' => $campos['comarca'] ?? null,
+                'fonte_recurso' => $campos['fonte_recurso'] ?? null,
+                'subcontratacao' => $campos['subcontratacao'] ?? null,
             ];
 
             if ($contrato) {
@@ -301,6 +417,20 @@ class ContratoProcessoController extends Controller
         $camposJson = $request->query('campos');
 
         if (!$camposJson) {
+            // Se não vier campos na requisição, buscar do banco de dados
+            $contrato = Contrato::where('processo_id', $request->route('processo')->id)->first();
+            
+            if ($contrato) {
+                return [
+                    'numero_contrato' => $contrato->numero_contrato,
+                    'data_assinatura_contrato' => $contrato->data_assinatura_contrato,
+                    'numero_extrato' => $contrato->numero_extrato,
+                    'comarca' => $contrato->comarca,
+                    'fonte_recurso' => $contrato->fonte_recurso,
+                    'subcontratacao' => $contrato->subcontratacao,
+                ];
+            }
+            
             return [];
         }
 
@@ -336,30 +466,201 @@ class ContratoProcessoController extends Controller
 
     private function prepararDadosPdf(Processo $processo, array $validatedData): array
     {
-        $processo->load(['prefeitura', 'vencedores.lotes']);
+        $processo->load(['prefeitura', 'vencedores.lotes.contratados', 'finalizacao']);
 
-        // Calcular se há assinantes selecionados
-        $hasSelectedAssinantes = !empty($validatedData['assinantes']);
+        // Carregar todas as contratações
+        $contratacoes = LoteContratado::where('processo_id', $processo->id)
+            ->with(['lote', 'vencedor'])
+            ->whereIn('status', ['PENDENTE', 'CONTRATADO'])
+            ->get();
+        
+        // ==============================================
+        // DADOS DO CONTRATANTE (PREFEITURA)
+        // ==============================================
+        $dadosContratante = [
+            'orgao' => $processo->finalizacao->orgao_responsavel ?? $processo->prefeitura->cidade,
+            'cidade' => $processo->prefeitura->cidade,
+            'uf' => $processo->prefeitura->uf,
+            'endereco' => $processo->prefeitura->endereco,
+            'cnpj' => $processo->finalizacao->cnpj ?? $processo->prefeitura->cnpj,
+            'responsavel' => $processo->finalizacao->responsavel ?? $processo->prefeitura->autoridade_competente,
+            'cargo_responsavel' => $processo->finalizacao->cargo_responsavel ?? 'Prefeito Municipal',
+            'cpf_responsavel' => $processo->finalizacao->cpf_responsavel ?? null,
+        ];
+        
+        // Formatando CNPJ e CPF
+        $dadosContratante['cnpj_formatado'] = $this->formatarCNPJ($dadosContratante['cnpj']);
+        $dadosContratante['cpf_responsavel_formatado'] = $dadosContratante['cpf_responsavel'] 
+            ? $this->formatarCPF($dadosContratante['cpf_responsavel'])
+            : null;
 
-        // Formatar data de assinatura se existir
-        $dataAssinaturaFormatada = null;
-        if (!empty($validatedData['campos']['data_assinatura_contrato'])) {
-            $dataAssinaturaFormatada = \Carbon\Carbon::parse($validatedData['campos']['data_assinatura_contrato'])
-                ->format('d/m/Y');
-        }
+        // ==============================================
+        // DADOS DO CONTRATADO (EMPRESA VENCEDORA)
+        // ==============================================
+        $dadosContratado = $this->prepararDadosContratado($processo, $contratacoes);
+
+        // ==============================================
+        // DADOS DA TABELA DE ITENS
+        // ==============================================
+        $itensTabela = $this->prepararItensParaTabela($contratacoes);
+        
+        // Calcular totais
+        $valorTotalContrato = $contratacoes->sum('valor_total');
+        $quantidadeTotalContrato = $contratacoes->sum('quantidade_contratada');
+
+        // Carregar dados salvos do contrato
+        $contratoSalvo = Contrato::where('processo_id', $processo->id)->first();
 
         return [
             'processo' => $processo,
             'prefeitura' => $processo->prefeitura,
-            'vencedores' => $processo->vencedores,
+            'contratacoes' => $contratacoes,
+            'itensTabela' => $itensTabela,
+            'valorTotalContrato' => $valorTotalContrato,
+            'quantidadeTotalContrato' => $quantidadeTotalContrato,
+            
+            // VALOR POR EXTENSO
+            'valorTotalPorExtenso' => $this->escreverValorPorExtenso($valorTotalContrato),
+            
+            // Dados formatados
+            'dadosContratante' => $dadosContratante,
+            'dadosContratado' => $dadosContratado,
+            
+            // Dados do contrato salvos
+            'contratoSalvo' => $contratoSalvo,
+            
+            // Dados gerais
             'dataGeracao' => now()->format('d/m/Y H:i:s'),
             'dataSelecionada' => $validatedData['dataSelecionada'],
             'assinantes' => $validatedData['assinantes'],
-            'hasSelectedAssinantes' => $hasSelectedAssinantes,
-            // Campos do contrato
+            'hasSelectedAssinantes' => !empty($validatedData['assinantes']),
             'campos' => $validatedData['campos'],
-            'dataAssinaturaFormatada' => $dataAssinaturaFormatada,
+            'dataAssinaturaFormatada' => !empty($validatedData['campos']['data_assinatura_contrato']) 
+                ? \Carbon\Carbon::parse($validatedData['campos']['data_assinatura_contrato'])->format('d/m/Y')
+                : ($contratoSalvo && $contratoSalvo->data_assinatura_contrato 
+                    ? \Carbon\Carbon::parse($contratoSalvo->data_assinatura_contrato)->format('d/m/Y')
+                    : null),
         ];
+    }
+
+    // Método para escrever valor por extenso
+    private function escreverValorPorExtenso($valor): string
+    {
+        // Remover formatação se existir
+        if (is_string($valor)) {
+            $valor = preg_replace('/[^0-9,.]/', '', $valor);
+            $valor = str_replace(',', '.', $valor);
+        }
+        
+        $valor = floatval($valor);
+        
+        // Usar a classe helper
+        return \App\Helpers\ValorPorExtenso::escrever($valor);
+    }
+
+    // ==============================================
+    // MÉTODO PARA PREPARAR DADOS DO CONTRATADO
+    // ==============================================
+    private function prepararDadosContratado(Processo $processo, $contratacoes): array
+    {
+        // Se houver dados na finalização, usa eles
+        if ($processo->finalizacao && $processo->finalizacao->cnpj_empresa_vencedora) {
+            return [
+                'razao_social' => $processo->finalizacao->razao_social ?? 'XXXXXXXXXXXXX',
+                'cnpj' => $processo->finalizacao->cnpj_empresa_vencedora,
+                'cnpj_formatado' => $this->formatarCNPJ($processo->finalizacao->cnpj_empresa_vencedora),
+                'endereco' => $processo->finalizacao->endereco ?? 'Endereço não informado',
+                'representante' => $processo->finalizacao->representante_legal_empresa ?? 'Representante não informado',
+                'cpf_representante' => $processo->finalizacao->cpf_representante ?? null,
+                'cpf_representante_formatado' => $processo->finalizacao->cpf_representante 
+                    ? $this->formatarCPF($processo->finalizacao->cpf_representante)
+                    : null,
+                'fonte_dados' => 'finalizacao',
+            ];
+        }
+        
+        // Se não, tenta pegar do primeiro vencedor com contratações
+        if ($contratacoes->count() > 0) {
+            $primeiroVencedor = $contratacoes->first()->vencedor;
+            
+            if ($primeiroVencedor) {
+                return [
+                    'razao_social' => $primeiroVencedor->razao_social,
+                    'cnpj' => $primeiroVencedor->cnpj,
+                    'cnpj_formatado' => $this->formatarCNPJ($primeiroVencedor->cnpj),
+                    'endereco' => 'Endereço da empresa', // Precisa adicionar campo no modelo Vencedor
+                    'representante' => $primeiroVencedor->representante ?? 'Representante não informado',
+                    'cpf_representante' => $primeiroVencedor->cpf ?? null,
+                    'cpf_representante_formatado' => $primeiroVencedor->cpf 
+                        ? $this->formatarCPF($primeiroVencedor->cpf)
+                        : null,
+                    'fonte_dados' => 'vencedor',
+                ];
+            }
+        }
+        
+        // Fallback
+        return [
+            'razao_social' => 'XXXXXXXXXXXXX',
+            'cnpj' => 'XX.XXX.XXX/XXXX-XX',
+            'cnpj_formatado' => 'XX.XXX.XXX/XXXX-XX',
+            'endereco' => 'Endereço não informado',
+            'representante' => 'Representante não informado',
+            'cpf_representante' => 'XXX.XXX.XXX-XX',
+            'cpf_representante_formatado' => 'XXX.XXX.XXX-XX',
+            'fonte_dados' => 'fallback',
+        ];
+    }
+
+    // ==============================================
+    // MÉTODOS AUXILIARES
+    // ==============================================
+    private function formatarCNPJ($cnpj): string
+    {
+        if (!$cnpj) return 'XX.XXX.XXX/XXXX-XX';
+        
+        $cnpj = preg_replace('/[^0-9]/', '', $cnpj);
+        
+        if (strlen($cnpj) === 14) {
+            return preg_replace('/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/', '$1.$2.$3/$4-$5', $cnpj);
+        }
+        
+        return $cnpj;
+    }
+
+    private function formatarCPF($cpf): string
+    {
+        if (!$cpf) return 'XXX.XXX.XXX-XX';
+        
+        $cpf = preg_replace('/[^0-9]/', '', $cpf);
+        
+        if (strlen($cpf) === 11) {
+            return preg_replace('/(\d{3})(\d{3})(\d{3})(\d{2})/', '$1.$2.$3-$4', $cpf);
+        }
+        
+        return $cpf;
+    }
+
+    // Novo método para preparar itens para a tabela
+    private function prepararItensParaTabela($contratacoes): array
+    {
+        $itens = [];
+        $itemNumero = 1;
+        
+        foreach ($contratacoes as $contratacao) {
+            if ($contratacao->lote) {
+                $itens[] = [
+                    'item' => $itemNumero++,
+                    'especificacao' => $contratacao->lote->descricao ?? 'Não especificado',
+                    'unidade_medida' => $contratacao->lote->unidade ?? '',
+                    'quantidade' => number_format($contratacao->quantidade_contratada, 2, ',', '.'),
+                    'valor_unitario' => 'R$ ' . number_format($contratacao->valor_unitario, 2, ',', '.'),
+                    'valor_total' => 'R$ ' . number_format($contratacao->valor_total, 2, ',', '.'),
+                ];
+            }
+        }
+        
+        return $itens;
     }
 
     private function determinarViewContrato(Processo $processo): string

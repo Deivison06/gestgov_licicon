@@ -30,6 +30,8 @@ class Finalizacao extends Model
         'numero_ata_registro_precos',
         'cargo_controle_interno',
         'cargo_responsavel',
+        'merenda_escolar',
+        'veiculos',
     ];
 
     public function processo()

@@ -26,9 +26,9 @@
 
     <style>
         :root {
-            --primary-dark: #1a3c46;
-            --primary: #1D9698;
-            --primary-light: #4fb6b8;
+            --primary-dark: #052323;
+            --primary: #2DC197;
+            --primary-light: #2DC197;
             --primary-extra-light: #e6f4f4;
             --text-dark: #1e2a32;
             --text-light: #64748b;
@@ -67,7 +67,7 @@
         /* Sidebar melhorada */
         .sidebar {
             width: var(--sidebar-width);
-            background: linear-gradient(180deg, var(--primary-dark) 0%, var(--primary) 100%);
+            background: var(--primary-dark);
             color: white;
             display: flex;
             flex-direction: column;
@@ -88,11 +88,6 @@
             display: flex;
             justify-content: center;
             transition: var(--transition);
-        }
-
-        .sidebar-logo:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
         }
 
         .sidebar-logo img {
@@ -322,7 +317,7 @@
         }
 
         .welcome-banner {
-            background: linear-gradient(120deg, var(--primary) 0%, var(--primary-light) 100%);
+            background: var(--primary-light);
             color: white;
             border-radius: var(--border-radius-lg);
             padding: 2rem;
@@ -340,6 +335,7 @@
         }
 
         .welcome-text p {
+            color: #222;
             opacity: 0.9;
             max-width: 600px;
         }
@@ -572,7 +568,9 @@
             <div>
                 <!-- Logo -->
                 <div class="sidebar-logo">
-                    <img src="{{ url('logo/logo_gestgov.png') }}" alt="LOGO GESTGOV">
+                    <a href="{{ route("admin.dashboard") }}">
+                        <img src="{{ url('logo/logo_gestgov.png') }}" alt="LOGO GESTGOV">
+                    </a>
                 </div>
 
                 <!-- Navegação -->

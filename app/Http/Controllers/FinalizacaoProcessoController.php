@@ -60,6 +60,8 @@ class FinalizacaoProcessoController extends Controller
                 'endereco',
                 'responsavel',
                 'cpf_responsavel',
+                'merenda_escolar',
+                'veiculos',
             ],
             'requer_assinatura' => true,
         ],
@@ -830,44 +832,6 @@ class FinalizacaoProcessoController extends Controller
 
         return $this->baixarTodosDocumentosComGhostscript($processo, $ordem, $documentos);
     }
-
-    /**
-     * Obtém a ordem dos documentos para download/mesclagem
-     */
-    // private function getOrdemDocumentos(Processo $processo): array
-    // {
-    //     $isConcorrenciaComInversao = $processo->modalidade === \App\Enums\ModalidadeEnum::CONCORRENCIA &&
-    //                                $processo->detalhe &&
-    //                                $processo->detalhe->inversao_fase === "sim";
-
-    //     if ($isConcorrenciaComInversao) {
-    //         // Ordem especial para concorrência com inversão
-    //         return [
-    //             'atos_sessao',
-    //             'documento_habilitacao_empresa_vencedora',
-    //             'proposta',
-    //             'proposta_readequada',
-    //             'recurso_contratacoes_decisao_recursos',
-    //             'termo_adjudicacao',
-    //             'parecer_controle_interno',
-    //             'termo_homologacao',
-    //             'publicacoes'
-    //         ];
-    //     }
-
-    //     // Ordem padrão
-    //     return [
-    //         'atos_sessao',
-    //         'proposta',
-    //         'proposta_readequada',
-    //         'documento_habilitacao_empresa_vencedora',
-    //         'recurso_contratacoes_decisao_recursos',
-    //         'termo_adjudicacao',
-    //         'parecer_controle_interno',
-    //         'termo_homologacao',
-    //         'publicacoes'
-    //     ];
-    // }
 
     private function baixarTodosDocumentosComGhostscript(Processo $processo, array $ordem, $documentos)
     {

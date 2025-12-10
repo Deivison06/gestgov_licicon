@@ -212,7 +212,7 @@
                                     @endif
 
                                     @if ($documentoGerado)
-                                    <a href="{{ route('admin.processo.finalizacao.documento.dowload', ['processo' => $processo->id, 'tipo' => $tipo]) }}" download class="p-2 text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2" aria-label="Baixar documento">
+                                    <a href="{{ route('admin.processo.finalizardocumento.dowload', ['processo' => $processo->id, 'tipo' => $tipo]) }}" download class="p-2 text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2" aria-label="Baixar documento">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                                             <polyline points="7 10 12 15 17 10"></polyline>
@@ -326,7 +326,7 @@
 
                 <!-- Botão para Baixar Todos os PDFs -->
                 <div class="flex justify-center p-4 mt-6 border-t border-gray-200 bg-gray-50">
-                    <a href="{{ route('admin.processo.finalizacao.documento.dowload-all', ['processo' => $processo->id]) }}" class="px-6 py-3 text-sm font-semibold text-white transition-colors duration-200 bg-green-600 rounded-lg shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                    <a href="{{ route('admin.processo.finalizardocumento.dowload-all', ['processo' => $processo->id]) }}" class="px-6 py-3 text-sm font-semibold text-white transition-colors duration-200 bg-green-600 rounded-lg shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
                         📥 Baixar Todos os PDFs
                     </a>
                 </div>
@@ -2144,6 +2144,8 @@
                 numero_ata_registro_precos: existing?.numero_ata_registro_precos ?? '',
                 cargo_controle_interno: existing?.cargo_controle_interno ?? '',
                 cargo_responsavel: existing?.cargo_responsavel ?? '',
+                merenda_escolar: existing?.merenda_escolar ?? '',
+                veiculos: existing?.veiculos ?? '',
 
                 // Controle de confirmação
                 confirmed: {
@@ -2167,6 +2169,8 @@
                     numero_ata_registro_precos: !!existing?.numero_ata_registro_precos,
                     cargo_controle_interno: !!existing?.cargo_controle_interno,
                     cargo_responsavel: !!existing?.cargo_responsavel,
+                    merenda_escolar: !!existing?.merenda_escolar,
+                    veiculos: !!existing?.veiculos,
                 },
 
                 toggleConfirm(field) {
@@ -2206,6 +2210,8 @@
                         'numero_ata_registro_precos',
                         'cargo_controle_interno',
                         'cargo_responsavel',
+                        'merenda_escolar',
+                        'veiculos',
                     ];
 
                     if (!allowedFields.includes(field)) {
