@@ -245,7 +245,7 @@
             <h4 style="text-align: center">PARECER DO CONTROLE INTERNO</h4>
             <p style="text-indent: 50px; font-weight: bold;">
                 PROCESSO ADMINISTRATIVO {{ $processo->numero_processo }} <br>
-                CONCORRÊNCIA Nº {{ $processo->numero_procedimento }}<br>
+                PREGÃO ELETRÔNICO Nº {{ $processo->numero_procedimento }}<br>
                 OBJETO: {!! strip_tags($processo->objeto) !!}
             </p>
             <h4>I. RELATÓRIO:</h4>

@@ -19,6 +19,7 @@ class Vencedor extends Model
         'cnpj',
         'representante',
         'cpf',
+        'endereco', // <-- ADICIONE AQUI
         'ordem'
     ];
 

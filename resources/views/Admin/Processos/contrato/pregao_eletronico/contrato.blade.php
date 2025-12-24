@@ -177,7 +177,7 @@
                 </td>
                 <td style="width:60%; padding:8px; vertical-align:top; word-wrap:break-word; white-space:normal;">
                     PREGÃO ELETRÔNICO Nº {{ $processo->numero_procedimento }}, QUE FAZEM ENTRE SI A
-                    PREFEITURA MUNICIPAL DE {{ $processo->prefeitura->cidade }} E {{ $dadosContratado['razao_social'] }}
+                    {{ $processo->finalizacao->orgao_responsavel }} E {{ $dadosContratado['razao_social'] }}
                 </td>
             </tr>
         </table>
@@ -191,7 +191,7 @@
                     <td class="content">
                         <div style=" font-weight: bold; margin-bottom: 3px;">Contratante</div>
                         <div style="">
-                            Prefeitura Municipal de {{ $processo->finalizacao->orgao_responsavel }}, com sede no(a) {{ $processo->prefeitura->endereco }}, na cidade de {{ $processo->prefeitura->cidade }} inscrito(a) no CNPJ
+                            {{ $processo->finalizacao->orgao_responsavel }}, com sede no(a) {{ $processo->prefeitura->endereco }}, na cidade de {{ $processo->prefeitura->cidade }} inscrito(a) no CNPJ
                             sob o nº {{ $processo->finalizacao->cnpj }}, neste ato representado(a) pelo(a) {{ $processo->finalizacao->responsavel }} inscrito no CPF sob n° {{ $processo->finalizacao->cpf_responsavel }}.
                         </div>
                     </td>
@@ -251,13 +251,13 @@
                     @endforeach
                     
                     <!-- Linha de totalização -->
-                    @php
-                        $totalGeral = $contratacoes->sum('valor_total');
-                        $quantidadeTotal = $contratacoes->sum('quantidade_contratada');
-                    @endphp
                     <tr>
                         <td colspan="3" style="border:1px solid #000; padding:14px; vertical-align:top; text-align:right; font-weight:bold;">TOTAL GERAL</td>
-                        <td colspan="3" style="border:1px solid #000; padding:14px; vertical-align:top; text-align:right; font-weight:bold;">R$ {{ number_format($totalGeral, 2, ',', '.') }}</td>
+                        <td colspan="3" style="border:1px solid #000; padding:14px; vertical-align:top; text-align:right; font-weight:bold;">R$ {{ number_format($valorTotalContrato, 2, ',', '.') }}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="3" style="border:1px solid #000; padding:14px; vertical-align:top; text-align:right; font-weight:bold;">TOTAL GERAL</td>
+                        <td colspan="3" style="border:1px solid #000; padding:14px; vertical-align:top; text-align:right; font-weight:bold;">R$ {{ number_format($valorTotalContrato, 2, ',', '.') }}</td>
                     </tr>
                 @else
                     <tr>
@@ -312,9 +312,9 @@
             }
         @endphp
         <p style="text-align: justify;">
-            9O prazo de vigência da contratação é de <span style="font-weight:bold; text-decoration:underline;"> {{ $textoVigencia }} </span>, 
-            contados contados da ordem de Serviços, prorrogável na forma dos artigos 106 e 107 da Lei n° 14.133, de 2021. <br>
-            2.1.1. A prorrogação de que trata este item é condicionada ao ateste, pela autoridade
+            2.1. 9O prazo de vigência da contratação é de <span style="font-weight:bold; text-decoration:underline;"> {{ $textoVigencia }} </span>, 
+            contados contados da ordem de Serviços, prorrogável na forma dos artigos 106 e 107 da Lei n° 14.133, de 2021. <br><br>
+            2.2. A prorrogação de que trata este item é condicionada ao ateste, pela autoridade
             competente, de que as condições e os preços permanecem vantajosos para a
             Administração, permitida a negociação com o contratado.
         </p>
@@ -339,7 +339,7 @@
                 CLÁUSULA QUARTA – SUBCONTRATAÇÃO</h4>
         </div>
 
-        @if ($processo->contrato->subcontratacao === "Nao")
+        @if ($processo->contrato->subcontratacao === 0)
             <p style="text-align: justify;">
                 4.1. Não será admitida a subcontratação do objeto contratual.
             </p>
@@ -378,15 +378,19 @@
         </div>
 
         <p style="text-align: justify;">
-            5.1. O valor total da contratação é de R$ {{ number_format($totalGeral, 2, ',', '.') }} ({{ $valorTotalPorExtenso }}).
+            5.1. O valor total da contratação é de R$ {{ number_format($valorTotalContrato, 2, ',', '.') }} ({{ $valorTotalPorExtenso }}).
             <br><br>
             5.2. No valor acima estão incluídas todas as despesas ordinárias diretas e indiretas
             decorrentes da execução do objeto, inclusive tributos e/ou impostos, encargos sociais,
             trabalhistas, previdenciários, fiscais e comerciais incidentes, taxa de administração, frete,
             seguro e outros necessários ao cumprimento integral do objeto da contratação.
             <br><br>
-            5.3. O valor acima é meramente estimativo, de forma que os pagamentos devidos ao
-            contratado dependerão dos quantitativos efetivamente fornecidos.
+            @if ($processo->tipo_procedimento === 'SERVIÇOS')
+                5.3. O valor acima é meramente estimativo, de forma que os pagamentos devidos ao contratado dependerão dos quantitativos efetivamente prestados
+            @else
+                5.3. O valor acima é meramente estimativo, de forma que os pagamentos devidos ao
+                contratado dependerão dos quantitativos efetivamente fornecidos.
+            @endif
         </p>
 
         <div style="margin-bottom: 20px;">
@@ -458,9 +462,16 @@
             <br><br>
             8.3. Receber o objeto no prazo e condições estabelecidas no Termo de Referência;
             <br><br>
-            8.4. Notificar o Contratado, por escrito, sobre vícios, defeitos ou incorreções verificadas
-            no objeto fornecido, para que seja por ele substituído, reparado ou corrigido, no total ou
-            em parte, às suas expensas;
+            @if ($processo->tipo_procedimento === 'SERVIÇOS')
+                8.4. Notificar o Contratado, por escrito, sobre vícios, defeitos ou incorreções verificadas 
+                nos serviços prestados, para que seja por ele substituído, reparado ou corrigido, no total 
+                ou em parte, às suas expensas;
+            @else
+                8.4. Notificar o Contratado, por escrito, sobre vícios, defeitos ou incorreções verificadas
+                no objeto fornecido, para que seja por ele substituído, reparado ou corrigido, no total ou
+                em parte, às suas expensas;
+            @endif
+            
             <br><br>
             8.5. Acompanhar e fiscalizar a execução do contrato e o cumprimento das obrigações
             pelo Contratado;
@@ -470,8 +481,13 @@
             houver controvérsia sobre a execução do objeto, quanto à dimensão, qualidade e
             quantidade, conforme o art. 143 da Lei nº 14.133, de 2021;
             <br><br>
-            8.7. Efetuar o pagamento ao Contratado do valor correspondente ao fornecimento do
-            objeto, no prazo, forma e condições estabelecidos no presente Contrato;
+            @if ($processo->tipo_procedimento === 'SERVIÇOS')
+                8.7. Efetuar o pagamento ao Contratado do valor correspondente a prestação do serviço, 
+                no prazo, forma e condições estabelecidos no presente Contrato;
+            @else
+                8.7. Efetuar o pagamento ao Contratado do valor correspondente ao fornecimento do
+                objeto, no prazo, forma e condições estabelecidos no presente Contrato;
+            @endif
             <br><br>
             8.8. Aplicar ao Contratado as sanções previstas na lei e neste Contrato;
             <br><br>
@@ -662,28 +678,113 @@
                 <br><br>
             @endif
             @if ($processo->finalizacao->veiculos === "Sim")
-                9.28. O objeto deve ser entregue na sede da Prefeitura Municipal de {{ $processo->prefeitura->cidade }},
-                localizada na {{ $processo->prefeitura->endereco }}, no horário de 08h às 13h, ou em
-                local indicado pela administração, o objeto deve ser entregue conforme Ordem de
-                Fornecimento.
-                <br><br>
-                9.29. Para efeito de esclarecimento, a entrega do objeto deve ser feita utilizando
-                caminhão plataforma do tipo reboque, guincho ou cegonha, devendo o Fiscal de Contrato
-                proceder com a conferência do objeto no ato da entrega.
-                <br><br>
-                9.30. Antes da entrega do objeto, este não poderá sofrer deslocamento próprio (o veículo
-                somente pode ser transportado em caminhão plataforma do tipo reboque), devendo ser
-                entregue com quilometragem “zero” ou com a quilometragem registrada que seja
-                decorrente de atividades de transporte ou de deslocamento no pátio da fábrica ou da
-                própria empresa fornecedora.
-                <br><br>
-                9.31. Entregar, juntamente com os veículos, o manual, certificados de garantia do
-                fabricante, notas fiscais e a relação da rede autorizada pelo fabricante;
-                <br><br>
-                9.32. Providenciar, independentemente de ser fabricante ou não fabricante, a correção
-                ou substituição do todo ou em parte do material, peça, componente ou acessório, que
-                apresente defeitos de fabricação ou divergência com as especificações estabelecidas no
-                edital, sem ônus para administração, observando o contrato e a legislação vigente.
+                @if ($processo->tipo_procedimento === 'SERVIÇOS')
+
+                    @if ($processo->finalizacao->locacao_veiculo === "Sim")
+                        9.28. Atender à legislação vigente da ANTT, DENATRAN, DETRAN/PI e demais
+                        órgãos que regulam e fiscalizam o trânsito e o fretamento de veículos;<br><br>
+                        9.29. Dispor de seguro veicular regido pela legislação vigente no Brasil;<br><br>
+                        9.30. Arcar com toda e qualquer multa sobre descumprimento de legislação em
+                        vigor;<br><br>
+                        9.31. Disponibilizar os veículos dentro das especificações contidas neste Termo
+                        de Referência e conforme as especificações discriminadas em sua proposta,
+                        segurados, licenciados, sem pendências tributárias, em perfeitas condições de
+                        utilização, conservação, trafegabilidade, funcionamento e segurança,
+                        obedecendo a todas as exigências estabelecidas pelas legislações de trânsito e
+                        ambiental.<br><br>
+                        9.32. Responsabilizar-se por todas as despesas dos veículos utilizados na
+                        execução dos serviços, tais como licenciamento, seguro total, manutenção e
+                        outras que incidam direta ou indiretamente sobre os serviços ora contratados,
+                        inclusive acidente, para o que os veículos deverão estar segurados.<br><br>
+                        9.33. Efetuar a entrega do veículo com peças somente novas e originais ou de
+                        desempenho iguais ou superiores as utilizadas na fabricação do veículo;<br><br>
+                        9.34. A contratada obriga-se a substituir os veículos quebrados ou defeituosos
+                        no prazo de até 24 (vinte e quatro) horas após a constatação do fato, a contar da
+                        comunicação efetuada pela contratante;<br><br>
+                        9.35. O seguro deverá possuir, no mínimo, proteção total com franquia de acordo
+                        com valores praticado pelas seguradoras, nos casos de colisão furto ou incêndio
+                        ou perda total;<br><br>
+                        9.36. Permitir que a Prefeitura Municipal de {{ $processo->prefeitura->cidade }} inspecione o(s)
+                        veículo(s) objeto desta licitação, no ato da entrega, ficando assegurado à
+                        Prefeitura Municipal o direito de aceitá-los ou não;
+                    @else
+                        9.28. Para a Prestação dos serviços, os veículos deverão, obrigatoriamente,
+                        seguir as devidas exigências: <br>
+
+                        • cinto de segurança, conforme regulamentação específica do CONTRAN, <br>
+                        • para os veículos de transporte e de condução escolar, os de transporte de
+                        passageiros com mais de dez lugares e os de carga com peso bruto total
+                        superior a quatro mil, quinhentos e trinta e seis quilogramas, equipamento
+                        registrador instantâneo inalterável de velocidade e tempo;<br>
+                        • encosto de cabeça, para todos os tipos de veículos automotores, segundo
+                        normas estabelecidas pelo CONTRAN;<br>
+                        • dispositivo destinado ao controle de emissão de gases poluentes e de ruído,
+                        segundo normas estabelecidas pelo CONTRAN.<br>
+                        • equipamento suplementar de retenção - air bag frontal para o condutor e o
+                        passageiro do banco dianteiro.<br>
+                        • luzes de rodagem diurna.  Deverá estar com licenciamento em dias,
+                        conforme as normas do executivo do Estado do Piauí ou onde estiver
+                        registrado o veículo que executará a condução;<br>
+                        • Demais requisitos de autorização para condução:<br>
+                        • Estar registrado como veículo de passageiros;<br>
+                        • Deverão estar em dia com a inspeção semestral para verificação dos
+                        equipamentos obrigatórios e de segurança;<br>
+                        • Deverá possuir pintura de faixa horizontal na cor amarela, com quarenta
+                        centímetros de largura, à meia altura, em toda a extensão das partes laterais
+                        e traseira da carroçaria, com o dístico ESCOLAR, em preto, sendo que, em caso
+                        de veículo de carroçaria pintada na cor amarela, as cores aqui indicadas
+                        devem ser invertidas;<br>
+                        • Possuir equipamento registrador instantâneo inalterável de velocidade e
+                        tempo;<br>
+                        • Possuir lanternas de luz branca, fosca ou amarela dispostas nas
+                        extremidades da parte superior dianteira e lanternas de luz vermelha
+                        dispostas na extremidade superior da parte traseira;<br>
+                        • Possuir cintos de segurança em número igual à lotação;<br>
+                        • Possuir quaisquer outros requisitos e equipamentos obrigatórios
+                        estabelecidos pelo CONTRAN.<br>
+                        • As exigências acima, assim como, as especificações da lotação deverão estar
+                        visíveis, sendo vedado a condução em número superior de alunos ao
+                        especificado.<br>
+                        • Das exigências em relação ao condutor:<br>
+                        • Ter idade superior a vinte e um anos;<br>
+                        • Ser habilitado na categoria D;<br>
+                        • Não ter cometido mais de uma infração gravíssima nos 12 (doze) últimos
+                        meses;<br>
+                        • Ser aprovado em curso especializado, nos termos da regulamentação do
+                        CONTRAN.<br>
+                        • Os condutores dos veículos, com base nas exigências anteriores, para
+                        exercerem suas atividades, deverão apresentar, previamente, certidão
+                        negativa do registro de distribuição criminal relativamente aos crimes de
+                        homicídio, roubo, estupro e corrupção de menores, renovável a cada cinco
+                        anos, junto ao órgão responsável pela respectiva concessão ou autorização.<br>
+                        • Conforme a recomendação do FNDE, o veículo a ser utilizado nesta rota
+                        não poderá ter vida útil superior a 10 (dez) anos, conforme Resolução nº
+                        1, de 20 de abril de 2021
+                    @endif
+                @else
+                    9.28. O objeto deve ser entregue na sede da Prefeitura Municipal de {{ $processo->prefeitura->cidade }},
+                    localizada na {{ $processo->prefeitura->endereco }}, no horário de 08h às 13h, ou em
+                    local indicado pela administração, o objeto deve ser entregue conforme Ordem de
+                    Fornecimento.
+                    <br><br>
+                    9.29. Para efeito de esclarecimento, a entrega do objeto deve ser feita utilizando
+                    caminhão plataforma do tipo reboque, guincho ou cegonha, devendo o Fiscal de Contrato
+                    proceder com a conferência do objeto no ato da entrega.
+                    <br><br>
+                    9.30. Antes da entrega do objeto, este não poderá sofrer deslocamento próprio (o veículo
+                    somente pode ser transportado em caminhão plataforma do tipo reboque), devendo ser
+                    entregue com quilometragem “zero” ou com a quilometragem registrada que seja
+                    decorrente de atividades de transporte ou de deslocamento no pátio da fábrica ou da
+                    própria empresa fornecedora.
+                    <br><br>
+                    9.31. Entregar, juntamente com os veículos, o manual, certificados de garantia do
+                    fabricante, notas fiscais e a relação da rede autorizada pelo fabricante;
+                    <br><br>
+                    9.32. Providenciar, independentemente de ser fabricante ou não fabricante, a correção
+                    ou substituição do todo ou em parte do material, peça, componente ou acessório, que
+                    apresente defeitos de fabricação ou divergência com as especificações estabelecidas no
+                    edital, sem ônus para administração, observando o contrato e a legislação vigente.
+                @endif
             @endif
         </p>
 
@@ -1006,9 +1107,8 @@
             <div class="signature-block" style="display: inline-block; margin: 0 40px;">
                 ___________________________________<br>
                 <p style="line-height: 1.2;">
-                    Prefeitura do Município de {{ $processo->prefeitura->cidade }} <br>
-                    Prefeito Municipal <br>
-                    {{ $processo->prefeitura->autoridade_competente }}
+                    {{ $primeiroAssinante['responsavel'] }} <br>
+                    <span>{{ $primeiroAssinante['unidade_nome'] }}</span>
                 </p>
             </div>
         </div>
@@ -1048,7 +1148,7 @@
                 <td colspan="2" style="padding:8px; text-align:center; font-weight:bold;">
                     EXTRATO DO CONTRATO Nº {{ $campos['numero_extrato'] }}<br>
                     PROCESSO ADMINISTRATIVO Nº {{ $processo->numero_processo }}<br>
-                    MODALIDADE: CONCORRÊNCIA ELETRÔNICA Nº {{ $processo->numero_procedimento }}
+                    MODALIDADE: PREGÃO ELETRÔNICO Nº {{ $processo->numero_procedimento }}
                 </td>
             </tr>
 
@@ -1068,7 +1168,7 @@
                     CONTRATANTE:
                 </td>
                 <td style="padding:6px;">
-                    PREFEITURA MUNICIPAL DE {{ $processo->prefeitura->cidade }}
+                   {{ $processo->finalizacao->orgao_responsavel }}
                 </td>
             </tr>
 
@@ -1098,7 +1198,7 @@
                     VALOR:
                 </td>
                 <td style="padding:6px;">
-                    R$ {{ number_format($totalGeral, 2, ',', '.') }}
+                    R$ {{ number_format($valorTotalContrato, 2, ',', '.') }}
                 </td>
             </tr>
 
@@ -1147,7 +1247,7 @@
                     FUNDAMENTAÇÃO LEGAL:
                 </td>
                 <td style="padding:6px; text-align:justify;">
-                    Será regida pelas normas fixadas na Concorrência Eletrônica nº {{ $processo->numero_procedimento }},
+                    Será regida pelas normas fixadas no PREGÃO ELETRÔNICO nº {{ $processo->numero_procedimento }},
                     e pela Lei 14.133/21, de 1 de abril de 2021, e legislação posterior,
                     que o suplementam no que for omisso.
                 </td>
@@ -1159,7 +1259,7 @@
                     ASSINATURA (CONTRATANTE):
                 </td>
                 <td style="padding:6px;">
-                    {{ $processo->prefeitura->autoridade_competente }}
+                    {{ $primeiroAssinante['responsavel'] }}
                 </td>
             </tr>
 

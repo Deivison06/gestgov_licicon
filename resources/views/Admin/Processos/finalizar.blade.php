@@ -820,6 +820,15 @@
                                     class="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cpf-mask"
                                     placeholder="000.000.000-00">
                             </div>
+                            <div>
+                                <label for="endereco" class="block text-sm font-medium text-gray-700">Endereco *</label>
+                                <input type="text"
+                                    id="endereco"
+                                    name="endereco"
+                                    required
+                                    class="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="Endereço completo">
+                            </div>
                         </div>
                     </div>
 
@@ -1237,6 +1246,7 @@
             document.getElementById('cnpj').value = vencedor.cnpj;
             document.getElementById('representante').value = vencedor.representante;
             document.getElementById('cpf').value = vencedor.cpf;
+            document.getElementById('endereco').value = vencedor.endereco;
 
             const modal = document.getElementById('vencedorModal');
             modal.classList.remove('hidden');
@@ -1270,37 +1280,56 @@
         function salvarVencedor(event) {
             event.preventDefault();
 
+            console.log('=== DEBUG INICIO salvarVencedor ===');
+
             const formData = new FormData(event.target);
+            
             const vencedorIndex = document.getElementById('vencedorIndex').value;
             const vencedorId = document.getElementById('vencedorId').value;
 
+            // Criar objeto apenas com os dados do vencedor atual
             const vencedorData = {
-                id: vencedorId,
+                id: vencedorId || null, // Envia null se for novo
                 razao_social: formData.get('razao_social'),
                 cnpj: formData.get('cnpj'),
                 representante: formData.get('representante'),
                 cpf: formData.get('cpf'),
+                endereco: formData.get('endereco'),
                 lotes: []
             };
+
+            console.log('VencedorData a ser enviado:', vencedorData);
 
             // Se está editando, preserva os lotes existentes
             if (vencedorIndex !== '' && vencedores[vencedorIndex]) {
                 vencedorData.lotes = vencedores[vencedorIndex].lotes || [];
+                console.log('Preservando lotes existentes:', vencedorData.lotes);
             }
 
-            // Criar uma nova lista de vencedores que inclui todos os existentes + o novo/editado
-            let vencedoresAtualizados = [];
-
+            // Preparar dados para enviar
+            let requestData = {};
+            
             if (vencedorIndex !== '') {
-                // Se está editando, substitui o vencedor na posição correta
-                vencedoresAtualizados = [...vencedores];
-                vencedoresAtualizados[vencedorIndex] = vencedorData;
+                // Se está editando, envia apenas o vencedor específico
+                requestData = {
+                    vencedor_id: vencedorId, // ID do vencedor sendo editado
+                    vencedor_data: vencedorData,
+                    vencedor_index: vencedorIndex,
+                    operacao: 'editar'
+                };
+                console.log('Editando vencedor:', requestData);
             } else {
-                // Se está adicionando novo, adiciona ao final
-                vencedoresAtualizados = [...vencedores, vencedorData];
+                // Se está adicionando novo
+                requestData = {
+                    vencedor_data: vencedorData,
+                    operacao: 'adicionar'
+                };
+                console.log('Adicionando novo vencedor:', requestData);
             }
 
-            // Enviar para o servidor TODOS os vencedores
+            console.log('=== DEBUG FIM ===');
+
+            // Enviar para o servidor APENAS o vencedor atual
             fetch('{{ route("admin.processos.finalizacao.vencedores.store", $processo) }}', {
                 method: 'POST',
                 headers: {
@@ -1308,26 +1337,27 @@
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    vencedores: vencedoresAtualizados,
-                    vencedor_index: vencedorIndex
-                })
+                body: JSON.stringify(requestData)
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log('Resposta bruta:', response);
+                return response.json();
+            })
             .then(data => {
+                console.log('Resposta JSON:', data);
                 if (data.success) {
                     showMessage('Vencedor salvo com sucesso!', 'success');
                     fecharModal();
-                    atualizarTabelaVencedores();
+                    atualizarTabelaVencedores(); // Isso vai recarregar todos os vencedores do servidor
                 } else {
                     showMessage('Erro ao salvar vencedor: ' + data.message, 'error');
                 }
             })
             .catch(error => {
+                console.error('Erro na requisição:', error);
                 showMessage('Erro ao salvar vencedor: ' + error, 'error');
             });
         }
-
         // Função para remover vencedor
         function removerVencedor(index) {
             if (!confirm('Tem certeza que deseja remover este vencedor?')) {

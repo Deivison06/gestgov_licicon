@@ -10,6 +10,7 @@ use App\Http\Controllers\PrefeituraController;
 use App\Http\Controllers\ContratacaoController;
 use App\Http\Controllers\ContratoProcessoController;
 use App\Http\Controllers\FinalizacaoProcessoController;
+use App\Http\Controllers\AtaController;
 
 // Rotas de perfil (usuário logado)
 Route::middleware('auth')->group(function () {
@@ -275,6 +276,20 @@ Route::prefix('admin')
             
             Route::get('/processo/{processo}/documentos/baixar-todos', [FinalizacaoProcessoController::class, 'baixarTodosDocumentos'])
                 ->name('documento.dowload-all');
+        });
+
+        Route::get('/processos/by-prefeitura', [ProcessoController::class, 'byPrefeitura'])
+        ->name('atas.processos-by-prefeitura');
+
+
+        Route::prefix('atas')->name('atas.')->group(function () {
+            Route::get('/', [AtaController::class, 'index'])->name('index');
+            Route::get('/dashboard', [AtaController::class, 'dashboard'])->name('dashboard');
+            Route::get('/{processo}', [AtaController::class, 'show'])->name('show');
+            Route::post('/{processo}/gerar', [AtaController::class, 'gerarESalvarAta'])->name('gerar'); // ← MUDOU PARA 'gerar'
+            Route::get('/{processo}/download', [AtaController::class, 'downloadAta'])->name('download');
+            Route::get('/{processo}/dados', [AtaController::class, 'getDadosAta'])->name('dados');
+            Route::post('/relatorio-consolidado', [AtaController::class, 'relatorioConsolidado'])->name('relatorio.consolidado');
         });
     });
 

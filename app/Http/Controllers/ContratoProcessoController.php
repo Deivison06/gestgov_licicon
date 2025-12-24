@@ -588,7 +588,7 @@ class ContratoProcessoController extends Controller
                     'razao_social' => $primeiroVencedor->razao_social,
                     'cnpj' => $primeiroVencedor->cnpj,
                     'cnpj_formatado' => $this->formatarCNPJ($primeiroVencedor->cnpj),
-                    'endereco' => 'Endereço da empresa', // Precisa adicionar campo no modelo Vencedor
+                    'endereco' => $primeiroVencedor->endereco,
                     'representante' => $primeiroVencedor->representante ?? 'Representante não informado',
                     'cpf_representante' => $primeiroVencedor->cpf ?? null,
                     'cpf_representante_formatado' => $primeiroVencedor->cpf 

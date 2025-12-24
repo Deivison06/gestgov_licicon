@@ -284,7 +284,7 @@
                     <td class="content">
                         <div style=" font-weight: bold; margin-bottom: 3px;">Contratante</div>
                         <div style="">
-                            Prefeitura Municipal de {{ $processo->finalizacao->orgao_responsavel }}, com sede no(a) {{ $processo->prefeitura->endereco }}, na cidade de {{ $processo->prefeitura->cidade }} inscrito(a) no CNPJ
+                            {{ $processo->finalizacao->orgao_responsavel }}, com sede no(a) {{ $processo->prefeitura->endereco }}, na cidade de {{ $processo->prefeitura->cidade }} inscrito(a) no CNPJ
                             sob o nº {{ $processo->finalizacao->cnpj }}, neste ato representado(a) pelo(a) {{ $processo->finalizacao->responsavel }} inscrito no CPF sob n° {{ $processo->finalizacao->cpf_responsavel }}.
                         </div>
                     </td>
@@ -300,7 +300,7 @@
                     <td class="content">
                         <div style=" font-weight: bold; margin-bottom: 3px;">Contratado</div>
                         <div style="">
-                            {{ $processo->finalizacao->razao_social }}, inscrito(a) no CNPJ/MF sob o nº {{ $processo->finalizacao->cnpj_empresa_vencedora }}, sediado(a) na {{ $processo->finalizacao->endereco }} neste
+                            {{ $processo->finalizacao->razao_social }}, inscrito(a) no CNPJ/MF sob o nº {{ $processo->finalizacao->cnpj_empresa_vencedora }}, sediado(a) na {{ $processo->finalizacao->endereco_empresa_vencedora }} neste
                             ato representado(a) por {{ $processo->finalizacao->representante_legal_empresa }}, inscrito no CPF sob n° {{ $processo->finalizacao->cpf_representante }}.
                         </div>
                     </td>

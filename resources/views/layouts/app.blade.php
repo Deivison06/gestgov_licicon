@@ -34,7 +34,7 @@
             --text-light: #64748b;
             --background: #f8fafc;
             --card-bg: #ffffff;
-            --sidebar-width: 280px;
+            --sidebar-width: 310px;
             --header-height: 80px;
             --border-radius: 12px;
             --border-radius-lg: 16px;
@@ -335,7 +335,7 @@
         }
 
         .welcome-text p {
-            color: #222;
+            color: #ffffff;
             opacity: 0.9;
             max-width: 600px;
         }
@@ -587,6 +587,12 @@
                         class="nav-item {{ request()->routeIs('admin.processos.*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-clipboard-list"></i>
                         <span>PROCESSOS</span>
+                    </a>
+
+                    <a href="{{ route('admin.atas.index') }}"
+                        class="nav-item {{ request()->routeIs('admin.atas.*') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-clipboard-list"></i>
+                        <span>ATAS E CONTRATAÇÕES</span>
                     </a>
 
                     <a href="{{ route('admin.prefeituras.index') }}"

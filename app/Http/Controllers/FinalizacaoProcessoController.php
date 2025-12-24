@@ -364,70 +364,87 @@ class FinalizacaoProcessoController extends Controller
     public function storeVencedores(Request $request, Processo $processo)
     {
         try {
-            $request->validate([
-                'vencedores' => 'sometimes|array',
-                'vencedores.*.razao_social' => 'required|string|max:255',
-                'vencedores.*.cnpj' => 'required|string|max:20',
-                'vencedores.*.representante' => 'required|string|max:255',
-                'vencedores.*.cpf' => 'required|string|max:14',
-                'vencedores.*.lotes' => 'sometimes|array',
-                'vencedores.*.lotes.*.lote' => 'nullable|string|max:50',
-                'vencedores.*.lotes.*.status' => 'nullable|string|max:100',
-                'vencedores.*.lotes.*.item' => 'required|string|max:50',
-                'vencedores.*.lotes.*.descricao' => 'required|string',
-                'vencedores.*.lotes.*.unidade' => 'required|string|max:20',
-                'vencedores.*.lotes.*.marca' => 'nullable|string|max:100',
-                'vencedores.*.lotes.*.modelo' => 'nullable|string|max:100',
-                'vencedores.*.lotes.*.quantidade' => 'required|numeric|min:0',
-                'vencedores.*.lotes.*.vl_unit' => 'required|numeric|min:0',
-            ]);
+            // Se está enviando apenas um vencedor (edição ou adição)
+            if ($request->has('vencedor_data')) {
+                $request->validate([
+                    'vencedor_data.razao_social' => 'required|string|max:255',
+                    'vencedor_data.cnpj' => 'required|string|max:20',
+                    'vencedor_data.representante' => 'required|string|max:255',
+                    'vencedor_data.cpf' => 'required|string|max:14',
+                    'vencedor_data.endereco' => 'required|string|max:255',
+                    'vencedor_data.lotes' => 'sometimes|array',
+                    'vencedor_data.lotes.*.lote' => 'nullable|string|max:50',
+                    'vencedor_data.lotes.*.status' => 'nullable|string|max:100',
+                    'vencedor_data.lotes.*.item' => 'required|string|max:50',
+                    'vencedor_data.lotes.*.descricao' => 'required|string',
+                    'vencedor_data.lotes.*.unidade' => 'required|string|max:20',
+                    'vencedor_data.lotes.*.marca' => 'nullable|string|max:100',
+                    'vencedor_data.lotes.*.modelo' => 'nullable|string|max:100',
+                    'vencedor_data.lotes.*.quantidade' => 'required|numeric|min:0',
+                    'vencedor_data.lotes.*.vl_unit' => 'required|numeric|min:0',
+                ]);
 
-            DB::transaction(function () use ($processo, $request) {
-                // Se está enviando vencedores específicos
-                if ($request->has('vencedores')) {
-                    $vencedoresIds = [];
-                    $vencedoresExistentes = $processo->vencedores()->pluck('id')->toArray();
+                $vencedorData = $request->input('vencedor_data');
+                $operacao = $request->input('operacao', 'adicionar');
+                
+                Log::info('Processando operação: ' . $operacao, [
+                    'vencedor_data' => $vencedorData,
+                    'processo_id' => $processo->id
+                ]);
 
-                    foreach ($request->vencedores as $index => $vencedorData) {
-                        // Verifica se é um vencedor existente ou novo
-                        if (isset($vencedorData['id']) && !empty($vencedorData['id'])) {
-                            // Atualizar vencedor existente
-                            $vencedor = Vencedor::find($vencedorData['id']);
-                            if ($vencedor) {
-                                $vencedor->update([
-                                    'razao_social' => $vencedorData['razao_social'],
-                                    'cnpj' => preg_replace('/\D/', '', $vencedorData['cnpj']),
-                                    'representante' => $vencedorData['representante'],
-                                    'cpf' => preg_replace('/\D/', '', $vencedorData['cpf']),
-                                    'ordem' => $index
-                                ]);
-
-                                $vencedoresIds[] = $vencedor->id;
-
-                                // Remover da lista de existentes para não excluir depois
-                                $vencedoresExistentes = array_diff($vencedoresExistentes, [$vencedor->id]);
-                            }
-                        } else {
-                            // Criar novo vencedor
-                            $vencedor = Vencedor::create([
-                                'processo_id' => $processo->id,
+                DB::transaction(function () use ($processo, $vencedorData, $operacao, $request) {
+                    if ($operacao === 'editar' && !empty($vencedorData['id'])) {
+                        // Atualizar vencedor existente
+                        $vencedor = Vencedor::find($vencedorData['id']);
+                        if ($vencedor) {
+                            $vencedor->update([
                                 'razao_social' => $vencedorData['razao_social'],
                                 'cnpj' => preg_replace('/\D/', '', $vencedorData['cnpj']),
                                 'representante' => $vencedorData['representante'],
                                 'cpf' => preg_replace('/\D/', '', $vencedorData['cpf']),
-                                'ordem' => $index
+                                'endereco' => $vencedorData['endereco'],
                             ]);
 
-                            $vencedoresIds[] = $vencedor->id;
+                            // Processar lotes se existirem
+                            if (isset($vencedorData['lotes']) && is_array($vencedorData['lotes'])) {
+                                // Remover lotes existentes do vencedor
+                                Lote::where('vencedor_id', $vencedor->id)->delete();
+
+                                foreach ($vencedorData['lotes'] as $loteIndex => $loteData) {
+                                    if (!empty($loteData['item']) && !empty($loteData['descricao'])) {
+                                        Lote::create([
+                                            'vencedor_id' => $vencedor->id,
+                                            'lote' => $loteData['lote'] ?? null,
+                                            'status' => $loteData['status'] ?? 'HOMOLOGADO',
+                                            'item' => $loteData['item'],
+                                            'descricao' => $loteData['descricao'],
+                                            'unidade' => $loteData['unidade'],
+                                            'marca' => $loteData['marca'] ?? null,
+                                            'modelo' => $loteData['modelo'] ?? null,
+                                            'quantidade' => floatval($loteData['quantidade']),
+                                            'vl_unit' => floatval($loteData['vl_unit']),
+                                            'vl_total' => floatval($loteData['quantidade']) * floatval($loteData['vl_unit']),
+                                            'ordem' => $loteIndex
+                                        ]);
+                                    }
+                                }
+                            }
                         }
+                    } else {
+                        // Criar novo vencedor
+                        $vencedor = Vencedor::create([
+                            'processo_id' => $processo->id,
+                            'razao_social' => $vencedorData['razao_social'],
+                            'cnpj' => preg_replace('/\D/', '', $vencedorData['cnpj']),
+                            'representante' => $vencedorData['representante'],
+                            'cpf' => preg_replace('/\D/', '', $vencedorData['cpf']),
+                            'endereco' => $vencedorData['endereco'],
+                            'ordem' => Vencedor::where('processo_id', $processo->id)->count()
+                        ]);
 
-                        // Processar lotes do vencedor (apenas se o vencedor foi criado/atualizado com sucesso)
-                        if (isset($vencedor) && isset($vencedorData['lotes']) && is_array($vencedorData['lotes'])) {
-                            // Remover lotes existentes do vencedor
-                            Lote::where('vencedor_id', $vencedor->id)->delete();
-
+                        // Processar lotes se existirem
+                        if (isset($vencedorData['lotes']) && is_array($vencedorData['lotes'])) {
                             foreach ($vencedorData['lotes'] as $loteIndex => $loteData) {
-                                // Validar dados do lote antes de salvar
                                 if (!empty($loteData['item']) && !empty($loteData['descricao'])) {
                                     Lote::create([
                                         'vencedor_id' => $vencedor->id,
@@ -447,47 +464,175 @@ class FinalizacaoProcessoController extends Controller
                             }
                         }
                     }
+                });
 
-                    // Remover apenas vencedores que não estão mais na lista E não foram atualizados
-                    // Isso preserva vencedores existentes que não foram enviados no request
-                    if (!empty($vencedoresExistentes)) {
-                        Vencedor::whereIn('id', $vencedoresExistentes)->delete();
-                    }
-                }
-                // Se está removendo um vencedor específico
-                elseif ($request->has('remover_vencedor')) {
-                    $vencedorId = $request->remover_vencedor;
-                    Vencedor::where('id', $vencedorId)->delete();
-                }
-                // Se está adicionando um único vencedor (sem enviar a lista completa)
-                elseif ($request->has('vencedor_index') && $request->vencedor_index === '') {
-                    // Isso significa que é um novo vencedor sendo adicionado individualmente
-                    // Não fazemos nada aqui, pois a lógica acima já cuida disso
-                }
-            });
+            } 
+            // Se está removendo um vencedor específico
+            elseif ($request->has('remover_vencedor')) {
+                $vencedorId = $request->remover_vencedor;
+                Vencedor::where('id', $vencedorId)->delete();
+            }
 
             // Recarregar os vencedores atualizados
             $processo->load('vencedores.lotes');
 
             return response()->json([
                 'success' => true,
-                'message' => 'Vencedores e lotes salvos com sucesso!',
+                'message' => 'Vencedor salvo com sucesso!',
                 'vencedores' => $processo->vencedores
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Erro ao salvar vencedores e lotes', [
+            Log::error('Erro ao salvar vencedor', [
                 'processo_id' => $processo->id,
                 'erro' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
+                'dados_recebidos' => $request->all()
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Erro ao salvar vencedores e lotes: ' . $e->getMessage()
+                'message' => 'Erro ao salvar vencedor: ' . $e->getMessage()
             ], 500);
         }
     }
+
+    // public function storeVencedores(Request $request, Processo $processo)
+    // {
+    //     try {
+    //         $request->validate([
+    //             'vencedores' => 'sometimes|array',
+    //             'vencedores.*.razao_social' => 'required|string|max:255',
+    //             'vencedores.*.cnpj' => 'required|string|max:20',
+    //             'vencedores.*.representante' => 'required|string|max:255',
+    //             'vencedores.*.cpf' => 'required|string|max:14',
+    //             'vencedores.*.endereco' => 'required|string|max:255',
+    //             'vencedores.*.lotes' => 'sometimes|array',
+    //             'vencedores.*.lotes.*.lote' => 'nullable|string|max:50',
+    //             'vencedores.*.lotes.*.status' => 'nullable|string|max:100',
+    //             'vencedores.*.lotes.*.item' => 'required|string|max:50',
+    //             'vencedores.*.lotes.*.descricao' => 'required|string',
+    //             'vencedores.*.lotes.*.unidade' => 'required|string|max:20',
+    //             'vencedores.*.lotes.*.marca' => 'nullable|string|max:100',
+    //             'vencedores.*.lotes.*.modelo' => 'nullable|string|max:100',
+    //             'vencedores.*.lotes.*.quantidade' => 'required|numeric|min:0',
+    //             'vencedores.*.lotes.*.vl_unit' => 'required|numeric|min:0',
+    //         ]);
+    //         // DEBUG: Log dos dados recebidos
+    //         Log::info('Dados recebidos para salvar vencedores:', [
+    //             'vencedores_recebidos' => $request->vencedores,
+    //             'processo_id' => $processo->id
+    //         ]);
+
+    //         DB::transaction(function () use ($processo, $request) {
+    //             // Se está enviando vencedores específicos
+    //             if ($request->has('vencedores')) {
+    //                 $vencedoresIds = [];
+    //                 $vencedoresExistentes = $processo->vencedores()->pluck('id')->toArray();
+
+    //                 foreach ($request->vencedores as $index => $vencedorData) {
+    //                     Log::info('Processando vencedor ' . $index . ':', $vencedorData);
+    //                     // Verifica se é um vencedor existente ou novo
+    //                     if (isset($vencedorData['id']) && !empty($vencedorData['id'])) {
+    //                         // Atualizar vencedor existente
+    //                         $vencedor = Vencedor::find($vencedorData['id']);
+    //                         if ($vencedor) {
+    //                             $vencedor->update([
+    //                                 'razao_social' => $vencedorData['razao_social'],
+    //                                 'cnpj' => preg_replace('/\D/', '', $vencedorData['cnpj']),
+    //                                 'representante' => $vencedorData['representante'],
+    //                                 'cpf' => preg_replace('/\D/', '', $vencedorData['cpf']),
+    //                                 'endereco' => $vencedorData['endereco'],
+    //                                 'ordem' => $index
+    //                             ]);
+
+    //                             $vencedoresIds[] = $vencedor->id;
+
+    //                             // Remover da lista de existentes para não excluir depois
+    //                             $vencedoresExistentes = array_diff($vencedoresExistentes, [$vencedor->id]);
+    //                         }
+    //                     } else {
+    //                         // Criar novo vencedor
+    //                         $vencedor = Vencedor::create([
+    //                             'processo_id' => $processo->id,
+    //                             'razao_social' => $vencedorData['razao_social'],
+    //                             'cnpj' => preg_replace('/\D/', '', $vencedorData['cnpj']),
+    //                             'representante' => $vencedorData['representante'],
+    //                             'cpf' => preg_replace('/\D/', '', $vencedorData['cpf']),
+    //                             'endereco' => $vencedorData['endereco'],
+    //                             'ordem' => $index
+    //                         ]);
+
+    //                         $vencedoresIds[] = $vencedor->id;
+    //                     }
+
+    //                     // Processar lotes do vencedor (apenas se o vencedor foi criado/atualizado com sucesso)
+    //                     if (isset($vencedor) && isset($vencedorData['lotes']) && is_array($vencedorData['lotes'])) {
+    //                         // Remover lotes existentes do vencedor
+    //                         Lote::where('vencedor_id', $vencedor->id)->delete();
+
+    //                         foreach ($vencedorData['lotes'] as $loteIndex => $loteData) {
+    //                             // Validar dados do lote antes de salvar
+    //                             if (!empty($loteData['item']) && !empty($loteData['descricao'])) {
+    //                                 Lote::create([
+    //                                     'vencedor_id' => $vencedor->id,
+    //                                     'lote' => $loteData['lote'] ?? null,
+    //                                     'status' => $loteData['status'] ?? 'HOMOLOGADO',
+    //                                     'item' => $loteData['item'],
+    //                                     'descricao' => $loteData['descricao'],
+    //                                     'unidade' => $loteData['unidade'],
+    //                                     'marca' => $loteData['marca'] ?? null,
+    //                                     'modelo' => $loteData['modelo'] ?? null,
+    //                                     'quantidade' => floatval($loteData['quantidade']),
+    //                                     'vl_unit' => floatval($loteData['vl_unit']),
+    //                                     'vl_total' => floatval($loteData['quantidade']) * floatval($loteData['vl_unit']),
+    //                                     'ordem' => $loteIndex
+    //                                 ]);
+    //                             }
+    //                         }
+    //                     }
+    //                 }
+
+    //                 // Remover apenas vencedores que não estão mais na lista E não foram atualizados
+    //                 // Isso preserva vencedores existentes que não foram enviados no request
+    //                 if (!empty($vencedoresExistentes)) {
+    //                     Vencedor::whereIn('id', $vencedoresExistentes)->delete();
+    //                 }
+    //             }
+    //             // Se está removendo um vencedor específico
+    //             elseif ($request->has('remover_vencedor')) {
+    //                 $vencedorId = $request->remover_vencedor;
+    //                 Vencedor::where('id', $vencedorId)->delete();
+    //             }
+    //             // Se está adicionando um único vencedor (sem enviar a lista completa)
+    //             elseif ($request->has('vencedor_index') && $request->vencedor_index === '') {
+    //                 // Isso significa que é um novo vencedor sendo adicionado individualmente
+    //                 // Não fazemos nada aqui, pois a lógica acima já cuida disso
+    //             }
+    //         });
+
+    //         // Recarregar os vencedores atualizados
+    //         $processo->load('vencedores.lotes');
+
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => 'Vencedores e lotes salvos com sucesso!',
+    //             'vencedores' => $processo->vencedores
+    //         ]);
+
+    //     } catch (\Exception $e) {
+    //         Log::error('Erro ao salvar vencedores e lotes', [
+    //             'processo_id' => $processo->id,
+    //             'erro' => $e->getMessage(),
+    //             'trace' => $e->getTraceAsString()
+    //         ]);
+
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Erro ao salvar vencedores e lotes: ' . $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
 
     public function importarExcel(Request $request, Processo $processo)
     {

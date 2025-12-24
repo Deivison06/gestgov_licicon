@@ -134,7 +134,7 @@
     <div>
         <p style="font-weight: bold;">
             PROCESSO ADMINISTRATIVO Nº {{ $processo->numero_processo }} <br>
-            PREGÃO ELETRÔNICO Nº. {{ $processo->numero_procedimento }}
+            CONCORRÊNCIA Nº {{ $processo->numero_procedimento }}
         </p>
         <div style="text-align: center;">TERMO DE ADJUDICAÇÃO</div>
         <table style="width:100%; table-layout:fixed; border-collapse:collapse;">

@@ -8,6 +8,7 @@ use App\Enums\TipoProcedimentoEnum;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Processo extends Model
 {
@@ -61,6 +62,12 @@ class Processo extends Model
     public function contrato()
     {
         return $this->hasOne(Contrato::class);
+    }
+
+    // No modelo Processo, adicione:
+    public function lotesContratados()
+    {
+        return $this->hasMany(LoteContratado::class);
     }
 
     public function documentos()
@@ -126,4 +133,17 @@ class Processo extends Model
     {
         $this->attributes['unidade_numeracao'] = $value ?: null;
     }
+
+
+public function lotes(): HasManyThrough
+{
+    return $this->hasManyThrough(
+        Lote::class,      // Model final
+        Vencedor::class,  // Model intermediário
+        'processo_id',    // FK em vencedores
+        'vencedor_id',    // FK em lotes
+        'id',             // PK em processos
+        'id'              // PK em vencedores
+    );
+}
 }
