@@ -124,7 +124,7 @@
                 <button onclick="mostrarAba('gerar-ata')" 
                     class="tab-button py-4 px-1 border-b-2 font-medium text-sm" 
                     data-tab="gerar-ata">
-                    Gerar Ata
+                    Gerar contrato
                 </button>
                 <button onclick="mostrarAba('itens')" 
                     class="tab-button py-4 px-1 border-b-2 font-medium text-sm" 
@@ -142,7 +142,7 @@
             <svg class="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
             </svg>
-            <h3 class="mt-4 text-lg font-medium text-gray-900">Nenhuma contratação</h3>
+            <h3 class="mt-4 text-lg font-medium text-gray-900">Nenhuma contratação pendente</h3>
             <p class="mt-2 text-gray-500">Clique em "Nova Contratação" para começar</p>
         </div>
         @else
@@ -173,8 +173,8 @@
                         <table class="w-full">
                             <thead class="bg-gray-50">
                                 <tr class="text-xs text-gray-500 uppercase">
-                                    <th class="px-6 py-3 text-left">Selecionar</th>
                                     <th class="px-6 py-3 text-left">Item</th>
+                                    <th class="px-6 py-3 text-left">Descrição</th>
                                     <th class="px-6 py-3 text-left">Quantidade</th>
                                     <th class="px-6 py-3 text-left">Valor</th>
                                     <th class="px-6 py-3 text-left">Status</th>
@@ -185,16 +185,9 @@
                                 @foreach($vencedorContratacoes as $contratacao)
                                 <tr class="hover:bg-gray-50" data-contratacao-id="{{ $contratacao->id }}">
                                     <td class="px-6 py-4">
-                                        @if($contratacao->status === 'PENDENTE')
-                                        <input type="checkbox" 
-                                            value="{{ $contratacao->id }}" 
-                                            class="contratacao-checkbox w-4 h-4 text-blue-600 rounded"
-                                            onchange="atualizarSelecionados()"
-                                            @if(in_array($contratacao->id, $contratacoesSelecionadas)) checked @endif>
-                                        @endif
+                                        <div class="font-medium text-gray-900">{{ $contratacao->lote->item }}</div>
                                     </td>
                                     <td class="px-6 py-4">
-                                        <div class="font-medium text-gray-900">{{ $contratacao->lote->item }}</div>
                                         <div class="text-sm text-gray-500">{{ $contratacao->lote->descricao }}</div>
                                     </td>
                                     <td class="px-6 py-4">
@@ -219,10 +212,10 @@
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="flex space-x-2">
-                                            <button onclick="editarContratacao({{ $contratacao->id }})" 
-                                                class="text-blue-600 hover:text-blue-800">
+                                            <button onclick="marcarComoContratado({{ $contratacao->id }})" 
+                                                class="text-green-600 hover:text-green-800">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                                 </svg>
                                             </button>
                                         </div>
@@ -247,22 +240,31 @@
                 <p class="text-gray-600">Preencha os dados para gerar a ata</p>
             </div>
             
-            <!-- Contador de selecionados -->
-            <div class="mb-6 p-4 bg-blue-50 rounded-lg">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <p class="font-medium text-blue-800" id="contador-texto">
-                            @if(count($contratacoesSelecionadas) > 0)
-                                {{ count($contratacoesSelecionadas) }} item(s) selecionado(s)
-                            @else
-                                Nenhum item selecionado
-                            @endif
-                        </p>
-                        <p class="text-sm text-blue-600" id="valor-total-texto"></p>
-                    </div>
-                    <button onclick="selecionarTodos()" class="text-sm text-blue-600 hover:text-blue-800">
-                        Selecionar todos
-                    </button>
+            <!-- Tabela de Contratações Pendentes -->
+            <div class="mb-6">
+                <h4 class="font-bold text-gray-700 mb-3">Contratações Pendentes</h4>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr class="text-xs text-gray-500 uppercase">
+                                <th class="px-4 py-2 text-left">Selecionar</th>
+                                <th class="px-4 py-2 text-left">Item</th>
+                                <th class="px-4 py-2 text-left">Vencedor</th>
+                                <th class="px-4 py-2 text-left">Quantidade</th>
+                                <th class="px-4 py-2 text-left">Valor Unitário</th>
+                                <th class="px-4 py-2 text-left">Valor Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-contratacoes-pendentes">
+                            <!-- As linhas serão preenchidas via JavaScript -->
+                        </tbody>
+                        <tfoot class="bg-gray-50">
+                            <tr>
+                                <td colspan="5" class="px-4 py-2 text-right font-bold">Total:</td>
+                                <td id="total-contratacoes-pendentes" class="px-4 py-2 font-bold text-green-600">R$ 0,00</td>
+                            </tr>
+                        </tfoot>
+                    </table>
                 </div>
             </div>
             
@@ -633,8 +635,8 @@
     const unidadesAssinantes = @json($unidadesData);
     const processoId = {{ $processo->id }};
     const csrfToken = '{{ csrf_token() }}';
-    let contratacoesSelecionadas = @json($contratacoesSelecionadas);
-    let assinantes = @json($assinantesAta);
+    let vencedorSelecionado = null;
+    let lotesSelecionados = [];
 
     // ==============================================
     // FUNÇÕES DE INICIALIZAÇÃO
@@ -653,13 +655,13 @@
         // Inicializar autopreenchimento de assinantes
         inicializarAutopreenchimentoAssinantes();
         
-        // Atualizar contador inicial
-        atualizarContador();
+        // Carregar contratações pendentes
+        await carregarContratacoesPendentes();
     });
 
     async function carregarDadosContrato() {
         try {
-            const response = await fetch(`/admin/processos/${processoId}/ata/dados`);
+            const response = await fetch(`/admin/atas/${processoId}/dados`);
             const data = await response.json();
 
             if (data.success && data.dados) {
@@ -668,6 +670,77 @@
         } catch (error) {
             console.error('Erro ao carregar dados do contrato:', error);
         }
+    }
+
+    async function carregarContratacoesPendentes() {
+        try {
+            const response = await fetch(`/admin/atas/${processoId}/get-contratacoes-pendentes`);
+            const data = await response.json();
+            
+            if (data.success && data.contratacoes) {
+                preencherTabelaContratacoesPendentes(data.contratacoes);
+            }
+        } catch (error) {
+            console.error('Erro ao carregar contratações pendentes:', error);
+        }
+    }
+
+    function preencherTabelaContratacoesPendentes(contratacoes) {
+        const tbody = document.getElementById('tabela-contratacoes-pendentes');
+        const totalElement = document.getElementById('total-contratacoes-pendentes');
+        
+        tbody.innerHTML = '';
+        let total = 0;
+        
+        contratacoes.forEach(contratacao => {
+            total += parseFloat(contratacao.valor_total);
+            
+            const row = document.createElement('tr');
+            row.className = 'border-b hover:bg-gray-50';
+            row.innerHTML = `
+                <td class="px-4 py-2">
+                    <input type="checkbox" 
+                        class="contratacao-pendente w-4 h-4 text-blue-600 rounded"
+                        value="${contratacao.id}"
+                        checked
+                        onchange="atualizarTotalSelecionados()">
+                </td>
+                <td class="px-4 py-2">
+                    <div class="font-medium">${contratacao.lote.item}</div>
+                    <div class="text-sm text-gray-500">${contratacao.lote.descricao}</div>
+                </td>
+                <td class="px-4 py-2">
+                    ${contratacao.vencedor.razao_social}
+                </td>
+                <td class="px-4 py-2">
+                    ${parseFloat(contratacao.quantidade_contratada).toLocaleString('pt-BR', {minimumFractionDigits: 2})}
+                </td>
+                <td class="px-4 py-2">
+                    R$ ${parseFloat(contratacao.valor_unitario).toLocaleString('pt-BR', {minimumFractionDigits: 2})}
+                </td>
+                <td class="px-4 py-2 font-bold">
+                    R$ ${parseFloat(contratacao.valor_total).toLocaleString('pt-BR', {minimumFractionDigits: 2})}
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+        
+        totalElement.textContent = `R$ ${total.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+    }
+
+    function atualizarTotalSelecionados() {
+        const checkboxes = document.querySelectorAll('.contratacao-pendente:checked');
+        const totalElement = document.getElementById('total-contratacoes-pendentes');
+        
+        let total = 0;
+        checkboxes.forEach(checkbox => {
+            const row = checkbox.closest('tr');
+            const valorTexto = row.querySelector('td:nth-child(6)').textContent;
+            const valor = parseFloat(valorTexto.replace('R$ ', '').replace('.', '').replace(',', '.'));
+            if (!isNaN(valor)) total += valor;
+        });
+        
+        totalElement.textContent = `R$ ${total.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
     }
 
     function preencherCamposContrato(dados) {
@@ -765,7 +838,7 @@
                 valor: valor
             };
             
-            await fetch(`/admin/processos/${processoId}/ata/salvar-campo`, {
+            await fetch(`/admin/atas/${processoId}/salvar-campo`, {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': csrfToken,
@@ -778,28 +851,6 @@
             console.log('Campo salvo automaticamente');
         } catch (error) {
             console.error('Erro ao salvar campo:', error);
-        }
-    }
-
-    async function salvarContratacoesSelecionadas() {
-        try {
-            const dados = {
-                contratacoes_selecionadas: contratacoesSelecionadas
-            };
-            
-            await fetch(`/admin/processos/${processoId}/ata/salvar-contratacoes`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': csrfToken,
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify(dados)
-            });
-            
-            console.log('Contratações selecionadas salvas');
-        } catch (error) {
-            console.error('Erro ao salvar contratações:', error);
         }
     }
 
@@ -939,7 +990,7 @@
                 assinantes: assinantesData
             };
             
-            const response = await fetch(`/admin/processos/${processoId}/ata/salvar-assinantes`, {
+            const response = await fetch(`/admin/atas/${processoId}/salvar-assinantes`, {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': csrfToken,
@@ -986,60 +1037,18 @@
     }
 
     // ==============================================
-    // GERENCIAMENTO DE CONTRATAÇÕES
-    // ==============================================
-
-    function atualizarSelecionados() {
-        const checkboxes = document.querySelectorAll('.contratacao-checkbox:checked');
-        contratacoesSelecionadas = Array.from(checkboxes).map(cb => parseInt(cb.value));
-        
-        atualizarContador();
-        salvarContratacoesSelecionadas();
-    }
-
-    function selecionarTodos() {
-        const checkboxes = document.querySelectorAll('.contratacao-checkbox');
-        const todosSelecionados = checkboxes.length > 0 && 
-            Array.from(checkboxes).every(cb => cb.checked);
-        
-        checkboxes.forEach(cb => {
-            cb.checked = !todosSelecionados;
-        });
-        
-        atualizarSelecionados();
-    }
-
-    function atualizarContador() {
-        const contador = document.getElementById('contador-texto');
-        const valorTotal = document.getElementById('valor-total-texto');
-        
-        if (contratacoesSelecionadas.length === 0) {
-            contador.textContent = 'Nenhum item selecionado';
-            valorTotal.textContent = '';
-        } else {
-            contador.textContent = `${contratacoesSelecionadas.length} item(s) selecionado(s)`;
-            
-            // Calcular valor total
-            let total = 0;
-            contratacoesSelecionadas.forEach(id => {
-                const row = document.querySelector(`[data-contratacao-id="${id}"]`);
-                if (row) {
-                    const valorText = row.querySelector('td:nth-child(4) .font-bold').textContent;
-                    const valor = parseFloat(valorText.replace('R$ ', '').replace('.', '').replace(',', '.'));
-                    if (!isNaN(valor)) total += valor;
-                }
-            });
-            
-            valorTotal.textContent = `Valor total: R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-        }
-    }
-
-    // ==============================================
-    // MODAL DE CONTRATAÇÃO
+    // MODAL DE CONTRATAÇÃO (NOVA LÓGICA)
     // ==============================================
 
     function abrirModalContratacao() {
         document.getElementById('modal-contratacao').classList.remove('hidden');
+        // Resetar modal
+        document.getElementById('vencedor_select').value = '';
+        document.getElementById('modal-step-1').classList.remove('hidden');
+        document.getElementById('modal-step-2').classList.add('hidden');
+        document.getElementById('modal-step-2').innerHTML = '';
+        vencedorSelecionado = null;
+        lotesSelecionados = [];
     }
 
     function fecharModal() {
@@ -1053,20 +1062,27 @@
             return;
         }
         
+        vencedorSelecionado = vencedorId;
+        
         try {
-            const response = await fetch(`/admin/processos/${processoId}/vencedores/${vencedorId}/lotes-disponiveis`);
+            mostrarMensagem('Carregando itens disponíveis...', 'info');
+            
+            const response = await fetch(`/admin/atas/${processoId}/lotes-disponiveis/${vencedorId}`);
             const data = await response.json();
             
-            if(data.success) {
+            console.log('Dados recebidos:', data);
+            
+            if(data.success && data.lotes && data.lotes.length > 0) {
                 let html = `
-                    <h4 class="font-bold mb-4">Itens Disponíveis</h4>
-                    <div class="overflow-y-auto max-h-96">
+                    <h4 class="font-bold mb-4">Itens Disponíveis - ${data.vencedor.razao_social}</h4>
+                    <p class="text-sm text-gray-600 mb-4">Informe a quantidade desejada para cada item</p>
+                    <div class="overflow-y-auto max-h-96 mb-4">
                         <table class="w-full">
                             <thead class="bg-gray-50">
                                 <tr class="text-xs text-gray-500">
                                     <th class="px-4 py-2 text-left">Item</th>
                                     <th class="px-4 py-2 text-left">Disponível</th>
-                                    <th class="px-4 py-2 text-left">Valor</th>
+                                    <th class="px-4 py-2 text-left">Valor Unitário</th>
                                     <th class="px-4 py-2 text-left">Quantidade</th>
                                 </tr>
                             </thead>
@@ -1075,21 +1091,29 @@
                 
                 data.lotes.forEach(lote => {
                     html += `
-                        <tr class="border-b">
+                        <tr class="border-b hover:bg-gray-50" data-lote-id="${lote.id}">
                             <td class="px-4 py-3">
                                 <div class="font-medium">${lote.item}</div>
                                 <div class="text-sm text-gray-500">${lote.descricao}</div>
                             </td>
-                            <td class="px-4 py-3">${parseFloat(lote.quantidade_disponivel).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                            <td class="px-4 py-3">R$ ${parseFloat(lote.vl_unit).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                            <td class="px-4 py-3">
+                                <span class="font-medium">${parseFloat(lote.quantidade_disponivel).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
+                                <span class="text-xs text-gray-500 ml-1">${lote.unidade || 'un'}</span>
+                            </td>
+                            <td class="px-4 py-3">
+                                R$ ${parseFloat(lote.vl_unit).toLocaleString('pt-BR', {minimumFractionDigits: 2})}
+                            </td>
                             <td class="px-4 py-3">
                                 <input type="number" 
+                                    id="quantidade-${lote.id}"
                                     data-lote-id="${lote.id}"
-                                    min="0" 
+                                    min="0.01" 
                                     max="${lote.quantidade_disponivel}"
                                     step="0.01"
-                                    class="w-24 px-2 py-1 border rounded quantidade-input"
-                                    value="0">
+                                    placeholder="0.00"
+                                    class="quantidade-lote w-24 px-2 py-1 border rounded"
+                                    onchange="atualizarLoteQuantidade(${lote.id}, this.value)"
+                                    oninput="validarQuantidade(${lote.id}, this)">
                             </td>
                         </tr>
                     `;
@@ -1099,14 +1123,24 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="flex justify-end space-x-3 mt-6">
+                    
+                    <div id="resumo-selecionados" class="mb-4 p-4 bg-blue-50 rounded-lg">
+                        <h5 class="font-bold text-blue-800 mb-2">Resumo da Contratação</h5>
+                        <div id="itens-selecionados-lista"></div>
+                        <div class="mt-2 text-right font-bold text-blue-900">
+                            Total: R$ <span id="valor-total-modal">0.00</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-3">
                         <button onclick="voltarStep1()" 
                             class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
                             Voltar
                         </button>
-                        <button onclick="salvarContratacoesLote()" 
-                            class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg">
-                            Salvar Contratações
+                        <button onclick="salvarContratacoesSelecionadasModal()" 
+                            class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg"
+                            id="btn-salvar-modal">
+                            Salvar e Ir para Gerar Contrato
                         </button>
                     </div>
                 `;
@@ -1114,12 +1148,34 @@
                 document.getElementById('modal-step-1').classList.add('hidden');
                 document.getElementById('modal-step-2').innerHTML = html;
                 document.getElementById('modal-step-2').classList.remove('hidden');
+                
+                // Inicializar lotes selecionados com quantidade 0
+                data.lotes.forEach(lote => {
+                    lotesSelecionados.push({
+                        id: lote.id,
+                        item: lote.item,
+                        descricao: lote.descricao,
+                        quantidade: 0,
+                        quantidadeMax: lote.quantidade_disponivel,
+                        valorUnitario: lote.vl_unit,
+                        valorTotal: 0
+                    });
+                });
+                
+                // Atualizar resumo inicial
+                atualizarResumoModal();
+                
+                mostrarMensagem(`${data.lotes.length} item(s) disponível(is) encontrado(s)`, 'success');
             } else {
-                mostrarMensagem('Erro ao carregar itens: ' + data.message, 'error');
+                let mensagem = 'Nenhum item disponível para este vencedor.';
+                if (data.lotes && data.lotes.length === 0) {
+                    mensagem = 'Todos os itens deste vencedor já foram contratados ou não há quantidade disponível.';
+                }
+                mostrarMensagem(mensagem, 'warning');
             }
         } catch(error) {
-            console.error('Erro:', error);
-            mostrarMensagem('Erro ao carregar itens', 'error');
+            console.error('Erro detalhado:', error);
+            mostrarMensagem('Erro ao carregar itens. Verifique o console para mais detalhes.', 'error');
         }
     }
 
@@ -1128,51 +1184,154 @@
         document.getElementById('modal-step-1').classList.remove('hidden');
     }
 
-    async function salvarContratacoesLote() {
-        const vencedorId = document.getElementById('vencedor_select').value;
-        const inputs = document.querySelectorAll('.quantidade-input');
-        const contratacoes = [];
+    function validarQuantidade(loteId, input) {
+        const valor = parseFloat(input.value) || 0;
+        const loteData = lotesSelecionados.find(lote => lote.id === loteId);
         
-        inputs.forEach(input => {
-            const quantidade = parseFloat(input.value);
-            if(quantidade > 0) {
-                contratacoes.push({
-                    vencedor_id: vencedorId,
-                    lote_id: input.dataset.loteId,
-                    quantidade_contratada: quantidade
-                });
+        if (loteData && valor > loteData.quantidadeMax) {
+            input.value = loteData.quantidadeMax;
+            mostrarMensagem(`Quantidade máxima: ${loteData.quantidadeMax}`, 'warning');
+        }
+    }
+
+    function atualizarLoteQuantidade(loteId, quantidade) {
+        const quantidadeNum = parseFloat(quantidade) || 0;
+        const loteIndex = lotesSelecionados.findIndex(lote => lote.id === loteId);
+        
+        if (loteIndex !== -1) {
+            lotesSelecionados[loteIndex].quantidade = quantidadeNum;
+            lotesSelecionados[loteIndex].valorTotal = quantidadeNum * lotesSelecionados[loteIndex].valorUnitario;
+        }
+        
+        atualizarResumoModal();
+    }
+
+    function atualizarResumoModal() {
+        const listaDiv = document.getElementById('itens-selecionados-lista');
+        const totalSpan = document.getElementById('valor-total-modal');
+        
+        let html = '';
+        let total = 0;
+        
+        lotesSelecionados.forEach(lote => {
+            if (lote.quantidade > 0) {
+                const valorItem = lote.valorTotal;
+                total += valorItem;
+                
+                html += `
+                    <div class="text-sm text-blue-700 mb-1">
+                        ${lote.item}: ${lote.quantidade.toLocaleString('pt-BR', {minimumFractionDigits: 2})} x 
+                        R$ ${lote.valorUnitario.toLocaleString('pt-BR', {minimumFractionDigits: 2})} = 
+                        R$ ${valorItem.toLocaleString('pt-BR', {minimumFractionDigits: 2})}
+                    </div>
+                `;
             }
         });
         
-        if(contratacoes.length === 0) {
-            mostrarMensagem('Selecione pelo menos um item', 'warning');
+        // Se nenhum item tem quantidade > 0, mostrar mensagem
+        if (html === '') {
+            html = '<div class="text-sm text-blue-600 italic">Nenhuma quantidade informada</div>';
+        }
+        
+        listaDiv.innerHTML = html;
+        totalSpan.textContent = total.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+    }
+
+    async function salvarContratacoesSelecionadasModal() {
+        const itensParaSalvar = lotesSelecionados.filter(lote => lote.quantidade > 0);
+        
+        if (itensParaSalvar.length === 0) {
+            mostrarMensagem('Informe a quantidade para pelo menos um item', 'warning');
             return;
         }
         
+        mostrarMensagem('Salvando contratações...', 'info');
+        
         try {
-            const response = await fetch(`/admin/processos/${processoId}/contratacoes-em-lote`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': csrfToken,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ contratacoes })
-            });
+            const btnSalvar = document.getElementById('btn-salvar-modal');
+            btnSalvar.disabled = true;
+            btnSalvar.innerHTML = 'Salvando...';
             
-            const data = await response.json();
-            
-            if(data.success) {
-                mostrarMensagem('Contratações salvas com sucesso!', 'success');
-                fecharModal();
-                setTimeout(() => {
-                    location.reload();
-                }, 1500);
-            } else {
-                mostrarMensagem('Erro: ' + data.message, 'error');
+            // Salvar cada contratação individualmente
+            for (const lote of itensParaSalvar) {
+                const dados = {
+                    vencedor_id: vencedorSelecionado,
+                    lote_id: lote.id,
+                    quantidade: lote.quantidade
+                };
+                
+                const response = await fetch(`/admin/atas/${processoId}/contratacao-direta`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(dados)
+                });
+                
+                const data = await response.json();
+                
+                if (!data.success) {
+                    mostrarMensagem(`Erro ao salvar item ${lote.item}: ${data.message}`, 'error');
+                    btnSalvar.disabled = false;
+                    btnSalvar.innerHTML = 'Salvar e Ir para Gerar Contrato';
+                    return;
+                }
             }
+            
+            mostrarMensagem(`${itensParaSalvar.length} contratações salvas com sucesso!`, 'success');
+            fecharModal();
+            
+            // Atualizar a aba de contratações
+            await atualizarAbaContratacoes();
+            
+            // Redirecionar para aba de gerar contrato
+            mostrarAba('gerar-ata');
+            
         } catch(error) {
             console.error('Erro:', error);
             mostrarMensagem('Erro ao salvar contratações', 'error');
+            
+            const btnSalvar = document.getElementById('btn-salvar-modal');
+            btnSalvar.disabled = false;
+            btnSalvar.innerHTML = 'Salvar e Ir para Gerar Contrato';
+        }
+    }
+
+    async function atualizarAbaContratacoes() {
+        try {
+            const response = await fetch(`/admin/atas/${processoId}/get-contratacoes-atualizadas`);
+            const data = await response.json();
+            
+            if (data.success && data.html) {
+                // Substituir o conteúdo da aba de contratações
+                const container = document.getElementById('aba-contratacoes');
+                if (container) {
+                    container.innerHTML = data.html;
+                }
+                
+                // Atualizar contadores no cabeçalho
+                if (data.totalItens !== undefined) {
+                    const totalItensElement = document.querySelector('.bg-green-100 + div .font-bold');
+                    if (totalItensElement) {
+                        totalItensElement.textContent = `${data.totalItens} itens`;
+                    }
+                }
+                
+                if (data.valorTotal !== undefined) {
+                    const valorTotalElement = document.querySelector('.bg-purple-100 + div .font-bold');
+                    if (valorTotalElement) {
+                        valorTotalElement.textContent = `R$ ${data.valorTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+                    }
+                }
+                
+                // Atualizar tabela de contratações pendentes
+                await carregarContratacoesPendentes();
+                
+                mostrarMensagem('Contratações atualizadas!', 'success');
+            }
+        } catch (error) {
+            console.error('Erro ao atualizar aba de contratações:', error);
         }
     }
 
@@ -1180,26 +1339,36 @@
     // FUNÇÕES DE EDIÇÃO
     // ==============================================
 
-    async function editarContratacao(id) {
+    async function marcarComoContratado(contratacaoId) {
+        if (!confirm('Tem certeza que deseja marcar esta contratação como CONTRATADO?')) {
+            return;
+        }
+        
         try {
-            const response = await fetch(`/admin/processos/${processoId}/contratacao/${id}/edit`);
+            const response = await fetch(`/admin/atas/${processoId}/marcar-contratado`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    contratacoes: [contratacaoId]
+                })
+            });
+            
             const data = await response.json();
             
-            if(data.success) {
-                // Abrir modal de edição
-                abrirModalEdicaoContratacao(data.contratacao, data.disponivel_atual);
+            if (data.success) {
+                mostrarMensagem('Contratação marcada como CONTRATADO!', 'success');
+                // Atualizar a tabela
+                await atualizarAbaContratacoes();
             } else {
-                mostrarMensagem('Erro ao carregar contratação', 'error');
+                mostrarMensagem('Erro: ' + data.message, 'error');
             }
         } catch(error) {
             console.error('Erro:', error);
-            mostrarMensagem('Erro ao carregar contratação', 'error');
+            mostrarMensagem('Erro ao atualizar status', 'error');
         }
-    }
-
-    function abrirModalEdicaoContratacao(contratacao, disponivelAtual) {
-        // Implementar modal de edição
-        mostrarMensagem('Modal de edição em desenvolvimento', 'info');
     }
 
     // ==============================================
@@ -1209,7 +1378,6 @@
     function getCamposAta() {
         const campos = {};
         
-        // Usar os mesmos campos do contrato
         const camposIds = [
             'numero_contrato',
             'data_assinatura_contrato',
@@ -1260,42 +1428,15 @@
         return nomes[campo] || campo;
     }
 
-    async function gerarAtaPreview() {
-        if (!validarCamposObrigatorios()) {
-            mostrarMensagem('Preencha todos os campos obrigatórios', 'error');
-            return;
-        }
+    function getContratacoesSelecionadas() {
+        const checkboxes = document.querySelectorAll('.contratacao-pendente:checked');
+        const selecionadas = [];
         
-        if (contratacoesSelecionadas.length === 0) {
-            mostrarMensagem('Selecione pelo menos uma contratação', 'error');
-            return;
-        }
+        checkboxes.forEach(checkbox => {
+            selecionadas.push(parseInt(checkbox.value));
+        });
         
-        const assinantesData = getAssinantesAta();
-        if (assinantesData.length === 0) {
-            mostrarMensagem('Adicione pelo menos um assinante', 'error');
-            return;
-        }
-        
-        try {
-            // Primeiro salvar os dados
-            await salvarAssinantesAta();
-            
-            const campos = getCamposAta();
-            const queryParams = new URLSearchParams({
-                preview: 'true',
-                campos: JSON.stringify(campos),
-                assinantes: JSON.stringify(assinantesData),
-                contratacoes: JSON.stringify(contratacoesSelecionadas)
-            });
-            
-            // Abrir preview em nova aba
-            window.open(`/admin/atas/${processoId}/gerar?${queryParams.toString()}`, '_blank');
-            
-        } catch (error) {
-            console.error('Erro ao gerar preview:', error);
-            mostrarMensagem('Erro ao gerar pré-visualização', 'error');
-        }
+        return selecionadas;
     }
 
     async function gerarAtaFinal() {
@@ -1304,19 +1445,24 @@
             return;
         }
         
-        if (contratacoesSelecionadas.length === 0) {
-            mostrarMensagem('Selecione pelo menos uma contratação', 'error');
-            return;
-        }
-        
         const assinantesData = getAssinantesAta();
         if (assinantesData.length === 0) {
             mostrarMensagem('Adicione pelo menos um assinante', 'error');
             return;
         }
         
+        const contratacoesSelecionadas = getContratacoesSelecionadas();
+        if (contratacoesSelecionadas.length === 0) {
+            mostrarMensagem('Selecione pelo menos uma contratação pendente', 'error');
+            return;
+        }
+        
+        if (!confirm('Tem certeza que deseja gerar o contrato? Esta ação marcará as contratações selecionadas como CONTRATADO.')) {
+            return;
+        }
+        
         try {
-            mostrarMensagem('Gerando ata...', 'info');
+            mostrarMensagem('Gerando contrato...', 'info');
             
             // Prepara os campos
             const campos = getCamposAta();
@@ -1342,9 +1488,9 @@
             const data = await response.json();
             
             if (data.success) {
-                mostrarMensagem('Ata gerada com sucesso!', 'success');
+                mostrarMensagem('Contrato gerado com sucesso!', 'success');
                 
-                // Se quiser fazer download automático:
+                // Fazer download automático
                 if (data.download_url) {
                     const link = document.createElement('a');
                     link.href = data.download_url;
@@ -1352,16 +1498,16 @@
                     link.click();
                 }
                 
-                // Recarrega a página após 3 segundos
+                // Atualizar a página
                 setTimeout(() => {
-                    location.reload();
-                }, 3000);
+                    window.location.reload();
+                }, 2000);
             } else {
-                mostrarMensagem(data.message || 'Erro ao gerar ata', 'error');
+                mostrarMensagem(data.message || 'Erro ao gerar contrato', 'error');
             }
         } catch (error) {
-            console.error('Erro ao gerar ata:', error);
-            mostrarMensagem('Erro ao gerar ata', 'error');
+            console.error('Erro ao gerar contrato:', error);
+            mostrarMensagem('Erro ao gerar contrato', 'error');
         }
     }
 
@@ -1420,6 +1566,9 @@
         }
         .tab-content.active {
             display: block;
+        }
+        .hidden {
+            display: none;
         }
     `;
     document.head.appendChild(estilo);

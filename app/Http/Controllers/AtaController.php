@@ -74,8 +74,8 @@ class AtaController extends Controller
         // Preparar dados da ata
         $dadosAtas = $this->prepararDadosAtaTodosLotes($processo);
         
-        // Carregar contratações agrupadas por vencedor
-        $contratacoes = $this->carregarContratacoes($processo);
+        // Carregar contratações agrupadas por vencedor (APENAS PENDENTES)
+        $contratacoes = $this->carregarContratacoesPendentes($processo);
         
         // Carregar dados da ata salva
         $dadosAta = Documento::where('processo_id', $processo->id)
@@ -92,6 +92,209 @@ class AtaController extends Controller
             'dadosAta',
             'contrato'
         ));
+    }
+
+    public function getLotesDisponiveis(Processo $processo, $vencedorId)
+    {
+        try {
+            Log::info('Buscando lotes disponíveis', [
+                'processo_id' => $processo->id,
+                'vencedor_id' => $vencedorId
+            ]);
+
+            // Verificar se o vencedor pertence ao processo
+            $vencedor = \App\Models\Vencedor::where('id', $vencedorId)
+                ->where('processo_id', $processo->id)
+                ->first();
+
+            if (!$vencedor) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Vencedor não encontrado neste processo.'
+                ], 404);
+            }
+
+            // Buscar lotes do vencedor
+            $lotes = Lote::where('vencedor_id', $vencedorId)
+                ->with(['estoque' => function($query) use ($processo) {
+                    $query->where('processo_id', $processo->id);
+                }])
+                ->get()
+                ->map(function($lote) use ($processo) {
+                    // Calcular quantidade total contratada para este lote no processo
+                    $quantidadeContratada = LoteContratado::where('lote_id', $lote->id)
+                        ->where('processo_id', $processo->id)
+                        ->whereIn('status', ['PENDENTE', 'CONTRATADO'])
+                        ->sum('quantidade_contratada');
+                    
+                    // Calcular quantidade disponível
+                    $quantidadeDisponivel = max(0, (float) $lote->quantidade - (float) $quantidadeContratada);
+                    
+                    return [
+                        'id' => $lote->id,
+                        'item' => $lote->item,
+                        'descricao' => $lote->descricao,
+                        'quantidade_original' => (float) $lote->quantidade,
+                        'quantidade_contratada' => (float) $quantidadeContratada,
+                        'quantidade_disponivel' => $quantidadeDisponivel,
+                        'vl_unit' => (float) $lote->vl_unit,
+                        'unidade' => $lote->unidade,
+                        'valor_total_disponivel' => $quantidadeDisponivel * (float) $lote->vl_unit
+                    ];
+                })
+                ->filter(function($lote) {
+                    // Filtrar apenas lotes com quantidade disponível > 0
+                    return $lote['quantidade_disponivel'] > 0;
+                })
+                ->values();
+
+            Log::info('Lotes disponíveis encontrados', [
+                'processo_id' => $processo->id,
+                'vencedor_id' => $vencedorId,
+                'quantidade' => $lotes->count()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'lotes' => $lotes,
+                'vencedor' => [
+                    'id' => $vencedor->id,
+                    'razao_social' => $vencedor->razao_social,
+                    'cnpj' => $vencedor->cnpj
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Erro ao obter lotes disponíveis', [
+                'processo_id' => $processo->id,
+                'vencedor_id' => $vencedorId,
+                'erro' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao obter lotes disponíveis: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Criar contratação direta do modal
+     */
+    public function criarContratacaoDireta(Request $request, Processo $processo)
+    {
+        try {
+            $request->validate([
+                'vencedor_id' => 'required|exists:vencedores,id',
+                'lote_id' => 'required|exists:lotes,id',
+                'quantidade' => 'required|numeric|min:0.01'
+            ]);
+
+            $vencedorId = $request->input('vencedor_id');
+            $loteId = $request->input('lote_id');
+            $quantidade = (float) $request->input('quantidade');
+
+            // Verificar se o lote pertence ao vencedor
+            $lote = Lote::where('id', $loteId)
+                ->where('vencedor_id', $vencedorId)
+                ->firstOrFail();
+
+            // Calcular quantidade já contratada
+            $quantidadeContratada = LoteContratado::where('lote_id', $loteId)
+                ->where('processo_id', $processo->id)
+                ->whereIn('status', ['PENDENTE', 'CONTRATADO'])
+                ->sum('quantidade_contratada');
+
+            $quantidadeDisponivel = max(0, (float) $lote->quantidade - (float) $quantidadeContratada);
+            
+            if ($quantidade > $quantidadeDisponivel) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Quantidade solicitada excede o disponível. Disponível: ' . number_format($quantidadeDisponivel, 2, ',', '.')
+                ], 400);
+            }
+
+            // Criar contratação
+            $contratacao = LoteContratado::create([
+                'processo_id' => $processo->id,
+                'vencedor_id' => $vencedorId,
+                'lote_id' => $loteId,
+                'quantidade_contratada' => $quantidade,
+                'valor_unitario' => (float) $lote->vl_unit,
+                'valor_total' => (float) $lote->vl_unit * $quantidade,
+                'status' => 'PENDENTE',
+                'quantidade_disponivel_pos_contrato' => $quantidadeDisponivel - $quantidade
+            ]);
+
+            // Atualizar estoque (se existir)
+            $this->atualizarEstoque($processo, $lote, $quantidade);
+
+            Log::info('Contratação criada com sucesso', [
+                'processo_id' => $processo->id,
+                'lote_id' => $loteId,
+                'quantidade' => $quantidade,
+                'contratacao_id' => $contratacao->id
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Contratação criada com sucesso!',
+                'contratacao' => [
+                    'id' => $contratacao->id,
+                    'item' => $lote->item,
+                    'quantidade' => $contratacao->quantidade_contratada,
+                    'valor_total' => $contratacao->valor_total
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Erro ao criar contratação', [
+                'processo_id' => $processo->id,
+                'erro' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao criar contratação: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Atualizar status da contratação para CONTRATADO
+     */
+    public function marcarComoContratado(Request $request, Processo $processo)
+    {
+        try {
+            $contratacaoIds = $request->input('contratacoes', []);
+            
+            LoteContratado::whereIn('id', $contratacaoIds)
+                ->where('processo_id', $processo->id)
+                ->update(['status' => 'CONTRATADO']);
+
+            Log::info('Contratações marcadas como CONTRATADO', [
+                'processo_id' => $processo->id,
+                'quantidade' => count($contratacaoIds)
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Contratações marcadas como CONTRATADO!'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Erro ao marcar contratações como CONTRATADO', [
+                'processo_id' => $processo->id,
+                'erro' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao atualizar status: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -171,7 +374,7 @@ class AtaController extends Controller
     /**
      * Obter dados salvos do contrato/ata
      */
-    public function obterDadosContrato(Processo $processo)
+    public function getDadosAta(Processo $processo)
     {
         try {
             $contrato = \App\Models\Contrato::where('processo_id', $processo->id)->first();
@@ -307,43 +510,6 @@ class AtaController extends Controller
     }
 
     /**
-     * Gerar e baixar PDF da ata
-     */
-    public function gerarPdf(Request $request, Processo $processo)
-    {
-        try {
-            $contratacoesIds = $request->input('contratacoes', []);
-            
-            // Preparar dados
-            $dados = $this->prepararDadosParaPdf($processo, $contratacoesIds);
-            $viewAta = $this->determinarViewContrato($processo);
-
-            // Gerar PDF
-            $pdf = Pdf::loadView($viewAta, $dados)
-                ->setPaper('a4', 'portrait');
-
-            // Salvar arquivo
-            $caminho = $this->salvarArquivo($processo, $pdf);
-            
-            // Salvar no banco
-            $this->salvarDocumento($processo, $caminho, $contratacoesIds);
-
-            Log::info('Ata gerada com sucesso', ['processo_id' => $processo->id]);
-
-            return response()->download($caminho['completo'], $caminho['nome'])
-                            ->deleteFileAfterSend(false);
-
-        } catch (\Exception $e) {
-            Log::error('Erro ao gerar PDF', [
-                'processo_id' => $processo->id,
-                'erro' => $e->getMessage()
-            ]);
-
-            return back()->with('error', 'Erro ao gerar PDF: ' . $e->getMessage());
-        }
-    }
-
-    /**
      * Gerar e salvar ata (sem download)
      */
     public function gerarESalvarAta(Processo $processo, Request $request)
@@ -387,7 +553,12 @@ class AtaController extends Controller
             // Salvar no banco (incluindo assinantes)
             $this->salvarDocumento($processo, $caminho, $contratacoesIds, $dataSelecionada, $campos, $assinantes);
             
-            Log::info('Ata gerada com sucesso', ['processo_id' => $processo->id]);
+            // Atualizar status das contratações para CONTRATADO
+            LoteContratado::whereIn('id', $contratacoesIds)
+                ->where('processo_id', $processo->id)
+                ->update(['status' => 'CONTRATADO']);
+            
+            Log::info('Ata gerada com sucesso e contratações atualizadas', ['processo_id' => $processo->id]);
 
             return response()->json([
                 'success' => true,
@@ -467,16 +638,109 @@ class AtaController extends Controller
         }
     }
 
-    /**
-     * Métodos auxiliares privados
-     */
-    
-    private function carregarContratacoes(Processo $processo)
+    private function carregarContratacoesPendentes(Processo $processo)
     {
         return LoteContratado::where('processo_id', $processo->id)
+            ->where('status', 'PENDENTE')
             ->with(['lote', 'vencedor'])
+            ->orderBy('created_at', 'desc')
             ->get()
             ->groupBy('vencedor_id');
+    }
+
+    private function atualizarEstoque(Processo $processo, Lote $lote, $quantidade)
+    {
+        $estoque = EstoqueLote::where('lote_id', $lote->id)
+            ->where('processo_id', $processo->id)
+            ->first();
+
+        if ($estoque) {
+            $estoque->quantidade_utilizada += $quantidade;
+            $estoque->quantidade_disponivel -= $quantidade;
+            $estoque->save();
+        } else {
+            EstoqueLote::create([
+                'processo_id' => $processo->id,
+                'lote_id' => $lote->id,
+                'quantidade_total' => $lote->quantidade,
+                'quantidade_utilizada' => $quantidade,
+                'quantidade_disponivel' => $lote->quantidade - $quantidade
+            ]);
+        }
+    }
+
+    /**
+     * Obter contratações pendentes para a aba de gerar contrato
+     */
+    public function getContratacoesPendentes(Processo $processo)
+    {
+        try {
+            $contratacoes = LoteContratado::where('processo_id', $processo->id)
+                ->where('status', 'PENDENTE')
+                ->with(['lote', 'vencedor'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'contratacoes' => $contratacoes
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Erro ao obter contratações pendentes', [
+                'processo_id' => $processo->id,
+                'erro' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao obter contratações pendentes.'
+            ], 500);
+        }
+    }
+
+    /**
+     * Obter contratações atualizadas (para atualizar a aba)
+     */
+    public function getContratacoesAtualizadas(Processo $processo)
+    {
+        try {
+            $processo->load(['vencedores']);
+            
+            $contratacoes = LoteContratado::where('processo_id', $processo->id)
+                ->where('status', 'PENDENTE')
+                ->with(['lote', 'vencedor'])
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->groupBy('vencedor_id');
+
+            $html = view('admin.atas.partials.contratacoes_table', [
+                'processo' => $processo,
+                'contratacoes' => $contratacoes
+            ])->render();
+
+            return response()->json([
+                'success' => true,
+                'html' => $html,
+                'totalItens' => LoteContratado::where('processo_id', $processo->id)
+                    ->where('status', 'PENDENTE')
+                    ->count(),
+                'valorTotal' => LoteContratado::where('processo_id', $processo->id)
+                    ->where('status', 'PENDENTE')
+                    ->sum('valor_total')
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Erro ao obter contratações atualizadas', [
+                'processo_id' => $processo->id,
+                'erro' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao obter contratações atualizadas.'
+            ], 500);
+        }
     }
 
     private function prepararDadosParaPdf(Processo $processo, array $contratacoesIds = [])
@@ -559,27 +823,6 @@ class AtaController extends Controller
                 'subcontratacao' => $contratoSalvo->subcontratacao,
             ] : [],
         ];
-    }
-
-    private function prepararDadosContratante(Processo $processo)
-    {
-        $dados = [
-            'orgao' => $processo->finalizacao->orgao_responsavel ?? $processo->prefeitura->cidade,
-            'cidade' => $processo->prefeitura->cidade,
-            'uf' => $processo->prefeitura->uf,
-            'endereco' => $processo->prefeitura->endereco,
-            'cnpj' => $processo->finalizacao->cnpj ?? $processo->prefeitura->cnpj,
-            'responsavel' => $processo->finalizacao->responsavel ?? $processo->prefeitura->autoridade_competente,
-            'cargo_responsavel' => $processo->finalizacao->cargo_responsavel ?? 'Prefeito Municipal',
-            'cpf_responsavel' => $processo->finalizacao->cpf_responsavel ?? null,
-        ];
-        
-        $dados['cnpj_formatado'] = $this->formatarCNPJ($dados['cnpj']);
-        $dados['cpf_responsavel_formatado'] = $dados['cpf_responsavel'] 
-            ? $this->formatarCPF($dados['cpf_responsavel'])
-            : null;
-
-        return $dados;
     }
 
     private function prepararDadosAtaApenasSelecionados(Processo $processo, array $contratacoesIds = []): array
@@ -776,6 +1019,27 @@ class AtaController extends Controller
     /**
      * Métodos auxiliares para dados do contrato
      */
+    private function prepararDadosContratante(Processo $processo): array
+    {
+        $dados = [
+            'orgao' => $processo->finalizacao->orgao_responsavel ?? $processo->prefeitura->cidade,
+            'cidade' => $processo->prefeitura->cidade,
+            'uf' => $processo->prefeitura->uf,
+            'endereco' => $processo->prefeitura->endereco,
+            'cnpj' => $processo->finalizacao->cnpj ?? $processo->prefeitura->cnpj,
+            'responsavel' => $processo->finalizacao->responsavel ?? $processo->prefeitura->autoridade_competente,
+            'cargo_responsavel' => $processo->finalizacao->cargo_responsavel ?? 'Prefeito Municipal',
+            'cpf_responsavel' => $processo->finalizacao->cpf_responsavel ?? null,
+        ];
+        
+        $dados['cnpj_formatado'] = $this->formatarCNPJ($dados['cnpj']);
+        $dados['cpf_responsavel_formatado'] = $dados['cpf_responsavel'] 
+            ? $this->formatarCPF($dados['cpf_responsavel'])
+            : null;
+
+        return $dados;
+    }
+
     private function prepararDadosContratado(Processo $processo, $contratacoes): array
     {
         if ($processo->finalizacao && $processo->finalizacao->cnpj_empresa_vencedora) {

@@ -286,10 +286,25 @@ Route::prefix('admin')
             Route::get('/', [AtaController::class, 'index'])->name('index');
             Route::get('/dashboard', [AtaController::class, 'dashboard'])->name('dashboard');
             Route::get('/{processo}', [AtaController::class, 'show'])->name('show');
-            Route::post('/{processo}/gerar', [AtaController::class, 'gerarESalvarAta'])->name('gerar'); // ← MUDOU PARA 'gerar'
+            Route::post('/{processo}/gerar', [AtaController::class, 'gerarESalvarAta'])->name('gerar');
             Route::get('/{processo}/download', [AtaController::class, 'downloadAta'])->name('download');
             Route::get('/{processo}/dados', [AtaController::class, 'getDadosAta'])->name('dados');
+            
+            // Novas rotas para a nova lógica
+            Route::get('/{processo}/lotes-disponiveis/{vencedorId}', [AtaController::class, 'getLotesDisponiveis'])->name('lotes.disponiveis');
+            Route::post('/{processo}/contratacao-direta', [AtaController::class, 'criarContratacaoDireta'])->name('contratacao.direta');
+            Route::post('/{processo}/marcar-contratado', [AtaController::class, 'marcarComoContratado'])->name('marcar.contratado');
+            
+            // Rotas para salvar dados
+            Route::post('/{processo}/salvar-campo', [AtaController::class, 'salvarCampoContrato'])->name('salvar.campo');
+            Route::post('/{processo}/salvar-assinantes', [AtaController::class, 'salvarAssinantesAta'])->name('salvar.assinantes');
+            Route::post('/{processo}/salvar-contratacoes', [AtaController::class, 'salvarContratacoesSelecionadas'])->name('salvar.contratacoes');
+            
             Route::post('/relatorio-consolidado', [AtaController::class, 'relatorioConsolidado'])->name('relatorio.consolidado');
+
+            // Nas suas rotas de atas, adicione:
+            Route::get('/{processo}/get-contratacoes-pendentes', [AtaController::class, 'getContratacoesPendentes'])->name('get.contratacoes.pendentes');
+            Route::get('/{processo}/get-contratacoes-atualizadas', [AtaController::class, 'getContratacoesAtualizadas'])->name('get.contratacoes.atualizadas');
         });
     });
 
