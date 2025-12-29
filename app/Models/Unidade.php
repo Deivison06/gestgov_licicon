@@ -24,6 +24,10 @@ class Unidade extends Model
     {
         return $this->belongsTo(Prefeitura::class);
     }
+    public function contrato()
+    {
+        return $this->hasMany(ContratoManual::class);
+    }
 
     // Método para buscar o servidor responsável pelo nome da unidade
     public static function getServidorByNome($nomeUnidade)

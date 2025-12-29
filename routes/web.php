@@ -11,6 +11,7 @@ use App\Http\Controllers\ContratacaoController;
 use App\Http\Controllers\ContratoProcessoController;
 use App\Http\Controllers\FinalizacaoProcessoController;
 use App\Http\Controllers\AtaController;
+use App\Http\Controllers\ContratoManualController; // Adicionado
 
 // Rotas de perfil (usuário logado)
 Route::middleware('auth')->group(function () {
@@ -61,7 +62,25 @@ Route::prefix('admin')
             ]);
 
         // ========================================
-        // 3. UNIDADES (vinculadas à prefeitura)
+        // 3. CONTRATOS MANUAIS (EXTERNOS)
+        // ========================================
+        Route::resource('contratos', ContratoManualController::class)
+            ->names([
+                'index'   => 'contratos.index',
+                'create'  => 'contratos.create',
+                'store'   => 'contratos.store',
+                'edit'    => 'contratos.edit',
+                'update'  => 'contratos.update',
+                'destroy' => 'contratos.destroy',
+            ])
+            ->except(['show']);
+
+        // Rota para atualizar dados da empresa via AJAX
+        Route::put('/contratos/{id}/empresa', [ContratoManualController::class, 'updateEmpresa'])
+            ->name('contratos.empresa.update');
+
+        // ========================================
+        // 4. UNIDADES (vinculadas à prefeitura)
         // ========================================
         Route::prefix('prefeituras/{prefeitura}')->group(function () {
             Route::post('/unidades', [UnidadeController::class, 'storeUnidade'])
@@ -78,7 +97,7 @@ Route::prefix('admin')
         });
 
         // ========================================
-        // 4. PROCESSOS
+        // 5. PROCESSOS
         // ========================================
         Route::resource('processos', ProcessoController::class)
             ->names([
@@ -92,7 +111,7 @@ Route::prefix('admin')
             ]);
 
         // ========================================
-        // 5. DETALHES DO PROCESSO
+        // 6. DETALHES DO PROCESSO
         // ========================================
         Route::prefix('processos/{processo}')->group(function () {
             // Iniciar processo
@@ -118,7 +137,7 @@ Route::prefix('admin')
         });
 
         // ========================================
-        // 6. FINALIZAÇÃO DO PROCESSO
+        // 7. FINALIZAÇÃO DO PROCESSO
         // ========================================
         Route::prefix('processos/{processo}/finalizacao')->name('processos.finalizacao.')->group(function () {
             // Finalizar processo
@@ -159,7 +178,7 @@ Route::prefix('admin')
         });
 
         // ========================================
-        // 7. CONTRATO DO PROCESSO
+        // 8. CONTRATO DO PROCESSO
         // ========================================
         Route::prefix('processos/{processo}/contrato')->name('processos.contrato.')->group(function () {
             // View de contrato
@@ -183,7 +202,7 @@ Route::prefix('admin')
         });
 
         // ========================================
-        // 8. CONTRATAÇÕES E ESTOQUE
+        // 9. CONTRATAÇÕES E ESTOQUE
         // ========================================
         Route::prefix('processos/{processo}')->group(function () {
             // Contratações individuais
@@ -234,7 +253,7 @@ Route::prefix('admin')
         });
 
         // ========================================
-        // 9. CONTRATAÇÕES - ROTAS GERAIS (para compatibilidade)
+        // 10. CONTRATAÇÕES - ROTAS GERAIS (para compatibilidade)
         // ========================================
         Route::prefix('contratacao')->name('processos.contratacao.')->group(function () {
             Route::get('/', [ContratacaoController::class, 'index'])
@@ -254,7 +273,7 @@ Route::prefix('admin')
         });
 
         // ========================================
-        // 10. CONTRATO - ROTAS ALTERNATIVAS (para compatibilidade)
+        // 11. CONTRATO - ROTAS ALTERNATIVAS (para compatibilidade)
         // ========================================
         Route::prefix('contrato')->name('processo.contrato.')->group(function () {
             Route::get('/processos/{processo}/pdf', [ContratoProcessoController::class, 'gerarPdf'])
@@ -265,7 +284,7 @@ Route::prefix('admin')
         });
 
         // ========================================
-        // 11. FINALIZAÇÃO - ROTAS ALTERNATIVAS (para compatibilidade)
+        // 12. FINALIZAÇÃO - ROTAS ALTERNATIVAS (para compatibilidade)
         // ========================================
         Route::prefix('finalizacao')->name('processo.finalizar')->group(function () {
             Route::get('/processos/{processo}/pdf', [FinalizacaoProcessoController::class, 'gerarPdf'])
@@ -305,6 +324,17 @@ Route::prefix('admin')
             // Nas suas rotas de atas, adicione:
             Route::get('/{processo}/get-contratacoes-pendentes', [AtaController::class, 'getContratacoesPendentes'])->name('get.contratacoes.pendentes');
             Route::get('/{processo}/get-contratacoes-atualizadas', [AtaController::class, 'getContratacoesAtualizadas'])->name('get.contratacoes.atualizadas');
+            
+            // Adicione esta rota dentro do grupo de atas, antes do fechamento do grupo:
+            Route::get('/{processo}/contrato-itens/{documentoId}', [AtaController::class, 'getItensContrato'])
+                ->name('contrato.itens');
+
+            Route::get('{processo}/debug-contratos', [AtaController::class, 'debugContratos'])
+                ->name('admin.atas.debug');
+
+            Route::get('{processo}/download/{nomeArquivo}', [AtaController::class, 'downloadAta'])
+            ->name('admin.atas.download.file');
+        
         });
     });
 

@@ -66,7 +66,7 @@
     <div id="message-container" class="mb-6"></div>
 
     <!-- Cards de Resumo -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div class="bg-white rounded-xl shadow p-6">
             <div class="flex items-center">
                 <div class="bg-blue-100 p-3 rounded-lg mr-4">
@@ -89,8 +89,8 @@
                     </svg>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500">Itens</p>
-                    <p class="font-bold text-gray-900">{{ count($dadosAtas) }} itens</p>
+                    <p class="text-sm text-gray-500">Itens Contratados</p>
+                    <p class="font-bold text-gray-900">{{ $totalContratacoes }}</p>
                 </div>
             </div>
         </div>
@@ -103,10 +103,24 @@
                     </svg>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500">Valor Total</p>
+                    <p class="text-sm text-gray-500">Valor Total Contratado</p>
                     <p class="font-bold text-gray-900">
-                        R$ {{ number_format(collect($dadosAtas)->sum('valor_total_contratado'), 2, ',', '.') }}
+                        R$ {{ number_format($valorTotalContratado, 2, ',', '.') }}
                     </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl shadow p-6">
+            <div class="flex items-center">
+                <div class="bg-yellow-100 p-3 rounded-lg mr-4">
+                    <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Contratos Gerados</p>
+                    <p class="font-bold text-gray-900">{{ $totalContratos }}</p>
                 </div>
             </div>
         </div>
@@ -121,10 +135,15 @@
                     data-tab="contratacoes">
                     Contratações
                 </button>
+                <button onclick="mostrarAba('contratos')" 
+                    class="tab-button py-4 px-1 border-b-2 font-medium text-sm" 
+                    data-tab="contratos">
+                    Contratos Gerados
+                </button>
                 <button onclick="mostrarAba('gerar-ata')" 
                     class="tab-button py-4 px-1 border-b-2 font-medium text-sm" 
                     data-tab="gerar-ata">
-                    Gerar contrato
+                    Gerar Contrato
                 </button>
                 <button onclick="mostrarAba('itens')" 
                     class="tab-button py-4 px-1 border-b-2 font-medium text-sm" 
@@ -232,12 +251,135 @@
         @endif
     </div>
 
-    <!-- Aba: Gerar Ata -->
+    <!-- Aba: Contratos Gerados -->
+    <div id="aba-contratos" class="tab-content hidden">
+        <div class="bg-white rounded-xl shadow overflow-hidden">
+            <div class="p-6 border-b">
+                <h3 class="text-lg font-bold text-gray-900">Contratos Gerados</h3>
+                <p class="text-sm text-gray-600 mt-1">Lista de todos os contratos em PDF já gerados</p>
+            </div>
+            
+            @if($documentos->isEmpty())
+            <div class="p-12 text-center">
+                <svg class="w-16 h-16 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                <h3 class="mt-4 text-lg font-medium text-gray-900">Nenhum contrato gerado ainda</h3>
+                <p class="mt-2 text-gray-500">Gere o primeiro contrato na aba "Gerar Contrato"</p>
+            </div>
+            @else
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr class="text-xs text-gray-500 uppercase">
+                            <th class="px-6 py-3 text-left">Data Geração</th>
+                            <th class="px-6 py-3 text-left">Contrato Nº</th>
+                            <th class="px-6 py-3 text-left">Itens Incluídos</th>
+                            <th class="px-6 py-3 text-left">Valor Total</th>
+                            <th class="px-6 py-3 text-left">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        @foreach($documentos as $documento)
+                        @php
+                            // Tenta acessar de duas formas: do JSON do documento ou do modelo Contrato
+                            $camposJson = json_decode($documento->campos ?? '{}', true);
+                            $numeroContrato = $camposJson['numero_contrato'] ?? 'Não informado';
+                            $dataAssinatura = $documento->campos['data_assinatura_contrato'] ?? $documento->contrato->data_assinatura_contrato ?? null;
+                            $contratacoesIncluidas = $documento->contratacoes_selecionadas ?? [];
+                            $valorTotal = $documento->valor_total ?? 0;
+                            $quantidadeItens = $documento->quantidade_itens ?? 0;
+                        @endphp
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4">
+                                <div class="font-medium">
+                                    {{ \Carbon\Carbon::parse($documento->gerado_em)->format('d/m/Y') }}
+                                </div>
+                                <div class="text-sm text-gray-500">
+                                    {{ \Carbon\Carbon::parse($documento->gerado_em)->format('H:i') }}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="font-medium text-gray-900">
+                                    {{ $numeroContrato }}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="font-medium">{{ $quantidadeItens }} itens</div>
+                                <button onclick="mostrarItensContrato({{ $documento->id }})" 
+                                    class="text-blue-600 hover:text-blue-800 text-sm mt-1">
+                                    Ver detalhes
+                                </button>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="font-bold">R$ {{ number_format($valorTotal, 2, ',', '.') }}</div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex space-x-2">
+                                    <a href="{{ url($documento->caminho) }}" 
+                                    target="_blank"
+                                    class="text-blue-600 hover:text-blue-800 flex items-center">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                        </svg>
+                                        Visualizar
+                                    </a>
+                                    <a href="{{ route('admin.atas.download', $processo->id) }}" 
+                                    class="text-green-600 hover:text-green-800 flex items-center">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                        </svg>
+                                        Baixar
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Modal para mostrar itens do contrato -->
+            <div id="modal-itens-contrato" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+                <div class="flex items-center justify-center min-h-screen p-4">
+                    <div class="bg-white rounded-xl shadow-xl w-full max-w-4xl">
+                        <div class="px-6 py-4 border-b">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-lg font-bold">Itens do Contrato</h3>
+                                <button onclick="fecharModalItens()" class="text-gray-400 hover:text-gray-600">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="p-6">
+                            <div id="conteudo-modal-itens"></div>
+                        </div>
+                        
+                        <div class="px-6 py-4 border-t bg-gray-50 rounded-b-xl">
+                            <div class="flex justify-end">
+                                <button onclick="fecharModalItens()" 
+                                    class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                                    Fechar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
+        </div>
+    </div>
+
+    <!-- Aba: Gerar Contrato -->
     <div id="aba-gerar-ata" class="tab-content hidden">
         <div class="bg-white rounded-xl shadow p-6">
             <div class="mb-6">
-                <h3 class="text-lg font-bold text-gray-900 mb-2">Configurar Ata</h3>
-                <p class="text-gray-600">Preencha os dados para gerar a ata</p>
+                <h3 class="text-lg font-bold text-gray-900 mb-2">Configurar Contrato</h3>
+                <p class="text-gray-600">Preencha os dados para gerar o contrato</p>
             </div>
             
             <!-- Tabela de Contratações Pendentes -->
@@ -268,7 +410,7 @@
                 </div>
             </div>
             
-            <!-- Campos da Ata (USANDO OS MESMOS CAMPOS DO CONTRATO) -->
+            <!-- Campos do Contrato -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <!-- Número do Contrato -->
                 <div>
@@ -347,8 +489,8 @@
             <div class="border-t pt-8 mb-8">
                 <div class="flex justify-between items-center mb-6">
                     <div>
-                        <h3 class="text-lg font-bold text-gray-900 mb-2">Assinantes da Ata</h3>
-                        <p class="text-gray-600">Adicione as pessoas que irão assinar a ata</p>
+                        <h3 class="text-lg font-bold text-gray-900 mb-2">Assinantes do Contrato</h3>
+                        <p class="text-gray-600">Adicione as pessoas que irão assinar o contrato</p>
                     </div>
                     <button onclick="adicionarAssinanteAta()" 
                         class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center">
@@ -520,7 +662,7 @@
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
-                    Gerar e Salvar Ata
+                    Gerar e Salvar Contrato
                 </button>
             </div>
         </div>
@@ -1372,7 +1514,75 @@
     }
 
     // ==============================================
-    // FUNÇÕES DE GERAÇÃO DE ATA
+    // FUNÇÕES DOS CONTRATOS GERADOS
+    // ==============================================
+
+    async function mostrarItensContrato(documentoId) {
+        try {
+            const response = await fetch(`/admin/atas/${processoId}/contrato-itens/${documentoId}`);
+            const data = await response.json();
+            
+            if (data.success && data.itens) {
+                let html = `
+                    <h4 class="font-bold text-gray-900 mb-4">Itens incluídos neste contrato</h4>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                                <tr class="text-xs text-gray-500 uppercase">
+                                    <th class="px-4 py-2 text-left">Item</th>
+                                    <th class="px-4 py-2 text-left">Vencedor</th>
+                                    <th class="px-4 py-2 text-left">Quantidade</th>
+                                    <th class="px-4 py-2 text-left">Valor Unitário</th>
+                                    <th class="px-4 py-2 text-left">Valor Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                
+                data.itens.forEach(item => {
+                    html += `
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="px-4 py-2">
+                                <div class="font-medium">${item.item}</div>
+                                <div class="text-sm text-gray-500">${item.descricao}</div>
+                            </td>
+                            <td class="px-4 py-2">${item.vencedor}</td>
+                            <td class="px-4 py-2">${item.quantidade}</td>
+                            <td class="px-4 py-2">${item.valor_unitario}</td>
+                            <td class="px-4 py-2 font-bold">${item.valor_total}</td>
+                        </tr>
+                    `;
+                });
+                
+                html += `
+                            </tbody>
+                            <tfoot class="bg-gray-50">
+                                <tr>
+                                    <td colspan="4" class="px-4 py-2 text-right font-bold">Total do Contrato:</td>
+                                    <td class="px-4 py-2 font-bold text-green-600">${data.total_contrato}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                `;
+                
+                document.getElementById('conteudo-modal-itens').innerHTML = html;
+                document.getElementById('modal-itens-contrato').classList.remove('hidden');
+            } else {
+                mostrarMensagem('Não foi possível carregar os itens do contrato.', 'error');
+            }
+        } catch(error) {
+            console.error('Erro ao carregar itens do contrato:', error);
+            mostrarMensagem('Erro ao carregar detalhes do contrato.', 'error');
+        }
+    }
+
+    function fecharModalItens() {
+        document.getElementById('modal-itens-contrato').classList.add('hidden');
+    }
+
+    // ==============================================
+    // FUNÇÕES DE GERAÇÃO DE CONTRATO
     // ==============================================
 
     function getCamposAta() {
@@ -1387,13 +1597,18 @@
             'subcontratacao'
         ];
         
+        console.log('DEBUG - getCamposAta() chamada');
+        
         camposIds.forEach(id => {
             const elemento = document.getElementById(id);
-            if (elemento && elemento.value) {
+            console.log(`DEBUG - Campo ${id}:`, elemento ? elemento.value : 'elemento não encontrado');
+            
+            if (elemento) {
                 campos[id] = elemento.value;
             }
         });
         
+        console.log('DEBUG - Campos coletados:', campos);
         return campos;
     }
 
@@ -1426,6 +1641,53 @@
         };
         
         return nomes[campo] || campo;
+    }
+
+    function validarGeracaoContrato() {
+        // Campos obrigatórios
+        const obrigatorios = [
+            { id: 'numero_contrato', nome: 'Número do Contrato' },
+            { id: 'data_assinatura_contrato', nome: 'Data de Assinatura' },
+            { id: 'comarca', nome: 'Comarca' },
+            { id: 'fonte_recurso', nome: 'Fonte de Recurso' }
+        ];
+        
+        for (const campo of obrigatorios) {
+            const elemento = document.getElementById(campo.id);
+            if (elemento && !elemento.value.trim()) {
+                mostrarMensagem(`O campo "${campo.nome}" é obrigatório`, 'error');
+                elemento.focus();
+                return false;
+            }
+        }
+        
+        // Verificar assinantes
+        const assinantesContainer = document.getElementById('assinantes-container-ata');
+        const assinantes = assinantesContainer.querySelectorAll('.assinante-item');
+        
+        let assinantesValidos = 0;
+        assinantes.forEach(assinante => {
+            const unidade = assinante.querySelector('.assinante-unidade').value;
+            const responsavel = assinante.querySelector('.assinante-responsavel').value;
+            
+            if (unidade && responsavel.trim()) {
+                assinantesValidos++;
+            }
+        });
+        
+        if (assinantesValidos === 0) {
+            mostrarMensagem('Adicione pelo menos um assinante válido', 'error');
+            return false;
+        }
+        
+        // Verificar contratações selecionadas
+        const checkboxes = document.querySelectorAll('.contratacao-pendente:checked');
+        if (checkboxes.length === 0) {
+            mostrarMensagem('Selecione pelo menos uma contratação', 'error');
+            return false;
+        }
+        
+        return true;
     }
 
     function getContratacoesSelecionadas() {
@@ -1461,12 +1723,17 @@
             return;
         }
         
-        try {
+         try {
             mostrarMensagem('Gerando contrato...', 'info');
             
-            // Prepara os campos
+            // Prepara os campos - VERIFIQUE SE ESTÁ CORRETO
             const campos = getCamposAta();
             const assinantes = getAssinantesAta();
+            
+            // DEBUG: Verifique no console o que está sendo enviado
+            console.log('DEBUG - Campos a serem enviados:', campos);
+            console.log('DEBUG - Numero contrato:', campos.numero_contrato);
+            console.log('DEBUG - Assinantes:', assinantes);
             
             const dados = {
                 campos: campos,
@@ -1474,6 +1741,8 @@
                 contratacoes_selecionadas: contratacoesSelecionadas,
                 data: document.getElementById('data_assinatura_contrato').value
             };
+
+            console.log('DEBUG - Dados completos:', dados);
             
             const response = await fetch(`/admin/atas/${processoId}/gerar`, {
                 method: 'POST',

@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>GestGov</title>
+    <title>Licitações - GestGov</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -23,6 +23,7 @@
     <!-- Ícones -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://unpkg.com/imask"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
        <style>
         :root {
@@ -298,6 +299,12 @@
                         class="nav-item {{ request()->routeIs('admin.atas.*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-clipboard-list"></i>
                         <span>ATAS E CONTRATAÇÕES</span>
+                    </a>
+
+                    <a href="{{ route('admin.contratos.index') }}"
+                        class="nav-item {{ request()->routeIs('admin.contratos.*') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-file-signature"></i>
+                        <span>Contratos</span>
                     </a>
 
                     <a href="{{ route('admin.prefeituras.index') }}"

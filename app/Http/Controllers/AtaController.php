@@ -9,6 +9,7 @@ use App\Models\Prefeitura;
 use App\Models\EstoqueLote;
 use Illuminate\Http\Request;
 use App\Models\LoteContratado;
+use setasign\Fpdi\Tcpdf\Fpdi;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Log;
 
@@ -23,9 +24,6 @@ class AtaController extends Controller
         ]
     ];
 
-    /**
-     * Listar processos para geração de atas
-     */
     public function index(Request $request)
     {
         $prefeituras = Prefeitura::with(['processos' => function($query) {
@@ -54,10 +52,6 @@ class AtaController extends Controller
 
         return view('Admin.Atas.index', compact('prefeituras', 'processos', 'prefeituraId', 'processoId'));
     }
-
-    /**
-     * Visualizar ata de um processo
-     */
     public function show(Processo $processo)
     {
         $processo->load([
@@ -77,6 +71,12 @@ class AtaController extends Controller
         // Carregar contratações agrupadas por vencedor (APENAS PENDENTES)
         $contratacoes = $this->carregarContratacoesPendentes($processo);
         
+        // Carregar documentos (contratos) já gerados
+        $documentos = Documento::where('processo_id', $processo->id)
+            ->where('tipo_documento', 'contrato')
+            ->orderBy('gerado_em', 'desc')
+            ->get();
+        
         // Carregar dados da ata salva
         $dadosAta = Documento::where('processo_id', $processo->id)
             ->where('tipo_documento', 'contrato')
@@ -84,14 +84,74 @@ class AtaController extends Controller
 
         // Carregar dados do contrato
         $contrato = \App\Models\Contrato::where('processo_id', $processo->id)->first();
+        
+        // Calcular estatísticas para os cards
+        $totalContratacoes = LoteContratado::where('processo_id', $processo->id)->count();
+        $valorTotalContratado = LoteContratado::where('processo_id', $processo->id)->sum('valor_total');
+        $totalContratos = $documentos->count();
 
         return view('Admin.Atas.show', compact(
             'processo', 
             'dadosAtas', 
             'contratacoes',
+            'documentos',
             'dadosAta',
-            'contrato'
+            'contrato',
+            'totalContratacoes',
+            'valorTotalContratado',
+            'totalContratos'
         ));
+    }
+    public function getItensContrato(Processo $processo, $documentoId)
+    {
+        try {
+            $documento = Documento::where('id', $documentoId)
+                ->where('processo_id', $processo->id)
+                ->where('tipo_documento', 'contrato')
+                ->firstOrFail();
+            
+            $contratacoesIds = json_decode($documento->contratacoes_selecionadas ?? '[]', true);
+            
+            $contratacoes = LoteContratado::whereIn('id', $contratacoesIds)
+                ->where('processo_id', $processo->id)
+                ->with(['lote', 'vencedor'])
+                ->get();
+            
+            $itens = [];
+            $totalContrato = 0;
+            
+            foreach ($contratacoes as $contratacao) {
+                if ($contratacao->lote) {
+                    $totalContrato += $contratacao->valor_total;
+                    $itens[] = [
+                        'item' => $contratacao->lote->item,
+                        'descricao' => $contratacao->lote->descricao,
+                        'vencedor' => $contratacao->vencedor->razao_social,
+                        'quantidade' => number_format($contratacao->quantidade_contratada, 2, ',', '.'),
+                        'valor_unitario' => 'R$ ' . number_format($contratacao->valor_unitario, 2, ',', '.'),
+                        'valor_total' => 'R$ ' . number_format($contratacao->valor_total, 2, ',', '.'),
+                    ];
+                }
+            }
+            
+            return response()->json([
+                'success' => true,
+                'itens' => $itens,
+                'total_contrato' => 'R$ ' . number_format($totalContrato, 2, ',', '.')
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Erro ao obter itens do contrato', [
+                'processo_id' => $processo->id,
+                'documento_id' => $documentoId,
+                'erro' => $e->getMessage()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao obter itens do contrato.'
+            ], 500);
+        }
     }
 
     public function getLotesDisponiveis(Processo $processo, $vencedorId)
@@ -178,10 +238,6 @@ class AtaController extends Controller
             ], 500);
         }
     }
-
-    /**
-     * Criar contratação direta do modal
-     */
     public function criarContratacaoDireta(Request $request, Processo $processo)
     {
         try {
@@ -262,9 +318,6 @@ class AtaController extends Controller
         }
     }
 
-    /**
-     * Atualizar status da contratação para CONTRATADO
-     */
     public function marcarComoContratado(Request $request, Processo $processo)
     {
         try {
@@ -297,9 +350,6 @@ class AtaController extends Controller
         }
     }
 
-    /**
-     * Salvar campo individual da ata (mesmo do contrato)
-     */
     public function salvarCampoContrato(Request $request, Processo $processo)
     {
         try {
@@ -371,9 +421,6 @@ class AtaController extends Controller
         }
     }
 
-    /**
-     * Obter dados salvos do contrato/ata
-     */
     public function getDadosAta(Processo $processo)
     {
         try {
@@ -410,10 +457,6 @@ class AtaController extends Controller
             ], 500);
         }
     }
-
-    /**
-     * Salvar assinantes da ata
-     */
     public function salvarAssinantesAta(Request $request, Processo $processo)
     {
         try {
@@ -460,9 +503,6 @@ class AtaController extends Controller
         }
     }
 
-    /**
-     * Salvar contratações selecionadas
-     */
     public function salvarContratacoesSelecionadas(Request $request, Processo $processo)
     {
         try {
@@ -509,9 +549,6 @@ class AtaController extends Controller
         }
     }
 
-    /**
-     * Gerar e salvar ata (sem download)
-     */
     public function gerarESalvarAta(Processo $processo, Request $request)
     {
         try {
@@ -519,6 +556,45 @@ class AtaController extends Controller
             $campos = $request->input('campos', []);
             $dataSelecionada = $request->input('data') ?? now()->format('Y-m-d');
             $assinantes = $request->input('assinantes', []);
+            
+            // VALIDAÇÃO 1: Verificar se há contratações selecionadas
+            if (empty($contratacoesIds)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => '❌ Selecione pelo menos uma contratação para gerar o contrato.'
+                ], 400);
+            }
+            
+            // VALIDAÇÃO 2: Verificar campos obrigatórios
+            $camposObrigatorios = ['numero_contrato', 'data_assinatura_contrato', 'comarca', 'fonte_recurso'];
+            foreach ($camposObrigatorios as $campo) {
+                if (empty($campos[$campo] ?? '')) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => "❌ O campo '{$this->getNomeCampo($campo)}' é obrigatório."
+                    ], 400);
+                }
+            }
+            
+            // VALIDAÇÃO 3: Verificar se o número do contrato já existe
+            $numeroContratoExistente = Documento::where('processo_id', $processo->id)
+                ->whereJsonContains('campos->numero_contrato', $campos['numero_contrato'] ?? '')
+                ->first();
+                
+            if ($numeroContratoExistente) {
+                return response()->json([
+                    'success' => false,
+                    'message' => '❌ Este número de contrato já foi utilizado. Use um número diferente.'
+                ], 400);
+            }
+            
+            // VALIDAÇÃO 4: Verificar assinantes
+            if (empty($assinantes)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => '❌ Adicione pelo menos um assinante ao contrato.'
+                ], 400);
+            }
             
             // Preparar dados
             $dados = $this->prepararDadosParaPdf($processo, $contratacoesIds);
@@ -547,42 +623,311 @@ class AtaController extends Controller
             $pdf = Pdf::loadView($viewAta, $dados)
                 ->setPaper('a4', 'portrait');
 
-            // Salvar arquivo
-            $caminho = $this->salvarArquivo($processo, $pdf);
+            // Salvar arquivo TEMPORÁRIO
+            $caminhoTemp = $this->salvarArquivoTemporario($pdf, $processo);
+            
+            // Aplicar carimbo automaticamente
+            $caminhoCarimbado = $this->criarContratoCarimbado($caminhoTemp['completo'], $processo);
+            
+            if (!$caminhoCarimbado) {
+                throw new \Exception('Falha ao aplicar carimbo ao contrato.');
+            }
+            
+            // Mover o arquivo carimbado para o destino final
+            $caminhoFinal = $this->moverParaDestinoFinal($caminhoCarimbado, $processo);
             
             // Salvar no banco (incluindo assinantes)
-            $this->salvarDocumento($processo, $caminho, $contratacoesIds, $dataSelecionada, $campos, $assinantes);
+            $this->salvarDocumento($processo, $caminhoFinal, $contratacoesIds, $dataSelecionada, $campos, $assinantes);
             
             // Atualizar status das contratações para CONTRATADO
             LoteContratado::whereIn('id', $contratacoesIds)
                 ->where('processo_id', $processo->id)
                 ->update(['status' => 'CONTRATADO']);
             
-            Log::info('Ata gerada com sucesso e contratações atualizadas', ['processo_id' => $processo->id]);
+            // Criar URL para download automático
+            $nomeArquivo = basename($caminhoFinal['relativo']);
+            $downloadUrl = url("admin/atas/{$processo->id}/download/{$nomeArquivo}");
+            
+            Log::info('Contrato gerado com carimbo automático', [
+                'processo_id' => $processo->id,
+                'numero_contrato' => $campos['numero_contrato'] ?? '',
+                'itens_incluidos' => count($contratacoesIds),
+                'download_url' => $downloadUrl
+            ]);
 
             return response()->json([
                 'success' => true,
-                'message' => '✅ Ata gerada com sucesso!',
+                'message' => '✅ Contrato gerado com sucesso! O download começará automaticamente.',
                 'documento' => 'contrato',
-                'download_url' => url("admin/atas/{$processo->id}/download")
+                'download_url' => $downloadUrl,
+                'refresh' => true,
+                'auto_download' => true // Flag para download automático no frontend
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Erro ao gerar ata', [
+            Log::error('Erro ao gerar contrato', [
                 'processo_id' => $processo->id,
-                'erro' => $e->getMessage()
+                'erro' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => '❌ Erro ao gerar Ata: ' . $e->getMessage()
+                'message' => '❌ Erro ao gerar Contrato: ' . $e->getMessage()
             ], 500);
         }
     }
 
-    /**
-     * Dashboard de atas
-     */
+    private function salvarArquivoTemporario($pdf, Processo $processo): array
+    {
+        $numeroProcessoLimpo = str_replace(['/', '\\'], '_', $processo->numero_processo);
+        $diretorioTemp = sys_get_temp_dir() . '/atas_temp';
+        
+        if (!file_exists($diretorioTemp)) {
+            mkdir($diretorioTemp, 0777, true);
+        }
+        
+        $nomeArquivo = "temp_ata_{$numeroProcessoLimpo}_" . now()->format('Ymd_His') . '.pdf';
+        $caminhoCompleto = "{$diretorioTemp}/{$nomeArquivo}";
+        
+        $pdf->save($caminhoCompleto);
+
+        return [
+            'completo' => $caminhoCompleto,
+            'nome' => $nomeArquivo
+        ];
+    }
+    private function criarContratoCarimbado(string $caminhoOriginal, Processo $processo): ?string
+    {
+        $paginasTemp = [];
+
+        try {
+            $pageCount = $this->contarPaginasPdf($caminhoOriginal);
+
+            if ($pageCount === 0) {
+                Log::error('PDF vazio ou inválido para carimbo - Contrato', ['caminho' => $caminhoOriginal]);
+                return null;
+            }
+
+            // Criar arquivo temporário para o resultado carimbado
+            $caminhoCarimbado = tempnam(sys_get_temp_dir(), 'contrato_carimbado_') . '.pdf';
+
+            // OBTER PÁGINA INICIAL DO CONTRATO
+            $paginaInicial = $processo->contTotalPage ?? 0;
+
+            for ($pagina = 1; $pagina <= $pageCount; $pagina++) {
+                $paginaAtual = $pagina;
+
+                $pdf = new Fpdi();
+                $this->configurarFonte($pdf);
+
+                $pdf->setSourceFile($caminhoOriginal);
+                $tplId = $pdf->importPage($pagina);
+                $pdf->AddPage();
+                $pdf->useTemplate($tplId);
+
+                // Aplicar carimbo em todas as páginas
+                $this->adicionarCarimbo($pdf, $processo, $paginaAtual, $pageCount, $paginaInicial);
+
+                $tempPath = sys_get_temp_dir() . "/pagina_contrato_{$pagina}_" . uniqid() . '.pdf';
+                $pdf->Output($tempPath, 'F');
+                $paginasTemp[] = $tempPath;
+            }
+
+            $sucesso = $this->mesclarPdfsComGhostscript($paginasTemp, $caminhoCarimbado);
+
+            if ($sucesso && file_exists($caminhoCarimbado) && filesize($caminhoCarimbado) > 0) {
+                Log::info('Contrato carimbado criado com sucesso', [
+                    'caminho_carimbado' => $caminhoCarimbado,
+                    'tamanho' => filesize($caminhoCarimbado),
+                    'paginas' => $pageCount
+                ]);
+                return $caminhoCarimbado;
+            } else {
+                Log::error('Falha ao criar contrato carimbado');
+                return null;
+            }
+        } catch (\Exception $e) {
+            Log::error('Erro ao criar contrato carimbado', [
+                'caminho_original' => $caminhoOriginal,
+                'erro' => $e->getMessage()
+            ]);
+            return null;
+        } finally {
+            // Limpar arquivos temporários
+            foreach ($paginasTemp as $tempFile) {
+                if (file_exists($tempFile)) {
+                    unlink($tempFile);
+                }
+            }
+            // Limpar arquivo original temporário
+            if (file_exists($caminhoOriginal)) {
+                unlink($caminhoOriginal);
+            }
+        }
+    }
+
+    private function moverParaDestinoFinal(string $caminhoCarimbado, Processo $processo): array
+    {
+        $numeroProcessoLimpo = str_replace(['/', '\\'], '_', $processo->numero_processo);
+        $diretorioFinal = public_path("uploads/atas/{$processo->id}");
+        
+        if (!file_exists($diretorioFinal)) {
+            mkdir($diretorioFinal, 0777, true);
+        }
+        
+        $nomeArquivo = "ata_carimbada_{$numeroProcessoLimpo}_" . now()->format('Ymd_His') . '.pdf';
+        $caminhoFinal = "{$diretorioFinal}/{$nomeArquivo}";
+        $caminhoRelativo = "uploads/atas/{$processo->id}/{$nomeArquivo}";
+        
+        // Mover arquivo carimbado para destino final
+        rename($caminhoCarimbado, $caminhoFinal);
+
+        return [
+            'completo' => $caminhoFinal,
+            'relativo' => $caminhoRelativo,
+            'nome' => $nomeArquivo
+        ];
+    }
+
+    private function adicionarCarimbo(Fpdi $pdf, Processo $processo, int $paginaAtual, int $pageCountTotal, int $paginaInicial = 0): void
+    {
+        $pageWidth = $pdf->GetPageWidth();
+        $pageHeight = $pdf->GetPageHeight();
+
+        $boxWidth = 8;
+        $boxHeight = 150;
+
+        $x = $pageWidth - $boxWidth - 1;
+        $y = ($pageHeight - $boxHeight) / 2;
+
+        $pdf->SetDrawColor(0, 0, 0);
+        $pdf->Rect($x, $y, $boxWidth, $boxHeight, 'D');
+        $pdf->SetTextColor(0, 0, 0);
+
+        // CALCULAR PÁGINA ABSOLUTA
+        $paginaAbsoluta = $paginaInicial + $paginaAtual;
+        $totalAbsoluto = $paginaInicial + $pageCountTotal;
+
+        $codigoAutenticacao = $processo->prefeitura->id . now()->format('HisdmY');
+        $textoCarimbo = "Processo numerado por: {$processo->responsavel_numeracao} " .
+            "Cargo: {$processo->unidade_numeracao} " .
+            "Portaria nº {$processo->portaria_numeracao} " .
+            "Pág. {$paginaAbsoluta} / {$totalAbsoluto} - " .
+            "Documento gerado na Plataforma GestGov - Licenciado para Prefeitura de {$processo->prefeitura->cidade}. " .
+            "Cod. de Autenticação: {$codigoAutenticacao} - Para autenticar acesse gestgov.com.br/autenticacao";
+
+        $pdf->StartTransform();
+        $rotateX = $x + ($boxWidth / 2);
+        $rotateY = $y + ($boxHeight / 2);
+        $pdf->Rotate(90, $rotateX, $rotateY);
+
+        $textX = $rotateX - ($boxHeight / 2);
+        $textY = $rotateY - ($boxWidth / 2);
+        $pdf->SetXY($textX, $textY);
+
+        $pdf->MultiCell($boxHeight, $boxWidth, $textoCarimbo, 0, 'C', false, 1, '', '', true, 0, false, true, 0, 'T', false);
+        $pdf->StopTransform();
+    }
+
+    private function contarPaginasPdf(string $caminhoPdf): int
+    {
+        try {
+            $pdf = new Fpdi();
+            return $pdf->setSourceFile($caminhoPdf);
+        } catch (\Exception $e) {
+            Log::error('Erro ao contar páginas do PDF', [
+                'caminho' => $caminhoPdf,
+                'erro' => $e->getMessage()
+            ]);
+            return 0;
+        }
+    }
+
+    private function configurarFonte(Fpdi $pdf): void
+    {
+        $fontPath = public_path('storage/app/public/fonts/Aptos.ttf');
+        if (file_exists($fontPath)) {
+            $pdf->AddFont('Aptos', '', 'Aptos.ttf', true);
+            $pdf->SetFont('Aptos', '', 8);
+        } else {
+            $pdf->SetFont('helvetica', '', 6);
+        }
+    }
+
+    private function mesclarPdfsComGhostscript(array $arquivos, string $outputPath): bool
+    {
+        $listaArquivos = null;
+
+        try {
+            $arquivosValidos = [];
+            foreach ($arquivos as $index => $arquivo) {
+                if (!file_exists($arquivo)) {
+                    Log::error('Arquivo não encontrado para mesclagem', ['arquivo' => $arquivo]);
+                    return false;
+                }
+
+                $tamanho = filesize($arquivo);
+                if ($tamanho === 0) {
+                    Log::error('Arquivo vazio encontrado', ['arquivo' => $arquivo]);
+                    return false;
+                }
+
+                $arquivosValidos[] = $arquivo;
+            }
+
+            $listaArquivos = tempnam(sys_get_temp_dir(), 'gs_list_');
+            file_put_contents($listaArquivos, implode("\n", $arquivosValidos));
+
+            $comando = sprintf(
+                'gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -dPDFSETTINGS=/prepress -sOutputFile="%s" @"%s"',
+                $outputPath,
+                $listaArquivos
+            );
+
+            $output = [];
+            $returnCode = 0;
+            exec($comando . ' 2>&1', $output, $returnCode);
+
+            sleep(1);
+
+            $outputExiste = file_exists($outputPath);
+            $outputTamanho = $outputExiste ? filesize($outputPath) : 0;
+
+            if ($returnCode === 0 && $outputExiste && $outputTamanho > 0) {
+                return true;
+            } else {
+                Log::error('Erro ao mesclar PDFs com Ghostscript', [
+                    'return_code' => $returnCode,
+                    'arquivo_saida_existe' => $outputExiste,
+                    'arquivo_saida_tamanho' => $outputTamanho
+                ]);
+                return false;
+            }
+        } catch (\Exception $e) {
+            Log::error('Exceção ao mesclar PDFs com Ghostscript', [
+                'erro' => $e->getMessage()
+            ]);
+            return false;
+        } finally {
+            if ($listaArquivos && file_exists($listaArquivos)) {
+                unlink($listaArquivos);
+            }
+        }
+    }
+
+    private function getNomeCampo($campo): string
+    {
+        $nomes = [
+            'numero_contrato' => 'Número do Contrato',
+            'data_assinatura_contrato' => 'Data de Assinatura',
+            'comarca' => 'Comarca',
+            'fonte_recurso' => 'Fonte de Recurso'
+        ];
+        
+        return $nomes[$campo] ?? $campo;
+    }
+
     public function dashboard(Request $request)
     {
         $prefeituraId = $request->get('prefeitura_id');
@@ -607,14 +952,24 @@ class AtaController extends Controller
         return view('Admin.Atas.dashboard', compact('processos', 'estatisticas', 'prefeituras', 'prefeituraId'));
     }
 
-    /**
-     * Download da Ata
-     */
-    public function downloadAta(Processo $processo)
+    public function downloadAta(Processo $processo, $nomeArquivo = null)
     {
         try {
+            if ($nomeArquivo) {
+                // Download de arquivo específico (usado para auto-download)
+                $caminhoCompleto = public_path("uploads/atas/{$processo->id}/{$nomeArquivo}");
+                
+                if (!file_exists($caminhoCompleto)) {
+                    throw new \Exception('Arquivo não encontrado.');
+                }
+                
+                return response()->download($caminhoCompleto, $nomeArquivo);
+            }
+            
+            // Download do último arquivo (compatibilidade)
             $documento = Documento::where('processo_id', $processo->id)
                 ->where('tipo_documento', 'contrato')
+                ->latest('gerado_em')
                 ->firstOrFail();
 
             $caminhoCompleto = public_path($documento->caminho);
@@ -669,9 +1024,6 @@ class AtaController extends Controller
         }
     }
 
-    /**
-     * Obter contratações pendentes para a aba de gerar contrato
-     */
     public function getContratacoesPendentes(Processo $processo)
     {
         try {
@@ -699,9 +1051,6 @@ class AtaController extends Controller
         }
     }
 
-    /**
-     * Obter contratações atualizadas (para atualizar a aba)
-     */
     public function getContratacoesAtualizadas(Processo $processo)
     {
         try {
@@ -932,35 +1281,62 @@ class AtaController extends Controller
         return $dados;
     }
 
-    private function salvarArquivo(Processo $processo, $pdf)
-    {
-        $numeroProcessoLimpo = str_replace(['/', '\\'], '_', $processo->numero_processo);
-        $diretorio = public_path("uploads/atas/{$processo->id}");
-        
-        if (!file_exists($diretorio)) {
-            mkdir($diretorio, 0777, true);
-        }
-        
-        $nomeArquivo = "ata_{$numeroProcessoLimpo}_" . now()->format('Ymd_His') . '.pdf';
-        $caminhoCompleto = "{$diretorio}/{$nomeArquivo}";
-        $caminhoRelativo = "uploads/atas/{$processo->id}/{$nomeArquivo}";
-        
-        $pdf->save($caminhoCompleto);
-
-        return [
-            'completo' => $caminhoCompleto,
-            'relativo' => $caminhoRelativo,
-            'nome' => $nomeArquivo
-        ];
-    }
-
     private function salvarDocumento(Processo $processo, $caminho, $contratacoesIds = [], $dataSelecionada = null, $campos = [], $assinantes = [])
     {
         $dataSelecionada = $dataSelecionada ?? now()->format('Y-m-d');
-
-        $documentoExistente = Documento::where('processo_id', $processo->id)
-            ->where('tipo_documento', 'contrato')
-            ->first();
+        
+        Log::info('Salvando documento com carimbo', [
+            'processo_id' => $processo->id,
+            'campos_recebidos' => $campos,
+            'numero_contrato_recebido' => $campos['numero_contrato'] ?? 'NÃO RECEBIDO',
+            'quantidade_campos' => count($campos),
+            'contratacoes_ids' => $contratacoesIds,
+            'caminho_relativo' => $caminho['relativo']
+        ]);
+        
+        // Calcular valor total do contrato
+        $valorTotalContrato = LoteContratado::whereIn('id', $contratacoesIds)
+            ->where('processo_id', $processo->id)
+            ->sum('valor_total');
+        
+        // Calcular quantidade de itens
+        $quantidadeItens = count($contratacoesIds);
+        
+        // Salvar dados no modelo Contrato também
+        if (!empty($campos) && isset($campos['numero_contrato'])) {
+            $contrato = \App\Models\Contrato::where('processo_id', $processo->id)->first();
+            
+            if (!$contrato) {
+                $contrato = \App\Models\Contrato::create([
+                    'processo_id' => $processo->id,
+                    'numero_contrato' => $campos['numero_contrato'] ?? null,
+                    'data_assinatura_contrato' => $campos['data_assinatura_contrato'] ?? null,
+                    'numero_extrato' => $campos['numero_extrato'] ?? null,
+                    'comarca' => $campos['comarca'] ?? null,
+                    'fonte_recurso' => $campos['fonte_recurso'] ?? null,
+                    'subcontratacao' => $campos['subcontratacao'] ?? null,
+                ]);
+                
+                Log::info('Contrato criado', [
+                    'processo_id' => $processo->id,
+                    'numero_contrato' => $campos['numero_contrato'],
+                ]);
+            } else {
+                $contrato->update([
+                    'numero_contrato' => $campos['numero_contrato'] ?? $contrato->numero_contrato,
+                    'data_assinatura_contrato' => $campos['data_assinatura_contrato'] ?? $contrato->data_assinatura_contrato,
+                    'numero_extrato' => $campos['numero_extrato'] ?? $contrato->numero_extrato,
+                    'comarca' => $campos['comarca'] ?? $contrato->comarca,
+                    'fonte_recurso' => $campos['fonte_recurso'] ?? $contrato->fonte_recurso,
+                    'subcontratacao' => $campos['subcontratacao'] ?? $contrato->subcontratacao,
+                ]);
+                
+                Log::info('Contrato atualizado', [
+                    'processo_id' => $processo->id,
+                    'numero_contrato' => $campos['numero_contrato'],
+                ]);
+            }
+        }
 
         $dadosDocumento = [
             'processo_id' => $processo->id,
@@ -968,11 +1344,17 @@ class AtaController extends Controller
             'data_selecionada' => $dataSelecionada,
             'caminho' => $caminho['relativo'],
             'gerado_em' => now(),
+            'valor_total' => $valorTotalContrato,
+            'quantidade_itens' => $quantidadeItens,
         ];
 
-        // Salvar campos adicionais se existirem
+        // Salvar campos no JSON
         if (!empty($campos)) {
             $dadosDocumento['campos'] = json_encode($campos);
+            Log::info('Campos salvos no JSON do documento', [
+                'processo_id' => $processo->id,
+                'campos_json' => $campos,
+            ]);
         }
         
         // Salvar assinantes se existirem
@@ -985,15 +1367,27 @@ class AtaController extends Controller
             $dadosDocumento['contratacoes_selecionadas'] = json_encode($contratacoesIds);
         }
 
+        // Verificar se já existe um documento para evitar duplicação
+        $documentoExistente = Documento::where('processo_id', $processo->id)
+            ->where('tipo_documento', 'contrato')
+            ->when(!empty($campos['numero_contrato']), function($query) use ($campos) {
+                return $query->whereJsonContains('campos->numero_contrato', $campos['numero_contrato']);
+            })
+            ->first();
+
         if ($documentoExistente) {
+            // Remove o arquivo antigo
             $caminhoAntigo = public_path($documentoExistente->caminho);
             if (file_exists($caminhoAntigo)) {
                 unlink($caminhoAntigo);
             }
 
             $documentoExistente->update($dadosDocumento);
+            Log::info('Documento existente atualizado', $dadosDocumento);
         } else {
+            // Criar novo documento
             Documento::create($dadosDocumento);
+            Log::info('Novo documento criado', $dadosDocumento);
         }
     }
 
@@ -1016,9 +1410,6 @@ class AtaController extends Controller
         ];
     }
 
-    /**
-     * Métodos auxiliares para dados do contrato
-     */
     private function prepararDadosContratante(Processo $processo): array
     {
         $dados = [
@@ -1039,6 +1430,7 @@ class AtaController extends Controller
 
         return $dados;
     }
+    
 
     private function prepararDadosContratado(Processo $processo, $contratacoes): array
     {
@@ -1107,6 +1499,44 @@ class AtaController extends Controller
         }
         
         return $itens;
+    }
+
+    public function debugContratos(Processo $processo)
+    {
+        $documentos = Documento::where('processo_id', $processo->id)
+            ->where('tipo_documento', 'contrato')
+            ->get();
+        
+        $contratos = \App\Models\Contrato::where('processo_id', $processo->id)->get();
+        
+        // Verificar também o que está sendo enviado no request quando gera contrato
+        $requestData = request()->all();
+        
+        return response()->json([
+            'documentos' => $documentos->map(function($doc) {
+                return [
+                    'id' => $doc->id,
+                    'campos' => $doc->campos,
+                    'campos_json' => json_decode($doc->campos ?? '{}', true),
+                    'numero_contrato_campos' => json_decode($doc->campos ?? '{}', true)['numero_contrato'] ?? 'não encontrado em JSON',
+                    'valor_total' => $doc->valor_total,
+                    'quantidade_itens' => $doc->quantidade_itens,
+                    'gerado_em' => $doc->gerado_em,
+                    'caminho' => $doc->caminho,
+                ];
+            }),
+            'contratos' => $contratos->map(function($contrato) {
+                return [
+                    'id' => $contrato->id,
+                    'numero_contrato' => $contrato->numero_contrato,
+                    'data_assinatura_contrato' => $contrato->data_assinatura_contrato,
+                    'processo_id' => $contrato->processo_id,
+                ];
+            }),
+            'request_data' => $requestData,
+            'total_documentos' => $documentos->count(),
+            'total_contratos' => $contratos->count(),
+        ]);
     }
 
     private function escreverValorPorExtenso($valor): string
