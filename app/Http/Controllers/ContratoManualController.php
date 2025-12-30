@@ -7,6 +7,7 @@ use App\Models\Prefeitura;
 use Illuminate\Http\Request;
 use App\Models\ContratoManual;
 use App\Models\EmpresaContrato;
+use App\Models\Processo;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -15,36 +16,54 @@ class ContratoManualController extends Controller
 {
     public function index(Request $request)
     {
-        // Query base SEM usuário
-        $query = ContratoManual::with(['empresa', 'secretaria', 'prefeitura']);
+        // Determinar qual aba está ativa
+        $abaAtiva = $request->get('tipo', 'manual'); // 'sistema' ou 'manual'
+        
+        if ($abaAtiva === 'sistema') {
+            // Lógica para contratos do sistema
+            $query = Processo::with(['prefeitura', 'contrato'])
+                ->has('contrato') // Somente processos com contrato gerado
+                ->orderBy('created_at', 'desc');
 
-        // Filtro por empresa
-        if ($request->filled('empresa_id')) {
-            $query->where('empresa_id', $request->empresa_id);
+            // Filtros para contratos do sistema
+            if ($request->filled('prefeitura_id')) {
+                $query->where('prefeitura_id', $request->prefeitura_id);
+            }
+
+            if ($request->filled('numero_processo')) {
+                $query->where('numero_processo', 'like', '%' . $request->numero_processo . '%');
+            }
+
+            $contratos = $query->paginate(10);
+            $tipoContratos = 'sistema';
+            
+        } else {
+            // Lógica para contratos manuais (já existente)
+            $query = ContratoManual::with(['empresa', 'secretaria', 'prefeitura']);
+
+            // Filtro por empresa
+            if ($request->filled('empresa_id')) {
+                $query->where('empresa_id', $request->empresa_id);
+            }
+
+            // Filtro por prefeitura
+            if ($request->filled('prefeitura_id')) {
+                $query->where('prefeitura_id', $request->prefeitura_id);
+            }
+
+            $contratos = $query->latest()->paginate(10);
+            $tipoContratos = 'manual';
         }
-
-        // Filtro por prefeitura
-        if ($request->filled('prefeitura_id')) {
-            $query->where('prefeitura_id', $request->prefeitura_id);
-        }
-
-        $contratos = $query->latest()->paginate(10);
 
         // Prefeituras para filtro
         $prefeituras = Prefeitura::orderBy('nome')->get();
 
-        // Empresas para filtro
-        $empresasQuery = EmpresaContrato::orderBy('razao_social');
-
-        if ($request->filled('prefeitura_id')) {
-            $empresasQuery->where('prefeitura_id', $request->prefeitura_id);
-        }
-
-        $empresas = $empresasQuery->get();
+        // Empresas para filtro (apenas para contratos manuais)
+        $empresas = EmpresaContrato::orderBy('razao_social')->get();
 
         return view(
             'Admin.contratos_externos.index',
-            compact('contratos', 'empresas', 'prefeituras')
+            compact('contratos', 'empresas', 'prefeituras', 'tipoContratos', 'abaAtiva')
         );
     }
 

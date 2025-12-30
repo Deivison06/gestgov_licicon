@@ -64,9 +64,10 @@ Route::prefix('admin')
         // ========================================
         // 3. CONTRATOS MANUAIS (EXTERNOS)
         // ========================================
+         Route::get('contratos', [ContratoManualController::class, 'index'])
+            ->name('contratos.index');
         Route::resource('contratos', ContratoManualController::class)
             ->names([
-                'index'   => 'contratos.index',
                 'create'  => 'contratos.create',
                 'store'   => 'contratos.store',
                 'edit'    => 'contratos.edit',

@@ -16,6 +16,10 @@ class Contrato extends Model
         'subcontratacao'
     ];
 
+    protected $casts = [
+        'data_assinatura_contrato' => 'datetime',
+    ];
+
     public function processo()
     {
         return $this->belongsTo(Processo::class, 'processo_id');
