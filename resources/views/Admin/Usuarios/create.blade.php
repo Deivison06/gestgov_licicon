@@ -58,6 +58,21 @@
                        placeholder="Digite o CPF">
             </div>
 
+            <!-- Novo campo: Prefeitura -->
+            <div>
+                <label for="prefeitura_id" class="block mb-2 text-sm font-medium text-gray-700">Prefeitura</label>
+                <select name="prefeitura_id" id="prefeitura_id"
+                        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496] transition-colors">
+                    <option value="">Selecione uma prefeitura</option>
+                    @foreach($prefeituras as $prefeitura)
+                        <option value="{{ $prefeitura->id }}" {{ old('prefeitura_id') == $prefeitura->id ? 'selected' : '' }}>
+                            {{ $prefeitura->nome }} - {{ $prefeitura->cidade }}
+                        </option>
+                    @endforeach
+                </select>
+                <p class="mt-1 text-sm text-gray-500">Obrigatório para usuários do tipo Prefeitura</p>
+            </div>
+
             <div>
                 <label for="password" class="block mb-2 text-sm font-medium text-gray-700">Senha</label>
                 <input type="password" name="password" id="password"
@@ -81,9 +96,9 @@
                     <h4 class="mb-3 font-medium text-gray-700">Funções</h4>
                     @foreach($roles as $role)
                         <div class="flex items-center mb-2">
-                            <input type="checkbox" name="roles[]" value="{{ $role->id }}" id="role_{{ $role->id }}"
-                                   class="h-4 w-4 text-[#009496] focus:ring-[#009496] border-gray-300 rounded"
-                                   {{ in_array($role->id, old('roles', [])) ? 'checked' : '' }}>
+                            <input type="radio" name="role" value="{{ $role->id }}" id="role_{{ $role->id }}"
+                                   class="h-4 w-4 text-[#009496] focus:ring-[#009496] border-gray-300"
+                                   {{ old('role') == $role->id ? 'checked' : '' }}>
                             <label for="role_{{ $role->id }}" class="block ml-2 text-sm text-gray-700">
                                 {{ $role->name }}
                             </label>
@@ -120,4 +135,32 @@
         </div>
     </form>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const roleInputs = document.querySelectorAll('input[name="role"]');
+    const prefeituraSelect = document.getElementById('prefeitura_id');
+    
+    function togglePrefeituraRequired() {
+        const selectedRole = Array.from(roleInputs).find(input => input.checked);
+        if (selectedRole) {
+            const roleName = selectedRole.closest('label').textContent.trim();
+            if (roleName === 'prefeitura') {
+                prefeituraSelect.setAttribute('required', 'required');
+                prefeituraSelect.closest('div').querySelector('p').style.display = 'block';
+            } else {
+                prefeituraSelect.removeAttribute('required');
+                prefeituraSelect.closest('div').querySelector('p').style.display = 'none';
+            }
+        }
+    }
+    
+    roleInputs.forEach(input => {
+        input.addEventListener('change', togglePrefeituraRequired);
+    });
+    
+    // Inicializar
+    togglePrefeituraRequired();
+});
+</script>
 @endsection

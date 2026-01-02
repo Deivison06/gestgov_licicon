@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ModalidadeEnum;
+use App\Scopes\PrefeituraScope;
 use Illuminate\Database\Eloquent\Model;
 
 class ContratoManual extends Model
@@ -46,6 +47,12 @@ class ContratoManual extends Model
     public function prefeitura()
     {
         return $this->belongsTo(Prefeitura::class);
+    }
+
+
+    protected static function booted()
+    {
+        static::addGlobalScope(new PrefeituraScope());
     }
 
     // No modelo ContratoManual, adicione este método de acesso

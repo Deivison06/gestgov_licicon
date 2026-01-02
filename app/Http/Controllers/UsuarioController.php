@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Exception;
 use App\Models\User;
+use App\Models\Prefeitura;
 use Illuminate\Http\Request;
 use App\Services\UserService;
 use Spatie\Permission\Models\Role;
@@ -23,9 +24,22 @@ class UsuarioController extends Controller
     public function index(Request $request)
     {
         try {
-            $users = $this->userService->getPaginatedUsers(10);
+            // Obter parâmetros de filtro
+            $filters = [
+                'search' => $request->input('search'),
+                'role' => $request->input('role'),
+                'prefeitura_id' => $request->input('prefeitura_id'),
+                'status' => $request->input('status', 'all')
+            ];
 
-            return view('Admin.Usuarios.index', compact('users'));
+            // Obter usuários com filtros
+            $users = $this->userService->getFilteredUsers($filters, 10);
+
+            // Obter dados para filtros
+            $roles = Role::orderBy('name')->get();
+            $prefeituras = Prefeitura::orderBy('nome')->get();
+
+            return view('Admin.Usuarios.index', compact('users', 'roles', 'prefeituras', 'filters'));
         } catch (Exception $e) {
             return redirect()->back()->with('error', 'Erro ao carregar usuários: ' . $e->getMessage());
         }
@@ -34,9 +48,11 @@ class UsuarioController extends Controller
 
     public function create()
     {
-        $roles = Role::all(); // traz todos os objetos Role
-        $permissions = Permission::all(); // não esqueça de carregar as permissões
-        return view('Admin.Usuarios.create', compact('roles', 'permissions'));
+        return view('Admin.Usuarios.create', [
+            'roles' => Role::all(),
+            'permissions' => Permission::all(),
+            'prefeituras' => Prefeitura::orderBy('nome')->get() // Adicione esta linha
+        ]);
     }
 
     public function store(UsuarioRequest $request)
@@ -54,10 +70,13 @@ class UsuarioController extends Controller
 
     public function edit(User $usuario)
     {
-        $roles = Role::all(); // agora cada $role é um objeto Role
-        $permissions = Permission::all(); // se estiver usando permissões também
 
-        return view('Admin.Usuarios.edit', compact('usuario', 'roles', 'permissions'));
+        return view('Admin.Usuarios.edit', [
+            'usuario' => $usuario,
+            'roles' => Role::all(),
+            'permissions' => Permission::all(),
+            'prefeituras' => Prefeitura::orderBy('nome')->get() // Adicione esta linha
+        ]);
     }
 
     public function update(UsuarioRequest $request, User $usuario)

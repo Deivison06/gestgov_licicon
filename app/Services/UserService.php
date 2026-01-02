@@ -26,17 +26,26 @@ class UserService
         return $this->userRepository->getAll();
     }
 
-    public function getPaginatedUsers(int $perPage = 15): LengthAwarePaginator
+     // Método para usuários com filtros
+    public function getFilteredUsers(array $filters = [], int $perPage = 15): LengthAwarePaginator
     {
-        $users = $this->userRepository->getPaginated($perPage);
+        $users = $this->userRepository->getFiltered($filters, $perPage);
 
         $users->getCollection()->transform(function ($user) {
             $user->permissions_list = $user->getAllPermissions()->pluck('name');
+            $user->role_names = $user->roles->pluck('name')->implode(', ');
+            $user->prefeitura_nome = $user->prefeitura ? $user->prefeitura->nome : 'Não atribuída';
             return $user;
         });
 
         return $users;
     }
+
+    public function getPaginatedUsers(int $perPage = 15): LengthAwarePaginator
+    {
+        return $this->getFilteredUsers([], $perPage);
+    }
+
 
 
     public function findUser(int $id): ?User

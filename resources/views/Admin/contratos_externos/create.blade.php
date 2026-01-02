@@ -17,15 +17,31 @@
             
             {{-- PREFEITURA --}}
             <div>
+                @php
+                    $isPrefeituraUser = auth()->user()->hasRole('prefeitura') && auth()->user()->prefeitura_id;
+                @endphp
+                
                 <label for="prefeitura_id" class="block text-sm font-medium text-gray-700">Prefeitura</label>
-                <select name="prefeitura_id" id="prefeitura_id" class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">
-                    <option value="">Selecione a prefeitura</option>
-                    @foreach ($prefeituras as $prefeitura)
-                    <option value="{{ $prefeitura->id }}" {{ old('prefeitura_id') == $prefeitura->id ? 'selected' : '' }}>
-                        {{ $prefeitura->nome }}
-                    </option>
-                    @endforeach
-                </select>
+                @if($isPrefeituraUser)
+                    <input type="hidden" name="prefeitura_id" value="{{ auth()->user()->prefeitura_id }}">
+                    <select disabled class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496] bg-gray-50">
+                        <option value="{{ $prefeituras->first()->id }}" selected>
+                            {{ $prefeituras->first()->nome }}
+                        </option>
+                    </select>
+                    <p class="mt-1 text-sm text-gray-500">
+                        Você está criando um contrato para sua própria prefeitura
+                    </p>
+                @else
+                    <select name="prefeitura_id" id="prefeitura_id" class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">
+                        <option value="">Selecione a prefeitura</option>
+                        @foreach ($prefeituras as $prefeitura)
+                        <option value="{{ $prefeitura->id }}" {{ old('prefeitura_id') == $prefeitura->id ? 'selected' : '' }}>
+                            {{ $prefeitura->nome }}
+                        </option>
+                        @endforeach
+                    </select>
+                @endif
                 @error('prefeitura_id')
                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror
@@ -74,7 +90,7 @@
                     <label class="block mb-2 text-sm font-medium text-gray-700">Secretaria / Órgão Contratante *</label>
                     <select required class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496] transition-colors"
                             name="unidade_id" id="unidade_id">
-                        <option value="">Primeiro selecione a prefeitura</option>
+                        <option value="">@if($isPrefeituraUser) Selecione a secretaria @else Primeiro selecione a prefeitura @endif</option>
                         {{-- As opções serão carregadas via JavaScript --}}
                     </select>
                     @error('unidade_id')
@@ -141,7 +157,31 @@
                 </div>
             </div>
 
+            {{-- Data de Assinatura --}}
+            <div class="mt-6">
+                <label class="block mb-2 text-sm font-medium text-gray-700">Data de Assinatura</label>
+                <input class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496] transition-colors"
+                        type="date" name="data_assinatura" value="{{ old('data_assinatura') }}">
+                @error('data_assinatura')
+                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
             
+            {{-- Upload do Arquivo PDF do Contrato --}}
+            <div class="mt-6">
+                <label class="block mb-2 text-sm font-medium text-gray-700">Arquivo do Contrato (PDF)</label>
+                <div class="flex items-center gap-4">
+                    <input type="file" name="arquivo_contrato" id="arquivo_contrato" 
+                           class="block w-full px-3 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#009496] file:text-white hover:file:bg-[#244853] transition-colors cursor-pointer focus:ring-2 focus:ring-[#009496] focus:border-[#009496]"
+                           accept=".pdf">
+                </div>
+                <p class="mt-2 text-xs text-gray-500">
+                    Apenas arquivos PDF, tamanho máximo: 5MB
+                </p>
+                @error('arquivo_contrato')
+                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
         </div>
 
         {{-- SEÇÃO 3: EMPRESA --}}
@@ -219,10 +259,17 @@
 
         // Função para carregar unidades baseadas na prefeitura selecionada
         function carregarUnidades() {
-            const prefeituraId = prefeituraSelect.value;
+            let prefeituraId;
+            
+            // Se for usuário da prefeitura, usar o ID da prefeitura do usuário
+            @if($isPrefeituraUser)
+                prefeituraId = "{{ auth()->user()->prefeitura_id }}";
+            @else
+                prefeituraId = prefeituraSelect.value;
+            @endif
             
             // Limpar o select de unidades
-            unidadeSelect.innerHTML = '<option value="">Primeiro selecione a prefeitura</option>';
+            unidadeSelect.innerHTML = '<option value="">@if($isPrefeituraUser) Selecione a secretaria @else Primeiro selecione a prefeitura @endif</option>';
 
             if (prefeituraId && unidadesPorPrefeitura[prefeituraId]) {
                 // Adicionar opções das unidades da prefeitura selecionada
@@ -241,13 +288,20 @@
             }
         }
 
-        // Adicionar evento de change na prefeitura
-        prefeituraSelect.addEventListener('change', carregarUnidades);
-
-        // Executar carregamento inicial caso já tenha uma prefeitura selecionada
-        if (prefeituraSelect.value) {
+        // Se for usuário da prefeitura, carregar unidades automaticamente
+        @if($isPrefeituraUser)
             carregarUnidades();
-        }
+        @else
+            // Adicionar evento de change na prefeitura apenas para não-usuários de prefeitura
+            if (prefeituraSelect) {
+                prefeituraSelect.addEventListener('change', carregarUnidades);
+            }
+            
+            // Executar carregamento inicial caso já tenha uma prefeitura selecionada
+            if (prefeituraSelect && prefeituraSelect.value) {
+                carregarUnidades();
+            }
+        @endif
 
         // Máscara de Moeda
         const moneyInput = document.querySelector('.money-mask');
@@ -273,6 +327,29 @@
                     value = value.replace(/(\d{4})(\d)/, '$1-$2');
                 }
                 e.target.value = value;
+            });
+        }
+
+        // Preview do arquivo selecionado
+        const fileInput = document.getElementById('arquivo_contrato');
+        if (fileInput) {
+            fileInput.addEventListener('change', function(e) {
+                const fileName = e.target.files[0] ? e.target.files[0].name : 'Nenhum arquivo selecionado';
+                const fileSize = e.target.files[0] ? (e.target.files[0].size / 1024 / 1024).toFixed(2) : '0';
+                
+                // Verificar se é PDF
+                if (e.target.files[0] && !e.target.files[0].type.includes('pdf')) {
+                    alert('Por favor, selecione apenas arquivos PDF.');
+                    e.target.value = '';
+                    return;
+                }
+                
+                // Verificar tamanho (5MB máximo)
+                if (e.target.files[0] && e.target.files[0].size > 5 * 1024 * 1024) {
+                    alert('O arquivo é muito grande. Tamanho máximo permitido: 5MB.');
+                    e.target.value = '';
+                    return;
+                }
             });
         }
     });

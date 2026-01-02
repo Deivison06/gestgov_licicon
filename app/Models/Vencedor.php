@@ -37,7 +37,7 @@ class Vencedor extends Model
      */
     public function processo(): BelongsTo
     {
-        return $this->belongsTo(Processo::class);
+        return $this->belongsTo(Processo::class, 'processo_id');
     }
 
     /**

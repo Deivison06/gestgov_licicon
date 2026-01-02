@@ -66,6 +66,7 @@ Route::prefix('admin')
         // ========================================
          Route::get('contratos', [ContratoManualController::class, 'index'])
             ->name('contratos.index');
+            
         Route::resource('contratos', ContratoManualController::class)
             ->names([
                 'create'  => 'contratos.create',

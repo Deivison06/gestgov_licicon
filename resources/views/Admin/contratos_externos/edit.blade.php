@@ -34,15 +34,28 @@
 
         {{-- Linha 1: Prefeitura --}}
         <div class="mb-6">
+            @php
+                $isPrefeituraUser = auth()->user()->hasRole('prefeitura') && auth()->user()->prefeitura_id;
+            @endphp
+            
             <label class="block mb-2 text-sm font-medium text-gray-700">Prefeitura</label>
-            <select name="prefeitura_id" id="prefeitura_id" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496]">
-                <option value="">Selecione a prefeitura</option>
-                @foreach ($prefeituras as $prefeitura)
-                <option value="{{ $prefeitura->id }}" {{ $contrato->prefeitura_id == $prefeitura->id ? 'selected' : '' }}>
-                    {{ $prefeitura->nome }}
-                </option>
-                @endforeach
-            </select>
+            @if($isPrefeituraUser)
+                <input type="hidden" name="prefeitura_id" value="{{ auth()->user()->prefeitura_id }}">
+                <select disabled class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496] bg-gray-50">
+                    <option value="{{ $contrato->prefeitura_id }}" selected>
+                        {{ $contrato->prefeitura->nome }}
+                    </option>
+                </select>
+            @else
+                <select name="prefeitura_id" id="prefeitura_id" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496]">
+                    <option value="">Selecione a prefeitura</option>
+                    @foreach ($prefeituras as $prefeitura)
+                    <option value="{{ $prefeitura->id }}" {{ $contrato->prefeitura_id == $prefeitura->id ? 'selected' : '' }}>
+                        {{ $prefeitura->nome }}
+                    </option>
+                    @endforeach
+                </select>
+            @endif
         </div>
 
         {{-- Linha 2: Identificação Básica --}}
@@ -95,7 +108,7 @@
             <div>
                 <label class="block mb-2 text-sm font-medium text-gray-700">Secretaria / Órgão Contratante *</label>
                 <select name="unidade_id" id="unidade_id" required class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496]">
-                    <option value="">Primeiro selecione a prefeitura</option>
+                    <option value="">@if($isPrefeituraUser) Selecione a secretaria @else Primeiro selecione a prefeitura @endif</option>
                     {{-- As opções serão carregadas via JavaScript --}}
                 </select>
                 @error('unidade_id')
@@ -117,14 +130,6 @@
                     @enderror
                 </div>
                 <div>
-                    <label class="block mb-2 text-sm font-medium text-gray-700">Data Assinatura</label>
-                    <input type="date" name="data_assinatura" value="{{ $contrato->data_assinatura ? $contrato->data_assinatura->format('Y-m-d') : '' }}"
-                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496]">
-                    @error('data_assinatura')
-                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-                <div>
                     <label class="block mb-2 text-sm font-medium text-gray-700">Data Início</label>
                     <input type="date" name="data_inicio" value="{{ $contrato->data_inicio ? $contrato->data_inicio->format('Y-m-d') : '' }}"
                             class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496]">
@@ -132,7 +137,7 @@
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
-                <div class="md:col-span-3">
+                <div>
                     <label class="block mb-2 text-sm font-medium text-gray-700">Data Finalização *</label>
                     <input type="date" name="data_finalizacao" required value="{{ $contrato->data_finalizacao ? $contrato->data_finalizacao->format('Y-m-d') : '' }}"
                             class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496] border-l-4 border-l-[#009496]">
@@ -152,6 +157,66 @@
             @enderror
         </div>
 
+        {{-- Upload do Arquivo PDF do Contrato --}}
+        <div class="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-100">
+            <h4 class="text-sm font-semibold text-blue-800 mb-3 flex items-center gap-2">
+                <i class="fas fa-file-pdf"></i> Arquivo do Contrato
+            </h4>
+            
+            @if($contrato->arquivo_contrato)
+                <div class="mb-4">
+                    <p class="text-sm text-gray-600 mb-2">Arquivo atual:</p>
+                    <a href="{{ url($contrato->arquivo_contrato) }}" 
+                       target="_blank"
+                       class="block group">
+                        <div class="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition-colors cursor-pointer">
+                            <div class="flex-shrink-0">
+                                <div class="p-2 bg-red-50 rounded-lg">
+                                    <i class="fas fa-file-pdf text-red-500 text-xl"></i>
+                                </div>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-gray-800 truncate group-hover:text-blue-700">
+                                    {{ basename($contrato->arquivo_contrato) }}
+                                </p>
+                                <p class="text-xs text-gray-500 mt-1">
+                                    <i class="fas fa-external-link-alt mr-1"></i> Clique para abrir o PDF
+                                </p>
+                            </div>
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-external-link-alt text-gray-400 group-hover:text-blue-500"></i>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="flex-1 h-px bg-gray-200"></div>
+                    <span class="text-xs text-gray-500">ou</span>
+                    <div class="flex-1 h-px bg-gray-200"></div>
+                </div>
+            @endif
+
+            <div>
+                <label class="block mb-2 text-sm font-medium text-gray-700">
+                    {{ $contrato->arquivo_contrato ? 'Substituir arquivo' : 'Enviar arquivo' }} (PDF)
+                </label>
+                <input type="file" name="arquivo_contrato" id="arquivo_contrato" 
+                       class="block w-full px-3 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 transition-colors cursor-pointer focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                       accept=".pdf">
+                <p class="mt-2 text-xs text-gray-500">
+                    Apenas arquivos PDF, tamanho máximo: 5MB
+                </p>
+                @if($contrato->arquivo_contrato)
+                    <p class="mt-1 text-xs text-gray-600">
+                        Deixe em branco para manter o arquivo atual.
+                    </p>
+                @endif
+                @error('arquivo_contrato')
+                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+        </div>
 
         <div class="flex justify-end gap-3 mt-6">
             <a href="{{ route('admin.contratos.index') }}"
@@ -228,10 +293,17 @@
 
         // Função para carregar unidades baseadas na prefeitura selecionada
         function carregarUnidades() {
-            const prefeituraId = prefeituraSelect.value;
+            let prefeituraId;
+            
+            // Se for usuário da prefeitura, usar o ID da prefeitura do usuário
+            @if($isPrefeituraUser)
+                prefeituraId = "{{ auth()->user()->prefeitura_id }}";
+            @else
+                prefeituraId = prefeituraSelect ? prefeituraSelect.value : null;
+            @endif
             
             // Limpar o select de unidades
-            unidadeSelect.innerHTML = '<option value="">Primeiro selecione a prefeitura</option>';
+            unidadeSelect.innerHTML = '<option value="">@if($isPrefeituraUser) Selecione a secretaria @else Primeiro selecione a prefeitura @endif</option>';
 
             if (prefeituraId && unidadesPorPrefeitura[prefeituraId]) {
                 // Adicionar opções das unidades da prefeitura selecionada
@@ -250,11 +322,18 @@
             }
         }
 
-        // Adicionar evento de change na prefeitura
-        prefeituraSelect.addEventListener('change', carregarUnidades);
-
-        // Executar carregamento inicial
-        carregarUnidades();
+        // Se for usuário da prefeitura, carregar unidades automaticamente
+        @if($isPrefeituraUser)
+            carregarUnidades();
+        @else
+            // Adicionar evento de change na prefeitura apenas para não-usuários de prefeitura
+            if (prefeituraSelect) {
+                prefeituraSelect.addEventListener('change', carregarUnidades);
+            }
+            
+            // Executar carregamento inicial
+            carregarUnidades();
+        @endif
 
         // Máscara de Moeda
         const moneyInput = document.querySelector('.money-mask');
@@ -280,6 +359,28 @@
                     value = value.replace(/(\d{4})(\d)/, '$1-$2');
                 }
                 e.target.value = value;
+            });
+        }
+
+        // Validação do arquivo
+        const fileInput = document.getElementById('arquivo_contrato');
+        if (fileInput) {
+            fileInput.addEventListener('change', function(e) {
+                if (e.target.files[0]) {
+                    // Verificar se é PDF
+                    if (!e.target.files[0].type.includes('pdf')) {
+                        alert('Por favor, selecione apenas arquivos PDF.');
+                        e.target.value = '';
+                        return;
+                    }
+                    
+                    // Verificar tamanho (5MB máximo)
+                    if (e.target.files[0].size > 5 * 1024 * 1024) {
+                        alert('O arquivo é muito grande. Tamanho máximo permitido: 5MB.');
+                        e.target.value = '';
+                        return;
+                    }
+                }
             });
         }
 

@@ -57,7 +57,7 @@
                                     <option value="">Todos os Processos</option>
                                     @foreach($processos as $proc)
                                         <option value="{{ $proc->id }}" {{ $processoId == $proc->id ? 'selected' : '' }}>
-                                            {{ $proc->numero_processo }} - {{ Str::limit($proc->objeto, 40) }}
+                                            {{ $proc->numero_processo }} - {!! Str::limit(strip_tags($proc->objeto), 100) !!}
                                         </option>
                                     @endforeach
                                 </select>
@@ -164,7 +164,7 @@
                                                                 {{ $processo->numero_processo }}
                                                             </div>
                                                             <div class="text-sm text-gray-500 line-clamp-1 max-w-xs">
-                                                                {!! Str::limit(strip_tags($processo->objeto), 50) !!}
+                                                                {!! Str::limit(strip_tags($processo->objeto), 40) !!}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -233,17 +233,6 @@
                                                             </svg>
                                                             Visualizar
                                                         </a>
-                                                        
-                                                        {{-- @if($hasContratacoes)
-                                                        <a href="{{ route('admin.atas.pdf', $processo) }}" 
-                                                           target="_blank"
-                                                           class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-150">
-                                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                                                            </svg>
-                                                            PDF
-                                                        </a>
-                                                        @endif --}}
                                                     </div>
                                                 </td>
                                             </tr>

@@ -274,50 +274,59 @@
             <div>
                 <!-- Logo -->
                 <div class="sidebar-logo">
-                    <a href="{{ route("admin.dashboard") }}">
+                    <a href="{{ route('admin.dashboard') }}">
                         <img src="{{ url('logo/logo_gestgov.png') }}" alt="LOGO GESTGOV">
                     </a>
                 </div>
 
                 <!-- Navegação -->
                 <nav>
-                    <a href="{{ route('admin.dashboard') }}"
-                        class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-                        <i class="nav-icon fas fa-tachometer-alt"></i>
-                        <span>Dashboard</span>
-                    </a>
+                    {{-- Dashboard visível apenas para admin/diretor --}}
+                    @if(auth()->user()->hasAnyRole(['diretor_licicon', 'gerente_licicon', 'colaborador_licicon']))
+                        <a href="{{ route('admin.dashboard') }}"
+                            class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-tachometer-alt"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    @endif
 
-                    <div class="nav-section-title">Conteúdo do Site</div>
+                    @if(auth()->user()->hasAnyRole(['diretor_licicon', 'gerente_licicon', 'colaborador_licicon']))
+                        <div class="nav-section-title">Conteúdo do Site</div>
 
-                    <a href="{{ route('admin.processos.index') }}"
-                        class="nav-item {{ request()->routeIs('admin.processos.*') ? 'active' : '' }}">
-                        <i class="nav-icon fas fa-clipboard-list"></i>
-                        <span>PROCESSOS</span>
-                    </a>
+                        <a href="{{ route('admin.processos.index') }}"
+                            class="nav-item {{ request()->routeIs('admin.processos.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-clipboard-list"></i>
+                            <span>PROCESSOS</span>
+                        </a>
 
-                    <a href="{{ route('admin.atas.index') }}"
-                        class="nav-item {{ request()->routeIs('admin.atas.*') ? 'active' : '' }}">
-                        <i class="nav-icon fas fa-clipboard-list"></i>
-                        <span>ATAS E CONTRATAÇÕES</span>
-                    </a>
+                        <a href="{{ route('admin.atas.index') }}"
+                            class="nav-item {{ request()->routeIs('admin.atas.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-clipboard-list"></i>
+                            <span>ATAS E CONTRATAÇÕES</span>
+                        </a>
+                    @endif
 
+                    {{-- Contratos visível para todos --}}
                     <a href="{{ route('admin.contratos.index') }}"
                         class="nav-item {{ request()->routeIs('admin.contratos.*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-file-signature"></i>
                         <span>Contratos</span>
                     </a>
 
-                    <a href="{{ route('admin.prefeituras.index') }}"
-                        class="nav-item {{ request()->routeIs('admin.prefeituras.*') ? 'active' : '' }}">
-                        <i class="nav-icon fas fa-building"></i>
-                        <span>PREFEITURAS</span>
-                    </a>
+                    {{-- Apenas admin/diretor --}}
+                    @if(auth()->user()->hasAnyRole(['diretor_licicon', 'gerente_licicon']))
+                        <a href="{{ route('admin.prefeituras.index') }}"
+                            class="nav-item {{ request()->routeIs('admin.prefeituras.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-building"></i>
+                            <span>PREFEITURAS</span>
+                        </a>
 
-                    <a href="{{ route('admin.usuarios.index') }}"
-                        class="nav-item {{ request()->routeIs('admin.usuarios.*') ? 'active' : '' }}">
-                        <i class="nav-icon fas fa-users"></i>
-                        <span>USUÁRIOS</span>
-                    </a>
+                        <a href="{{ route('admin.usuarios.index') }}"
+                            class="nav-item {{ request()->routeIs('admin.usuarios.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-users"></i>
+                            <span>USUÁRIOS</span>
+                        </a>
+                    @endif
                 </nav>
             </div>
 
@@ -340,18 +349,29 @@
 
         <!-- Conteúdo Principal -->
         <div class="main-content">
-
             <div class="page-content fade-in">
-                <!-- Banner de boas-vindas -->
-                <div class="welcome-banner slide-in">
-                    <div class="welcome-text">
-                        <h2>@yield('page-title', 'Olá, ' . (auth()->user()->name ?? 'Administrador') . '!')</h2>
-                        <p>@yield('page-subtitle', 'Bem-vindo à plataforma de administração da GestGov Consultoria e Assessoria Administrativa. Aqui você pode gerenciar todos os aspectos do sistema.')</p>
+                <!-- Banner de boas-vindas personalizado por função -->
+                @if(auth()->user()->hasRole('prefeitura'))
+                    <div class="welcome-banner slide-in">
+                        <div class="welcome-text">
+                            <h2>Área da Prefeitura</h2>
+                            <p>Bem-vindo, {{ auth()->user()->name }}! Aqui você pode gerenciar os contratos da sua prefeitura.</p>
+                        </div>
+                        <div class="welcome-icon">
+                            <i class="fas fa-building-shield"></i>
+                        </div>
                     </div>
-                    <div class="welcome-icon">
-                        <i class="fas fa-building-circle-check"></i>
+                @else
+                    <div class="welcome-banner slide-in">
+                        <div class="welcome-text">
+                            <h2>@yield('page-title', 'Olá, ' . (auth()->user()->name ?? 'Administrador') . '!')</h2>
+                            <p>@yield('page-subtitle', 'Bem-vindo à plataforma de administração da GestGov Consultoria e Assessoria Administrativa. Aqui você pode gerenciar todos os aspectos do sistema.')</p>
+                        </div>
+                        <div class="welcome-icon">
+                            <i class="fas fa-building-circle-check"></i>
+                        </div>
                     </div>
-                </div>
+                @endif
 
                 @yield('content')
             </div>

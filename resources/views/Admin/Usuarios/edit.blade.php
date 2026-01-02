@@ -53,6 +53,32 @@
             </div>
 
             <div>
+                <label for="cpf" class="block mb-2 text-sm font-medium text-gray-700">CPF</label>
+                <input type="text" name="cpf" id="cpf" value="{{ old('cpf', $usuario->cpf) }}"
+                       class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496] transition-colors"
+                       placeholder="Digite o CPF">
+            </div>
+
+            <!-- Campo de Prefeitura -->
+            <div>
+                <label for="prefeitura_id" class="block mb-2 text-sm font-medium text-gray-700">Prefeitura</label>
+                <select name="prefeitura_id" id="prefeitura_id"
+                        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496] transition-colors">
+                    <option value="">Selecione uma prefeitura</option>
+                    @foreach($prefeituras as $prefeitura)
+                        <option value="{{ $prefeitura->id }}" 
+                            {{ old('prefeitura_id', $usuario->prefeitura_id) == $prefeitura->id ? 'selected' : '' }}>
+                            {{ $prefeitura->nome }} - {{ $prefeitura->cidade }}
+                        </option>
+                    @endforeach
+                </select>
+                <p class="mt-1 text-sm text-gray-500" id="prefeitura-info" 
+                   style="{{ $usuario->hasRole('prefeitura') ? '' : 'display: none;' }}">
+                   Obrigatório para usuários do tipo Prefeitura
+                </p>
+            </div>
+
+            <div>
                 <label for="password" class="block mb-2 text-sm font-medium text-gray-700">Nova Senha (opcional)</label>
                 <input type="password" name="password" id="password"
                        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496] transition-colors"
@@ -75,9 +101,9 @@
                     <h4 class="mb-3 font-medium text-gray-700">Funções</h4>
                     @foreach($roles as $role)
                         <div class="flex items-center mb-2">
-                            <input type="checkbox" name="roles[]" value="{{ $role->id }}" id="role_{{ $role->id }}"
-                                   {{ $usuario->roles->contains($role->id) ? 'checked' : '' }}
-                                   class="h-4 w-4 text-[#009496] focus:ring-[#009496] border-gray-300 rounded">
+                            <input type="radio" name="role" value="{{ $role->id }}" id="role_{{ $role->id }}"
+                                   class="h-4 w-4 text-[#009496] focus:ring-[#009496] border-gray-300"
+                                   {{ ($usuario->roles->contains($role->id) || old('role') == $role->id) ? 'checked' : '' }}>
                             <label for="role_{{ $role->id }}" class="block ml-2 text-sm text-gray-700">
                                 {{ $role->name }}
                             </label>
@@ -87,13 +113,25 @@
 
                 <div class="p-4 border border-gray-200 rounded-lg">
                     <h4 class="mb-3 font-medium text-gray-700">Permissões Diretas</h4>
+                    @php
+                        // Obter todas as permissões do usuário (incluindo herdadas)
+                        $userAllPermissions = $usuario->getAllPermissions()->pluck('id')->toArray();
+                    @endphp
+                    
                     @foreach($permissions as $permission)
                         <div class="flex items-center mb-2">
-                            <input type="checkbox" name="permissions[]" value="{{ $permission->id }}" id="permission_{{ $permission->id }}"
-                                   {{ $usuario->permissions->contains($permission->id) ? 'checked' : '' }}
-                                   class="h-4 w-4 text-[#009496] focus:ring-[#009496] border-gray-300 rounded">
+                            <input type="checkbox" 
+                                name="permissions[]" 
+                                value="{{ $permission->id }}" 
+                                id="permission_{{ $permission->id }}"
+                                {{ in_array($permission->id, $userAllPermissions) ? 'checked' : '' }}
+                                {{ $usuario->hasRole('prefeitura') && $permission->name == 'contratos' ? 'checked disabled' : '' }}
+                                class="h-4 w-4 text-[#009496] focus:ring-[#009496] border-gray-300 rounded">
                             <label for="permission_{{ $permission->id }}" class="block ml-2 text-sm text-gray-700">
                                 {{ $permission->name }}
+                                @if($usuario->hasRole('prefeitura') && $permission->name == 'contratos')
+                                    <span class="text-xs text-gray-500">(herdada da função Prefeitura)</span>
+                                @endif
                             </label>
                         </div>
                     @endforeach
@@ -114,4 +152,33 @@
         </div>
     </form>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const roleInputs = document.querySelectorAll('input[name="role"]');
+    const prefeituraSelect = document.getElementById('prefeitura_id');
+    const prefeituraInfo = document.getElementById('prefeitura-info');
+    
+    function togglePrefeituraRequired() {
+        const selectedRole = Array.from(roleInputs).find(input => input.checked);
+        if (selectedRole) {
+            const roleName = selectedRole.closest('label').textContent.trim();
+            if (roleName === 'prefeitura') {
+                prefeituraSelect.setAttribute('required', 'required');
+                prefeituraInfo.style.display = 'block';
+            } else {
+                prefeituraSelect.removeAttribute('required');
+                prefeituraInfo.style.display = 'none';
+            }
+        }
+    }
+    
+    roleInputs.forEach(input => {
+        input.addEventListener('change', togglePrefeituraRequired);
+    });
+    
+    // Inicializar
+    togglePrefeituraRequired();
+});
+</script>
 @endsection

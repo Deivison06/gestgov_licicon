@@ -15,6 +15,7 @@ class RolePermissionSeeder extends Seeder
             'criar processos',
             'dar seguimento processos',
             'assinar processos',
+            'contratos'
         ];
 
         foreach ($permissions as $permission) {
@@ -22,10 +23,10 @@ class RolePermissionSeeder extends Seeder
         }
 
         $roles = [
-            'diretor_licicon' => $permissions, // pode tudo
-            'gerente_licicon' => ['criar processos', 'dar seguimento processos', 'assinar processos'], // tudo menos gerenciar usuários
+            'diretor_licicon' => $permissions,
+            'gerente_licicon' => ['criar processos', 'dar seguimento processos', 'assinar processos', 'contratos'], // tudo menos gerenciar usuários
             'colaborador_licicon' => ['dar seguimento processos'], // só dar seguimento
-            'prefeitura' => ['assinar processos'], // só assinar
+            'prefeitura' => ['assinar processos', 'contratos'], // só assinar e contratos
         ];
 
         foreach ($roles as $roleName => $perms) {

@@ -8,7 +8,7 @@
                 <th class="px-6 py-4">Número do Processo</th>
                 <th class="px-6 py-4">Modalidade</th>
                 <th class="px-6 py-4">Contrato</th>
-                <th class="px-6 py-4 text-center">Data Geração</th>
+                <th class="px-6 py-4 text-center">Prazo de Vigência</th>
                 <th class="px-6 py-4 text-center">Ações</th>
             </tr>
         </thead>
@@ -58,13 +58,31 @@
                     </td>
 
                     <td class="px-6 pt-5 pb-3 whitespace-nowrap text-center text-sm text-gray-500">
-                        {{ $processo->created_at->format('d/m/Y') }}
+                        @php
+                            $vigencia = is_array($processo->detalhe->prazo_vigencia ?? null)
+                                ? $processo->detalhe->prazo_vigencia
+                                : ['12_meses'];
+
+                            $outro_vigencia = $processo->detalhe->prazo_vigencia_outro ?? '________________.';
+
+                            $objeto_continuado = strtolower($processo->detalhe->objeto_continuado ?? 'nao');
+
+                            // Texto para preencher automaticamente
+                            if (in_array('exercicio_financeiro', $vigencia)) {
+                                $textoVigencia = "até 31/12 do exercício financeiro da contratação";
+                            } elseif (in_array('12_meses', $vigencia)) {
+                                $textoVigencia = "12 meses";
+                            } elseif (in_array('outro', $vigencia)) {
+                                $textoVigencia = $outro_vigencia;
+                            } else {
+                                $textoVigencia = "________________";
+                            }
+                        @endphp
+                        {{ $textoVigencia }}
                     </td>
 
                     <td class="px-6 pt-5 pb-3 whitespace-nowrap text-center text-sm font-medium">
                         @if($processo->contrato)
-
-                           
                                 {{-- Contrato gerado pelo SISTEMA --}}
                                 <a href="{{ route('admin.processos.contrato.download', ['processo' => $processo->id]) }}"
                                 class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white

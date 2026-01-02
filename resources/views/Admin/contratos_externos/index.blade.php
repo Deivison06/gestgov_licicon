@@ -60,17 +60,45 @@
             <form method="GET" action="{{ route('admin.contratos.index') }}" class="flex flex-col gap-4">
                 <input type="hidden" name="tipo" value="{{ $abaAtiva }}">
                 
-                <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
-                    {{-- Filtro por Prefeitura (comum às duas abas) --}}
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
+                    {{-- Filtro por Prefeitura (apenas para admin/diretor) --}}
                     <div>
                         <label for="prefeitura_id" class="block mb-1 text-sm font-medium text-gray-700">
                             Prefeitura
                         </label>
-                        <select name="prefeitura_id" id="prefeitura_id" class="w-full px-4 py-2 transition-colors duration-200 border border-gray-300 rounded-lg focus:ring-cyan-500 focus:border-cyan-500">
-                            <option value="">Todas as Prefeituras</option>
-                            @foreach($prefeituras as $prefeitura)
-                                <option value="{{ $prefeitura->id }}" {{ request('prefeitura_id') == $prefeitura->id ? 'selected' : '' }}>
-                                    {{ $prefeitura->nome }}
+                        <select name="prefeitura_id" id="prefeitura_id" 
+                                class="w-full px-4 py-2 transition-colors duration-200 border border-gray-300 rounded-lg focus:ring-cyan-500 focus:border-cyan-500"
+                                {{ $isPrefeituraUser ? 'disabled' : '' }}>
+                            @if($isPrefeituraUser)
+                                <option value="{{ $prefeituras->first()->id }}" selected>
+                                    {{ $prefeituras->first()->nome }}
+                                </option>
+                            @else
+                                <option value="">Todas as Prefeituras</option>
+                                @foreach($prefeituras as $prefeitura)
+                                    <option value="{{ $prefeitura->id }}" {{ request('prefeitura_id') == $prefeitura->id ? 'selected' : '' }}>
+                                        {{ $prefeitura->nome }}
+                                    </option>
+                                @endforeach
+                            @endif
+                        </select>
+                        @if($isPrefeituraUser)
+                            <p class="mt-1 text-xs text-gray-500">
+                                Você está visualizando apenas contratos da sua prefeitura
+                            </p>
+                        @endif
+                    </div>
+
+                    {{-- Filtro por Modalidade (comum às duas abas) --}}
+                    <div>
+                        <label for="modalidade" class="block mb-1 text-sm font-medium text-gray-700">
+                            Modalidade
+                        </label>
+                        <select name="modalidade" id="modalidade" class="w-full px-4 py-2 transition-colors duration-200 border border-gray-300 rounded-lg focus:ring-cyan-500 focus:border-cyan-500">
+                            <option value="">Todas as Modalidades</option>
+                            @foreach($modalidades as $modalidade)
+                                <option value="{{ $modalidade->value }}" {{ request('modalidade') == $modalidade->value ? 'selected' : '' }}>
+                                    {{ $modalidade->getDisplayName() ?? $modalidade->name }}
                                 </option>
                             @endforeach
                         </select>
@@ -94,29 +122,32 @@
                     @endif
 
                     @if($abaAtiva === 'sistema')
-                    {{-- Filtro por Número do Processo (apenas para contratos do sistema) --}}
+                    {{-- Filtro por Vencedor (apenas para contratos do sistema) --}}
                     <div>
-                        <label for="numero_processo" class="block mb-1 text-sm font-medium text-gray-700">
-                            Número do Processo
+                        <label for="vencedor_id" class="block mb-1 text-sm font-medium text-gray-700">
+                            Vencedor
                         </label>
-                        <input type="text" name="numero_processo" id="numero_processo" 
-                               value="{{ request('numero_processo') }}"
-                               class="w-full px-4 py-2 transition-colors duration-200 border border-gray-300 rounded-lg focus:ring-cyan-500 focus:border-cyan-500"
-                               placeholder="Digite o número do processo">
+                        <select name="vencedor_id" id="vencedor_id" class="w-full px-4 py-2 transition-colors duration-200 border border-gray-300 rounded-lg focus:ring-cyan-500 focus:border-cyan-500">
+                            <option value="">Todos os Vencedores</option>
+                            @foreach($vencedores as $vencedor)
+                                <option value="{{ $vencedor->id }}" {{ request('vencedor_id') == $vencedor->id ? 'selected' : '' }}>
+                                    {{ $vencedor->razao_social ?? 'Sem empresa' }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
                     @endif
-                    {{-- Botões --}}
-                    <div class="flex flex-shrink-0 gap-2">
-                        <button type="submit" class="px-4 py-2 text-white transition-colors duration-200 rounded-lg bg-cyan-600 hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 whitespace-nowrap">
-                            <i class="fas fa-filter mr-1"></i> Filtrar
-                        </button>
-                        <a href="{{ route('admin.contratos.index', ['tipo' => $abaAtiva]) }}" class="px-4 py-2 text-center text-gray-700 transition-colors duration-200 bg-gray-100 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 whitespace-nowrap">
-                            <i class="fas fa-times mr-1"></i> Limpar
-                        </a>
-                    </div>
                 </div>
 
-                
+                {{-- Botões --}}
+                <div class="flex flex-shrink-0 gap-2">
+                    <button type="submit" class="px-4 py-2 text-white transition-colors duration-200 rounded-lg bg-cyan-600 hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 whitespace-nowrap">
+                        <i class="fas fa-filter mr-1"></i> Filtrar
+                    </button>
+                    <a href="{{ route('admin.contratos.index', ['tipo' => $abaAtiva]) }}" class="px-4 py-2 text-center text-gray-700 transition-colors duration-200 bg-gray-100 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 whitespace-nowrap">
+                        <i class="fas fa-times mr-1"></i> Limpar
+                    </a>
+                </div>
             </form>
         </div>
 
