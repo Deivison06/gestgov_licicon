@@ -354,7 +354,7 @@
         <table style="width: 100%; border-collapse: collapse; border: 1px solid #000 !important; margin-bottom: 15px; page-break-inside: avoid; font-family: Arial, sans-serif; font-size: 12px;">
             <tr>
                 <td colspan="2" style="font-weight: bold; text-align: center; background-color: #f2f2f2;">
-                    3 – OBSERVAÇÕES GERAIS
+                    4 – OBSERVAÇÕES GERAIS
                 </td>
             </tr>
 

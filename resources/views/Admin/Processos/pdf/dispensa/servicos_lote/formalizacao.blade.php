@@ -281,30 +281,6 @@
             </tr>
         </table>
 
-        <table class="form-table">
-            <tr>
-                <td colspan="1" class="section-header">1 – IDENTIFICAÇÃO DO ÓRGÃO REQUISITANTE</td>
-            </tr>
-            <tr>
-                <td>
-                    <span class="field-label">Secretaria:
-                        {{ $detalhe->secretaria ?? 'SECRETARIA DE EDUCACAO' }}</span>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <span class="field-label">Unidade/Setor/Departamento:
-                        {{ $detalhe->unidade_setor ?? 'Unidade 1' }}</span>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <span class="field-label">Servidor responsável pela demanda:
-                        {{ $detalhe->servidor_responsavel ?? 'Deivison' }}</span>
-                </td>
-            </tr>
-        </table>
-
         <table class="form-table" style="font-size: 10pt">
             <tr>
                 <td class="section-header">2 – IDENTIFICAÇÃO DO OBJETO</td>
@@ -326,11 +302,12 @@
             font-size:11px;
             text-align: justify;
             margin-top: 10px;
+            margin-bottom: 10px;
             page-break-inside: auto;
             page-break-before: auto;
-        ">
+            ">
             <span style="display:block; text-align:center; font-weight:bold;">
-                Justificativa da necessidade da contratação:
+                Justificativa da necessidade da contratação:lllllllll
             </span>
 
             <div style="font-size:11px !important; text-align: justify;">
@@ -338,10 +315,46 @@
             </div>
         </div>
 
+        <table border="1" cellspacing="0" cellpadding="4" style="border-collapse: collapse; width: 100%; text-align: center; font-size: 9pt;">
+            <thead>
+                <tr>
+                    <th colspan="4" class="section-header">
+                        3 - DESCRIÇÕES E QUANTIDADES
+                    </th>
+                </tr>
+                <tr>
+                    <th style="width: 8%;">ITEM</th>
+                    <th style="width: 70%;">DESCRIÇÃO/ESPECIFICAÇÃO</th>
+                    <th style="width: 10%;">UND</th>
+                    <th style="width: 12%;">QTDE.</th>
+                </tr>
+            </thead>
+            <tbody>
+                @php
+                $itens = json_decode($detalhe->descricao_e_quantitativos_itens_xml, true);
+                @endphp
+
+                @if ($itens && count($itens) > 0)
+                @foreach ($itens as $item)
+                <tr>
+                    <td>{{ $item['numero'] ?? '' }}</td>
+                    <td style="text-align: left">{{ $item['descricao'] ?? '' }}</td>
+                    <td>{{ $item['und'] ?? '' }}</td>
+                    <td>{{ $item['quantidade'] ?? '' }}</td>
+                </tr>
+                @endforeach
+                @else
+                <tr>
+                    <td colspan="4">Nenhum item encontrado</td>
+                </tr>
+                @endif
+            </tbody>
+        </table>
+
         <table style="width: 100%; border-collapse: collapse; border: 1px solid #000 !important; margin-bottom: 15px; page-break-inside: avoid; font-family: Arial, sans-serif; font-size: 12px;">
             <tr>
                 <td colspan="2" style="font-weight: bold; text-align: center; background-color: #f2f2f2;">
-                    3 – OBSERVAÇÕES GERAIS
+                    4 – OBSERVAÇÕES GERAIS
                 </td>
             </tr>
 
@@ -470,11 +483,38 @@
             Lei 14.133/2021 e legislação correlata.
         </div>
 
-        {{-- USANDO .footer-law para garantir borda, fundo e page-break-inside: avoid, e alinhamento central --}}
-        <div class="footer-law" style="text-align: justify; margin-top: 5px;">
-            Despacho a Solicitação à Autoridade Competente, para a devida autorização acerca da elaboração de
-            Estudos Técnicos Preliminares.
-        </div>
+        <p style="text-align: justify;">
+           DISPENSO a formalização do relatório de estudo técnico preliminar, por se encontrar dentro dos limites prescritos.
+        </p>
+        <p style="text-align: justify;">
+           Encaminhe-se à {{ $detalhe->encaminhamento_pesquisa_preco }} para a REALIZAÇÃO DE PESQUISA DE PREÇOS.
+        </p>
+        <p style="text-align: justify;">
+           Encaminhe-se à {{ $detalhe->encaminhamento_doacao_orcamentaria }} para a VERIFICAÇÃO DE DOTACÃO ORÇAMENTÁRIA EXISTENTE.
+        </p>
+
+        <table style="border-collapse: collapse; width: auto; border: 1px solid black; font-size: 10pt;">
+            <tr>
+                <td style="border: 1px solid black; padding: 6px; font-weight: normal;">
+                    Forma indicada da contratação:
+                </td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid black; padding: 8px;">
+                    <div style="display: block; margin-bottom: 4px;">
+                        <span style="display:inline-block; width:12px; height:12px; border:1px solid #000; margin-right:5px; vertical-align:middle; text-align:center; line-height:10px; font-size:10px; font-weight:bold;">
+                            @if ($processo->modalidade === \App\Enums\ModalidadeEnum::DISPENSA)
+                            X
+                            @endif
+                        </span>
+                        Dispensa de Licitação;
+                    </div>
+                </td>
+            </tr>
+        </table>
+        <p style="text-align: justify;">
+            Após o cumprimento de todas as etapas acima previstas, determino o retorno do procedimento para a secretaria demandante.
+        </p>
 
         @php
         \Carbon\Carbon::setLocale('pt_BR');

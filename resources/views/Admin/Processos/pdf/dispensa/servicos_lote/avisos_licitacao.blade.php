@@ -144,33 +144,35 @@
 
     <div>
         <p style="text-align: center; font-weight: bold;">
-            PROCESSO ADMINISTRATIVO Nº {{ $processo->numero_processo }} <br>
-            {{ $processo->modalidade->getDisplayName() }} Nº {{ $processo->numero_procedimento }} <br>
-            TIPO: MENOR PREÇO {{ $processo->tipo_contratacao->getDisplayName() }}
+            AVISO DE DISPENSA DE LICITAÇÃO <br>
+            DISPENSA DE LICITAÇÃO {{ $processo->numero_procedimento }}<br>
+            PROCESSO ADMINISTRATIVO {{ $processo->numero_processo }}
         </p>
         <p style="text-align: justify; text-justify: inter-word; line-height: 1; margin: 0;">
-            O Município de {{ $processo->prefeitura->cidade }}, através de seu Agente de Contratação / Pregoeiro e equipe de Apoio
-            instituída pela Portaria nº {{ $primeiroAssinante['numero_portaria'] }}, de {{
-                !empty($primeiroAssinante['data_portaria'])
-                    ? \Carbon\Carbon::parse($primeiroAssinante['data_portaria'])->translatedFormat('d \d\e F \d\e Y')
-                    : '____________________'
-            }}, torna público, para conhecimento dos
-            interessados que realizará procedimento licitatório na modalidade {{ $processo->modalidade->getDisplayName() }}, tipo {{ $processo->tipo_contratacao->getDisplayName() }}, em
-            sessão pública, mediante as condições estabelecidas em Edital, conforme as normas Gerais da Lei Federal nº.
-            14.133/2021, Decretos Municipais, Lei Complementar nº 123/06, alterada pela Lei Complementar nº 147/2014,
-            de 07 de agosto de 2014 e demais normas regulamentares aplicáveis à espécie.
+            O Município de {{ $processo->prefeitura->cidade }},em atendimento ao § 3o e com fulcro no Art. 75, Inc. II, da
+            Lei 14.133/21, torna público para conhecimento dos interessados, o presente aviso de
+            Contratação Direta por DISPENSA DE LICITAÇÃO No {{ $processo->numero_procedimento }}, TIPO MENOR PREÇO
+            GLOBAL, cujo objeto é a {!! strip_tags($processo->objeto) !!} a fim de obter
+            propostas adicionais.
         </p>
-        <p style="text-align: justify; text-justify: inter-word; line-height: 1; margin-top: 10;">
-            Objeto:<br> {!! strip_tags($processo->objeto) !!}
+        <p style="text-align: justify;">
+            Para tanto, convoca as empresas interessadas a enviarem suas propostas de preços
+            acompanhado de todos os documentos de habilitação para o objeto constante no edital
+            até o dia {{ $detalhe->data_hora->translatedFormat('d \d\e F \d\e Y') }}, às {{ $detalhe->data_hora->format('H:i') }} horas para o e-mail: {{ $processo->prefeitura->email }}, ou entregar pessoalmente na Sala de
+            Licitação do município de {{ $processo->prefeitura->cidade }}, na {{ $processo->prefeitura->endereco }}
         </p>
-        <p style="text-align: justify; text-justify: inter-word; line-height: 1; margin-top: 10;">
-            O EDITAL e maiores informações poderão ser solicitadas no Setor de Licitações na {{ $processo->prefeitura->endereco }}, no horário de 07:30h às 13:00h.
+        
+        <p style="text-align: justify;">
+            DISPENSA DE LICITAÇÃO EXCLUSIVA: Atendendo o disposto na LC 123/06, Art. 49, inciso
+            IV, a licitação for dispensável ou inexigível, a compra deve ser feita preferencialmente de
+            Microempresas e Empresas de Pequeno Porte.
         </p>
-        <p style="text-align: justify; text-justify: inter-word; line-height: 1; margin-top: 10;">
-            ABERTURA DAS PROPOSTAS: dia {{ $detalhe->data_hora->translatedFormat('d \d\e F \d\e Y') }}, às {{ $detalhe->data_hora->format('H:i') }}hs ({{ $detalhe->data_hora->locale('pt_BR')->translatedFormat('l') }}),
-            na plataforma {{ $detalhe->portal }}.
+        <p style="text-align: justify;">
+            O Ato Convocatório e o modelo de proposta encontram-se disponível Junto ao site
+            {{ $detalhe->portal }}, https://www.tcepi.tc.br/ os demais
+            arquivos estão disponíveis na Sala de Licitação e ou solicitação por meio do e-mail
+            {{ $processo->prefeitura->email }}.
         </p>
-
     </div>
 
     {{-- Bloco de data e assinatura --}}
