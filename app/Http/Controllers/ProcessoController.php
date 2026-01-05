@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-
 use App\Models\Processo;
 use App\Models\Documento;
 use App\Models\Prefeitura;
 use Illuminate\Http\Request;
+use App\Enums\ModalidadeEnum;
 use setasign\Fpdi\Tcpdf\Fpdi;
 use App\Models\ProcessoDetalhe;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -23,13 +23,13 @@ class ProcessoController extends Controller
     protected $documentos = [
         'capa' => [
             'titulo' => 'Capa do documento',
-            'cor' => 'bg-red-500',
+            'cor' => '#EF4444', // red-500
             'data_id' => 'data_capa',
             'campos' => [''],
         ],
         'formalizacao' => [
             'titulo' => 'DOCUMENTO DE FORMALIZAÇÃO DE DEMANDA',
-            'cor' => 'bg-blue-500',
+            'cor' => '#3B82F6', // blue-500
             'data_id' => 'data_formalizacao',
             'campos' => [
                 'secretaria',
@@ -41,12 +41,13 @@ class ProcessoController extends Controller
                 'prazo_vigencia',
                 'objeto_continuado',
                 'descricao_necessidade_autorizacao',
+                'descricao_e_quantitativos_itens_xml',
                 'responsavel_equipe_planejamento',
             ],
         ],
         'estudo_tecnico' => [
             'titulo' => 'INSTRUMENTOS DE PLANEJAMENTO ETP E MAPA DE RISCOS',
-            'cor' => 'bg-purple-500',
+            'cor' => '#A855F7', // purple-500
             'data_id' => 'data_estudo_tecnico',
             'campos' => [
                 'problema_resolvido',
@@ -70,19 +71,19 @@ class ProcessoController extends Controller
         ],
         'projeto_basico' => [
             'titulo' => 'PROJETO BÁSICO',
-            'cor' => 'bg-green-500',
+            'cor' => '#22C55E', // green-500
             'data_id' => 'data_projeto_basico',
             'campos' => ['projeto_basico_pdf'],
         ],
         'analise_mercado' => [
-            'titulo' => 'ANÁLISE DE MERCADO (PESQUISA DE PRECOS)',
-            'cor' => 'bg-green-500',
+            'titulo' => 'ANÁLISE DE MERCADO (PESQUISA DE PREÇOS)',
+            'cor' => '#22C55E', // green-500
             'data_id' => 'data_analise_mercado',
             'campos' => ['painel_preco_tce', 'anexo_pdf_analise_mercado'],
         ],
         'disponibilidade_orçamento' => [
             'titulo' => 'DISPONIBILIDADE ORÇAMENTÁRIA',
-            'cor' => 'bg-yellow-500',
+            'cor' => '#EAB308', // yellow-500
             'data_id' => 'data_disponibilidade_orçamento',
             'campos' => [
                 'valor_estimado',
@@ -91,7 +92,7 @@ class ProcessoController extends Controller
         ],
         'termo_referencia' => [
             'titulo' => 'TERMO DE REFERÊNCIA',
-            'cor' => 'bg-orange-500',
+            'cor' => '#F97316', // orange-500
             'data_id' => 'data_termo_referencia',
             'campos' => [
                 'encaminhamento_parecer_juridico',
@@ -102,37 +103,37 @@ class ProcessoController extends Controller
         ],
         'minutas' => [
             'titulo' => 'MINUTAS',
-            'cor' => 'bg-pink-500',
+            'cor' => '#EC4899', // pink-500
             'data_id' => 'data_minutas',
             'campos' => ['anexar_minuta'],
         ],
         'parecer_juridico' => [
             'titulo' => 'PARECER JURÍDICO',
-            'cor' => 'bg-emerald-500',
+            'cor' => '#10B981', // emerald-500
             'data_id' => 'data_parecer_juridico',
             'campos' => [''],
         ],
         'autorizacao_abertura_procedimento' => [
             'titulo' => 'AUTORIZAÇÃO ABERTURA PROCEDIMENTO LICITATÓRIO',
-            'cor' => 'bg-teal-500',
+            'cor' => '#14B8A6', // teal-500
             'data_id' => 'data_autorizacao_abertura_procedimento',
             'campos' => ['tratamento_diferenciado_MEs_eEPPs', 'agente_contratacao'],
         ],
         'abertura_fase_externa' => [
             'titulo' => 'ABERTURA FASE EXTERNA',
-            'cor' => 'bg-cyan-500',
+            'cor' => '#06B6D4', // cyan-500
             'data_id' => 'data_abertura_fase_externa',
             'campos' => [''],
         ],
         'avisos_licitacao' => [
             'titulo' => 'AVISOS DE LICITAÇÃO',
-            'cor' => 'bg-indigo-500',
+            'cor' => '#6366F1', // indigo-500
             'data_id' => 'data_avisos_licitacao',
             'campos' => ['data_hora', 'portal'],
         ],
         'edital' => [
             'titulo' => 'EDITAL',
-            'cor' => 'bg-indigo-500',
+            'cor' => '#6366F1', // indigo-500
             'data_id' => 'data_edital',
             'campos' => [
                 'exige_atestado',
@@ -154,7 +155,7 @@ class ProcessoController extends Controller
         ],
         'publicacoes_avisos_licitacao' => [
             'titulo' => 'PUBLICAÇÕES',
-            'cor' => 'bg-indigo-500',
+            'cor' => '#6366F1', // indigo-500
             'data_id' => 'data_publicacoes_avisos_licitacao',
             'campos' => ['anexo_pdf_publicacoes'],
         ],
@@ -234,8 +235,138 @@ class ProcessoController extends Controller
     public function iniciar(Processo $processo)
     {
         $processo->load('prefeitura.unidades');
-        $documentos = $this->documentos;
+        $documentos = $this->getDocumentosPorModalidade($processo);
         return view('Admin.Processos.iniciar', compact('processo', 'documentos'));
+    }
+
+    // =========================================================
+    // MÉTODOS PARA ORDEM DE DOCUMENTOS POR MODALIDADE
+    // =========================================================
+
+    /**
+     * Retorna os documentos filtrados e ordenados por modalidade
+     */
+    private function getDocumentosPorModalidade(Processo $processo): array
+    {
+        $ordemDocumentos = $this->getOrdemDocumentosParaView($processo);
+        $documentosOrdenados = [];
+        
+        foreach ($ordemDocumentos as $tipo) {
+            if (isset($this->documentos[$tipo])) {
+                $documentosOrdenados[$tipo] = $this->documentos[$tipo];
+                
+                // 🔧 MODIFICAÇÃO: Para DISPENSA, mover campos específicos
+                if ($processo->modalidade === ModalidadeEnum::DISPENSA) {
+                    if ($tipo === 'formalizacao') {
+                        // Adicionar os campos específicos à formalização
+                        $documentosOrdenados[$tipo]['campos'] = array_merge(
+                            $documentosOrdenados[$tipo]['campos'],
+                            ['encaminhamento_pesquisa_preco', 'encaminhamento_doacao_orcamentaria']
+                        );
+                    }
+                    
+                    // Remover esses campos do estudo_tecnico se estiver presente
+                    if ($tipo === 'estudo_tecnico') {
+                        $documentosOrdenados[$tipo]['campos'] = array_filter(
+                            $documentosOrdenados[$tipo]['campos'],
+                            function($campo) {
+                                return !in_array($campo, [
+                                    'encaminhamento_pesquisa_preco',
+                                    'encaminhamento_doacao_orcamentaria'
+                                ]);
+                            }
+                        );
+                    }
+                }
+            }
+        }
+        
+        return $documentosOrdenados;
+    }
+
+    /**
+     * Retorna a ordem de documentos para visualização na view
+     */
+    private function getOrdemDocumentosParaView(Processo $processo): array
+    {
+        // 📌 DISPENSA DE COMPRAS E SERVIÇOS (10 documentos)
+        if ($processo->modalidade === ModalidadeEnum::DISPENSA) {
+            return [
+                'capa',                              // 1. Capa do Processo
+                'formalizacao',                     // 2. Documento de Formalização da Demanda
+                'analise_mercado',                  // 3. Pesquisa de Preços
+                'disponibilidade_orçamento',        // 4. Dotação Orçamentária
+                'termo_referencia',                 // 5. Termo de Referência
+                'autorizacao_abertura_procedimento', // 6. Autorização de Abertura do Procedimento Licitatório
+                'abertura_fase_externa',            // 7. Abertura da Fase Externa
+                'avisos_licitacao',                 // 8. Aviso de Dispensa (Avisos de Licitação)
+                'edital',                           // 9. Edital
+                'publicacoes_avisos_licitacao',     // 10. Publicações
+            ];
+        }
+        
+        // 📌 PREGÃO ELETRÔNICO (13 documentos)
+        if ($processo->modalidade === ModalidadeEnum::PREGAO_ELETRONICO) {
+            return [
+                'capa',                              // 1. Capa do Processo
+                'formalizacao',                     // 2. Documento de Formalização da Demanda
+                'estudo_tecnico',                   // 3. Instrumentos de Planejamento (ETP e Mapa de Riscos)
+                'analise_mercado',                  // 4. Pesquisa de Preços
+                'disponibilidade_orçamento',        // 5. Dotação Orçamentária
+                'termo_referencia',                 // 6. Termo de Referência
+                'minutas',                          // 7. Minutas
+                'parecer_juridico',                 // 8. Parecer Jurídico
+                'autorizacao_abertura_procedimento', // 9. Autorização de Abertura do Procedimento Licitatório
+                'abertura_fase_externa',            // 10. Abertura da Fase Externa
+                'avisos_licitacao',                 // 11. Avisos de Licitação
+                'edital',                           // 12. Edital
+                'publicacoes_avisos_licitacao',     // 13. Publicações
+            ];
+        }
+        
+        // 📌 CONCORRÊNCIA (12 documentos)
+        if ($processo->modalidade === ModalidadeEnum::CONCORRENCIA) {
+            return [
+                'capa',                              // 1. Capa do Processo
+                'formalizacao',                     // 2. Documento de Formalização da Demanda
+                'estudo_tecnico',                   // 3. Instrumentos de Planejamento (ETP e Mapa de Riscos)
+                'projeto_basico',                   // 4. Projeto Básico
+                'disponibilidade_orçamento',        // 5. Disponibilidade Orçamentária
+                'minutas',                          // 6. Minutas
+                'parecer_juridico',                 // 7. Parecer Jurídico
+                'autorizacao_abertura_procedimento', // 8. Autorização de Abertura do Procedimento Licitatório
+                'abertura_fase_externa',            // 9. Abertura da Fase Externa
+                'avisos_licitacao',                 // 10. Avisos de Licitação
+                'edital',                           // 11. Edital
+                'publicacoes_avisos_licitacao',     // 12. Publicações
+            ];
+        }
+        
+        // 📌 OUTRAS MODALIDADES (ordem padrão - 15 documentos)
+        return [
+            'capa',
+            'formalizacao',
+            'estudo_tecnico',
+            'projeto_basico',
+            'analise_mercado',
+            'disponibilidade_orçamento',
+            'termo_referencia',
+            'minutas',
+            'parecer_juridico',
+            'autorizacao_abertura_procedimento',
+            'abertura_fase_externa',
+            'avisos_licitacao',
+            'publicacoes_avisos_licitacao',
+            'edital'
+        ];
+    }
+
+    /**
+     * Retorna a ordem de documentos para download (mesma ordem da view)
+     */
+    private function getOrdemDocumentosParaDownload(Processo $processo): array
+    {
+        return $this->getOrdemDocumentosParaView($processo);
     }
 
     public function storeDetalhe(Request $request, Processo $processo)
@@ -336,7 +467,7 @@ class ProcessoController extends Controller
 
     public function baixarTodosDocumentos(Processo $processo)
     {
-        $ordem = $this->getOrdemDocumentos();
+        $ordem = $this->getOrdemDocumentosParaDownload($processo);
         $documentos = Documento::where('processo_id', $processo->id)->get()->keyBy('tipo_documento');
 
         // Usar Ghostscript diretamente - mais confiável e rápido
@@ -418,6 +549,7 @@ class ProcessoController extends Controller
         $arquivos = [
             'itens_e_seus_quantitativos_xml' => 'processarArquivoItens',
             'itens_especificaca_quantitativos_xml' => 'processarArquivoEspecificacao',
+            'descricao_e_quantitativos_itens_xml'=> 'processarArquivoItens',
             'painel_preco_tce' => 'processarPainelPrecos',
             'anexo_pdf_analise_mercado' => 'salvarAnexo',
             'anexar_minuta' => 'salvarAnexo',
@@ -547,6 +679,7 @@ class ProcessoController extends Controller
             '_token',
             'processo_id',
             'itens_e_seus_quantitativos_xml',
+            'descricao_e_quantitativos_itens_xml',
             'painel_preco_tce',
             'anexo_pdf_analise_mercado',
             'anexar_minuta',
@@ -637,21 +770,40 @@ class ProcessoController extends Controller
     {
         $viewBase = "Admin.Processos.pdf";
 
-        if ($this->isPregaoEletronico($processo)) {
+        // PREGÃO ELETRÔNICO
+        if ($processo->modalidade === ModalidadeEnum::PREGAO_ELETRONICO) {
             $procedimento = $this->formatarNomeArquivo($processo->tipo_procedimento?->name ?? '');
             $contratacao = $this->formatarNomeArquivo($processo->tipo_contratacao?->name ?? '');
+
             $view = "{$viewBase}.pregao_eletronico.{$procedimento}_{$contratacao}.{$documento}";
-        } else {
+        }
+        // DISPENSA
+        elseif ($processo->modalidade === ModalidadeEnum::DISPENSA) {
+            $procedimento = $this->formatarNomeArquivo($processo->tipo_procedimento?->name ?? '');
+            $contratacao = $this->formatarNomeArquivo($processo->tipo_contratacao?->name ?? '');
+
+            $view = "{$viewBase}.dispensa.{$procedimento}_{$contratacao}.{$documento}";
+        }
+        // CONCORRÊNCIA
+        elseif ($processo->modalidade === ModalidadeEnum::CONCORRENCIA) {
+            $procedimento = $this->formatarNomeArquivo($processo->tipo_procedimento?->name ?? '');
+            $contratacao = $this->formatarNomeArquivo($processo->tipo_contratacao?->name ?? '');
+
+            $view = "{$viewBase}.concorrencia.{$procedimento}_{$contratacao}.{$documento}";
+        }
+        // OUTRAS MODALIDADES
+        else {
             $modalidade = $this->formatarNomeArquivo($processo->modalidade?->name ?? '');
             $view = "{$viewBase}.{$modalidade}.{$documento}";
         }
 
         if (!view()->exists($view)) {
-            throw new \Exception("O modelo de PDF para o documento '{$documento}' não foi encontrado. View: {$view}");
+            throw new \Exception("Modelo de PDF não encontrado. View: {$view}");
         }
 
         return $view;
     }
+
 
     private function salvarDocumento(Processo $processo, $pdf, array $validatedData): string
     {
@@ -675,12 +827,31 @@ class ProcessoController extends Controller
 
     private function gerarSubpasta(Processo $processo, string $documento): string
     {
-        if ($this->isPregaoEletronico($processo)) {
+        // DISPENSA
+        if ($processo->modalidade === ModalidadeEnum::DISPENSA) {
             $procedimento = $this->formatarNomeArquivo($processo->tipo_procedimento?->name ?? '');
             $contratacao = $this->formatarNomeArquivo($processo->tipo_contratacao?->name ?? '');
+
+            return "dispensa/{$procedimento}_{$contratacao}/{$documento}";
+        }
+        
+        // PREGÃO ELETRÔNICO
+        if ($processo->modalidade === ModalidadeEnum::PREGAO_ELETRONICO) {
+            $procedimento = $this->formatarNomeArquivo($processo->tipo_procedimento?->name ?? '');
+            $contratacao = $this->formatarNomeArquivo($processo->tipo_contratacao?->name ?? '');
+
             return "pregao_eletronico/{$procedimento}_{$contratacao}/{$documento}";
         }
+        
+        // CONCORRÊNCIA
+        if ($processo->modalidade === ModalidadeEnum::CONCORRENCIA) {
+            $procedimento = $this->formatarNomeArquivo($processo->tipo_procedimento?->name ?? '');
+            $contratacao = $this->formatarNomeArquivo($processo->tipo_contratacao?->name ?? '');
 
+            return "concorrencia/{$procedimento}_{$contratacao}/{$documento}";
+        }
+
+        // OUTRAS MODALIDADES
         $modalidade = $this->formatarNomeArquivo($processo->modalidade?->name ?? 'sem_modalidade');
         return "{$modalidade}/{$documento}";
     }
@@ -758,7 +929,7 @@ class ProcessoController extends Controller
         }
 
         // Processamento específico para SRP - DEVE SER O ÚLTIMO
-        if ($documento === 'edital' && $processo->detalhe->tipo_srp === 'sim') {
+        if ($documento === 'edital' && $processo->detalhe && $processo->detalhe->tipo_srp === 'sim') {
             Log::info("Processando ATA de Registro de Preço para SRP");
 
             // Verificar tamanho antes de adicionar ATA
@@ -779,7 +950,9 @@ class ProcessoController extends Controller
 
     private function juntarTermoReferenciaOuProjetoBasico(Processo $processo, string $caminhoEdital): void
     {
-        $tipoDocumento = $processo->modalidade === \App\Enums\ModalidadeEnum::CONCORRENCIA
+        // PARA CONCORRÊNCIA: usa projeto básico
+        // PARA PREGÃO E DISPENSA: usa termo de referência
+        $tipoDocumento = $processo->modalidade === ModalidadeEnum::CONCORRENCIA
             ? 'projeto_basico'
             : 'termo_referencia';
 
@@ -797,7 +970,6 @@ class ProcessoController extends Controller
                 'tamanho_documento' => filesize($caminhoDocumento)
             ]);
 
-            // CORREÇÃO: Usar juntarPdfsComGhostscript em vez de mesclarPdfsComGhostscript
             $sucesso = $this->juntarPdfsComGhostscript($caminhoEdital, [$caminhoDocumento]);
 
             if ($sucesso) {
@@ -1174,31 +1346,6 @@ class ProcessoController extends Controller
         }
     }
 
-    // =========================================================
-    // MÉTODOS PRIVADOS - DOWNLOAD DE TODOS OS DOCUMENTOS
-    // =========================================================
-
-    private function getOrdemDocumentos(): array
-    {
-        return [
-            'capa',
-            'formalizacao',
-            'autorizacao',
-            'estudo_tecnico',
-            'projeto_basico',
-            'analise_mercado',
-            'disponibilidade_orçamento',
-            'termo_referencia',
-            'minutas',
-            'parecer_juridico',
-            'autorizacao_abertura_procedimento',
-            'abertura_fase_externa',
-            'avisos_licitacao',
-            'publicacoes_avisos_licitacao',
-            'edital'
-        ];
-    }
-
     private function configurarFonte(Fpdi $pdf): void
     {
         $fontPath = public_path('storage/app/public/fonts/Aptos.ttf');
@@ -1267,13 +1414,6 @@ class ProcessoController extends Controller
     // =========================================================
     // MÉTODOS AUXILIARES
     // =========================================================
-
-    private function isPregaoEletronico(Processo $processo): bool
-    {
-        return $processo->modalidade?->name == '4' ||
-            strtoupper($processo->modalidade?->name ?? '') == 'PREGAO ELETRONICO' ||
-            stripos($processo->modalidade?->name ?? '', 'pregao') !== false;
-    }
 
     private function formatarNomeArquivo(string $nome): string
     {

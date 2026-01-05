@@ -176,7 +176,7 @@
                 <!-- Conteúdo da primeira célula -->
                 </td>
                 <td style="width:60%; padding:8px; vertical-align:top; word-wrap:break-word; white-space:normal;">
-                    PREGÃO ELETRÔNICO Nº {{ $processo->numero_procedimento }}, QUE FAZEM ENTRE SI A
+                    CONTRATO Nº {{ $processo->contrato->numero_contrato }}, QUE FAZEM ENTRE SI A
                     {{ $processo->finalizacao->orgao_responsavel }} E {{ $dadosContratado['razao_social'] }}
                 </td>
             </tr>

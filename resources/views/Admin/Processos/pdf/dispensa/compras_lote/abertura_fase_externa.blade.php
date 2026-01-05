@@ -191,15 +191,42 @@
             condições de regularidade procedo com a devida publicação, nos termos legais.
         </p>
 
+        {{-- Bloco de data e assinatura --}}
         <div class="footer-signature">
             {{ $processo->prefeitura->cidade }},
             {{ \Carbon\Carbon::parse($dataSelecionada)->translatedFormat('d \d\e F \d\e Y') }}
         </div>
 
-        <div class="signature-block">
-            ___________________________________<br>
-            Agente de contratação
-        </div>
+        @php
+            // Verifica se a variável $assinantes existe e tem itens
+            $hasSelectedAssinantes = isset($assinantes) && count($assinantes) > 0;
+        @endphp
+
+        @if ($hasSelectedAssinantes)
+            {{-- Renderiza APENAS O PRIMEIRO assinante da lista --}}
+            @php
+                $primeiroAssinante = $assinantes[0]; // Pega o segundo item
+            @endphp
+
+            <div style="margin-top: 40px; text-align: center;">
+                <div class="signature-block" style="display: inline-block; margin: 0 40px;">
+                    ___________________________________<br>
+                    <p style="line-height: 1.2;">
+                        {{ $primeiroAssinante['responsavel'] }} <br>
+                        <span>Agente de Contratação</span>
+                    </p>
+                </div>
+            </div>
+        @else
+            {{-- Bloco Padrão (Fallback) --}}
+            <div class="signature-block" style="margin-top: 40px; text-align: center;">
+                ___________________________________<br>
+                <p style="line-height: 1.2;">
+                    {{ $processo->prefeitura->autoridade_competente }} <br>
+                    <span style="color: red;">[Pregoeira/Agente de Contratação]</span>
+                </p>
+            </div>
+        @endif
     </div>
 
     {{-- QUEBRA DE PÁGINA --}}

@@ -168,28 +168,28 @@
 
 <body>
     @php
-    // Mapeamento das opções para texto legível
-    $opcoes_vigencia = [
-    '12_meses' => '12 meses',
-    '24_meses' => '24 meses',
-    '36_meses' => '36 meses',
-    'exercicio_financeiro' => 'Exercício financeiro da contratação (até 31/12)',
-    'outro' => 'Outro',
-    ];
+        // Mapeamento das opções para texto legível
+        $opcoes_vigencia = [
+        '12_meses' => '12 meses',
+        '24_meses' => '24 meses',
+        '36_meses' => '36 meses',
+        'exercicio_financeiro' => 'Exercício financeiro da contratação (até 31/12)',
+        'outro' => 'Outro',
+        ];
 
-    // Captura o campo (pode ser string ou array)
-    $vigencia = $detalhe->prazo_vigencia ?? ['12_meses'];
+        // Captura o campo (pode ser string ou array)
+        $vigencia = $detalhe->prazo_vigencia ?? ['12_meses'];
 
-    // Garante que é array
-    $vigencia = is_array($vigencia) ? $vigencia : [$vigencia];
+        // Garante que é array
+        $vigencia = is_array($vigencia) ? $vigencia : [$vigencia];
 
-    // Substitui os códigos pelos textos legíveis
-    $vigencia_formatada = collect($vigencia)
-    ->map(fn($item) => $opcoes_vigencia[$item] ?? ucfirst(str_replace('_', ' ', $item)))
-    ->implode(', ');
+        // Substitui os códigos pelos textos legíveis
+        $vigencia_formatada = collect($vigencia)
+        ->map(fn($item) => $opcoes_vigencia[$item] ?? ucfirst(str_replace('_', ' ', $item)))
+        ->implode(', ');
 
-    $outro_vigencia = $detalhe->prazo_vigencia_outro ?? '________________.';
-    $objeto_continuado = strtolower($detalhe->objeto_continuado ?? 'nao');
+        $outro_vigencia = $detalhe->prazo_vigencia_outro ?? '________________.';
+        $objeto_continuado = strtolower($detalhe->objeto_continuado ?? 'nao');
     @endphp
     {{-- ====================================================================== --}}
     {{-- BLOCO 1: CAPA DO DOCUMENTO --}}
@@ -271,49 +271,15 @@
         </p>
 
         <p style="text-align: justify;">
-            1.1 O objeto da presente licitação consiste {!! strip_tags($processo->objeto) !!}, na modalidade Pregão Eletrônico, nos moldes do art. 28, I da Lei
-            14.133/2021.
+            1.1 O objeto da presente licitação consiste {!! strip_tags($processo->objeto) !!}, na modalidade Dispensa de Licitação, nos moldes do art. 75, II da Lei 14.133/2021.
         </p>
         <p style="text-align: justify;">
             1.2 JUSTIFICATIVA PARA CONTRATAÇÃO {!! strip_tags($detalhe->justificativa) !!}
         </p>
         <p style="text-align: justify;">
-            1.3. Este procedimento licitatório adotará como critério de julgamento, a forma de adjudicação por {{ $processo->tipo_contratacao->getDisplayName() }}, com base nas
-            justificativas:
-        </p>
-        <p style="text-align: justify;">
-            O fracionamento do objeto da licitação em itens encontra amparo legal no art. 40, § 1º da Lei nº 14.133/2021, que
-            incentiva o parcelamento sempre que viável, desde que não comprometa a execução do objeto. A medida visa
-            permitir a ampla participação de fornecedores, principalmente de pequeno porte, bem como alcançar melhor
-            resultado para a Administração. <br>
-            O objeto da presente licitação abrange diversos produtos/serviços com características distintas, que podem ser
-            adquiridos, entregues ou executados de forma independente, sem prejuízo à integridade da execução contratual.
-            A divisão por itens não compromete a obtenção de preços vantajosos, e ao contrário, estimula a competitividade,
-            ao permitir que microempresas, empresas locais e fornecedores especializados possam concorrer apenas nos
-            itens de sua capacidade técnica e logística. <br>
-            Com isso, evita-se a concentração do fornecimento em um único fornecedor, promovendo maior eficiência,
-            economicidade e mitigação de riscos contratuais
-        </p>
-        <div>A adoção do parcelamento por itens está alinhada ao planejamento da Administração Pública, favorecendo:</div>
-        <ul style="text-align: justify;">
-            <li>Atendimento adequado às necessidades específicas de cada unidade administrativa;</li>
-            <li>Diversificação de fornecedores e redução do risco de desabastecimento;</li>
-            <li>Fortalecimento da economia local/regional;</li>
-            <li>Observância ao princípio da isonomia, conforme art. 5º da Lei nº 14.133/2021.</li>
-        </ul>
-        <p style="text-align: justify;">
-            Além disso, o parcelamento da contratação em lotes favorece uma competição saudável entre fornecedores, o
-            que pode resultar em custos mais baixos e condições mais vantajosas para a Administração Pública. Ao permitir
-            que empresas ofereçam suas propostas, a Prefeitura pode beneficiar-se da especialização dos fornecedores,
-            garantindo aquisições de melhor qualidade. Essa dinâmica também contribui para minimizar riscos, uma vez que
-            cada item pode ser ajustado conforme a resposta do mercado e as demandas emergentes, facilitando
-            adaptações ao longo do fornecimento.
+            1.3 Para a cotação de preços a ser realizada neste certame, esta administração coloca à disposição dos licitantes, as informações e preços unitários a seguir:
         </p>
 
-        <p style="text-align: justify;">
-            1.4 Para a cotação de preços a ser realizada neste certame, esta administração coloca à disposição dos licitantes, as
-            informações e preços unitários a seguir:
-        </p>
         <table border="1" cellspacing="0" cellpadding="4" style="border-collapse: collapse; width: 100%; text-align: center; font-size: 8pt;">
             <thead>
                 <tr>
@@ -350,19 +316,25 @@
             </tbody>
         </table>
 
+        {!! str_replace('<p>', '<p style="text-indent:30px; text-align: justify; ">', $detalhe->info_extras) !!}
 
         <p style="text-align: justify;">
             1.5 Com base nos quantitativos e especificações acima, o valor global estimado para esta Licitação será de R$ {{ $detalhe->valor_estimado }}
         </p>
 
         <p style="text-align: justify;">
-            1.6. O prazo de vigência da contratação é de {{ $vigencia_formatada }} contados da assinatura do contrato, na forma do artigo 105 da Lei
-            n° 14.133, de 2021.
+            1.6. O prazo de vigência da contratação é de {{ $vigencia_formatada }} contados da assinatura do contrato, na forma do artigo 105 da Lei n° 14.133, de 2021.
         </p>
         @if($detalhe->objeto_continuado === 'sim')
-        <p style="text-align: justify;">
-            1.7. O fornecimento de bens é ou não é enquadrado como continuado sendo a vigência plurianual mais vantajosa.
-        </p>
+            <p style="text-align: justify;">
+                1.7. O fornecimento de bens é enquadrado como continuado sendo a vigência
+                plurianual mais vantajosa.
+            </p>
+        @else
+            <p style="text-align: justify;">
+                1.7. O fornecimento de bens não é enquadrado como continuado sendo a vigência
+                plurianual mais vantajosa.
+            </p>
         @endif
         <p style="text-align: justify;">
             1.8. O contrato oferece maior detalhamento das regras que serão aplicadas em relação à vigência da contratação.
@@ -638,7 +610,7 @@
     </div>
     <div>
         <p style="display: flex; align-items: center; font-weight: bold;">
-            <img src="{{ public_path('icons/selo.png') }}" width="20" style="margin-right: 10px;">7. DA POSSIBILIDADE DE REAJUSTE
+            <img src="{{ public_path('icons/selo.png') }}" width="20" style="margin-right: 10px;">7. DAS GARANTIAS
         </p>
 
         <p style="text-align: justify;">
@@ -657,7 +629,7 @@
         <p style="text-align: justify;">
             8.2. A contratação será atendida pela seguinte dotação:
         </p>
-         @if ($detalhe->tipo_srp == 'nao')
+        @if ($detalhe->tipo_srp == 'nao')
         <table style="border-collapse: collapse; width: 100%; border: 1px solid black;">
             <tr>
                 <!-- Coluna da esquerda -->
@@ -722,7 +694,150 @@
         </p>
     </div>
     @endif
+    @php
+        // Verifica se a variável $assinantes existe e tem itens
+        $hasSelectedAssinantes = isset($assinantes) && count($assinantes) > 0;
+    @endphp
 
+        @if ($hasSelectedAssinantes)
+        {{-- Renderiza APENAS O PRIMEIRO assinante da lista --}}
+    @php
+        $primeiroAssinante = $assinantes[0]; // Pega o segundo item
+    @endphp
+    {{-- QUEBRA DE PÁGINA --}}
+    <div class="page-break"></div>
+    <div>
+        <p style="font-weight: bold; text-align: center;">{{ $primeiroAssinante['unidade_nome'] }}</p>
+
+         <table
+            style="border-collapse: collapse; width: 100%; text-align: left; border: 1px solid black;">
+            <thead>
+                <tr>
+                    <td colspan="2"
+                        style="border: 1px solid black; text-align: center; font-weight: bold; padding: 5px;">
+                        RESUMO DOS DADOS DO PROCESSO
+                    </td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="border: 1px solid black; padding: 5px; font-weight: bold; width: 40%;">
+                        Nº PROCESSO ADMINISTRATIVO:
+                    </td>
+                    <td style="border: 1px solid black; padding: 5px;">
+                        {{ $processo->numero_processo }}
+                    </td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid black; padding: 5px; font-weight: bold;">
+                        Nº PROCESSO DE CONTRATAÇÃO:
+                    </td>
+                    <td style="border: 1px solid black; padding: 5px;">
+                        {{ $processo->numero_procedimento }}
+                    </td>
+                </tr>
+                
+                <tr>
+                    <td style="border: 1px solid black; padding: 5px; font-weight: bold;">
+                        MODALIDADE:
+                    </td>
+                    <td style="border: 1px solid black; padding: 5px;">
+                        {{ $processo->modalidade?->getDisplayName() }}
+                    </td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid black; padding: 5px; font-weight: bold;">
+                        ÓRGÃO RESPONSÁVEL:
+                    </td>
+                    <td style="border: 1px solid black; padding: 5px;">
+                        {{ $detalhe->unidade_setor }}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p style="text-indent: 30px; text-align: justify;">
+            Esta Secretaria solicitou a elaboração de Cotação de Mercado e emissão de
+            Dotação Orçamentária acerca da {!! strip_tags($processo->objeto) !!}, após
+            sanada as solicitações, foi elaborado o Termo de Referência, encaminha-se para:
+        </p>
+
+        <p style="text-align: justify;">
+            Encaminhe-se à {{ $detalhe->encaminhamento_autorizacao_abertura }} para a AUTORIZAÇÃO DE ABERTURA DE
+            PROCEDIMENTO PELA AUTORIDADE COMPETENTE
+        </p>
+
+        <table style="border-collapse: collapse; width: auto; border: 1px solid black; font-size: 10pt;">
+            <tr>
+                <td style="border: 1px solid black; padding: 6px; font-weight: normal;">
+                    Forma indicada da contratação:
+                </td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid black; padding: 8px;">
+                    <div style="display: block; margin-bottom: 4px;">
+                        <span style="display:inline-block; width:12px; height:12px; border:1px solid #000; margin-right:5px; vertical-align:middle; text-align:center; line-height:10px; font-size:10px; font-weight:bold;">
+                            @if ($processo->modalidade === \App\Enums\ModalidadeEnum::DISPENSA)
+                            X
+                            @endif
+                        </span>
+                        Dispensa de Licitação;
+                    </div>
+                    <div style="display: block; margin-bottom: 4px;">
+                        <span style="display:inline-block; width:12px; height:12px; border:1px solid #000; margin-right:5px; vertical-align:middle; text-align:center; line-height:10px; font-size:10px; font-weight:bold;">
+                            @if ($processo->modalidade === \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO)
+                            X
+                            @endif
+                        </span>
+                        Pregão Eletrônico;
+                    </div>
+                    <div style="display: block; margin-bottom: 4px;">
+                        <span style="display:inline-block; width:12px; height:12px; border:1px solid #000; margin-right:5px; vertical-align:middle; text-align:center; line-height:10px; font-size:10px; font-weight:bold;">
+                            @if ($processo->modalidade === "Pregão Presencial")
+                            X
+                            @endif
+                        </span>
+                        Pregão Presencial;
+                    </div>
+                    <div style="display: block; margin-bottom: 4px;">
+                        <span style="display:inline-block; width:12px; height:12px; border:1px solid #000; margin-right:5px; vertical-align:middle; text-align:center; line-height:10px; font-size:10px; font-weight:bold;">
+                            @if ($processo->modalidade === \App\Enums\ModalidadeEnum::CONCORRENCIA)
+                            X
+                            @endif
+                        </span>
+                        Concorrência;
+                    </div>
+                </td>
+            </tr>
+        </table>
+        {{-- Bloco de data e assinatura --}}
+        <div class="footer-signature">
+            {{ $processo->prefeitura->cidade }},
+            {{ \Carbon\Carbon::parse($dataSelecionada)->translatedFormat('d \d\e F \d\e Y') }}
+        </div>
+
+        
+
+        <div style="margin-top: 40px; text-align: center;">
+            <div class="signature-block" style="display: inline-block; margin: 0 40px;">
+                ___________________________________<br>
+                <p style="line-height: 1.2;">
+                    {{ $primeiroAssinante['responsavel'] }} <br>
+                    <span>{{ $primeiroAssinante['unidade_nome'] }}</span>
+                </p>
+            </div>
+        </div>
+        @else
+        {{-- Bloco Padrão (Fallback) --}}
+        <div class="signature-block" style="margin-top: 40px; text-align: center;">
+            ___________________________________<br>
+            <p style="line-height: 1.2;">
+                {{ $processo->prefeitura->autoridade_competente }} <br>
+                <span style="color: red;">[Pregoeira/Agente de Contratação]</span>
+            </p>
+        </div>
+        @endif
+    </div>
 </body>
 
 </html>

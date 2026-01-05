@@ -283,26 +283,60 @@
 
         <table class="form-table">
             <tr>
+                <td colspan="1" class="section-header">1 – IDENTIFICAÇÃO DO ÓRGÃO REQUISITANTE</td>
+            </tr>
+            <tr>
+                <td>
+                    <span class="field-label">Secretaria:
+                        {{ $detalhe->secretaria ?? 'SECRETARIA DE EDUCACAO' }}</span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <span class="field-label">Unidade/Setor/Departamento:
+                        {{ $detalhe->unidade_setor ?? 'Unidade 1' }}</span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <span class="field-label">Servidor responsável pela demanda:
+                        {{ $detalhe->servidor_responsavel ?? 'Deivison' }}</span>
+                </td>
+            </tr>
+        </table>
+
+        <table class="form-table" style="font-size: 10pt">
+            <tr>
                 <td class="section-header">2 – IDENTIFICAÇÃO DO OBJETO</td>
             </tr>
             <tr>
                 <td>
-                    <span class="field-label">{!! strip_tags($processo->objeto) !!}</span>
+                    <span class="field-label" style="font-size: 10px !important;">
+                        {!! strip_tags($processo->objeto) !!}
+                    </span>
                     {{-- <div class="large-value-cell">
                             {!! str_replace('<p>', '<p style="text-indent:30px; text-align: justify;">', $detalhe->demanda) !!}
                         </div> --}}
                 </td>
             </tr>
-            <tr>
-                <td style="padding: 10px;">
-                    <span style="display:block; text-align:center; font-weight:bold;">
-                        Justificativa da necessidade da contratação:
-                    </span>
-
-                    {!! str_replace('<p>', '<p style="text-indent:30px; text-align: justify; ">', $detalhe->justificativa) !!}
-                </td>
-            </tr>
         </table>
+        <div style="
+            border: 1px solid #000;
+            padding: 8px;
+            font-size:11px;
+            text-align: justify;
+            margin-top: 10px;
+            page-break-inside: auto;
+            page-break-before: auto;
+        ">
+            <span style="display:block; text-align:center; font-weight:bold;">
+                Justificativa da necessidade da contratação:
+            </span>
+
+            <div style="font-size:11px !important; text-align: justify;">
+                {!! $detalhe->justificativa !!}
+            </div>
+        </div>
 
         <table style="width: 100%; border-collapse: collapse; border: 1px solid #000 !important; margin-bottom: 15px; page-break-inside: avoid; font-family: Arial, sans-serif; font-size: 12px;">
             <tr>
@@ -320,6 +354,26 @@
             <tr>
                 <td style="width: 100%; border: 1px solid #000; padding: 5px 8px; vertical-align: top;">
                     Local(is) e horário(s) de entrega: {{ $detalhe->local_entrega ?? '' }}
+                </td>
+            </tr>
+
+            <tr>
+                <td colspan="2" style="border: 1px solid #000; padding: 5px 8px; vertical-align: top;">
+                    Houve contratações anteriores?
+                    @php
+                    $contratacoes = strtolower($detalhe->contratacoes_anteriores ?? '');
+                    $opcoes = ['sim' => 'Sim', 'nao' => 'Não'];
+                    @endphp
+                    <div style="display: flex; gap: 20px; padding: 5px 0;">
+                        @foreach ($opcoes as $valor => $texto)
+                        <div style="display: flex; align-items: center; gap: 5px; font-size: 12px;">
+                            <span style="width: 14px; height: 14px; border: 1px solid #000; text-align: center; line-height: 12px; font-weight: bold; display: inline-block; margin: 2px;">
+                                {{ $contratacoes === $valor ? 'X' : '' }}
+                            </span>
+                            {{ $texto }}
+                        </div>
+                        @endforeach
+                    </div>
                 </td>
             </tr>
         </table>

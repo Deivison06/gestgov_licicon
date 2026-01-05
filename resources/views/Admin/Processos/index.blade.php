@@ -134,12 +134,12 @@
                                         title="Finalizar processo">
                                         Finalizar
                                     </a>
-                                    @if ($processo->detalhe->tipo_srp === 'nao')
+                                    @if (optional($processo->detalhe)->tipo_srp === 'nao')
                                         <a href="{{ route('admin.processos.contrato.index', $processo->id) }}"
-                                        class="px-3 py-1.5 text-xs font-medium text-white transition-colors duration-200 bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-1"
-                                        title="Emitir Contrato">
-                                        Contrato
-                                    </a>
+                                            class="px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700"
+                                            title="Emitir Contrato">
+                                            Contrato
+                                        </a>
                                     @endif
                                    
 

@@ -431,7 +431,7 @@
         PARECER JURÍDICO
     </p>
 
-    <p style="font-weight: bold;">CONCORRÊNCIA: nº {{ $processo->numero_procedimento }}
+    <p style="font-weight: bold;">PREGÃO ELETRÔNICO Nº {{ $processo->numero_procedimento }}
         <br>
         PROCESSO ADMINISTRATIVO Nº {{ $processo->numero_processo }} <br>
         OBJETO:{!! strip_tags($processo->objeto) !!}
@@ -1557,7 +1557,7 @@
         elementos: definição do objeto, necessidade de contratação e justificativa, especificação técnica e
         quantitativo do objeto, alinhamento ao plano institucional, requisitos de habilitação, obrigações
         mínimas do fornecedor, estimativa de preços, resultados pretendidos, justificativa para a formação
-        do ITENS único, riscos e declaração de viabilidade, portanto, encontra-se em perfeita harmonia ao
+        do lote único, riscos e declaração de viabilidade, portanto, encontra-se em perfeita harmonia ao
         mínimo exigido em lei e disposto no §1º e incisos do artigo 18 da NLLC.
     </p>
     <p style="text-indent: 30px; text-align: justify;">

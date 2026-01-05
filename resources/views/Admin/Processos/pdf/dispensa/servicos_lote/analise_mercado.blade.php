@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>AUTORIZAÇÃO ABERTURA PROCEDIMENTO LICITATÓRIO - Processo {{ $processo->numero_processo ?? $processo->id }}</title>
+    <title>ANÁLISE DE MERCADO (PESQUISA DE PRECOS) - Processo {{ $processo->numero_processo ?? $processo->id }}</title>
     <style type="text/css">
         @font-face {
             font-family: 'Aptos';
@@ -117,7 +117,8 @@
     <div id="cover-page">
         <img src="{{ public_path('icons/capa-documento.png') }}" alt="Martelo da Justiça" class="cover-image">
         <div class="cover-title">
-            AUTORIZAÇÃO ABERTURA PROCEDIMENTO LICITATÓRIO
+            ANÁLISE DE MERCADO <br>
+            (PESQUISA DE PRECOS)
         </div>
     </div>
 
@@ -125,27 +126,11 @@
     <div class="page-break"></div>
 
     {{-- ====================================================================== --}}
-    {{-- BLOCO 2: AUTORIZAÇÃO DE ABERTURA DE PROCEDIMENTO DE LICITAÇÃO --}}
+    {{-- BLOCO 2: RESUMO DOS DADOS DO PROCESSO --}}
     {{-- ====================================================================== --}}
-    <div id="autorizacao-abertura-procedimento">
-        <p style="text-align: center; font-weight: bold">AUTORIZAÇÃO DE ABERTURA DE PROCEDIMENTO DE LICITAÇÃO <br>
-            PROCESSO ADMINISTRATIVO N° {{ $processo->numero_processo }}</p>
-
-        <p>
-            Ao(À) Ilmo(a). Sr(a).<br>
-            <span>{{ $detalhe->agente_contratacao }}</span>
-            <br>
-            Agente de Contratação / Pregoeiro
-            <br>
-            <span>
-                {{ $processo->prefeitura->nome }}
-            </span>
-        </p>
-
-        <p>Assunto: Autorização para Abertura de {{ $processo->modalidade->getDisplayName() }} </p>
-
+    <div id="resumo-dados-processo">
         <table
-            style="border-collapse: collapse; width: 100%; text-align: left; border: 1px solid black;px;">
+            style="border-collapse: collapse; width: 100%; text-align: left; border: 1px solid black; margin-top: 100px;">
             <thead>
                 <tr>
                     <td colspan="2"
@@ -199,56 +184,59 @@
         </table>
 
         <p style="text-indent: 30px">
-            Senhor(a) Agente de Contratação / Pregoeiro
-        </p>
-        <p style="text-indent: 30px">
-            Trata-se de demanda da {{ $detalhe->unidade_setor }}, para contratação de
-            {!! strip_tags($processo->objeto) !!}.
-        </p>
-        <p style="text-indent: 30px">
-            O valor estimado para pretendida contratação é de R$ {{ $detalhe->valor_estimado }},
-            conforme Projeto Básico.
+            A {{ $detalhe->unidade_setor }}, encaminhou para esta unidade a necessidade
+            de realização de Cotação referente a itens relacionados ao objeto
+            <span style="font-weight: bold;">“{!! strip_tags($processo->objeto) !!}”</span>, ato seguido, foi realizado a cotação
+            junto ao Painel de Preços
+            do TCE-PI, conforme tabela abaixo:
         </p>
 
-        <p style="text-indent: 30px">
-            O Setor de Contabilidade, através da DECLARAÇÃO DE COMPATIBILIDADE DA
-            PREVISÃO DE RECURSOS ORÇAMENTÁRIOS, certifica a existência de dotação
-            orçamentária para suportar a presente despesa, demonstrando a compatibilidade da
-            previsão de recursos orçamentários com o compromisso a ser assumido.
-        </p>
-        <p style="text-indent: 30px">
-            Por todo o exposto, considerando que a instrução do presente processo atende ao
-            disposto na Lei nº 14.133, de 2021, aprovo os atos praticados e autorizo que seja
-            promovida a abertura de Procedimento de Licitação, na modalidade Concorrência, em
-            sua forma Eletrônica, nos termos da Lei nº 14.133, de 2021.
-        </p>
-        <p style="text-indent: 30px">
-            Por fim, declaro, para os efeitos do art. 16, II da Lei Complementar nº 101, de 04 de
-            maio de 2000 (Lei de Responsabilidade Fiscal), que a despesa da pretendida
-            contratação, possui adequação orçamentária e financeira com a Lei Orçamentária
-            Anual (LOA) e compatibilidade com o Plano Plurianual (PPA) e com a Lei de Diretrizes
-            Orçamentária (LDO).
-        </p>
+        <table border="1" cellspacing="0" cellpadding="4"
+            style="border-collapse: collapse; width: 100%; text-align: center; font-size: 8pt;">
+            <thead>
+                <tr>
+                    <th style="width: 25%;">ITEM</th>
+                    <th style="width: 15%;">VALOR TCE</th>
+                    <th style="width: 15%;">VALOR TCE</th>
+                    <th style="width: 15%;">VALOR TCE</th>
+                    <th style="width: 15%;">FORNECEDOR </th>
+                    <th style="width: 15%;">MÉDIA</th>
+                </tr>
+            </thead>
+            <tbody>
+                @php
+                    $painel = is_array($detalhe->painel_preco_tce)
+                        ? $detalhe->painel_preco_tce
+                        : json_decode($detalhe->painel_preco_tce, true);
+                @endphp
 
-        <p>
-            CLASSIFICAÇÃO DO OBJETO: OBRAS E SERVIÇOS DE ENGENHARIA
-        </p>
-        <p>
-            JUSTIFICATIVA DA CONTRATAÇÃO:
-            {!! str_replace('<p>', '<p style="text-align: justify;">', $detalhe->justificativa) !!}
-        </p>
+                @if ($painel && count($painel) > 0)
+                    @foreach ($painel as $item)
+                        <tr>
+                            <td>{{ $item['item'] ?? '' }}</td>
+                            <td>{{ $item['valor_tce_1'] ?? '' }}</td>
+                            <td>{{ $item['valor_tce_2'] ?? '' }}</td>
+                            <td>{{ $item['valor_tce_3'] ?? '' }}</td>
+                            <td>{{ $item['fornecedor_local'] ?? '' }}</td>
+                            <td>{{ $item['media'] ?? '' }}</td>
+                        </tr>
+                    @endforeach
+                @else
+                    <tr>
+                        <td colspan="6">Nenhum dado disponível</td>
+                    </tr>
+                @endif
+            </tbody>
+        </table>
+        <p>Segue em anexo arquivos referentes à cotação realizada.</p>
+        <p>Encaminhe-se à {{ $detalhe->encaminhamento_doacao_orcamentaria }} para a VERIFICAÇÃO DE DOTACÃO ORÇAMENTÁRIA EXISTENTE.</p>
 
-        <p>MODALIDADE: {{ $processo->modalidade->getDisplayName() }}</p>
-        <p>MODO DE DISPUTA: ABERTO</p>
-        <p>TRATAMENTO DIFERENCIA A MEs e EPPs</p>
-        <p>
-            {!! $detalhe->tratamento_diferenciado_MEs_eEPPs !!}
-        </p>
         {{-- Bloco de data e assinatura --}}
         <div class="footer-signature">
             {{ $processo->prefeitura->cidade }},
             {{ \Carbon\Carbon::parse($dataSelecionada)->translatedFormat('d \d\e F \d\e Y') }}
         </div>
+
         @php
             // Verifica se a variável $assinantes existe e tem itens
             $hasSelectedAssinantes = isset($assinantes) && count($assinantes) > 0;
@@ -280,6 +268,7 @@
             </div>
         @endif
     </div>
+
 </body>
 
 </html>

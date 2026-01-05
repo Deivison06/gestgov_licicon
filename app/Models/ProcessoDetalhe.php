@@ -31,6 +31,7 @@ class ProcessoDetalhe extends Model
         'prazo_vigencia_outro',
         'objeto_continuado',
         'itens_e_seus_quantitativos_xml',
+        'descricao_e_quantitativos_itens_xml',
         'nome_equipe_planejamento',
         'responsavel_equipe_planejamento',
         'descricao_necessidade',
@@ -93,6 +94,7 @@ class ProcessoDetalhe extends Model
         'instrumento_vinculativo' => 'array',
         'prazo_vigencia' => 'array',
         'itens_e_seus_quantitativos_xml' => 'array',
+        'descricao_e_quantitativos_itens_xml' => 'array',
         'itens_especificaca_quantitativos_xml' => 'array',
 
     ];

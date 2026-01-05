@@ -84,7 +84,8 @@
     @elseif($campo === 'prazo_entrega')
     <x-form-field name="prazo_entrega" label="Prazo de Entrega / Execução" />
 
-    @elseif($campo === 'local_entrega' && $processo->modalidade === \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO)
+    {{-- ATUALIZADO: Agora inclui DISPENSA também --}}
+    @elseif($campo === 'local_entrega' && ($processo->modalidade === \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO || $processo->modalidade === \App\Enums\ModalidadeEnum::DISPENSA))
     <x-form-field name="local_entrega" label="Local(is) e Horário(s) de Entrega" />
 
     @elseif($campo === 'fiscais')
@@ -127,7 +128,8 @@
     @elseif($campo === 'prevista_plano_anual')
     <x-form-field name="prevista_plano_anual" label="A CONTRATAÇÃO ESTÁ PREVISTA NO PLANO DE CONTRATAÇÃO ANUAL?" type="radio" :options="['sim' => 'Sim', 'nao' => 'Não']" />
 
-    @elseif($campo === 'contratacoes_anteriores' && $processo->modalidade === \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO)
+    {{-- ATUALIZADO: Agora inclui DISPENSA também --}}
+    @elseif($campo === 'contratacoes_anteriores' && ($processo->modalidade === \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO || $processo->modalidade === \App\Enums\ModalidadeEnum::DISPENSA))
     <x-form-field name="contratacoes_anteriores" label="Houve contratações anteriores?" type="radio" :options="['sim' => 'Sim', 'nao' => 'Não']" />
 
     @elseif($campo === 'objeto_continuado')
@@ -160,7 +162,6 @@
         ]" />
 
     @elseif($campo === 'prazo_vigencia')
-
     <x-form-field name="prazo_vigencia" label="Prazo de Vigência do Objeto" type="checkbox" :options="[
             'exercicio_financeiro' => 'Exercício financeiro da contratação (até 31/12)',
             '12_meses' => 'Vigência de 12 meses',
@@ -168,7 +169,8 @@
         ]" />
 
     {{-- Campos File --}}
-    @elseif($campo === 'itens_e_seus_quantitativos_xml' && $processo->modalidade === \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO)
+    {{-- ATUALIZADO: Agora inclui DISPENSA também --}}
+    @elseif($campo === 'itens_e_seus_quantitativos_xml' && ($processo->modalidade === \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO || $processo->modalidade === \App\Enums\ModalidadeEnum::DISPENSA))
     <x-form-field name="itens_e_seus_quantitativos_xml" label="📦 Itens e Seus Quantitativos" type="file" accept=".xml, .xlsx, .xls, .csv" />
 
     @elseif($campo === 'projeto_basico_pdf')
@@ -176,6 +178,9 @@
 
     @elseif($campo === 'itens_especificaca_quantitativos_xml')
     <x-form-field name="itens_especificaca_quantitativos_xml" label="📦 Itens e Seus quantitativos e especificações" type="file" accept=".xml, .xlsx, .xls, .csv" />
+
+    @elseif($campo === 'descricao_e_quantitativos_itens_xml')
+    <x-form-field name="descricao_e_quantitativos_itens_xml" label="📦 Descrição e Quantitativos dos Itens" type="file" accept=".xml, .xlsx, .xls, .csv" />
 
     @elseif($campo === 'info_extras')
     <x-form-field name="info_extras" label="Informações Extras" type="textarea" rows="5" />
@@ -196,11 +201,29 @@
     <x-form-field name="anexo_pdf_minuta_contrato" label="📎 Anexar PDF Minuta do Contrato" type="file" accept="application/pdf" />
 
     {{-- Campos Select --}}
-    @elseif($campo === 'encaminhamento_pesquisa_preco' && $processo->modalidade === \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO)
-    <x-form-field name="encaminhamento_pesquisa_preco" label="Encaminhamento para pesquisa de Preços" type="select" :options="$processo->prefeitura->unidades->pluck('nome', 'nome')->toArray()" placeholder="Selecione uma unidade" />
-
+    {{-- ATUALIZADO: Agora inclui DISPENSA também --}}
+    @elseif($campo === 'encaminhamento_pesquisa_preco')
+        {{-- 🔧 MODIFICAÇÃO: Condição única para ambos os modos --}}
+        @if($processo->modalidade === \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO || 
+            $processo->modalidade === \App\Enums\ModalidadeEnum::DISPENSA)
+            <x-form-field name="encaminhamento_pesquisa_preco" 
+                            label="Encaminhamento para pesquisa de Preços" 
+                            type="select" 
+                            :options="$processo->prefeitura->unidades->pluck('nome', 'nome')->toArray()" 
+                            placeholder="Selecione uma unidade" />
+        @endif
+        
     @elseif($campo === 'encaminhamento_doacao_orcamentaria')
-    <x-form-field name="encaminhamento_doacao_orcamentaria" label="Encaminhamento para doação orçamentária" type="select" :options="$processo->prefeitura->unidades->pluck('nome', 'nome')->toArray()" placeholder="Selecione uma unidade" />
+        {{-- 🔧 MODIFICAÇÃO: Condição única para ambos os modos --}}
+        @if($processo->modalidade === \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO || 
+            $processo->modalidade === \App\Enums\ModalidadeEnum::DISPENSA)
+            <x-form-field name="encaminhamento_doacao_orcamentaria" 
+                            label="Encaminhamento para doação orçamentária" 
+                            type="select" 
+                            :options="$processo->prefeitura->unidades->pluck('nome', 'nome')->toArray()" 
+                            placeholder="Selecione uma unidade" />
+        @endif
+
 
     @elseif($campo === 'encaminhamento_elaborar_editais')
     <x-form-field name="encaminhamento_elaborar_editais" label="Encaminhamento para ELABORAÇÃO DE EDITAL E MINUTA DE CONTRATO" type="select" :options="$processo->prefeitura->unidades->pluck('nome', 'nome')->toArray()" placeholder="Selecione uma unidade" />
@@ -228,21 +251,19 @@
     @elseif($campo === 'exige_atestado')
     <x-form-field name="exige_atestado" label="O Edital exigira Atestado de Capacidade Técnica?" type="radio" :options="['sim' => 'Sim', 'nao' => 'Não']" />
 
-    {{-- No forms.blade.php --}}
     @elseif($campo === 'data_hora_limite_edital')
     <x-form-field
         name="data_hora_limite_edital"
         label="📅 Data e Hora - DATA LIMITE PARA ENVIO DE PROPOSTAS"
         type="datetime"
     />
-    {{-- No forms.blade.php --}}
+
     @elseif($campo === 'data_hora_fase_edital')
     <x-form-field
         name="data_hora_fase_edital"
         label="📅 Data e Hora - DATA DA SESSÃO PÚBLICA E FASE DE LANCES"
         type="datetime"
     />
-
 
     {{-- Campo padrão para qualquer outro --}}
     {{-- @else

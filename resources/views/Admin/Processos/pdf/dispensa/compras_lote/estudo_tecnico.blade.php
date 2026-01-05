@@ -26,7 +26,7 @@
         body {
             margin: 0;
             padding: 4cm 2cm;
-            font-size: 10pt;
+            font-size: 11pt !important;
             font-family: 'Aptos', sans-serif;
             /* Adiciona o timbre como background */
             background-image: url('{{ public_path($prefeitura->timbre) }}');
@@ -179,6 +179,7 @@
             margin-top: 60px;
             text-align: center;
         }
+
     </style>
 </head>
 
@@ -234,9 +235,9 @@
                                 <div style=" font-weight: bold; margin-bottom: 3px;">Alinhamento com o Planejamento Anual</div>
                                 <div>
                                     @if ($detalhe->prevista_plano_anual == 'sim')
-                                        A demanda encontra-se regularmente prevista no Plano Anual de Contratações – PAC
+                                    A demanda encontra-se regularmente prevista no Plano Anual de Contratações – PAC
                                     @else
-                                        A demanda nao encontra-se regularmente prevista no Plano Anual de Contratações – PAC
+                                    A demanda nao encontra-se regularmente prevista no Plano Anual de Contratações – PAC
                                     @endif
                                 </div>
                             </td>
@@ -272,7 +273,7 @@
                             <td class="content">
                                 <div style=" font-weight: bold; margin-bottom: 3px;">Problema Resumido
                                 </div>
-                                <div style="text-align: justify;">{!! strip_tags($detalhe->problema_resolvido) !!}</div>
+                                <div style="text-align: justify; font-size: 11pt;">{!! strip_tags($detalhe->problema_resolvido) !!}</div>
                             </td>
                         </tr>
                     </table>
@@ -298,18 +299,17 @@
     <div id="descricao-necessidade">
 
         <div style="font-weight: 600; margin-bottom: 20px;">
-            <img src="{{ public_path('icons/descricao-necessidade.png') }}" width="30px"
-                alt="DESCRIÇÃO DA NECESSIDADE">
+            <img src="{{ public_path('icons/descricao-necessidade.png') }}" width="30px" alt="DESCRIÇÃO DA NECESSIDADE">
             DESCRIÇÃO DA NECESSIDADE
         </div>
 
-        <p style=" text-indent: 30px; text-align: justify;">
+        <p style=" text-indent: 30px; text-align: justify; font-size: 11pt;">
             A {{ $prefeitura->nome }} enfrenta um problema significativo relacionado à
             {!! strip_tags($processo->objeto) !!}  {!! strip_tags($detalhe->descricao_necessidade) !!}
             expõe a fragilidade atual dos recursos disponíveis.
         </p>
 
-        {!! str_replace('<p>', '<p style="text-indent:30px; text-align: justify;">', $detalhe->justificativa) !!}
+        {!! str_replace('<p>', '<p style="text-indent:30px; text-align: justify; font-size: 11pt;">', $detalhe->justificativa) !!}
 
 
         <p style=" text-indent: 30px; text-align: justify;">
@@ -405,8 +405,7 @@
     <div id="requisito-necessario" style="margin-top: 20px;">
 
         <div style="font-weight: 600;  margin-bottom: 20px;">
-            <img src="{{ public_path('icons/rquisitos-contratacao.png') }}" width="30px"
-                alt="REQUISITOS DA CONTRATAÇÃO">
+            <img src="{{ public_path('icons/rquisitos-contratacao.png') }}" width="30px" alt="REQUISITOS DA CONTRATAÇÃO">
             REQUISITOS DA CONTRATAÇÃO
         </div>
 
@@ -415,43 +414,54 @@
                 Para uma contratação mais segura e eficaz, sugerimos como técnica de averiguação, e controle, as
                 seguintes exigências mínimas:
             </p>
+
             <p style="text-align: justify; text-indent: 30px;">
-                Observância da Lei 14.133/2021 (arts. 18 a 22 e 42 a 47, principalmente)
+                Os Produtos deverão ser executados de forma parcelada, de acordo com as solicitações da CONTRATANTE, por
+                meio de suas respectivas OF.’s;
             </p>
+
             <p style="text-align: justify; text-indent: 30px;">
-                Atendimento às normas técnicas específicas (ABNT, CREA/CONFEA, normas ambientais
-                e de acessibilidade).
+                Os Produtos deverão ser entregues em até 48 (quarenta e oito) horas contadas do envio do Pedido de
+                Fornecimento/serviço Empenho, devendo a contratada manter estoques compatíveis com as quantidades
+                solicitadas durante o prazo de vigência do contrato, evitando atrasos nas entregas/fornecimentos, sem a
+                exigência de valor ou quantitativo mínimo e sem custos adicionais.
             </p>
+
             <p style="text-align: justify; text-indent: 30px;">
-                Cumprimento da legislação ambiental, trabalhista, de segurança do trabalho e de proteção
-                ao patrimônio histórico/cultural, quando aplicável.
+                Os produtos deverão ser executados/entregues nas respectivas Unidades e locais de indicação do
+                CONTRATANTE, em horários e datas previamente estabelecidas na respectiva Ordem de Serviço;
             </p>
+
             <p style="text-align: justify; text-indent: 30px;">
-                Especificações técnicas claras, objetivas e sem direcionamento de marca.
+                A nota fiscal deverá ser apresentada no ato da entrega informado o número do Contrato correspondente no
+                campo “Dados Adicionais” e a ordem de fornecimento.
             </p>
+
             <p style="text-align: justify; text-indent: 30px;">
-                Adoção de critérios de sustentabilidade: gestão de resíduos, eficiência energética, uso
-                racional de água e materiais recicláveis, quando possível.
+                A Contratada deverá arcar com as despesas referentes a entrega dos produtos.
             </p>
+
             <p style="text-align: justify; text-indent: 30px;">
-                Garantia de desempenho, segurança, durabilidade e manutenção futura da obra ou serviço.
+                Serão exigidas comprovações de localização da sede da empresa, com apresentação de fotos da
+                infraestrutura interna, com objetivo precípuo de averiguar a veracidade sobre a real existência da
+                empresa, evitando a
+                contratação de empresas fantasmas ou de caráter inidôneo.
             </p>
+
             <p style="text-align: justify; text-indent: 30px;">
-                Registro da empresa no CREA/CAU.
+                Serão exigidas composições de custos que reflitam a realidade econômica da empresa licitante, a ser
+                definido no próprio edital, que estabelecem critérios de custos com despesas diretas e indiretas;
             </p>
+
             <p style="text-align: justify; text-indent: 30px;">
-                Atestados de capacidade técnica, limitados e proporcionais ao objeto.
-            </p>
-            <p style="text-align: justify; text-indent: 30px;">
-                Regularidade fiscal, trabalhista e previdenciária
+                Também será exigido garantia de proposta, nos termos do art. 96 e seguintes, visando estabelecer a
+                segurança do preço ofertado pelo licitante, garantindo assim, o seguro do custeio realizado pela
+                Administração no
+                momento da abertura do certame;
             </p>
         </div>
 
-        {!! str_replace(
-            '<p>',
-            '<p style="text-indent:30px; text-align: justify;">',
-            $detalhe->incluir_requisito_cada_caso_concreto,
-        ) !!}
+        {!! str_replace('<p>', '<p style="text-indent:30px; text-align: justify; font-size: 11pt;">', $detalhe->incluir_requisito_cada_caso_concreto ) !!}
 
         <p style=" text-indent: 30px; text-align: justify;">
             Os requisitos acima foram elaborados buscando a equidade no processo licitatório,
@@ -461,18 +471,14 @@
         </p>
 
         <div style="font-weight: 600;  margin-bottom: 20px;">
-            <img src="{{ public_path('icons/solucoes-diponivel.png') }}" width="30px"
-                alt="SOLUÇÕES DISPONÍVEIS NO MERCADO">
+            <img src="{{ public_path('icons/solucoes-diponivel.png') }}" width="30px" alt="SOLUÇÕES DISPONÍVEIS NO MERCADO">
             SOLUÇÕES DISPONÍVEIS NO MERCADO
         </div>
-        <p style=" text-indent: 30px;">Soluções disponíveis para o problema de {!! strip_tags($processo->objeto) !!} da
-            {{ $processo->prefeitura->nome }}: </p>
+        <p style=" text-indent: 30px; font-size: 11pt;">Soluções disponíveis para o problema de {!! strip_tags($processo->objeto) !!} da
+            {{ $processo->prefeitura->nome }}:
+        </p>
 
-        {!! preg_replace(
-            '/<p([^>]*)>/i',
-            '<p$1 style="text-indent:30px; text-align: justify;">',
-            $detalhe->solucoes_disponivel_mercado,
-        ) !!}
+        {!! preg_replace('/<p([^>]*)>/i', '<p$1 style="text-indent:30px; text-align: justify; font-size: 11pt;">', $detalhe->solucoes_disponivel_mercado) !!}
 
 
         <p style=" text-indent: 30px;">
@@ -492,17 +498,48 @@
             técnicos e operacionais que atendem às necessidades específicas do município.
         </p>
 
-        {!! str_replace(
-            '<p>',
-            '<p style="text-indent:30px; text-align: justify;">',
-            $detalhe->justificativa_solucao_escolhida,
-        ) !!}
+        {!! str_replace('<p>', '<p style="text-indent:30px; text-align: justify; font-size: 11pt;">', $detalhe->justificativa_solucao_escolhida) !!}
+
+        <div style="font-weight: 600;  margin-bottom: 20px;">
+            <img src="{{ public_path('icons/lista.png') }}" width="30px" alt="REQUISITOS DA CONTRATAÇÃO">
+            ITENS E SEUS QUANTITATIVOS
+        </div>
+
+        <table border="1" cellspacing="0" cellpadding="4" style="border-collapse: collapse; width: 100%; text-align: center; font-size: 10pt;">
+            <thead>
+                <tr>
+                    <th style="width: 8%;">ITEM</th>
+                    <th style="width: 70%;">DESCRIÇÃO/ESPECIFICAÇÃO</th>
+                    <th style="width: 10%;">UND</th>
+                    <th style="width: 12%;">QUANT.</th>
+                </tr>
+            </thead>
+            <tbody>
+                @php
+                $itens = json_decode($detalhe->itens_e_seus_quantitativos_xml, true);
+                @endphp
+
+                @if ($itens && count($itens) > 0)
+                @foreach ($itens as $item)
+                <tr>
+                    <td>{{ $item['numero'] ?? '' }}</td>
+                    <td style="text-align: left">{{ $item['descricao'] ?? '' }}</td>
+                    <td>{{ $item['und'] ?? '' }}</td>
+                    <td>{{ $item['quantidade'] ?? '' }}</td>
+                </tr>
+                @endforeach
+                @else
+                <tr>
+                    <td colspan="4">Nenhum item encontrado</td>
+                </tr>
+                @endif
+            </tbody>
+        </table>
 
         <p style="">Memória de Cálculo para Justificativa dos Quantitativos </p>
         <p style="">Metodologia de Definição dos Quantitativos </p>
 
-        <div style="">O quantitativo de itens/serviços foi definido a partir da seguinte metodologia:
-        </div>
+        <div style="">O quantitativo de itens/serviços foi definido a partir da seguinte metodologia: </div>
         <ul style="">
             <li>Levantamento da demanda junto às Secretarias/Unidades requisitantes; </li>
             <li>Consideração do histórico de consumo/uso dos últimos [2] anos ou exercícios;</li>
@@ -530,26 +567,95 @@
             <img src="{{ public_path('icons/lista.png') }}" width="30px" alt="REQUISITOS DA CONTRATAÇÃO">
             PARCELAMENTO OU NÃO DA CONTRATAÇÃO
         </div>
-
-        <p style="text-align: center; font-weight: bold;">
-            Parcelamento formal, realização de uma única licitação, com adjudicação global.
+        <p style="text-align: justify;">
+            A licitação será dividida em grupos, formados por um ou mais itens, conforme tabela constante
+            do Termo de Referência, facultando-se ao licitante a participação em quantos grupos forem de seu
+            interesse, devendo oferecer proposta para todos os itens que os compõem o lote, conforme
+            justificativa abaixo:
         </p>
-        <p style=" text-indent: 30px; text-align: justify;">
-            A realização de uma única licitação, com a adjudicação global, é justificada por diversos
-            aspectos técnicos e operacionais que garantem maior eficiência na contratação de {!! strip_tags($processo->objeto) !!}
+        <p style="text-align: justify;">
+            A presente justificativa tem por objetivo demonstrar a vantajosidade da contratação do objeto em
+            LOTES, ao invés da aquisição ou contratação individualizada por itens, conforme os princípios e
+            diretrizes estabelecidos pela Lei nº 14.133/2021, especialmente no art. 5º (princípios da eficiência
+            e planejamento) e no art. 40, §1º, que dispõe:
         </p>
-        <p style=" text-indent: 30px; text-align: justify;">
-            A adoção deste modelo impacta diretamente no atendimento ao interesse público e na
-            eficiência da contratação. Essa solução assegura que as necessidades imediatas da população
-            sejam atendidas de maneira mais célere. Assim, a estratégia de licitação representa uma solução
-            prática e eficiente para os desafios enfrentados pela Prefeitura, refletindo um compromisso com a
-            transparência e a máxima utilidade dos recursos públicos.
+        <p style="text-align: justify;">
+            “A administração pública poderá dividir o objeto da contratação em lotes, sempre que técnica e
+            economicamente viável, visando à ampliação da competitividade e ao desenvolvimento do
+            mercado local, regional ou nacional, conforme o caso.”
         </p>
-        <p style=" text-indent: 30px; text-align: justify; font-weight: bold;">
-            Não utilizamos o caso de licitação por itens ou lotes atualmente na concorrência, ela é adjudicação
-            por preço global.
+        <p style="text-indent: 30px;">A contratação por lotes permite:</p>
+        <ul>
+            <li>
+                Melhor organização e gestão contratual, ao reduzir o número de fornecedores e simplificar
+                o acompanhamento das entregas ou da prestação dos serviços;
+            </li>
+            <li>
+                Centralização de responsabilidades, evitando múltiplos prazos, locais de entrega e agentes
+                executores;
+            </li>
+            <li>
+                Facilidade logística, pois os lotes são organizados por natureza ou destinação dos itens (ex:
+                lotes por tipo de material, setor usuário ou região de entrega);
+            </li>
+            <li>
+                Adoção de cronogramas otimizados, com menos risco de atrasos por fragmentação
+                excessiva de contratos.
+            </li>
+        </ul>
+        <p style="text-indent: 30px; font-weight: bold;">VANTAGENS ECONÔMICAS</p>
+        <ul>
+            <li>
+                Redução de custos operacionais, tanto para a Administração quanto para os fornecedores
+                (ex: transporte, emissão de notas, gestão de pedidos);
+            </li>
+            <li>
+                Estimulação da competitividade saudável, uma vez que empresas de médio porte podem
+                participar de lotes especializados, e empresas menores de lotes regionais ou setoriais.
+            </li>
+        </ul>
+        <p style="text-indent: 30px; font-weight: bold;">VANTAGENS NA FISCALIZAÇÃO E CONTROLE </p>
+        <ul>
+            <li>
+                Facilidade de fiscalização: menos contratos a serem monitorados e maior coerência entre
+                os itens de cada lote;
+            </li>
+            <li>
+                Redução de inconsistências entre entregas: evitando divergências de padrões ou prazos
+                quando múltiplas empresas atuam em paralelo em itens correlatos.
+            </li>
+        </ul>
+        <p style="text-indent: 30px; text-align: justify;">
+            A análise técnica e econômica da contratação indica que a divisão do objeto em lotes
+            representa a solução mais vantajosa para a Administração Pública, ao permitir:
         </p>
-
+        <ul>
+            <li>
+                Racionalização da contratação e execução;
+            </li>
+            <li>
+                Maior eficiência administrativa e operacional;
+            </li>
+            <li>
+                Aderência ao planejamento de compras centralizadas;
+            </li>
+            <li>
+                Observância dos princípios da economicidade, eficiência e interesse público.
+            </li>
+        </ul>
+        <p style="text-align: justify;">
+            Assim, justifica-se plenamente a adoção da contratação por lotes, em detrimento da contratação
+            por itens isolados
+        </p>
+        <p style="text-align: justify;">
+            Por fim, a adoção deste modelo impacta diretamente no atendimento ao interesse público e na
+            eficiência da contratação. A estrutura em lotes assegura que as necessidades imediatas da
+            população sejam atendidas de maneira mais célere, visto que diferentes tipos de itens poderão
+            estar disponíveis simultaneamente. Isso reduz o tempo de espera para o fornecimento, resultando
+            em melhorias tangíveis na qualidade do fornecimento pretendido. Assim, a estratégia de licitação
+            em lotes representa uma solução prática e eficiente para os desafios enfrentados pela Prefeitura,
+            refletindo um compromisso com a transparência e a máxima utilidade dos recursos públicos.
+        </p>
     </div>
 
     {{-- ====================================================================== --}}
@@ -561,11 +667,7 @@
             RESULTADOS PRETENDIDOS
         </div>
 
-        {!! preg_replace(
-            '/<p([^>]*)>/i',
-            '<p$1 style="text-indent:30px; text-align: justify;">',
-            $detalhe->resultado_pretendidos,
-        ) !!}
+        {!! preg_replace('/<p([^>]*)>/i','<p$1 style="text-indent:30px; text-align: justify; font-size: 11pt;">', $detalhe->resultado_pretendidos ) !!}
 
         <div style="font-weight: 600;  margin-bottom: 20px;">
             <img src="{{ public_path('icons/lista.png') }}" width="30px" alt="REQUISITOS DA CONTRATAÇÃO">
@@ -583,11 +685,7 @@
             IMPACTOS AMBIENTAIS
         </div>
 
-        {!! preg_replace(
-            '/<p([^>]*)>/i',
-            '<p$1 style="text-indent:30px; text-align: justify;">',
-            $detalhe->impacto_ambiental,
-        ) !!}
+        {!! preg_replace('/<p([^>]*)>/i','<p$1 style="text-indent:30px; text-align: justify; font-size: 11pt;">', $detalhe->impacto_ambiental ) !!}
 
         <div style="font-weight: 600;  margin-bottom: 20px;">
             <img src="{{ public_path('icons/lista.png') }}" width="30px" alt="REQUISITOS DA CONTRATAÇÃO">
@@ -601,85 +699,85 @@
         </p>
 
         @if ($detalhe->tipo_srp == 'sim')
-            <p >Recomendamos a adoção do <strong>Registro de Preços</strong> é a solução mais
-                vantajosa
-                para a Administração,
-                assegurando eficiência, economicidade e transparência, em conformidade com a legislação vigente
-                e com as necessidades do Município.</p>
-            <p >A opção pelo Sistema de Registro de Preços (SRP), previsto no art. 82 e seguintes
-                da
-                Lei nº
-                14.133/2021, revela-se a mais adequada para o presente objeto, considerando os seguintes
-                aspectos:
-            </p>
+        <p>Recomendamos a adoção do <strong>Registro de Preços</strong> é a solução mais
+            vantajosa
+            para a Administração,
+            assegurando eficiência, economicidade e transparência, em conformidade com a legislação vigente
+            e com as necessidades do Município.</p>
+        <p>A opção pelo Sistema de Registro de Preços (SRP), previsto no art. 82 e seguintes
+            da
+            Lei nº
+            14.133/2021, revela-se a mais adequada para o presente objeto, considerando os seguintes
+            aspectos:
+        </p>
 
-            <ol style="margin-left: 30px;">
-                <li >
-                    <strong>Natureza da demanda: </strong>Trata-se de contratação cujo consumo é frequente e necessário
-                    em diversas unidades da Administração, mas com <strong>quantidade e periodicidade incertas</strong>,
-                    o que inviabiliza uma contratação de fornecimento único e imediato.
-                </li>
-                <li >
-                    <strong>Racionalização administrativa: </strong>O SRP possibilita que a Administração registre
-                    preços
-                    previamente, garantindo maior <strong>agilidade e eficiência</strong> nas contratações futuras,
-                    eliminando
-                    a necessidade de instaurar múltiplos processos licitatórios para atender demandas de
-                    mesmo objeto.
-                </li>
-                <li >
-                    <strong>Economicidade e vantajosidade: </strong>A sistemática permite maior competitividade e
-                    obtenção
-                    de preços mais vantajosos, além de possibilitar adesões futuras e ganhos de escala, em
-                    conformidade com os princípios da economicidade e eficiência.
-                </li>
-                <li >
-                    <strong>Atendimento descentralizado: </strong>O SRP assegura o atendimento de diversas secretarias e
-                    órgãos do Município, de forma planejada e organizada, garantindo padronização do objeto
-                    e segurança na contratação.
-                </li>
-                <li >
-                    <strong>Interesse público: </strong>A medida evita desabastecimento, permite atender prontamente
-                    situações de necessidade e contribui para a boa continuidade dos serviços públicos.
-                </li>
-            </ol>
+        <ol style="margin-left: 30px;">
+            <li>
+                <strong>Natureza da demanda: </strong>Trata-se de contratação cujo consumo é frequente e necessário
+                em diversas unidades da Administração, mas com <strong>quantidade e periodicidade incertas</strong>,
+                o que inviabiliza uma contratação de fornecimento único e imediato.
+            </li>
+            <li>
+                <strong>Racionalização administrativa: </strong>O SRP possibilita que a Administração registre
+                preços
+                previamente, garantindo maior <strong>agilidade e eficiência</strong> nas contratações futuras,
+                eliminando
+                a necessidade de instaurar múltiplos processos licitatórios para atender demandas de
+                mesmo objeto.
+            </li>
+            <li>
+                <strong>Economicidade e vantajosidade: </strong>A sistemática permite maior competitividade e
+                obtenção
+                de preços mais vantajosos, além de possibilitar adesões futuras e ganhos de escala, em
+                conformidade com os princípios da economicidade e eficiência.
+            </li>
+            <li>
+                <strong>Atendimento descentralizado: </strong>O SRP assegura o atendimento de diversas secretarias e
+                órgãos do Município, de forma planejada e organizada, garantindo padronização do objeto
+                e segurança na contratação.
+            </li>
+            <li>
+                <strong>Interesse público: </strong>A medida evita desabastecimento, permite atender prontamente
+                situações de necessidade e contribui para a boa continuidade dos serviços públicos.
+            </li>
+        </ol>
 
-            {{-- Bloco de data e assinatura --}}
-            <div class="footer-signature">
-                {{ $processo->prefeitura->cidade }},
-                {{ \Carbon\Carbon::parse($dataSelecionada)->translatedFormat('d \d\e F \d\e Y') }}
+        {{-- Bloco de data e assinatura --}}
+        <div class="footer-signature">
+            {{ $processo->prefeitura->cidade }},
+            {{ \Carbon\Carbon::parse($dataSelecionada)->translatedFormat('d \d\e F \d\e Y') }}
+        </div>
+
+        @php
+        // Verifica se a variável $assinantes existe e tem itens
+        $hasSelectedAssinantes = isset($assinantes) && count($assinantes) > 0;
+        @endphp
+
+        @if ($hasSelectedAssinantes)
+        {{-- Renderiza APENAS O PRIMEIRO assinante da lista --}}
+        @php
+        $primeiroAssinante = $assinantes[0]; // Pega o primeiro item
+        @endphp
+
+        <div style="margin-top: 40px; text-align: center;">
+            <div class="signature-block" style="display: inline-block; margin: 0 40px;">
+                ___________________________________<br>
+                <p style="line-height: 1.2;">
+                    {{ $primeiroAssinante['responsavel'] }} <br>
+                    <span>{{ $primeiroAssinante['unidade_nome'] }}</span>
+                </p>
             </div>
-
-            @php
-                // Verifica se a variável $assinantes existe e tem itens
-                $hasSelectedAssinantes = isset($assinantes) && count($assinantes) > 0;
-            @endphp
-
-            @if ($hasSelectedAssinantes)
-                {{-- Renderiza APENAS O PRIMEIRO assinante da lista --}}
-                @php
-                    $primeiroAssinante = $assinantes[0]; // Pega o primeiro item
-                @endphp
-
-                <div style="margin-top: 40px; text-align: center;">
-                    <div class="signature-block" style="display: inline-block; margin: 0 40px;">
-                        ___________________________________<br>
-                        <p style="line-height: 1.2;">
-                            {{ $primeiroAssinante['responsavel'] }} <br>
-                            <span>{{ $primeiroAssinante['unidade_nome'] }}</span>
-                        </p>
-                    </div>
-                </div>
-            @else
-                {{-- Bloco Padrão (Fallback) --}}
-                <div class="signature-block" style="margin-top: 40px; text-align: center;">
-                    ___________________________________<br>
-                    <p style="line-height: 1.2;">
-                        {{ $processo->prefeitura->autoridade_competente }} <br>
-                        <span style="color: red;">[Cargo/Título Padrão - A ser ajustado]</span>
-                    </p>
-                </div>
-            @endif
+        </div>
+        @else
+        {{-- Bloco Padrão (Fallback) --}}
+        <div class="signature-block" style="margin-top: 40px; text-align: center;">
+            ___________________________________<br>
+            <p style="line-height: 1.2;">
+                {{ $processo->prefeitura->autoridade_competente }} <br>
+                <span style="color: red;">[Cargo/Título Padrão - A ser ajustado]</span>
+            </p>
+        </div>
+        @endif
         @endif
     </div>
 
@@ -690,12 +788,12 @@
     {{-- BLOCO 6: RESULTADOS PRETENDIDOS --}}
     {{-- ====================================================================== --}}
     <div id="mapa-gerenciamento-risco">
-        <p style="text-align: center;  font-weight: 700;">MAPA DE GERENCIAMENTO DE RISCOS</p>
-        <p style="text-indent: 30px; text-align: justify;">O documento visa a elaboração de um MAPA DE GERANCIAMENTO DE
+        <p style="text-align: center; font-weight: 700;">MAPA DE GERENCIAMENTO DE RISCOS</p>
+        <p style="text-indent: 30px; text-align: justify; font-size: 11pt;">O documento visa a elaboração de um MAPA DE GERANCIAMENTO DE
             RISCOS para a
             {!! strip_tags($processo->objeto) !!}, de forma a melhor atender as necessidades do município de
             {{ $processo->prefeitura->cidade }}.</p>
-        <p style=" font-weight: 700; text-indent: 20px;">1- INTRODUÇÃO</p>
+        <p style="font-weight: 700; text-indent: 20px;">1- INTRODUÇÃO</p>
 
         <div style="text-indent: 30px; text-align: justify;">
             O gerenciamento de riscos permite ações contínuas de planejamento, organização e
@@ -824,12 +922,10 @@
             um instrumento de apoio para a definição dos critérios de classificação do nível de risco
         </p>
         <div style="margin-bottom: 20px; display: flex; justify-content: flex-end;">
-            <table
-                style="border-collapse: collapse; margin-bottom: 30px; border: 1px solid black; text-align: center; font-size: 10pt;">
+            <table style="border-collapse: collapse; margin-bottom: 30px; border: 1px solid black; text-align: center; font-size: 10pt;">
                 <thead>
                     <tr>
-                        <td colspan="7"
-                            style="border: 1px solid black; padding: 5px; font-weight: bold; background-color: #f0f0f0;">
+                        <td colspan="7" style="border: 1px solid black; padding: 5px; font-weight: bold; background-color: #f0f0f0;">
                             MATRIZ DE RISCO
                         </td>
                     </tr>
@@ -837,8 +933,7 @@
                 <tbody>
                     <tr>
                         <td rowspan="5" style=" width: 0.5em; padding: 0;">
-                            <div
-                                style=" transform: rotate(-90deg); transform-origin: 0 0; position: relative; top: 10%; left: 30px; width: 100%; text-align: center; font-weight: bold; ">
+                            <div style=" transform: rotate(-90deg); transform-origin: 0 0; position: relative; top: 10%; left: 30px; width: 100%; text-align: center; font-weight: bold; ">
                                 CLIMPACTO
                             </div>
                         </td>
@@ -899,24 +994,19 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td
-                            style="border: 1px solid black; padding: 5px 15px; text-align: center; font-weight: bold; background-color: #4CAF50; ">
+                        <td style="border: 1px solid black; padding: 5px 15px; text-align: center; font-weight: bold; background-color: #4CAF50; ">
                             MUITO BAIXA - 1
                         </td>
-                        <td
-                            style="border: 1px solid black; padding: 5px 15px; text-align: center; font-weight: bold; background-color: #66BB6A;">
+                        <td style="border: 1px solid black; padding: 5px 15px; text-align: center; font-weight: bold; background-color: #66BB6A;">
                             BAIXA - 2
                         </td>
-                        <td
-                            style="border: 1px solid black; padding: 5px 15px; text-align: center; font-weight: bold; background-color: #FFEB3B;">
+                        <td style="border: 1px solid black; padding: 5px 15px; text-align: center; font-weight: bold; background-color: #FFEB3B;">
                             MÉDIA - 5
                         </td>
-                        <td
-                            style="border: 1px solid black; padding: 5px 15px; text-align: center; font-weight: bold; background-color: #FF9800;">
+                        <td style="border: 1px solid black; padding: 5px 15px; text-align: center; font-weight: bold; background-color: #FF9800;">
                             ALTA - 8
                         </td>
-                        <td
-                            style="border: 1px solid black; padding: 5px 15px; text-align: center; font-weight: bold; background-color: #F44336; ">
+                        <td style="border: 1px solid black; padding: 5px 15px; text-align: center; font-weight: bold; background-color: #F44336; ">
                             MUITO ALTA - 10
                         </td>
                     </tr>
@@ -924,30 +1014,25 @@
             </table>
             <div style="text-align: center; font-weight: bold;  margin-bottom:30px;">PROBABILIDADE</div>
 
-            <table
-                style="border-collapse: collapse; width: auto; margin: 0 auto; border: 1px solid black; justify-content: right; font-size: 10pt;">
+            <table style="border-collapse: collapse; width: auto; margin: 0 auto; border: 1px solid black; justify-content: right; font-size: 10pt;">
                 <thead>
                     <tr>
-                        <td colspan="2"
-                            style="border: 1px solid black; padding: 5px; text-align: center; font-weight: bold; background-color: #f0f0f0;">
+                        <td colspan="2" style="border: 1px solid black; padding: 5px; text-align: center; font-weight: bold; background-color: #f0f0f0;">
                             CLASSIFICAÇÃO DE NÍVEL DE RISCO
                         </td>
                     </tr>
                     <tr>
-                        <td
-                            style="border: 1px solid black; padding: 5px; text-align: center; font-weight: bold; background-color: #f0f0f0;">
+                        <td style="border: 1px solid black; padding: 5px; text-align: center; font-weight: bold; background-color: #f0f0f0;">
                             RISCO
                         </td>
-                        <td
-                            style="border: 1px solid black; padding: 5px; text-align: center; font-weight: bold; background-color: #f0f0f0;">
+                        <td style="border: 1px solid black; padding: 5px; text-align: center; font-weight: bold; background-color: #f0f0f0;">
                             ESCALA
                         </td>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td
-                            style="border: 1px solid black; padding: 5px; background-color: #90ee90; font-weight: bold;">
+                        <td style="border: 1px solid black; padding: 5px; background-color: #90ee90; font-weight: bold;">
                             RB (Risco Baixo)
                         </td>
                         <td style="border: 1px solid black; padding: 5px; text-align: center;">
@@ -955,8 +1040,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <td
-                            style="border: 1px solid black; padding: 5px; background-color: #ffd700; font-weight: bold;">
+                        <td style="border: 1px solid black; padding: 5px; background-color: #ffd700; font-weight: bold;">
                             RM (Risco Médio)
                         </td>
                         <td style="border: 1px solid black; padding: 5px; text-align: center;">
@@ -964,8 +1048,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <td
-                            style="border: 1px solid black; padding: 5px; background-color: #ff8c00; font-weight: bold;">
+                        <td style="border: 1px solid black; padding: 5px; background-color: #ff8c00; font-weight: bold;">
                             RA (Risco Alto)
                         </td>
                         <td style="border: 1px solid black; padding: 5px; text-align: center;">
@@ -973,8 +1056,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <td
-                            style="border: 1px solid black; padding: 5px; background-color: #ff0000; color: white; font-weight: bold;">
+                        <td style="border: 1px solid black; padding: 5px; background-color: #ff0000; color: white; font-weight: bold;">
                             RE (Risco Extremo)
                         </td>
                         <td style="border: 1px solid black; padding: 5px; text-align: center;">
@@ -993,11 +1075,10 @@
             100), entende-se como nível de risco muito alto (risco extremo).
         </p>
 
-        <p style=" font-weight: 700; text-indent: 20px;">2- IDENTIFICAÇÃO E ANÁLISE DOS PRINCIPAIS
+        <p style="font-weight: 700; text-indent: 20px;">2- IDENTIFICAÇÃO E ANÁLISE DOS PRINCIPAIS
             RISCOS</p>
 
-        <table
-            style="border-collapse: collapse; width: 100%; border: 2px solid black; font-size: 10pt; text-align: center;">
+        <table style="border-collapse: collapse; width: 100%; border: 2px solid black; font-size: 10pt; text-align: center;">
             <thead>
                 <tr style="background-color: #f2f2f2; border: 1px solid black;">
                     <th style="border: 1px solid black; padding: 8px;">RISCO</th>
@@ -1016,8 +1097,7 @@
                     <td style="border: 1px solid black; padding: 8px;">Planejamento da Contratação</td>
                     <td style="border: 1px solid black; padding: 8px;">1</td>
                     <td style="border: 1px solid black; padding: 8px;">8</td>
-                    <td
-                        style="border: 1px solid black; padding: 8px; background-color: #00cc00; color: white; font-weight: bold;">
+                    <td style="border: 1px solid black; padding: 8px; background-color: #00cc00; color: white; font-weight: bold;">
                         8</td>
                 </tr>
                 <tr style="border: 1px solid black;">
@@ -1028,8 +1108,7 @@
                     <td style="border: 1px solid black; padding: 8px;">Planejamento da Contratação</td>
                     <td style="border: 1px solid black; padding: 8px;">8</td>
                     <td style="border: 1px solid black; padding: 8px;">8</td>
-                    <td
-                        style="border: 1px solid black; padding: 8px; background-color: #cc6600; color: white; font-weight: bold;">
+                    <td style="border: 1px solid black; padding: 8px; background-color: #cc6600; color: white; font-weight: bold;">
                         64</td>
                 </tr>
                 <tr style="border: 1px solid black;">
@@ -1059,8 +1138,7 @@
                     <td style="border: 1px solid black; padding: 8px;">Gestão Contratual</td>
                     <td style="border: 1px solid black; padding: 8px;">8</td>
                     <td style="border: 1px solid black; padding: 8px;">10</td>
-                    <td
-                        style="border: 1px solid black; padding: 8px; background-color: #ff0000; color: white; font-weight: bold;">
+                    <td style="border: 1px solid black; padding: 8px; background-color: #ff0000; color: white; font-weight: bold;">
                         80</td>
                 </tr>
                 <tr style="border: 1px solid black;">
@@ -1076,24 +1154,23 @@
             </tbody>
         </table>
 
-        <p style=" font-weight: 700; text-indent: 20px;">3- AVALIAÇÃO E TRATAMENTO DOS RISCOS
+        <p style="font-weight: 700; text-indent: 20px;">3- AVALIAÇÃO E TRATAMENTO DOS RISCOS
             IDENTIFICADOS </p>
 
-        <p style=" font-weight: 700; text-indent: 30px;">3.1- Riscos relacionados à fase de Planejamento
+        <p style="font-weight: 700; text-indent: 30px;">3.1- Riscos relacionados à fase de Planejamento
             da Contratação:</p>
         {{-- RISCO 01 --}}
         <table style="border-collapse: collapse; width: 100%; border: 2px solid black;  font-size: 10pt;">
             <thead>
                 <tr>
-                    <th colspan="3"
-                        style="border: 1px solid black; padding: 8px; text-align: center; background-color: #f2f2f2; font-weight: bold; border-top: none;">
+                    <th colspan="3" style="border: 1px solid black; padding: 8px; text-align: center; background-color: #f2f2f2; font-weight: bold; border-top: none;">
                         RISCO 01</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
                     <td colspan="3" style="border: 1px solid black; padding: 4px;"><strong>Descrição:</strong>
-                        Problemas no processo de licitação para aquisição/contratação do objeto do Projeto Básico
+                        Problemas no processo de licitação para aquisição/contratação do objeto do Termo de Referência
                     </td>
                 </tr>
                 <tr>
@@ -1125,8 +1202,8 @@
                 <tr>
                     <td style="border: 1px solid black; padding: 4px; vertical-align: top; text-align: center;">01</td>
                     <td style="border: 1px solid black; padding: 4px; vertical-align: top;">
-                        Cumprir os prazos para contratação, revisar e acompanhar as mudanças nos documentos de planejamento da contratação que influenciam no
-                        descumprimento do cronograma
+                        Cumprir os prazos para contratação, revisar e acompanhar as mudanças nos documentos de
+                        planejamento da contratação que influenciam no descumprimento do cronograma.
                     </td>
                     <td style="border: 1px solid black; padding: 4px; text-align: center; vertical-align: top;">Equipe
                         de Planejamento da Contratação</td>
@@ -1135,7 +1212,8 @@
                 <tr>
                     <td style="border: 1px solid black; padding: 4px; vertical-align: top; text-align: center;">02</td>
                     <td style="border: 1px solid black; padding: 4px; vertical-align: top;">
-                        Elaborar os documentos de planejamento da contratação com estrita observância à legislação e normativos complementares.
+                        Elaborar os documentos de planejamento da contratação com estrita observância à legislação e
+                        normativos complementares.
                     </td>
                     <td style="border: 1px solid black; padding: 4px; text-align: center; vertical-align: top;">Equipe
                         de Planejamento da Contratação</td>
@@ -1164,16 +1242,15 @@
         <table style="border-collapse: collapse; width: 100%; border: 2px solid black;  font-size: 10pt;">
             <thead>
                 <tr>
-                    <th colspan="3"
-                        style="border: 1px solid black; padding: 8px; text-align: center; background-color: #f2f2f2; font-weight: bold; border-top: none;">
+                    <th colspan="3" style="border: 1px solid black; padding: 8px; text-align: center; background-color: #f2f2f2; font-weight: bold; border-top: none;">
                         RISCO 02</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td colspan="3" style="border: 1px solid black; padding: 4px;">Descrição:
-                        Estudos Técnicos Preliminares (ETP), Mapa de Gerenciamento de Risco (MGR) e Projeto Básico
-                        deficientes ou inconsistentes
+                    <td colspan="3" style="border: 1px solid black; padding: 4px;">Descrição: Estudos Técnicos
+                        Preliminares (ETP), Mapa de Gerenciamento de Risco (MGR) e Termo de
+                        Referência (TR) deficientes ou inconsistentes
                     </td>
                 </tr>
                 <tr>
@@ -1281,8 +1358,7 @@
         <table style="border-collapse: collapse; width: 100%; border: 2px solid black;  font-size: 10pt;">
             <thead>
                 <tr>
-                    <th colspan="3"
-                        style="border: 1px solid black; padding: 8px; text-align: center; background-color: #f2f2f2; font-weight: bold; border-top: none;">
+                    <th colspan="3" style="border: 1px solid black; padding: 8px; text-align: center; background-color: #f2f2f2; font-weight: bold; border-top: none;">
                         RISCO 03</th>
                 </tr>
             </thead>
@@ -1292,13 +1368,18 @@
                         preços</td>
                 </tr>
                 <tr>
-                    <td colspan="3" style="border: 1px solid black; padding: 4px;">Probabilidade: Médio</td>
+                    <td colspan="3" style="border: 1px solid black; padding: 4px;">Probabilidade: Alto</td>
                 </tr>
                 <tr>
-                    <td colspan="3" style="border: 1px solid black; padding: 4px;">Impacto: Médio
+                    <td colspan="3" style="border: 1px solid black; padding: 4px;">Impacto: Alto
                 </tr>
                 <tr>
-                    <td colspan="3" style="border: 1px solid black; padding: 4px;">Dano (Consequência): Prejuízo ao erário</td>
+                    <td colspan="3" style="border: 1px solid black; padding: 4px;">Dano (Consequência): Elevação
+                        dos preços ou inexequibilidade das propostas</td>
+                </tr>
+                <tr>
+                    <td colspan="3" style="border: 1px solid black; padding: 4px;">Dano (Consequência):
+                        Impossibilidade de contratação</td>
                 </tr>
                 <tr>
                     <td colspan="3" style="border: 1px solid black; padding: 4px;">Tratamento: Mitigar</td>
@@ -1316,19 +1397,19 @@
                 <tr>
                     <td style="border: 1px solid black; padding: 4px; vertical-align: top; text-align: center;">01</td>
                     <td style="border: 1px solid black; padding: 4px; vertical-align: top;">
-                        Elaborar projeto básico considerando padrões
-                        nacionais de precificação
+                        Ampliar a pesquisa de preços, não se
+                        restringindo a apenas três propostas
                     </td>
                     <td style="border: 1px solid black; padding: 4px; text-align: center; vertical-align: top;">
-                        Setor de Engenharia
+                        Integrante Administrativo
                     </td>
                 </tr>
 
                 <tr>
                     <td style="border: 1px solid black; padding: 4px; vertical-align: top; text-align: center;">02</td>
                     <td style="border: 1px solid black; padding: 4px; vertical-align: top;">
-                        Considerar custos com encargos, tributos, frete e
-                        instalação quando for o caso
+                        Levar em consideração, quando cabível, os
+                        questionamentos das empresas concorrentes
                     </td>
                     <td style="border: 1px solid black; padding: 4px; text-align: center; vertical-align: top;">
                         Equipe de Planejamento da Contratação</td>
@@ -1336,11 +1417,14 @@
                 <tr>
                     <td style="border: 1px solid black; padding: 4px; vertical-align: top; text-align: center;">03</td>
                     <td style="border: 1px solid black; padding: 4px; vertical-align: top;">
-                        Observar os orçamentos recebidos, excluindo
-                        aqueles com indícios de falhas
+                        Utilizar o Painel de Preços Públicos do Tribunal
+                        de Contas do Piauí, para assim buscar por
+                        preços já utilizados por outras administrações
+                        regionais
+
                     </td>
                     <td style="border: 1px solid black; padding: 4px; text-align: center; vertical-align: top;">
-                        Equipe de Planejamento da Contratação</td>
+                        Integrante Administrativo</td>
                 </tr>
 
                 <tr>
@@ -1354,26 +1438,12 @@
                 <tr>
                     <td style="border: 1px solid black; padding: 4px; vertical-align: top; text-align: center;">01</td>
                     <td style="border: 1px solid black; padding: 4px; vertical-align: top;">
-                        Revisar Projeto Basico
+                        Refazer a pesquisa de preços seguindo os
+                        procedimentos de acordo com a Lei Federal
+                        14.133/2021
                     </td>
                     <td style="border: 1px solid black; padding: 4px; text-align: center; vertical-align: top;">
-                        Setor de engenharia</td>
-                </tr>
-                <tr>
-                    <td style="border: 1px solid black; padding: 4px; vertical-align: top; text-align: center;">02</td>
-                    <td style="border: 1px solid black; padding: 4px; vertical-align: top;">
-                        Observar preços de outras licitações
-                    </td>
-                    <td style="border: 1px solid black; padding: 4px; text-align: center; vertical-align: top;">
-                        Equipe de Planejamento da Contratação</td>
-                </tr>
-                <tr>
-                    <td style="border: 1px solid black; padding: 4px; vertical-align: top; text-align: center;">03</td>
-                    <td style="border: 1px solid black; padding: 4px; vertical-align: top;">
-                        Não adjudicação dos bens
-                    </td>
-                    <td style="border: 1px solid black; padding: 4px; text-align: center; vertical-align: top;">
-                        Agente de Contratação/Pregoeiro</td>
+                        Integrante Administrativo</td>
                 </tr>
             </tbody>
         </table>
@@ -1382,8 +1452,7 @@
         <table style="border-collapse: collapse; width: 100%; border: 2px solid black;  font-size: 10pt;">
             <thead>
                 <tr>
-                    <th colspan="3"
-                        style="border: 1px solid black; padding: 8px; text-align: center; background-color: #f2f2f2; font-weight: bold; border-top: none;">
+                    <th colspan="3" style="border: 1px solid black; padding: 8px; text-align: center; background-color: #f2f2f2; font-weight: bold; border-top: none;">
                         RISCO 04</th>
                 </tr>
             </thead>
@@ -1488,14 +1557,14 @@
         <table style="border-collapse: collapse; width: 100%; border: 2px solid black;  font-size: 10pt;">
             <thead>
                 <tr>
-                    <th colspan="3"
-                        style="border: 1px solid black; padding: 8px; text-align: center; background-color: #f2f2f2; font-weight: bold; border-top: none;">
+                    <th colspan="3" style="border: 1px solid black; padding: 8px; text-align: center; background-color: #f2f2f2; font-weight: bold; border-top: none;">
                         RISCO 05</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td colspan="3" style="border: 1px solid black; padding: 4px;">Descrição: Baixa qualificação técnica da empresa fornecedora (garantia/suporte técnico) </td>
+                    <td colspan="3" style="border: 1px solid black; padding: 4px;">Descrição: Baixa qualificação
+                        técnica da empresa fornecedora (garantia/suporte técnico) </td>
                 </tr>
                 <tr>
                     <td colspan="3" style="border: 1px solid black; padding: 4px;">Probabilidade: Baixo</td>
@@ -1505,7 +1574,8 @@
                 </tr>
                 <tr>
                     <td colspan="3" style="border: 1px solid black; padding: 4px;">Dano (Consequência):
-                        Inobservância de termos e condições estabelecidos nos documentos do Planejamento da contratação
+                        Inobservância de termos e condições estabelecidos nos documentos do Planejamento
+                        da contratação
                     </td>
                 </tr>
                 <tr>
@@ -1524,7 +1594,8 @@
                 <tr>
                     <td style="border: 1px solid black; padding: 4px; vertical-align: top; text-align: center;">01</td>
                     <td style="border: 1px solid black; padding: 4px; vertical-align: top;">
-                        Capacitar servidores para que acompanhem a execução do contrato/Ata
+                        Capacitar servidores para que acompanhem a
+                        execução do contrato/Ata
                     </td>
                     <td style="border: 1px solid black; padding: 4px; text-align: center; vertical-align: top;">
                         Equipe de Planejamento da Contratação
@@ -1543,7 +1614,9 @@
                 <tr>
                     <td style="border: 1px solid black; padding: 4px; vertical-align: top; text-align: center;">01</td>
                     <td style="border: 1px solid black; padding: 4px; vertical-align: top;">
-                        Estabelecer rotinas de controle para o efetivo cumprimento das obrigações estabelecidas no Edital e anexos
+                        Estabelecer rotinas de controle para o efetivo
+                        cumprimento das obrigações estabelecidas no
+                        Edital e anexos
                     </td>
                     <td style="border: 1px solid black; padding: 4px; text-align: center; vertical-align: top;">
                         Fiscal e Gestor do Contrato</td>
@@ -1555,16 +1628,14 @@
         <table style="border-collapse: collapse; width: 100%; border: 2px solid black; font-size: 10pt;">
             <thead>
                 <tr>
-                    <th colspan="3"
-                        style="border: 1px solid black; padding: 8px; text-align: center; background-color: #f2f2f2; font-weight: bold; border-top: none;">
+                    <th colspan="3" style="border: 1px solid black; padding: 8px; text-align: center; background-color: #f2f2f2; font-weight: bold; border-top: none;">
                         RISCO 06</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td colspan="3" style="border: 1px solid black; padding: 4px;">Descrição:
-                        Descumprimento de condições e obrigações previstas no Edital e anexos pela contratada
-                    </td>
+                    <td colspan="3" style="border: 1px solid black; padding: 4px;">Descrição: Descumprimento de
+                        condições e obrigações previstas no Edital e anexos pela contratada </td>
                 </tr>
                 <tr>
                     <td colspan="3" style="border: 1px solid black; padding: 4px;">Probabilidade: Baixo</td>
@@ -1603,8 +1674,10 @@
                 <tr>
                     <td style="border: 1px solid black; padding: 4px; vertical-align: top; text-align: center;">01</td>
                     <td style="border: 1px solid black; padding: 4px; vertical-align: top;">
-                        Acompanhar a execução dos serviços aferindo se os requisitos exigidos no Edital e Anexos
-                        estão sendo cumpridos de acordo com a qualidade exigida
+                        Acompanhar a entrega dos bens aferindo se os
+                        requisitos exigidos no Edital e Anexos estão
+                        sendo cumpridos de acordo com a qualidade
+                        exigida
                     </td>
                     <td style="border: 1px solid black; padding: 4px; text-align: center; vertical-align: top;">
                         Fiscal e Gestor do Contrato
@@ -1613,7 +1686,8 @@
                 <tr>
                     <td style="border: 1px solid black; padding: 4px; vertical-align: top; text-align: center;">02</td>
                     <td style="border: 1px solid black; padding: 4px; vertical-align: top;">
-                        Avaliar se os serviços realizados estão atendendo as expectativas da contratação
+                        Avaliar se os materiais entregues estão
+                        atendendo as expectativas da contratação
                     </td>
                     <td style="border: 1px solid black; padding: 4px; text-align: center; vertical-align: top;">
                         Fiscal e Gestor do Contrato
@@ -1622,7 +1696,8 @@
                 <tr>
                     <td style="border: 1px solid black; padding: 4px; vertical-align: top; text-align: center;">03</td>
                     <td style="border: 1px solid black; padding: 4px; vertical-align: top;">
-                        Dimensionamento adequado do corpo de fiscalização e gestão contratual
+                        Dimensionamento adequado do corpo de
+                        fiscalização e gestão contratual
                     </td>
                     <td style="border: 1px solid black; padding: 4px; text-align: center; vertical-align: top;">
                         Autoridade competente
@@ -1641,7 +1716,8 @@
                 <tr>
                     <td style="border: 1px solid black; padding: 4px; vertical-align: top; text-align: center;">01</td>
                     <td style="border: 1px solid black; padding: 4px; vertical-align: top;">
-                        Notificar formalmente a Contratada quando cláusulas do contrato forem descumpridas
+                        Notificar formalmente a Contratada quando
+                        cláusulas do contrato forem descumpridas
                     </td>
                     <td style="border: 1px solid black; padding: 4px; text-align: center; vertical-align: top;">
                         Fiscal e Gestor do Contrato</td>
@@ -1649,7 +1725,9 @@
                 <tr>
                     <td style="border: 1px solid black; padding: 4px; vertical-align: top; text-align: center;">02</td>
                     <td style="border: 1px solid black; padding: 4px; vertical-align: top;">
-                        Aplicar multas e penalidades previstas no instrumento convocatório, de forma a coibir a reincidência
+                        Aplicar multas e penalidades previstas no
+                        instrumento convocatório, de forma a coibir a
+                        reincidência
                     </td>
                     <td style="border: 1px solid black; padding: 4px; text-align: center; vertical-align: top;">
                         Autoridade competente</td>
@@ -1657,8 +1735,11 @@
                 <tr>
                     <td style="border: 1px solid black; padding: 4px; vertical-align: top; text-align: center;">03</td>
                     <td style="border: 1px solid black; padding: 4px; vertical-align: top;">
-                        Instituir nova equipe de planejamento da contratação e promover uma nova contratação
-                        para evitar o comprometimento da continuidade dos serviços da instituição, em caso de dificuldade de resolução das inconformidades
+                        Instituir nova equipe de planejamento da
+                        contratação e promover uma nova contratação
+                        para evitar o comprometimento da continuidade
+                        dos serviços da instituição, em caso de
+                        dificuldade de resolução das inconformidades
                     </td>
                     <td style="border: 1px solid black; padding: 4px; text-align: center; vertical-align: top;">
                         Autoridade competente</td>
@@ -1666,63 +1747,63 @@
             </tbody>
         </table>
         <br>
-        {!! str_replace('<p>', '<p style="text-indent:30px; text-align: justify;">', $detalhe->riscos_extra) !!}
-        <p style=" font-weight: 700; text-indent: 20px;">4 - APROVAÇÃO E ASSINATURA</p>
-        @php
-            // Verifica se a variável $assinantes existe e tem itens
-            $hasSelectedAssinantes = isset($assinantes) && count($assinantes) > 0;
+        {!! str_replace('<p>', '<p style="text-indent:30px; text-align: justify; font-size: 11pt;">', $detalhe->riscos_extra) !!}
+                <p style=" font-weight: 700; text-indent: 20px;">4 - APROVAÇÃO E ASSINATURA</p>
+                @php
+                // Verifica se a variável $assinantes existe e tem itens
+                $hasSelectedAssinantes = isset($assinantes) && count($assinantes) > 0;
 
-            // Define o primeiro assinante, se existir
-            $primeiroAssinante = $hasSelectedAssinantes ? $assinantes[0] : null;
+                // Define o primeiro assinante, se existir
+                $primeiroAssinante = $hasSelectedAssinantes ? $assinantes[0] : null;
 
-            // Extrai o nome do município removendo "Prefeitura Municipal de" ou "Prefeitura de"
-            $municipio = $municipio =  $processo->prefeitura->cidade;
+                // Extrai o nome do município removendo "Prefeitura Municipal de" ou "Prefeitura de"
+                $municipio = $municipio = $processo->prefeitura->cidade;
 
-            // Define a data formatada em português
-            $dataFormatada = \Carbon\Carbon::parse($dataSelecionada)
+                // Define a data formatada em português
+                $dataFormatada = \Carbon\Carbon::parse($dataSelecionada)
                 ->locale('pt_BR')
                 ->translatedFormat('d \d\e F \d\e Y');
-        @endphp
+                @endphp
 
-        <p style="text-align: justify; text-indent: 30px;">
-            O {{ $primeiroAssinante['responsavel'] ?? '____________________' }},
-            nos termos da Portaria nº{{  $primeiroAssinante['numero_portaria'] }},
-            de
-            {{
+                <p style="text-align: justify; text-indent: 30px;">
+                    O {{ $primeiroAssinante['responsavel'] ?? '____________________' }},
+                    nos termos da Portaria nº{{ $primeiroAssinante['numero_portaria'] }},
+                    de
+                    {{
                 !empty($primeiroAssinante['data_portaria'])
                     ? \Carbon\Carbon::parse($primeiroAssinante['data_portaria'])->translatedFormat('d \d\e F \d\e Y')
                     : '____________________'
             }},
-            apresenta o Mapa de Gerenciamento de Risco,
-            certificando que somos responsáveis pela elaboração do presente documento.
-        </p>
+                    apresenta o Mapa de Gerenciamento de Risco,
+                    certificando que somos responsáveis pela elaboração do presente documento.
+                </p>
 
-        {{-- Bloco de data e assinatura --}}
-        <div class="footer-signature">
-            {{ $municipio }}, {{ $dataFormatada }}
-        </div>
+                {{-- Bloco de data e assinatura --}}
+                <div class="footer-signature">
+                    {{ $municipio }}, {{ $dataFormatada }}
+                </div>
 
-        @if ($hasSelectedAssinantes)
-            {{-- Renderiza apenas o primeiro assinante --}}
-            <div style="margin-top:40px; text-align:center;">
-                <div class="signature-block" style="display:inline-block; margin:0 40px;">
+                @if ($hasSelectedAssinantes)
+                {{-- Renderiza apenas o primeiro assinante --}}
+                <div style="margin-top:40px; text-align:center;">
+                    <div class="signature-block" style="display:inline-block; margin:0 40px;">
+                        ___________________________________<br>
+                        <p style="line-height:1.2; margin:0;">
+                            {{ $primeiroAssinante['responsavel'] }}<br>
+                            <span style="color:#4b5563;">{{ $primeiroAssinante['unidade_nome'] }}</span>
+                        </p>
+                    </div>
+                </div>
+                @else
+                {{-- Fallback (sem assinantes selecionados) --}}
+                <div class="signature-block" style="margin-top:40px; text-align:center;">
                     ___________________________________<br>
-                    <p style="font-size:10pt; line-height:1.2; margin:0;">
-                        {{ $primeiroAssinante['responsavel'] }}<br>
-                        <span style="color:#4b5563;">{{ $primeiroAssinante['unidade_nome'] }}</span>
+                    <p style="line-height:1.2; margin:0;">
+                        {{ $processo->prefeitura->autoridade_competente ?? '____________________' }}<br>
+                        <span style="color:red;">[Cargo/Título Padrão - A ser ajustado]</span>
                     </p>
                 </div>
-            </div>
-        @else
-            {{-- Fallback (sem assinantes selecionados) --}}
-            <div class="signature-block" style="margin-top:40px; text-align:center;">
-                ___________________________________<br>
-                <p style="font-size:10pt; line-height:1.2; margin:0;">
-                    {{ $processo->prefeitura->autoridade_competente ?? '____________________' }}<br>
-                    <span style="color:red;">[Cargo/Título Padrão - A ser ajustado]</span>
-                </p>
-            </div>
-        @endif
+                @endif
     </div>
     {{-- QUEBRA DE PÁGINA --}}
     <div class="page-break"></div>
@@ -1732,55 +1813,54 @@
     {{-- ====================================================================== --}}
     <div id="alinhamento-pca">
         <p style="text-align: center;  font-weight: 700;">ALINHAMENTO AO PLANO DE CONTRATAÇÃO ANUAL (PCA) </p>
-        <p style="text-align: center; font-size:14px; font-weight: 700;">DECLARAÇÃO</p>
+        <p style="text-align: center; font-weight: 700;">DECLARAÇÃO</p>
         @if ($detalhe->prevista_plano_anual == 'sim')
-            <p>
-                Declaro, para os devidos fins, que a presente demanda referente à
-                <span style="font-weight: bold">{!! strip_tags($processo->objeto) !!}</span>
-                encontra-se regularmente <span style="font-weight: bold">prevista no Plano Anual de Contratações – PAC </span>,
-                elaborado nos termos do art. 12 da Lei nº 14.133/2021 e da Instrução Normativa SEGES/ME nº 01/2019, ou
-                outro normativo vigente que disciplina a matéria.
-            </p>
-            <p>
-                A previsão no PAC assegura o adequado planejamento da contratação, alinhado às diretrizes estratégicas
-                da Administração, em conformidade com os princípios da eficiência, economicidade e transparência,
-                garantindo a vinculação desta demanda às metas e prioridades da gestão municipal.
-            </p>
+        <p>
+            Declaro, para os devidos fins, que a presente demanda referente à
+            <span style="font-weight: bold">{!! strip_tags($processo->objeto) !!}</span>
+            encontra-se regularmente <span style="font-weight: bold">prevista no Plano Anual de Contratações – PAC </span>,
+            elaborado nos termos do art. 12 da Lei nº 14.133/2021 e da Instrução Normativa SEGES/ME nº 01/2019, ou
+            outro normativo vigente que disciplina a matéria.
+        </p>
+        <p>
+            A previsão no PAC assegura o adequado planejamento da contratação, alinhado às diretrizes estratégicas
+            da Administração, em conformidade com os princípios da eficiência, economicidade e transparência,
+            garantindo a vinculação desta demanda às metas e prioridades da gestão municipal.
+        </p>
         @else
-            <p>A demanda não está prevista no Plano de Contratações Anual, porém se justifica pelo(s) seguinte(s)
-                motivo(s): </p>
-            <div style="border: 1px solid black; padding: 10px; font-size: 10pt;">
-                <p>Fundamentação Legal: conforme Artigo 12, VII, da Lei nº 14.133.</p>
-                <p style="text-indent: 30px; text-align: justify;">
-                    É importante ressaltar que a ausência de um plano de contratações anual no município de
-                    {{ $processo->prefeitura->cidade }}, se deve a uma
-                    série de fatores que limitaram a sua implementação até o momento. Embora
-                    a legislação (Artigo 12, VII, da Lei nº 14.133) estabeleça a obrigatoriedade de um plano de
-                    contratações
-                    anual, é necessário considerar as circunstâncias específicas que podem justificar a sua ausência
-                    temporária.
-                </p>
-                <p style="text-indent: 30px; text-align: justify;">
-                    Um dos principais fatores que contribuíram para a falta do plano de contratações anual foi a
-                    escassez de técnicos disponíveis para a elaboração do referido plano.
-                </p>
-                <p style="text-indent: 30px; text-align: justify;">
-                    Entretanto, é importante ressaltar que o município está tomando medidas para resolver essa
-                    situação, é válido ressaltar que a elaboração de um plano de contratações anual demanda tempo e
-                    esforço, pois é necessário um levantamento minucioso das necessidades da Administração Municipal,
-                    bem como a análise de fornecedores e a definição de critérios claros para a contratação.
-                </p>
-                <p style="text-indent: 30px; text-align: justify;">
-                    A {{ $processo->prefeitura->nome }}, compromete-se a observar as disposições da Lei
-                    Federal n° 14.133/21 e a empenhar todos os esforções necessários para a elaboração e atualização
-                    periódica do Plano de Contratação Anual, garantindo total transparência e conformidade com as normas
-                    estabelecidas.
-                </p>
+        <p>A demanda não está prevista no Plano de Contratações Anual, porém se justifica pelo(s) seguinte(s)
+            motivo(s): </p>
+        <div style="border: 1px solid black; padding: 10px;">
+            <p>Fundamentação Legal: conforme Artigo 12, VII, da Lei nº 14.133.</p>
+            <p style="text-indent: 30px;">
+                É importante ressaltar que a ausência de um plano de contratações anual no município de
+                {{ $processo->prefeitura->cidade }}, se deve a uma
+                série de fatores que limitaram a sua implementação até o momento. Embora
+                a legislação (Artigo 12, VII, da Lei nº 14.133) estabeleça a obrigatoriedade de um plano de
+                contratações
+                anual, é necessário considerar as circunstâncias específicas que podem justificar a sua ausência
+                temporária.
+            </p>
+            <p style="text-indent: 30px;">
+                Um dos principais fatores que contribuíram para a falta do plano de contratações anual foi a
+                escassez de técnicos disponíveis para a elaboração do referido plano.
+            </p>
+            <p style="text-indent: 30px;">
+                Entretanto, é importante ressaltar que o município está tomando medidas para resolver essa
+                situação, é válido ressaltar que a elaboração de um plano de contratações anual demanda tempo e
+                esforço, pois é necessário um levantamento minucioso das necessidades da Administração Municipal,
+                bem como a análise de fornecedores e a definição de critérios claros para a contratação.
+            </p>
+            <p style="text-indent: 30px;">
+                A {{ $processo->prefeitura->nome }}, compromete-se a observar as disposições da Lei
+                Federal n° 14.133/21 e a empenhar todos os esforções necessários para a elaboração e atualização
+                periódica do Plano de Contratação Anual, garantindo total transparência e conformidade com as normas
+                estabelecidas.
+            </p>
 
-            </div>
+        </div>
         @endif
-        <p
-            style="text-align: center; font-size:12px; font-weight: 700; border: 1px solid black; padding: 10px; background:#dadada; margin-top:20px;">
+        <p style="text-align: center; font-weight: 700; border: 1px solid black; padding: 10px; background:#dadada; margin-top:20px;">
             ENCAMINHAMENTO PARA ÓRGÃO DEMANDANTE
         </p>
         <div style="border: 1px solid black; padding: 10px;">
@@ -1796,46 +1876,44 @@
             </div>
 
             @php
-                // Verifica se a variável $assinantes existe e tem itens
-                $hasSelectedAssinantes = isset($assinantes) && count($assinantes) > 0;
+            // Verifica se a variável $assinantes existe e tem itens
+            $hasSelectedAssinantes = isset($assinantes) && count($assinantes) > 0;
             @endphp
 
             @if ($hasSelectedAssinantes)
-                {{-- Renderiza APENAS O PRIMEIRO assinante da lista --}}
-                @php
-                    $primeiroAssinante = $assinantes[0]; // Pega o primeiro item
-                @endphp
+            {{-- Renderiza APENAS O PRIMEIRO assinante da lista --}}
+            @php
+            $primeiroAssinante = $assinantes[0]; // Pega o primeiro item
+            @endphp
 
-                <div style="margin-top: 40px; text-align: center;">
-                    <div class="signature-block" style="display: inline-block; margin: 0 40px;">
-                        ___________________________________<br>
-                        <p style="line-height: 1.2;">
-                            {{ $primeiroAssinante['responsavel'] }} <br>
-                            <span>{{ $primeiroAssinante['unidade_nome'] }}</span>
-                        </p>
-                    </div>
-                </div>
-            @else
-                {{-- Bloco Padrão (Fallback) --}}
-                <div class="signature-block" style="margin-top: 40px; text-align: center;">
+            <div style="margin-top: 40px; text-align: center;">
+                <div class="signature-block" style="display: inline-block; margin: 0 40px;">
                     ___________________________________<br>
                     <p style="line-height: 1.2;">
-                        {{ $processo->prefeitura->autoridade_competente }} <br>
-                        <span style="color: red;">[Cargo/Título Padrão - A ser ajustado]</span>
+                        {{ $primeiroAssinante['responsavel'] }} <br>
+                        <span>{{ $primeiroAssinante['unidade_nome'] }}</span>
                     </p>
                 </div>
+            </div>
+            @else
+            {{-- Bloco Padrão (Fallback) --}}
+            <div class="signature-block" style="margin-top: 40px; text-align: center;">
+                ___________________________________<br>
+                <p style="line-height: 1.2;">
+                    {{ $processo->prefeitura->autoridade_competente }} <br>
+                    <span style="color: red;">[Cargo/Título Padrão - A ser ajustado]</span>
+                </p>
+            </div>
             @endif
         </div>
 
         {{-- QUEBRA DE PÁGINA --}}
         <div class="page-break"></div>
-        <p style="font-weight: bold; text-align: center;">{{ $detalhe->unidade_setor }}</p>
-        <table
-            style="border-collapse: collapse; width: 100%; text-align: left; border: 1px solid black; font-size: 10pt;">
+
+        <table style="border-collapse: collapse; width: 100%; text-align: left; border: 1px solid black; font-size: 10pt;">
             <thead>
                 <tr>
-                    <td colspan="2"
-                        style="border: 1px solid black; text-align: center; font-weight: bold; padding: 5px;">
+                    <td colspan="2" style="border: 1px solid black; text-align: center; font-weight: bold; padding: 5px;">
                         RESUMO DOS DADOS DO PROCESSO
                     </td>
                 </tr>
@@ -1861,7 +1939,7 @@
                     <td style="border: 1px solid black; padding: 5px; font-weight: bold;">
                         OBJETO
                     </td>
-                    <td style="border: 1px solid black; padding: 5px;">
+                    <td style="border: 1px solid black; padding: 5px; font-size: 11pt;">
                         {!! strip_tags($processo->objeto) !!}
                     </td>
                 </tr>
@@ -1885,14 +1963,14 @@
         </table>
 
         <p>
-            RECEBO O PRESENTE Estudo Técnico Preliminar e após verificar que demanda se
-            encontra alinhada com os instrumentos de planejamento e que o objeto que não
-            contém classificação direcionada à marca ou empresa e nem possui características de
-            luxo determino:
+            RECEBO O PRESENTE Estudo Técnico Preliminar e após verificar que demanda se encontra
+            alinhada com os instrumentos de planejamento e que o objeto que não contém classificação
+            direcionada à marca ou empresa e nem possui características de luxo determino:
         </p>
-        <p> Encaminhe-se à {{ $detalhe->encaminhamento_pesquisa_preco }} para a ELABORAÇÀO DE PROJETO BÁSICO. </p>
-        <p>Encaminhe-se à {{ $detalhe->encaminhamento_doacao_orcamentaria }} para a VERIFICAÇÃO DE DOTACÃO ORÇAMENTÁRIA EXISTENTE. </p>
-        <p>☒ Encaminhe-se à XXXXXXX para a ELABORAÇÃO DE EDITAL E MINUTA DE CONTRATO. </p>
+        <p> Encaminhe-se à {{ $detalhe->encaminhamento_pesquisa_preco }} para a REALIZAÇÃO DE PESQUISA DE PREÇOS. </p>
+        <p>Encaminhe-se à {{ $detalhe->encaminhamento_doacao_orcamentaria }} para a VERIFICAÇÃO DE DOTACÃO ORÇAMENTÁRIA
+            EXISTENTE.
+        </p>
         <table style="border-collapse: collapse; width: auto; border: 1px solid black; font-size: 10pt;">
             <tr>
                 <td style="border: 1px solid black; padding: 6px; font-weight: normal;">
@@ -1902,19 +1980,25 @@
             <tr>
                 <td style="border: 1px solid black; padding: 8px;">
                     <div style="display: block; margin-bottom: 4px;">
-                        <span
-                            style="display:inline-block; width:12px; height:12px; border:1px solid #000; margin-right:5px; vertical-align:middle; text-align:center; line-height:10px; font-size:10px; font-weight:bold;">
+                        <span style="display:inline-block; width:12px; height:12px; border:1px solid #000; margin-right:5px; vertical-align:middle; text-align:center; line-height:10px; font-size:10px; font-weight:bold;">
                             @if ($processo->modalidade === \App\Enums\ModalidadeEnum::DISPENSA)
-                                X
+                            X
                             @endif
                         </span>
                         Dispensa de Licitação;
                     </div>
                     <div style="display: block; margin-bottom: 4px;">
-                        <span
-                            style="display:inline-block; width:12px; height:12px; border:1px solid #000; margin-right:5px; vertical-align:middle; text-align:center; line-height:10px; font-size:10px; font-weight:bold;">
+                        <span style="display:inline-block; width:12px; height:12px; border:1px solid #000; margin-right:5px; vertical-align:middle; text-align:center; line-height:10px; font-size:10px; font-weight:bold;">
+                            @if ($processo->modalidade === \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO)
+                            X
+                            @endif
+                        </span>
+                        Pregão Eletrônico;
+                    </div>
+                    <div style="display: block; margin-bottom: 4px;">
+                        <span style="display:inline-block; width:12px; height:12px; border:1px solid #000; margin-right:5px; vertical-align:middle; text-align:center; line-height:10px; font-size:10px; font-weight:bold;">
                             @if ($processo->modalidade === \App\Enums\ModalidadeEnum::CONCORRENCIA)
-                                X
+                            X
                             @endif
                         </span>
                         Concorrência;
@@ -1923,6 +2007,13 @@
             </tr>
         </table>
 
+
+        <p>
+            Após o cumprimento de todas as etapas acima previstas, retorno o procedimento para esta
+            secretaria para elaboração de Termo de Referência.
+        </p>
+
+
         {{-- Bloco de data e assinatura --}}
         <div class="footer-signature">
             {{ $processo->prefeitura->cidade }},
@@ -1930,82 +2021,39 @@
         </div>
 
         @php
-            // Verifica se a variável $assinantes existe e tem itens
-            $hasSelectedAssinantes = isset($assinantes) && count($assinantes) > 0;
+        // Verifica se a variável $assinantes existe e tem itens
+        $hasSelectedAssinantes = isset($assinantes) && count($assinantes) > 0;
         @endphp
 
         @if ($hasSelectedAssinantes)
-            {{-- Renderiza APENAS O PRIMEIRO assinante da lista --}}
-            @php
-                $primeiroAssinante = $assinantes[1]; // Pega o segundo item
-            @endphp
-
-            <div style="margin-top: 40px; text-align: center;">
-                <div class="signature-block" style="display: inline-block; margin: 0 40px;">
-                    ___________________________________<br>
-                    <p style="line-height: 1.2;">
-                        {{ $primeiroAssinante['responsavel'] }} <br>
-                        <span>{{ $primeiroAssinante['unidade_nome'] }}</span>
-                    </p>
-                </div>
-            </div>
-        @else
-            {{-- Bloco Padrão (Fallback) --}}
-            <div class="signature-block" style="margin-top: 40px; text-align: center;">
-                ___________________________________<br>
-                <p style="line-height: 1.2;">
-                    {{ $processo->prefeitura->autoridade_competente }} <br>
-                    <span style="color: red;">[Cargo/Título Padrão - A ser ajustado]</span>
-                </p>
-            </div>
-        @endif
-    </div>
-
-    {{-- QUEBRA DE PÁGINA--}}
-    <div class="page-break"></div>
-
-    <div>
-        <p style="font-weight: bold; text-align: center;">SECRETARIA MUNICIPAL DE OBRAS</p>
-
-        <p style="text-indent: 30px; text-align: justify;">
-            Considerando a necessidade de Contratação de XXXXXXXXXXXXXXXXXXXXXXX, segue em
-            anexo PROJETO BÁSICO desenvolvido por essa XXXXXXXXXX.
-        </p>
-        <p style="text-indent: 30px; text-align: justify;">
-            Encaminhe-se à XXXXXXXXXXX para a ELABORAÇÃO DE MINUTA DO EDITAL E MINUTA DO CONTRATO.
-        </p>
-
+        {{-- Renderiza APENAS O PRIMEIRO assinante da lista --}}
         @php
-            // Verifica se a variável $assinantes existe e tem itens
-            $hasSelectedAssinantes = isset($assinantes) && count($assinantes) > 0;
+        $primeiroAssinante = $assinantes[1]; // Pega o segundo item
         @endphp
 
-        @if ($hasSelectedAssinantes)
-            {{-- Renderiza APENAS O PRIMEIRO assinante da lista --}}
-            @php
-                $primeiroAssinante = $assinantes[1]; // Pega o segundo item
-            @endphp
-
-            <div style="margin-top: 40px; text-align: center;">
-                <div class="signature-block" style="display: inline-block; margin: 0 40px;">
-                    ___________________________________<br>
-                    <p style="line-height: 1.2;">
-                        {{ $primeiroAssinante['responsavel'] }} <br>
-                        <span>{{ $primeiroAssinante['unidade_nome'] }}</span>
-                    </p>
-                </div>
-            </div>
-        @else
-            {{-- Bloco Padrão (Fallback) --}}
-            <div class="signature-block" style="margin-top: 40px; text-align: center;">
+        <div style="margin-top: 40px; text-align: center;">
+            <div class="signature-block" style="display: inline-block; margin: 0 40px;">
                 ___________________________________<br>
                 <p style="line-height: 1.2;">
-                    {{ $processo->prefeitura->autoridade_competente }} <br>
-                    <span style="color: red;">[Cargo/Título Padrão - A ser ajustado]</span>
+                    {{ $primeiroAssinante['responsavel'] }} <br>
+                    <span>{{ $primeiroAssinante['unidade_nome'] }}</span>
                 </p>
             </div>
+        </div>
+        @else
+        {{-- Bloco Padrão (Fallback) --}}
+        <div class="signature-block" style="margin-top: 40px; text-align: center;">
+            ___________________________________<br>
+            <p style="line-height: 1.2;">
+                {{ $processo->prefeitura->autoridade_competente }} <br>
+                <span style="color: red;">[Cargo/Título Padrão - A ser ajustado]</span>
+            </p>
+        </div>
         @endif
     </div>
+
+    {{-- QUEBRA DE PÁGINA
+    <div class="page-break"></div> --}}
 
 </body>
 

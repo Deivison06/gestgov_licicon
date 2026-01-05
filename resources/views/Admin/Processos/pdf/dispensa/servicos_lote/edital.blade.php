@@ -86,7 +86,7 @@
                             CRITÉRIO DE JULGAMENTO
                         </td>
                         <td style="border: 1px solid black; padding: 5px;">
-                            MENOR PREÇO POR ITEM
+                            MENOR PREÇO POR LOTE
                         </td>
                     </tr>
                     <tr>
@@ -94,7 +94,7 @@
                             FORMA DE ADJUDICAÇÃO
                         </td>
                         <td style="border: 1px solid black; padding: 5px;">
-                            POR ITEM
+                            POR LOTE
                         </td>
                     </tr>
                     <tr>
@@ -235,49 +235,96 @@
                 quantidades e exigências estabelecidas neste Edital e seus anexos.
             </p>
             <p style="text-align: justify;">
-                1.2. A licitação será dividida em itens, conforme tabela constante do Termo de Referência, facultando-se ao licitante a
-                participação em quantos itens forem de seu interesse, conforme justificativa abaixo:
+                1.2. A licitação será dividida em grupos, formados por um ou mais itens, conforme tabela constante
+                do Termo de Referência, facultando-se ao licitante a participação em quantos grupos forem de seu
+                interesse, devendo oferecer proposta para todos os itens que os compõem o lote, conforme
+                justificativa abaixo:
             </p>
-            <ol type="a">
-                <li style="margin-bottom: 6px; text-align: justify;">
-                    O fracionamento do objeto da licitação em itens encontra amparo legal no art. 40, § 1º da Lei nº 14.133/2021, que
-                    incentiva o parcelamento sempre que viável, desde que não comprometa a execução do objeto. A medida visa
-                    permitir a ampla participação de fornecedores, principalmente de pequeno porte, bem como alcançar melhor
-                    resultado para a Administração.
+            <p style="text-align: justify;">
+                A presente justificativa tem por objetivo demonstrar a vantajosidade da contratação do objeto em
+                LOTES, ao invés da aquisição ou contratação individualizada por itens, conforme os princípios e
+                diretrizes estabelecidos pela Lei nº 14.133/2021, especialmente no art. 5º (princípios da eficiência
+                e planejamento) e no art. 40, §1º, que dispõe:
+            </p>
+            <p style="text-align: justify;">
+                “A administração pública poderá dividir o objeto da contratação em lotes, sempre que técnica e
+                economicamente viável, visando à ampliação da competitividade e ao desenvolvimento do
+                mercado local, regional ou nacional, conforme o caso.”
+            </p>
+            <p style="text-indent: 30px;">A contratação por lotes permite:</p>
+            <ul>
+                <li>
+                    Melhor organização e gestão contratual, ao reduzir o número de fornecedores e simplificar
+                    o acompanhamento das entregas ou da prestação dos serviços;
                 </li>
-                <li style="margin-bottom: 6px; text-align: justify;">
-                    O objeto da presente licitação abrange diversos produtos/serviços com características distintas, que podem ser
-                    adquiridos, entregues ou executados de forma independente, sem prejuízo à integridade da execução contratual.
+                <li>
+                    Centralização de responsabilidades, evitando múltiplos prazos, locais de entrega e agentes
+                    executores;
                 </li>
-                <li style="margin-bottom: 6px; text-align: justify;">
-                    A divisão por itens não compromete a obtenção de preços vantajosos, e ao contrário, estimula a competitividade,
-                    ao permitir que microempresas, empresas locais e fornecedores especializados possam concorrer apenas nos itens
-                    de sua capacidade técnica e logística.
+                <li>
+                    Facilidade logística, pois os lotes são organizados por natureza ou destinação dos itens (ex:
+                    lotes por tipo de material, setor usuário ou região de entrega);
                 </li>
-                <li style="margin-bottom: 6px; text-align: justify;">
-                    Com isso, evita-se a concentração do fornecimento em um único fornecedor, promovendo maior eficiência,
-                    economicidade e mitigação de riscos contratuais.
+                <li>
+                    Adoção de cronogramas otimizados, com menos risco de atrasos por fragmentação
+                    excessiva de contratos.
                 </li>
-                <li style="margin-bottom: 6px; text-align: justify;">
-                    A adoção do parcelamento por itens está alinhada ao planejamento da Administração Pública, favorecendo:
-                    <ul style="margin-top: 5px; margin-bottom: 5px;">
-                        <li style="margin-bottom: 5px; text-align: justify;">Atendimento adequado às necessidades específicas de cada unidade administrativa;</li>
-                        <li style="margin-bottom: 5px; text-align: justify;">Diversificação de fornecedores e redução do risco de desabastecimento;</li>
-                        <li style="margin-bottom: 5px; text-align: justify;">Fortalecimento da economia local/regional;</li>
-                        <li style="margin-bottom: 5px; text-align: justify;">Observância ao princípio da isonomia, conforme art. 5º da Lei nº 14.133/2021.</li>
-                    </ul>
+            </ul>
+            <p style="text-indent: 30px; font-weight: bold;">VANTAGENS ECONÔMICAS</p>
+            <ul>
+                <li>
+                    Redução de custos operacionais, tanto para a Administração quanto para os fornecedores
+                    (ex: transporte, emissão de notas, gestão de pedidos);
                 </li>
-                <li style="text-align: justify;">
-                    Além disso, o parcelamento da contratação em itens favorece uma competição saudável entre fornecedores, o que
-                    pode resultar em custos mais baixos e condições mais vantajosas para a Administração Pública. Ao permitir que
-                    empresas ofereçam suas propostas para XXXXXXXXXX, a Prefeitura pode beneficiar-se da especialização dos
-                    fornecedores, garantindo aquisição de produtos de melhor qualidade. Essa dinâmica também contribui para
-                    minimizar riscos, uma vez que cada item pode ser ajustado conforme a resposta do mercado e as demandas
-                    emergentes, facilitando adaptações ao longo do fornecimento.
+                <li>
+                    Estimulação da competitividade saudável, uma vez que empresas de médio porte podem
+                    participar de lotes especializados, e empresas menores de lotes regionais ou setoriais.
                 </li>
-            </ol>
+            </ul>
+            <p style="text-indent: 30px; font-weight: bold;">VANTAGENS NA FISCALIZAÇÃO E CONTROLE </p>
+            <ul>
+                <li>
+                    Facilidade de fiscalização: menos contratos a serem monitorados e maior coerência entre
+                    os itens de cada lote;
+                </li>
+                <li>
+                    Redução de inconsistências entre entregas: evitando divergências de padrões ou prazos
+                    quando múltiplas empresas atuam em paralelo em itens correlatos.
+                </li>
+            </ul>
+            <p style="text-indent: 30px; text-align: justify;">
+                A análise técnica e econômica da contratação indica que a divisão do objeto em lotes
+                representa a solução mais vantajosa para a Administração Pública, ao permitir:
+            </p>
+            <ul>
+                <li>
+                    Racionalização da contratação e execução;
+                </li>
+                <li>
+                    Maior eficiência administrativa e operacional;
+                </li>
+                <li>
+                    Aderência ao planejamento de compras centralizadas;
+                </li>
+                <li>
+                    Observância dos princípios da economicidade, eficiência e interesse público.
+                </li>
+            </ul>
+            <p style="text-align: justify;">
+                Assim, justifica-se plenamente a adoção da contratação por lotes, em detrimento da contratação
+                por itens isolados
+            </p>
+            <p style="text-align: justify;">
+                Por fim, a adoção deste modelo impacta diretamente no atendimento ao interesse público e na
+                eficiência da contratação. A estrutura em lotes assegura que as necessidades imediatas da
+                população sejam atendidas de maneira mais célere, visto que diferentes tipos de itens poderão
+                estar disponíveis simultaneamente. Isso reduz o tempo de espera para o fornecimento, resultando
+                em melhorias tangíveis na qualidade do fornecimento pretendido. Assim, a estratégia de licitação
+                em lotes representa uma solução prática e eficiente para os desafios enfrentados pela Prefeitura,
+                refletindo um compromisso com a transparência e a máxima utilidade dos recursos públicos.
+            </p>
 
-            <p style="text-align: justify; ">
+            <p style="text-align: justify;">
                 1.3. Este certame licitatório obedecerá a seguinte ordem procedimental:
             </p>
             @if ($detalhe->inversao_fase === 'sim')
@@ -415,11 +462,11 @@
                     necessários, ficando resguardado apenas os critérios de inexequibilidade de
                     proposta, que serão devidamente verificados na fase de habilitação.
                     <br><br>
-                    Na fase recursal, após o inicial da contagem do tempo de 30 (trinta) minutos,
+                    1.6. Na fase recursal, após o inicial da contagem do tempo de 30 (trinta) minutos,
                     será aberto campo específico para que as manifestações dos licitantes sejam
-                    devidamente registradas e reconhecidas pelo Sistema do BNC, não sendo aceitas,
-                    em nenhuma hipótese, manifestações recursais inseridas dentro do campo de
-                    “chat”.
+                    devidamente registradas e reconhecidas pelo Sistema do portal designado para a
+                    realização da sessão, não sendo aceitas, em nenhuma hipótese, manifestações
+                    recursais inseridas dentro do campo de “chat”.
                 </li>
             </ol>
             @endif
@@ -458,7 +505,7 @@
                 para o microempreendedor individual - MEI, nos limites previstos da Lei Complementar nº 123, de 2006.
             </p>
 
-            @if($detalhe->participacao_exclusiva_mei_epp === 'nao')
+            @if($detalhe->participacao_exclusiva_mei_epp === 'sim')
             <p style="text-align: justify;">
                 2.7. Para os itens {{ $detalhe->numero_items }} a participação é exclusiva a microempresas e empresas de pequeno porte, nos termos do art.
                 48 da Lei Complementar nº 123, de 14 de dezembro de 2006
@@ -667,10 +714,30 @@
                 4.8. Na ficha técnica de preços não deve conter identificação do licitante como: nome, razão social ou timbre do proponente, endereço, telefone, fax e endereço de correio eletrônico, nome do representante, carteira de identidade e cargo na empresa ou qualquer outra forma que possa identificar a proposta.
             </p>
             <p style="text-align: justify;">
-                4.9. Deve conter o detalhamento dos produtos ofertados, indicando, marca, fabricante, modelo, prazo de validade ou de garantia, prazo máximo da entrega acondicionamento.
+                4.9. Ao encaminhar a proposta de preços na forma prevista pelo sistema eletrônico,
+                a licitante deverá preencher as informações no campo “CADASTRO PROPOSTA” e
+                anexar FICHA TÉCNICA em arquivo PDF no campo apropriado do sistema do portal
+                designado para a realização da sessão, sendo vedada a identificação do licitante
+                por qualquer meio.
             </p>
             <p style="text-align: justify;">
-                4.10. Preço unitário do item, cotando-se cada produto discriminado no item, em moeda corrente nacional, em algarismo com até 02 (duas) casas decimais após a vírgula e por extenso. O preço total deverá ser indicado em algarismos e por extenso. Nos preços propostos deverão estar incluídos, além do lucro, todas as despesas e custos, como por exemplo: transportes (fretes), montagem e instalação, tributos de qualquer natureza e todas as despesas, diretas ou indiretas, relacionadas com o perfeito fornecimento do objeto desta licitação.
+                4.10. Na ficha técnica de preços não deve conter identificação do licitante como:
+                nome, razão social ou timbre do proponente, endereço, telefone, fax e endereço de
+                correio eletrônico, nome do representante, carteira de identidade e cargo na
+                empresa ou qualquer outra forma que possa identificar a proposta.
+            </p>
+            <p style="text-align: justify;">
+                4.11. Deve conter o detalhamento dos serviços ofertados, indicando, prazo de
+                garantia ou validade, e prazo de entrega.
+            </p>
+            <p style="text-align: justify;">
+                4.12. Preço unitário do item, cotando-se cada produto discriminado no item, em
+                moeda corrente nacional, em algarismo com até 02 (duas) casas decimais após a
+                vírgula e por extenso. O preço total deverá ser indicado em algarismos e por
+                extenso. Nos preços propostos deverão estar incluídos, além do lucro, todas as
+                despesas e custos, como por exemplo: transportes (fretes), montagem e
+                instalação, tributos de qualquer natureza e todas as despesas, diretas ou indiretas,
+                relacionadas com o perfeito fornecimento do objeto desta licitação.
             </p>
         </div>
         <div>
@@ -713,8 +780,9 @@
                 5.4. O lance deverá ser ofertado pelo valor Total.
             </p>
             <p style="text-align: justify;">
-                5.5. O intervalo mínimo de diferença de valores ou percentuais entre os lances, que incidirá tanto em relação aos lances
-                intermediários quanto em relação à proposta que cobrir a melhor oferta deverá ser de 1% do valor Global.
+                5.5. O intervalo mínimo de diferença de valores ou percentuais entre os lances, que
+                incidirá tanto em relação aos lances intermediários quanto em relação à proposta
+                que cobrir a melhor oferta deverá ser de R$ 10,00 (dez reais) do valor total do LOTE.
             </p>
             <p style="text-align: justify;">
                 5.6. O modo de disputa adotado para o envio de lances no pregão eletrônico será o “aberto”, os licitantes apresentarão
@@ -819,6 +887,63 @@
                 aceitabilidade da proposta ou lance ofertado pelo segundo classificado. Seguir-se-á com a verificação da(s) amostra(s) e,
                 assim, sucessivamente, até a verificação de uma que atenda às especificações constantes no Termo de Referência.
             </p>
+            <p style="text-align: justify;">
+                5.29. O pregoeiro solicitará ao licitante mais bem classificado que, no prazo de 2
+                (duas) horas, envie a proposta adequada ao último lance ofertado após a
+                negociação realizada, acompanhada, se for o caso, dos documentos
+                complementares, quando necessários à confirmação daqueles exigidos neste
+                Edital e já apresentados, com as seguintes informações:
+                <ul type="a">
+                    <li>valor do item;</li>
+                    <li>Descrição do objeto, contendo as informações similares à especificação
+                        do Termo de Referência;</li>
+                    <li>
+                        Prazo de Garantia;
+                    </li>
+                    <li>Validade do Produto ou Prazo de Garantia; </li>
+                    <li>
+                        Na proposta de preços readequado, a empresa deverá apresentar, o
+                        percentual de despesas diretas e indiretas de cada item a ser fornecido, assim
+                        como, também, o percentual de imposto incidente.
+                    </li>
+                </ul>
+            </p>
+            <p style="text-align: justify;">
+                5.30. Será desclassificada a proposta vencedora que:
+                <ul type="a">
+                    <li>contiver vícios insanáveis;</li>
+                    <li>não obedecer às especificações técnicas contidas no Termo de Referência; </li>
+                    <li>
+                        apresentar preços inexequíveis ou permanecerem acima do preço máximo
+                        definido para a contratação;
+                    </li>
+                    <li>não tiverem sua exequibilidade demonstrada, quando exigido pela
+                        Administração; </li>
+                    <li>
+                        apresentar desconformidade com quaisquer outras exigências deste Edital
+                        ou seus anexos, desde que insanável.
+                    </li>
+                </ul>
+            </p>
+            <p style="text-align: justify;">
+                5.31. Na elaboração da proposta adequada ao seu lance final, os licitantes deverão
+                obrigatoriamente apresentar proposta readequada com percentual de desconto
+                fixo e linear sobre os preços de todos os ITENS/LOTES. A exigência busca evitar o a
+                manipulação e jogo de planilhas, além disso, busca garantir a isonomia entre os
+                licitantes.
+            </p>
+            <p style="text-align: justify;">
+                5.32. A licitante deverá, dentro do prazo estipulado para envio da Proposta
+                Readequada, realizar a redefinição dos valores unitários junto a plataforma onde
+                será realizada a licitação, seguindo o exigido no ITEM 5.31, sob pena de inabilitação.
+            </p>
+            <p style="text-align: justify;">
+                5.33. A diferença entre o valor final proposto e o valor estimado pela Administração será
+                considerada como coeficiente percentual de desconto, a ser aplicado de forma uniforme sobre
+                todos os itens constantes no Termo de Referência e na Proposta Readequada apresentada pela licitante.
+                Tal coeficiente permanecerá vigente durante toda a execução contratual, estendendo-se, inclusive,
+                aos itens que vierem a ser acrescidos mediante celebração de termos aditivos.
+            </p>
         </div>
         <div>
             <p style="display: flex; align-items: center; font-weight: bold; ">
@@ -921,14 +1046,16 @@
                 </li>
                 {!! preg_replace('/<\/?ul[^>]*>/', '', $detalhe->qualificacao_economica) !!}
             </ol>
+             @if ($detalhe->exige_atestado == 'sim')
             <p style="text-align: justify; font-weight: bold;">
                 6.7 Qualificação Técnica:
             </p>
             <ol type="a" style="text-align: justify;">
                 <li style="margin-bottom: 6px;">
-                    Apresentar comprovante de que a licitante forneceu, sem restrição, produtos semelhantes ao objeto do presente
-                    Edital, através da apresentação de 01 (um) ou mais Atestados de Capacidade Técnica, fornecido por pessoa jurídica de
-                    direito público ou privado, devidamente datado e assinado por responsável da área, com nome legível.
+                    Apresentar comprovante de que a licitante forneceu, sem restrição, serviços
+                    semelhantes ao objeto do presente Edital, através da apresentação de 01 (um) ou mais Atestados
+                    de Capacidade Técnica, fornecido por pessoa jurídica de direito público ou privado, devidamente
+                    datado e assinado por responsável da área, com nome legível.
                 </li>
                 <li style="margin-bottom: 6px;">
                     Para fins da comprovação de que trata este subitem, os atestados deverão dizer respeito a contratos executados
@@ -936,19 +1063,20 @@
                 </li>
                 {!! preg_replace('/<\/?ul[^>]*>/', '', $detalhe->exigencias_tecnicas) !!}
             </ol>
+            @endif
             <p style="text-align: justify;">
-                6.8. O Pregoeiro fará a análise dos documentos de habilitação do licitante, será aberto o prazo para manifestação da intenção
+                @if ($detalhe->exige_atestado == 'sim')6.8. @else 6.7 @endif O Pregoeiro fará a análise dos documentos de habilitação do licitante, será aberto o prazo para manifestação da intenção
                 de interposição de recurso. O não cumprimento do envio dos documentos de habilitação dentro dos prazos estabelecidos,
                 acarretará a desclassificação e/ou inabilitação da licitante, bem como as sanções previstas neste Edital, podendo o
                 Pregoeiro convocar a empresa que apresentou a proposta ou o lance subsequente.
             </p>
             <p style="text-align: justify;">
-                6.9. Os documentos eletrônicos produzidos com a utilização de processo de certificação disponibilizada pela ICP-Brasil, nos
+                @if ($detalhe->exige_atestado == 'sim')6.9. @else 6.8 @endif Os documentos eletrônicos produzidos com a utilização de processo de certificação disponibilizada pela ICP-Brasil, nos
                 termos da Medida Provisória nº 2200-2, de 24 de agosto de 2001, serão recebidos e presumir-se-ão verdadeiros em relação
                 aos signatários, dispensando-se o envio de documentos originais e cópias autenticadas em papel.
             </p>
             <p style="text-align: justify;">
-                6.10. O Pregoeiro reserva-se o direito de solicitar da licitante, em qualquer tempo, no curso da licitação, quaisquer
+                @if ($detalhe->exige_atestado == 'sim')6.10.@else 6.9 @endif O Pregoeiro reserva-se o direito de solicitar da licitante, em qualquer tempo, no curso da licitação, quaisquer
                 esclarecimentos sobre documentos já entregues, fixando-lhe prazo para atendimento.
             </p>
         </div>
@@ -1132,15 +1260,20 @@
                     O Órgão Carona fará o contato com o vencedor do certame, conforme Termo de Adjudicação;
                 </li>
             </ol>
+            <p style="text-align: justify;">
+                10.8. A previsão de aquisição ou contratação pelo Órgão Carona deverá ser de até
+                90 (noventa) dias após a autorização, observando o prazo de vigência da ata.
+            </p>
             @endif
             <p style="font-weight: bold;">
                 DAS DISPOSIÇÕES GERAIS
             </p>
             <p style="text-align: justify;">
-                A previsão de aquisição ou contratação pelo Órgão Carona deverá ser de até
-                A presente licitação não importa necessariamente em contratação, podendo a Administração, revogá-la, no todo ou em
-                parte, por razões de interesse público, derivado de fato superveniente comprovado ou anulá-la por ilegalidade, de ofício ou
-                por provocação mediante ato escrito e fundamentado disponibilizado no sistema para conhecimento dos participantes
+                A presente licitação não importa necessariamente em contratação, podendo a
+                Administração, revogá-la, no todo ou em parte, por razões de interesse público,
+                derivado de fato superveniente comprovado ou anulá-la por ilegalidade, de ofício
+                ou por provocação mediante ato escrito e fundamentado disponibilizado no
+                sistema para conhecimento dos participantes
             </p>
             <p style="text-align: justify;">
                 É facultado ao Pregoeiro ou à Autoridade Superior, em qualquer fase da licitação, promover diligências com vistas a

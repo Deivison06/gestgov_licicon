@@ -733,8 +733,9 @@
 <!-- Modal de Contratação -->
 <div id="modal-contratacao" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
     <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-4xl">
-            <div class="px-6 py-4 border-b">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-4xl flex flex-col max-h-[90vh]">
+            <!-- Cabeçalho fixo -->
+            <div class="px-6 py-4 border-b flex-shrink-0">
                 <div class="flex justify-between items-center">
                     <h3 class="text-lg font-bold">Nova Contratação</h3>
                     <button onclick="fecharModal()" class="text-gray-400 hover:text-gray-600">
@@ -745,7 +746,8 @@
                 </div>
             </div>
             
-            <div class="p-6">
+            <!-- Conteúdo rolável -->
+            <div class="p-6 flex-grow overflow-y-auto">
                 <div id="modal-step-1">
                     <label class="block text-sm font-medium text-gray-700 mb-3">
                         Selecione o Vencedor
@@ -756,17 +758,40 @@
                         <option value="{{ $vencedor->id }}">{{ $vencedor->razao_social }}</option>
                         @endforeach
                     </select>
-                    
-                    <div class="flex justify-end">
-                        <button onclick="avancarStep2()" 
-                            class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
-                            Próximo
-                        </button>
-                    </div>
                 </div>
                 
                 <div id="modal-step-2" class="hidden">
                     <!-- Conteúdo será carregado via JavaScript -->
+                </div>
+            </div>
+            
+            <!-- Botões fixos na parte inferior -->
+            <div class="px-6 py-4 border-t bg-gray-50 flex-shrink-0">
+                <div id="modal-buttons-step-1" class="flex justify-end">
+                    <button onclick="avancarStep2()" 
+                        class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
+                        Próximo
+                    </button>
+                </div>
+                
+                <div id="modal-buttons-step-2" class="hidden">
+                    <div class="flex justify-between items-center">
+                        <button onclick="voltarStep1()" 
+                            class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                            <svg class="w-4 h-4 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                            </svg>
+                            Voltar
+                        </button>
+                        <button onclick="salvarContratacoesSelecionadasModal()" 
+                            class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg"
+                            id="btn-salvar-modal">
+                            <svg class="w-4 h-4 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Salvar e Ir para Gerar Contrato
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1182,6 +1207,10 @@
     // MODAL DE CONTRATAÇÃO (NOVA LÓGICA)
     // ==============================================
 
+    // ==============================================
+    // MODAL DE CONTRATAÇÃO (NOVA LÓGICA)
+    // ==============================================
+
     function abrirModalContratacao() {
         document.getElementById('modal-contratacao').classList.remove('hidden');
         // Resetar modal
@@ -1189,15 +1218,16 @@
         document.getElementById('modal-step-1').classList.remove('hidden');
         document.getElementById('modal-step-2').classList.add('hidden');
         document.getElementById('modal-step-2').innerHTML = '';
+        
+        // Mostrar botões do step 1
+        document.getElementById('modal-buttons-step-1').classList.remove('hidden');
+        document.getElementById('modal-buttons-step-2').classList.add('hidden');
+        
         vencedorSelecionado = null;
         lotesSelecionados = [];
     }
 
-    function fecharModal() {
-        document.getElementById('modal-contratacao').classList.add('hidden');
-    }
-
-    async function avancarStep2() {
+    function avancarStep2() {
         const vencedorId = document.getElementById('vencedor_select').value;
         if(!vencedorId) {
             mostrarMensagem('Selecione um vencedor', 'error');
@@ -1209,121 +1239,127 @@
         try {
             mostrarMensagem('Carregando itens disponíveis...', 'info');
             
-            const response = await fetch(`/admin/atas/${processoId}/lotes-disponiveis/${vencedorId}`);
-            const data = await response.json();
-            
-            console.log('Dados recebidos:', data);
-            
-            if(data.success && data.lotes && data.lotes.length > 0) {
-                let html = `
-                    <h4 class="font-bold mb-4">Itens Disponíveis - ${data.vencedor.razao_social}</h4>
-                    <p class="text-sm text-gray-600 mb-4">Informe a quantidade desejada para cada item</p>
-                    <div class="overflow-y-auto max-h-96 mb-4">
-                        <table class="w-full">
-                            <thead class="bg-gray-50">
-                                <tr class="text-xs text-gray-500">
-                                    <th class="px-4 py-2 text-left">Item</th>
-                                    <th class="px-4 py-2 text-left">Disponível</th>
-                                    <th class="px-4 py-2 text-left">Valor Unitário</th>
-                                    <th class="px-4 py-2 text-left">Quantidade</th>
+            fetch(`/admin/atas/${processoId}/lotes-disponiveis/${vencedorId}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Dados recebidos:', data);
+                    
+                    if(data.success && data.lotes && data.lotes.length > 0) {
+                        let html = `
+                            <h4 class="font-bold mb-4">Itens Disponíveis - ${data.vencedor.razao_social}</h4>
+                            <p class="text-sm text-gray-600 mb-4">Informe a quantidade desejada para cada item</p>
+                            <div class="overflow-y-auto">
+                                <table class="w-full">
+                                    <thead class="bg-gray-50">
+                                        <tr class="text-xs text-gray-500">
+                                            <th class="px-4 py-2 text-left">Item</th>
+                                            <th class="px-4 py-2 text-left">Disponível</th>
+                                            <th class="px-4 py-2 text-left">Valor Unitário</th>
+                                            <th class="px-4 py-2 text-left">Quantidade</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                        `;
+                        
+                        data.lotes.forEach(lote => {
+                            html += `
+                                <tr class="border-b hover:bg-gray-50" data-lote-id="${lote.id}">
+                                    <td class="px-4 py-3">
+                                        <div class="font-medium">${lote.item}</div>
+                                        <div class="text-sm text-gray-500">${lote.descricao}</div>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <span class="font-medium">${parseFloat(lote.quantidade_disponivel).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
+                                        <span class="text-xs text-gray-500 ml-1">${lote.unidade || 'un'}</span>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        R$ ${parseFloat(lote.vl_unit).toLocaleString('pt-BR', {minimumFractionDigits: 2})}
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <input type="number" 
+                                            id="quantidade-${lote.id}"
+                                            data-lote-id="${lote.id}"
+                                            min="0.01" 
+                                            max="${lote.quantidade_disponivel}"
+                                            step="0.01"
+                                            placeholder="0.00"
+                                            class="quantidade-lote w-24 px-2 py-1 border rounded"
+                                            onchange="atualizarLoteQuantidade(${lote.id}, this.value)"
+                                            oninput="validarQuantidade(${lote.id}, this)">
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                `;
-                
-                data.lotes.forEach(lote => {
-                    html += `
-                        <tr class="border-b hover:bg-gray-50" data-lote-id="${lote.id}">
-                            <td class="px-4 py-3">
-                                <div class="font-medium">${lote.item}</div>
-                                <div class="text-sm text-gray-500">${lote.descricao}</div>
-                            </td>
-                            <td class="px-4 py-3">
-                                <span class="font-medium">${parseFloat(lote.quantidade_disponivel).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
-                                <span class="text-xs text-gray-500 ml-1">${lote.unidade || 'un'}</span>
-                            </td>
-                            <td class="px-4 py-3">
-                                R$ ${parseFloat(lote.vl_unit).toLocaleString('pt-BR', {minimumFractionDigits: 2})}
-                            </td>
-                            <td class="px-4 py-3">
-                                <input type="number" 
-                                    id="quantidade-${lote.id}"
-                                    data-lote-id="${lote.id}"
-                                    min="0.01" 
-                                    max="${lote.quantidade_disponivel}"
-                                    step="0.01"
-                                    placeholder="0.00"
-                                    class="quantidade-lote w-24 px-2 py-1 border rounded"
-                                    onchange="atualizarLoteQuantidade(${lote.id}, this.value)"
-                                    oninput="validarQuantidade(${lote.id}, this)">
-                            </td>
-                        </tr>
-                    `;
+                            `;
+                        });
+                        
+                        html += `
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div id="resumo-selecionados" class="mt-4 p-4 bg-blue-50 rounded-lg">
+                                <h5 class="font-bold text-blue-800 mb-2">Resumo da Contratação</h5>
+                                <div id="itens-selecionados-lista"></div>
+                                <div class="mt-2 text-right font-bold text-blue-900">
+                                    Total: R$ <span id="valor-total-modal">0.00</span>
+                                </div>
+                            </div>
+                        `;
+                        
+                        document.getElementById('modal-step-1').classList.add('hidden');
+                        document.getElementById('modal-step-2').innerHTML = html;
+                        document.getElementById('modal-step-2').classList.remove('hidden');
+                        
+                        // Alternar botões
+                        document.getElementById('modal-buttons-step-1').classList.add('hidden');
+                        document.getElementById('modal-buttons-step-2').classList.remove('hidden');
+                        
+                        // Inicializar lotes selecionados com quantidade 0
+                        lotesSelecionados = [];
+                        data.lotes.forEach(lote => {
+                            lotesSelecionados.push({
+                                id: lote.id,
+                                item: lote.item,
+                                descricao: lote.descricao,
+                                quantidade: 0,
+                                quantidadeMax: lote.quantidade_disponivel,
+                                valorUnitario: lote.vl_unit,
+                                valorTotal: 0
+                            });
+                        });
+                        
+                        // Atualizar resumo inicial
+                        atualizarResumoModal();
+                        
+                        mostrarMensagem(`${data.lotes.length} item(s) disponível(is) encontrado(s)`, 'success');
+                    } else {
+                        let mensagem = 'Nenhum item disponível para este vencedor.';
+                        if (data.lotes && data.lotes.length === 0) {
+                            mensagem = 'Todos os itens deste vencedor já foram contratados ou não há quantidade disponível.';
+                        }
+                        mostrarMensagem(mensagem, 'warning');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro detalhado:', error);
+                    mostrarMensagem('Erro ao carregar itens. Verifique o console para mais detalhes.', 'error');
                 });
-                
-                html += `
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <div id="resumo-selecionados" class="mb-4 p-4 bg-blue-50 rounded-lg">
-                        <h5 class="font-bold text-blue-800 mb-2">Resumo da Contratação</h5>
-                        <div id="itens-selecionados-lista"></div>
-                        <div class="mt-2 text-right font-bold text-blue-900">
-                            Total: R$ <span id="valor-total-modal">0.00</span>
-                        </div>
-                    </div>
-                    
-                    <div class="flex justify-end space-x-3">
-                        <button onclick="voltarStep1()" 
-                            class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
-                            Voltar
-                        </button>
-                        <button onclick="salvarContratacoesSelecionadasModal()" 
-                            class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg"
-                            id="btn-salvar-modal">
-                            Salvar e Ir para Gerar Contrato
-                        </button>
-                    </div>
-                `;
-                
-                document.getElementById('modal-step-1').classList.add('hidden');
-                document.getElementById('modal-step-2').innerHTML = html;
-                document.getElementById('modal-step-2').classList.remove('hidden');
-                
-                // Inicializar lotes selecionados com quantidade 0
-                data.lotes.forEach(lote => {
-                    lotesSelecionados.push({
-                        id: lote.id,
-                        item: lote.item,
-                        descricao: lote.descricao,
-                        quantidade: 0,
-                        quantidadeMax: lote.quantidade_disponivel,
-                        valorUnitario: lote.vl_unit,
-                        valorTotal: 0
-                    });
-                });
-                
-                // Atualizar resumo inicial
-                atualizarResumoModal();
-                
-                mostrarMensagem(`${data.lotes.length} item(s) disponível(is) encontrado(s)`, 'success');
-            } else {
-                let mensagem = 'Nenhum item disponível para este vencedor.';
-                if (data.lotes && data.lotes.length === 0) {
-                    mensagem = 'Todos os itens deste vencedor já foram contratados ou não há quantidade disponível.';
-                }
-                mostrarMensagem(mensagem, 'warning');
-            }
         } catch(error) {
-            console.error('Erro detalhado:', error);
-            mostrarMensagem('Erro ao carregar itens. Verifique o console para mais detalhes.', 'error');
+            console.error('Erro:', error);
+            mostrarMensagem('Erro ao carregar itens', 'error');
         }
     }
 
     function voltarStep1() {
         document.getElementById('modal-step-2').classList.add('hidden');
         document.getElementById('modal-step-1').classList.remove('hidden');
+        
+        // Alternar botões
+        document.getElementById('modal-buttons-step-2').classList.add('hidden');
+        document.getElementById('modal-buttons-step-1').classList.remove('hidden');
+    }
+
+    function fecharModal() {
+        document.getElementById('modal-contratacao').classList.add('hidden');
     }
 
     function validarQuantidade(loteId, input) {
@@ -1842,4 +1878,26 @@
     `;
     document.head.appendChild(estilo);
 </script>
+
+<style>
+    /* Estilos para o modal */
+    #modal-contratacao .max-h-\[90vh\] {
+        max-height: 100vh;
+    }
+
+    #modal-contratacao .overflow-y-auto {
+        max-height: calc(90vh - 140px); /* Ajuste baseado na altura dos cabeçalhos/rodapés */
+    }
+
+    /* Garantir que a tabela seja rolável se tiver muitos itens */
+    #modal-step-2 .overflow-y-auto {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    /* Estilo para os botões fixos */
+    #modal-contratacao .flex-shrink-0 {
+        flex-shrink: 0;
+    }
+</style>
 @endsection
