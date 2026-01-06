@@ -48,6 +48,7 @@ class IntegracaoAlmoxarifadoController extends Controller
                     'origem_processo_id' => $processo->id,
                     'contratante_origem' => $nomeContratante,
                     // Cabeçalho
+                    'prefeitura_nome' => $processo->prefeitura->nome ?? 'Prefeitura Não Identificada',
                     'numero_processo' => $processo->numero_processo,
                     'numero_contrato' => $contratoMacro->numero_contrato ?? 'S/N',
                     'objeto' => $processo->objeto ?? "Licitação {$processo->numero_processo}",
