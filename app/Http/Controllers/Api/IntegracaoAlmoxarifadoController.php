@@ -13,16 +13,17 @@ class IntegracaoAlmoxarifadoController extends Controller
     {
         // busca Processos que tenham itens contratados
         $processos = Processo::whereHas('lotesContratados', function($q) {
-                $q->where('status', 'CONTRATADO');
-            })
-            ->with([
-                'prefeitura',
-                'lotesContratados' => function($q) {
-                    $q->where('status', 'CONTRATADO')->with(['lote', 'vencedor']);
-                },
-            ])
-            ->latest()
-            ->get();
+        $q->where('status', 'CONTRATADO');
+    })
+    ->with([
+        'prefeitura',
+        'detalhe',
+        'lotesContratados' => function($q) {
+            $q->where('status', 'CONTRATADO')->with(['lote', 'vencedor']);
+        },
+    ])
+    ->latest()
+    ->get();
 
         $dadosExportacao = [];
 
@@ -38,10 +39,14 @@ class IntegracaoAlmoxarifadoController extends Controller
 
                 $codigoIntegracao = "PROC_{$processo->id}-VENC_{$vencedor->id}";
 
+                $nomeContratante = $processo->detalhe->secretaria
+                    ?? $processo->detalhe->unidade_setor
+                    ?? 'Não Informado';
+
                 $dadosExportacao[] = [
                     'codigo_integracao' => $codigoIntegracao,
                     'origem_processo_id' => $processo->id,
-
+                    'contratante_origem' => $nomeContratante,
                     // Cabeçalho
                     'numero_processo' => $processo->numero_processo,
                     'numero_contrato' => $contratoMacro->numero_contrato ?? 'S/N',
