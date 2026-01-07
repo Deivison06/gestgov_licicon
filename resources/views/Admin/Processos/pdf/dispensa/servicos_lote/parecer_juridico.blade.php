@@ -143,7 +143,7 @@
                 EMENTA: DIREITO ADMINISTRATIVO.
                 PARECER INICIAL. PROCESSO
                 ADMINISTRATIVO Nº {{ $processo->numero_processo }}.
-                PREGÃO ELETRÔNICO Nº {{ $processo->numero_procedimento }}.
+                DISPENSA DE LICITAÇÃO Nº {{ $processo->numero_procedimento }}.
                 PREFEITURA MUNICIPAL.
                 OBSERVÂNCIA DA LEI 14.133/2021.
                 OPINATIVO PELA APROVAÇÃO DA
@@ -156,7 +156,7 @@
 
     <p style="text-indent: 30px;  text-align: justify;">
         Submeteu-se ao crivo dessa assessoria a análise dos aspectos jurídicos relativos à abertura do PROCESSO
-        ADMINISTRATIVO N° {{ $processo->numero_processo }}, PREGÃO ELETRÔNICO N°
+        ADMINISTRATIVO N° {{ $processo->numero_processo }}, DISPENSA DE LICITAÇÃO N°
         {{ $processo->numero_procedimento }} cujo objeto é a:
         “{!! strip_tags($processo->objeto) !!}”
     </p>
@@ -431,7 +431,7 @@
         PARECER JURÍDICO
     </p>
 
-    <p style="font-weight: bold;">PREGÃO ELETRÔNICO Nº {{ $processo->numero_procedimento }}
+    <p style="font-weight: bold;">DISPENSA DE LICITAÇÃO Nº {{ $processo->numero_procedimento }}
         <br>
         PROCESSO ADMINISTRATIVO Nº {{ $processo->numero_processo }} <br>
         OBJETO:{!! strip_tags($processo->objeto) !!}
@@ -1293,7 +1293,7 @@
         Ante o exposto, salvo melhor juízo, presentes os pressupostos de regularidade jurídica dos
         autos, ressalvado o juízo de mérito da Administração e os aspectos técnicos, econômicos e
         financeiros, que escapam à análise desse Jurídico, essa assessoria manifesta-se FAVORAVEL AO
-        PREGÃO ELETRÔNICO, podendo o processo de contratação produzir os efeitos jurídicos
+        DISPENSA DE LICITAÇÃO, podendo o processo de contratação produzir os efeitos jurídicos
         pretendidos, com fundamento na praxe e regras vigentes.
     </p>
 
@@ -1342,7 +1342,7 @@
         Processo Administrativo Nº {{ $processo->numero_processo }}
     </p>
     <p>
-        REF: Análise de Minuta de Edital de Pregão Eletrônico Nº {{ $processo->numero_procedimento }}.
+        REF: Análise de Minuta de Edital de Dispensa de Licitação Nº {{ $processo->numero_procedimento }}.
     </p>
 
     <p style="text-align: center; font-weight: bold;">

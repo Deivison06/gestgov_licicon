@@ -11,6 +11,7 @@ use setasign\Fpdi\Tcpdf\Fpdi;
 use App\Models\ProcessoDetalhe;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Services\ProcessoService;
+use App\Enums\TipoProcedimentoEnum;
 use Illuminate\Support\Facades\Log;
 use App\Http\Requests\ProcessoRequest;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -255,17 +256,54 @@ class ProcessoController extends Controller
             if (isset($this->documentos[$tipo])) {
                 $documentosOrdenados[$tipo] = $this->documentos[$tipo];
                 
-                // 🔧 MODIFICAÇÃO: Para DISPENSA, mover campos específicos
-                if ($processo->modalidade === ModalidadeEnum::DISPENSA) {
+                // 🔧 MODIFICAÇÃO ESPECÍFICA PARA DISPENSA DE OBRAS
+                if ($processo->modalidade === ModalidadeEnum::DISPENSA && 
+                    $processo->tipo_procedimento === TipoProcedimentoEnum::OBRA) {
+                    
                     if ($tipo === 'formalizacao') {
-                        // Adicionar os campos específicos à formalização
+                        // Para Dispensa de Obras, manter apenas os campos da formalização
                         $documentosOrdenados[$tipo]['campos'] = array_merge(
                             $documentosOrdenados[$tipo]['campos'],
                             ['encaminhamento_pesquisa_preco', 'encaminhamento_doacao_orcamentaria']
                         );
                     }
                     
-                    // Remover esses campos do estudo_tecnico se estiver presente
+                    // Para Dispensa de Obras, REMOVER termo de referência e análise de mercado
+                    if ($tipo === 'disponibilidade_orçamento') {
+                        // Adicionar os campos específicos
+                        $documentosOrdenados[$tipo]['campos'] = array_merge(
+                            $documentosOrdenados[$tipo]['campos'],
+                            ['tipo_srp']
+                        );
+                    }
+                    
+                    // Remover campos não pertinentes ao estudo técnico
+                    if ($tipo === 'estudo_tecnico') {
+                        $documentosOrdenados[$tipo]['campos'] = array_filter(
+                            $documentosOrdenados[$tipo]['campos'],
+                            function($campo) {
+                                return !in_array($campo, [
+                                    'encaminhamento_pesquisa_preco',
+                                    'encaminhamento_doacao_orcamentaria'
+                                ]);
+                            }
+                        );
+                    }
+                } else if ($processo->modalidade === ModalidadeEnum::DISPENSA) {
+                    // 🔧 MODIFICAÇÃO: Para DISPENSA de COMPRAS/SERVIÇOS
+                    if ($tipo === 'formalizacao') {
+                        $documentosOrdenados[$tipo]['campos'] = array_merge(
+                            $documentosOrdenados[$tipo]['campos'],
+                            ['encaminhamento_pesquisa_preco', 'encaminhamento_doacao_orcamentaria']
+                        );
+                    }
+                    if ($tipo === 'disponibilidade_orçamento') {
+                        $documentosOrdenados[$tipo]['campos'] = array_merge(
+                            $documentosOrdenados[$tipo]['campos'],
+                            ['tipo_srp']
+                        );
+                    }
+                    
                     if ($tipo === 'estudo_tecnico') {
                         $documentosOrdenados[$tipo]['campos'] = array_filter(
                             $documentosOrdenados[$tipo]['campos'],
@@ -291,6 +329,19 @@ class ProcessoController extends Controller
     {
         // 📌 DISPENSA DE COMPRAS E SERVIÇOS (10 documentos)
         if ($processo->modalidade === ModalidadeEnum::DISPENSA) {
+            if ($processo->tipo_procedimento === TipoProcedimentoEnum::OBRA) {
+                return [
+                    'capa',                              // 1. Capa do Processo
+                    'formalizacao',                     // 2. Documento de Formalização da Demanda
+                    'projeto_basico',                   // 3. Projeto Básico (ESPECÍFICO PARA OBRAS)
+                    'disponibilidade_orçamento',        // 4. Dotação Orçamentária
+                    'autorizacao_abertura_procedimento', // 5. Autorização de Abertura do Procedimento Licitatório
+                    'abertura_fase_externa',            // 6. Abertura da Fase Externa
+                    'avisos_licitacao',                 // 7. Aviso de Dispensa (Avisos de Licitação)
+                    'edital',                           // 8. Edital
+                    'publicacoes_avisos_licitacao',     // 9. Publicações
+                ];
+            }
             return [
                 'capa',                              // 1. Capa do Processo
                 'formalizacao',                     // 2. Documento de Formalização da Demanda
@@ -786,10 +837,7 @@ class ProcessoController extends Controller
         }
         // CONCORRÊNCIA
         elseif ($processo->modalidade === ModalidadeEnum::CONCORRENCIA) {
-            $procedimento = $this->formatarNomeArquivo($processo->tipo_procedimento?->name ?? '');
-            $contratacao = $this->formatarNomeArquivo($processo->tipo_contratacao?->name ?? '');
-
-            $view = "{$viewBase}.concorrencia.{$procedimento}_{$contratacao}.{$documento}";
+            $view = "{$viewBase}.concorrencia.{$documento}";
         }
         // OUTRAS MODALIDADES
         else {

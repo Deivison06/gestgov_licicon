@@ -219,7 +219,7 @@
         <p style="text-indent: 30px">
             Por todo o exposto, considerando que a instrução do presente processo atende ao disposto
             na Lei nº 14.133, de 2021, aprovo os atos praticados e autorizo que seja promovida a abertura de
-            Procedimento de Licitação, na modalidade Pregão, em sua forma Eletrônica, nos termos da Lei nº
+            Procedimento de Licitação, na modalidade Dispensa de Licitação, em sua forma Eletrônica, nos termos da Lei nº
             14.133, de 2021.
         </p>
         <p style="text-indent: 30px">

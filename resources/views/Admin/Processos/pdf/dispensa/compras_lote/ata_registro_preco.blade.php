@@ -172,7 +172,7 @@
         <p style="font-weight: bold; text-align: center;">ATA DE REGISTRO DE PREÇOS</p>
         <p style="font-weight: bold;">
             ATA DE REGISTRO DE PREÇOS Nº_____/2025<br>
-            PREGÃO ELETRÔNICO SRP Nº ___/2025<br>
+            DISPENSA DE LICITAÇÃO SRP Nº ___/2025<br>
             PROCESSO ADMINISTRATIVO Nº _______________– XXXXXXXXXX-PI<br>
             VALIDADE: 12 (DOZE) MESES.
         </p>
@@ -182,7 +182,7 @@
             -------, a Secretaria Municipal de ________________, do Município de XXXXXXXXXX-PI,
             representado por ________, portador do R.G nº ______ e inscrito no CPF sob nº
             ________, nomeado pela Portaria nº ________e as empresas qualificadas abaixo,
-            jurídicos e legais, considerando o julgamento do PREGÃO ELETRÕNICO Nº ______,
+            jurídicos e legais, considerando o julgamento do Dispensa de Licitação Nº ______,
             para o <span style="font-weight: bold;">REGISTRO DE PREÇO</span>, nº___/____,
             <span style="font-weight: bold;"> PROCESSO ADMINISTRATIVO Nº
                 XXXXX/2025, RESOLVE REGISTRAR </span> os preços da empresa e quantidade cotada,

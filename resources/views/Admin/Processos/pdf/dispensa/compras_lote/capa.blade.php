@@ -94,7 +94,7 @@
                 </div>
 
                 <div class="modalidade">
-                    {{ strtoupper($processo->modalidade->getDisplayName()) }}<br>
+                    DISPENSA DE LICITAÇÃO<br>
                     <strong>{{ $processo->numero_procedimento }}</strong>
                 </div>
 
