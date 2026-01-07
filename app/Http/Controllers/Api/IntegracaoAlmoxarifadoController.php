@@ -4,31 +4,35 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Processo;
-use App\Models\LoteContratado;
 use Illuminate\Http\Request;
 
 class IntegracaoAlmoxarifadoController extends Controller
 {
     public function listarContratos(Request $request)
     {
-        // busca Processos que tenham itens contratados
         $processos = Processo::whereHas('lotesContratados', function($q) {
-        $q->where('status', 'CONTRATADO');
-    })
-    ->with([
-        'prefeitura',
-        'detalhe',
-        'lotesContratados' => function($q) {
-            $q->where('status', 'CONTRATADO')->with(['lote', 'vencedor']);
-        },
-    ])
-    ->latest()
-    ->get();
+            $q->where('status', 'CONTRATADO');
+        })
+        ->with([
+            'prefeitura',
+            'detalhe',
+            'lotesContratados' => function($q) {
+                $q->where('status', 'CONTRATADO')->with(['lote', 'vencedor']);
+            },
+        ])
+        ->latest()
+        ->get();
 
         $dadosExportacao = [];
 
         foreach ($processos as $processo) {
             $contratoMacro = \App\Models\Contrato::where('processo_id', $processo->id)->first();
+
+            // Pega o valor inteiro do Enum ou o próprio valor se não for Enum
+            $tipoContratacaoValor = $processo->tipo_contratacao?->value ?? $processo->tipo_contratacao;
+
+            // Regra de Negócio: 2 = Por Item (Agrupar tudo), 1 = Por Lote (Manter separado)
+            $isPorItem = ($tipoContratacaoValor == 2);
 
             $itensPorVencedor = $processo->lotesContratados->groupBy('vencedor_id');
 
@@ -47,18 +51,22 @@ class IntegracaoAlmoxarifadoController extends Controller
                     'codigo_integracao' => $codigoIntegracao,
                     'origem_processo_id' => $processo->id,
                     'contratante_origem' => $nomeContratante,
-                    // Cabeçalho
+
                     'prefeitura_nome' => $processo->prefeitura->nome ?? 'Prefeitura Não Identificada',
                     'numero_processo' => $processo->numero_processo,
                     'numero_contrato' => $contratoMacro->numero_contrato ?? 'S/N',
+
+                    'modalidade' => $this->getModalidadeLabel($processo->modalidade),
+
+                    // Envia o nome legível do tipo de contratação para o modal
+                    'tipo_contratacao' => $this->getTipoContratacaoLabel($tipoContratacaoValor),
+
                     'objeto' => $processo->objeto ?? "Licitação {$processo->numero_processo}",
                     'data_assinatura' => $contratoMacro->data_assinatura_contrato ?? now()->format('Y-m-d'),
                     'valor_total_vencedor' => $itens->sum('valor_total'),
 
-                    // Dados para Validação/Busca no Destino
                     'prefeitura_cnpj' => $this->limparDocumento($processo->prefeitura->cnpj ?? ''),
 
-                    // Fornecedor / cadastrar se não existir
                     'fornecedor' => [
                         'razao_social' => $vencedor->razao_social,
                         'cnpj' => $this->limparDocumento($vencedor->cnpj),
@@ -66,10 +74,19 @@ class IntegracaoAlmoxarifadoController extends Controller
                         'representante' => $vencedor->representante,
                     ],
 
-                    // Os Itens para preencher o Estoque
-                    'itens' => $itens->map(function($itemContratado) {
+                    // A Mágica acontece aqui: passamos a variável $isPorItem
+                    'itens' => $itens->map(function($itemContratado) use ($isPorItem) {
+
+                        if ($isPorItem) {
+                            // SE FOR POR ITEM: Força ser lote 0 (Lote Único)
+                            $numeroLote = 0;
+                        } else {
+                            // SE FOR POR LOTE: Mantém a numeração original
+                            $numeroLote = $itemContratado->lote->lote ?? $itemContratado->lote->numero_lote ?? 1;
+                        }
+
                         return [
-                            'lote_numero' => $itemContratado->lote->item ?? 0,
+                            'lote_numero' => $numeroLote,
                             'descricao' => $itemContratado->lote->descricao,
                             'unidade' => $itemContratado->lote->unidade ?? 'UN',
                             'quantidade' => (float) $itemContratado->quantidade_contratada,
@@ -87,5 +104,31 @@ class IntegracaoAlmoxarifadoController extends Controller
     private function limparDocumento($doc)
     {
         return preg_replace('/[^0-9]/', '', $doc);
+    }
+
+    private function getModalidadeLabel($modalidade)
+    {
+        $valor = (is_object($modalidade) && property_exists($modalidade, 'value'))
+            ? $modalidade->value
+            : $modalidade;
+
+        return match ($valor) {
+            1 => 'Concorrência',
+            2 => 'Dispensa',
+            3 => 'Inexigibilidade',
+            4 => 'Pregão Eletrônico',
+            default => 'Outra Modalidade',
+        };
+    }
+
+    // Novo helper para traduzir o Tipo de Contratação
+    private function getTipoContratacaoLabel($valor)
+    {
+        return match ($valor) {
+            1 => 'Por Lote',
+            2 => 'Por Item',
+            3 => 'Global', // Caso exista no futuro
+            default => 'Não Informado',
+        };
     }
 }
