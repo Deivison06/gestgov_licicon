@@ -228,8 +228,10 @@
     @elseif($campo === 'encaminhamento_elaborar_editais')
     <x-form-field name="encaminhamento_elaborar_editais" label="Encaminhamento para ELABORAÇÃO DE EDITAL E MINUTA DE CONTRATO" type="select" :options="$processo->prefeitura->unidades->pluck('nome', 'nome')->toArray()" placeholder="Selecione uma unidade" />
 
-    @elseif($campo === 'encaminhamento_elaborar_projeto_basico' && $processo->modalidade === \App\Enums\ModalidadeEnum::CONCORRENCIA)
-    <x-form-field name="encaminhamento_elaborar_projeto_basico" label="Encaminhamento para ELABORAÇÀO DE PROJETO BÁSICO" type="select" :options="$processo->prefeitura->unidades->pluck('nome', 'nome')->toArray()" placeholder="Selecione uma unidade" />
+    @elseif($campo === 'encaminhamento_elaborar_projeto_basico')
+        @if ($processo->modalidade === \App\Enums\ModalidadeEnum::CONCORRENCIA || $processo->modalidade === \App\Enums\ModalidadeEnum::DISPENSA)   
+            <x-form-field name="encaminhamento_elaborar_projeto_basico" label="Encaminhamento para ELABORAÇÀO DE PROJETO BÁSICO" type="select" :options="$processo->prefeitura->unidades->pluck('nome', 'nome')->toArray()" placeholder="Selecione uma unidade" />
+        @endif
 
     @elseif($campo === 'encaminhamento_parecer_juridico')
     <x-form-field name="encaminhamento_parecer_juridico" label="Encaminhamento para ELABORAÇÃO DE PARECER JURÍDICO" type="select" :options="$processo->prefeitura->unidades->pluck('nome', 'nome')->toArray()" placeholder="Selecione uma unidade" />

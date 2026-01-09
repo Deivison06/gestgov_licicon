@@ -206,11 +206,6 @@ class ProcessoController extends Controller
         return redirect()->route('admin.processos.index')->with('success', 'Processo criado com sucesso.');
     }
 
-    public function show(Processo $processo)
-    {
-        return view('Admin.Processos.show', compact('processo'));
-    }
-
     public function edit(Processo $processo)
     {
         $prefeituras = Prefeitura::with('unidades')->get();
@@ -244,81 +239,74 @@ class ProcessoController extends Controller
     // MÉTODOS PARA ORDEM DE DOCUMENTOS POR MODALIDADE
     // =========================================================
 
-    /**
-     * Retorna os documentos filtrados e ordenados por modalidade
-     */
     private function getDocumentosPorModalidade(Processo $processo): array
     {
         $ordemDocumentos = $this->getOrdemDocumentosParaView($processo);
         $documentosOrdenados = [];
-        
+
         foreach ($ordemDocumentos as $tipo) {
-            if (isset($this->documentos[$tipo])) {
-                $documentosOrdenados[$tipo] = $this->documentos[$tipo];
-                
-                // 🔧 MODIFICAÇÃO ESPECÍFICA PARA DISPENSA DE OBRAS
-                if ($processo->modalidade === ModalidadeEnum::DISPENSA && 
-                    $processo->tipo_procedimento === TipoProcedimentoEnum::OBRA) {
-                    
-                    if ($tipo === 'formalizacao') {
-                        // Para Dispensa de Obras, manter apenas os campos da formalização
-                        $documentosOrdenados[$tipo]['campos'] = array_merge(
-                            $documentosOrdenados[$tipo]['campos'],
-                            ['encaminhamento_pesquisa_preco', 'encaminhamento_doacao_orcamentaria']
-                        );
-                    }
-                    
-                    // Para Dispensa de Obras, REMOVER termo de referência e análise de mercado
-                    if ($tipo === 'disponibilidade_orçamento') {
-                        // Adicionar os campos específicos
-                        $documentosOrdenados[$tipo]['campos'] = array_merge(
-                            $documentosOrdenados[$tipo]['campos'],
-                            ['tipo_srp']
-                        );
-                    }
-                    
-                    // Remover campos não pertinentes ao estudo técnico
-                    if ($tipo === 'estudo_tecnico') {
-                        $documentosOrdenados[$tipo]['campos'] = array_filter(
-                            $documentosOrdenados[$tipo]['campos'],
-                            function($campo) {
-                                return !in_array($campo, [
-                                    'encaminhamento_pesquisa_preco',
-                                    'encaminhamento_doacao_orcamentaria'
-                                ]);
-                            }
-                        );
-                    }
-                } else if ($processo->modalidade === ModalidadeEnum::DISPENSA) {
-                    // 🔧 MODIFICAÇÃO: Para DISPENSA de COMPRAS/SERVIÇOS
-                    if ($tipo === 'formalizacao') {
-                        $documentosOrdenados[$tipo]['campos'] = array_merge(
-                            $documentosOrdenados[$tipo]['campos'],
-                            ['encaminhamento_pesquisa_preco', 'encaminhamento_doacao_orcamentaria']
-                        );
-                    }
-                    if ($tipo === 'disponibilidade_orçamento') {
-                        $documentosOrdenados[$tipo]['campos'] = array_merge(
-                            $documentosOrdenados[$tipo]['campos'],
-                            ['tipo_srp']
-                        );
-                    }
-                    
-                    if ($tipo === 'estudo_tecnico') {
-                        $documentosOrdenados[$tipo]['campos'] = array_filter(
-                            $documentosOrdenados[$tipo]['campos'],
-                            function($campo) {
-                                return !in_array($campo, [
-                                    'encaminhamento_pesquisa_preco',
-                                    'encaminhamento_doacao_orcamentaria'
-                                ]);
-                            }
-                        );
-                    }
+            if (!isset($this->documentos[$tipo])) {
+                continue;
+            }
+
+            $documentosOrdenados[$tipo] = $this->documentos[$tipo];
+
+            // =========================================
+            // DISPENSA POR OBRA
+            // =========================================
+            if (
+                $processo->modalidade === ModalidadeEnum::DISPENSA &&
+                $processo->tipo_procedimento === TipoProcedimentoEnum::OBRA
+            ) {
+
+                // 🔹 FORMALIZAÇÃO - ALTERAÇÕES SOLICITADAS
+                if ($tipo === 'formalizacao') {
+                    $documentosOrdenados[$tipo]['campos'] = array_filter(
+                        $documentosOrdenados[$tipo]['campos'],
+                        function ($campo) {
+                            // 🔴 REMOVER: descricao_e_quantitativos_itens_xml (quando for obra)
+                            // ✅ MANTER: outros campos
+                            return $campo !== 'descricao_e_quantitativos_itens_xml';
+                        }
+                    );
+
+                    // 🔴 ADICIONAR: encaminhamento_elaborar_projeto_basico e encaminhamento_doacao_orcamentaria (quando for obra)
+                    $documentosOrdenados[$tipo]['campos'][] = 'encaminhamento_elaborar_projeto_basico';
+                    $documentosOrdenados[$tipo]['campos'][] = 'encaminhamento_doacao_orcamentaria';
+                }
+
+                // 🔹 DISPONIBILIDADE ORÇAMENTÁRIA (fica igual à dispensa normal)
+                if ($tipo === 'disponibilidade_orçamento') {
+                    $documentosOrdenados[$tipo]['campos'][] = 'tipo_srp';
+                }
+
+            }
+            // =========================================
+            // DISPENSA NORMAL (COMPRAS / SERVIÇOS)
+            // =========================================
+            else if ($processo->modalidade === ModalidadeEnum::DISPENSA) {
+
+                if ($tipo === 'formalizacao') {
+                    $documentosOrdenados[$tipo]['campos'][] = 'encaminhamento_pesquisa_preco';
+                    $documentosOrdenados[$tipo]['campos'][] = 'encaminhamento_doacao_orcamentaria';
+                }
+
+                if ($tipo === 'disponibilidade_orçamento') {
+                    $documentosOrdenados[$tipo]['campos'][] = 'tipo_srp';
+                }
+
+                if ($tipo === 'estudo_tecnico') {
+                    $documentosOrdenados[$tipo]['campos'] = array_filter(
+                        $documentosOrdenados[$tipo]['campos'],
+                        fn ($campo) => !in_array($campo, [
+                            'encaminhamento_pesquisa_preco',
+                            'encaminhamento_doacao_orcamentaria'
+                        ])
+                    );
                 }
             }
         }
-        
+
         return $documentosOrdenados;
     }
 
@@ -710,7 +698,6 @@ class ProcessoController extends Controller
         return $valor;
     }
 
-
     private function salvarAnexo($file, ProcessoDetalhe $detalhe, string $campo): void
     {
         $filename = $campo . '_' . time() . '.' . $file->getClientOriginalExtension();
@@ -820,21 +807,24 @@ class ProcessoController extends Controller
     private function determinarViewPdf(Processo $processo, string $documento): string
     {
         $viewBase = "Admin.Processos.pdf";
-
+        $procedimento = $this->formatarNomeArquivo($processo->tipo_procedimento?->name ?? '');
+        $contratacao = $this->formatarNomeArquivo($processo->tipo_contratacao?->name ?? '');
         // PREGÃO ELETRÔNICO
         if ($processo->modalidade === ModalidadeEnum::PREGAO_ELETRONICO) {
-            $procedimento = $this->formatarNomeArquivo($processo->tipo_procedimento?->name ?? '');
-            $contratacao = $this->formatarNomeArquivo($processo->tipo_contratacao?->name ?? '');
-
             $view = "{$viewBase}.pregao_eletronico.{$procedimento}_{$contratacao}.{$documento}";
         }
         // DISPENSA
         elseif ($processo->modalidade === ModalidadeEnum::DISPENSA) {
-            $procedimento = $this->formatarNomeArquivo($processo->tipo_procedimento?->name ?? '');
-            $contratacao = $this->formatarNomeArquivo($processo->tipo_contratacao?->name ?? '');
-
-            $view = "{$viewBase}.dispensa.{$procedimento}_{$contratacao}.{$documento}";
+            // 🔴 REGRA ESPECIAL: DISPENSA + OBRA
+            if ($processo->tipo_procedimento === TipoProcedimentoEnum::OBRA) {
+                $view = "{$viewBase}.dispensa.{$procedimento}.{$documento}";
+            } 
+            // REGRA PADRÃO
+            else {
+                $view = "{$viewBase}.dispensa.{$procedimento}_{$contratacao}.{$documento}";
+            }
         }
+
         // CONCORRÊNCIA
         elseif ($processo->modalidade === ModalidadeEnum::CONCORRENCIA) {
             $view = "{$viewBase}.concorrencia.{$documento}";

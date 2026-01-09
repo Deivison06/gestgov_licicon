@@ -772,8 +772,8 @@
                 ___________________________________<br>
                 <p style="line-height: 1.2;">
                     Prefeitura do Município de {{ $processo->prefeitura->cidade }} <br>
-                    Prefeito Municipal <br>
-                    {{ $processo->prefeitura->autoridade_competente }}
+                    {{ $primeiroAssinante['responsavel'] }} <br>
+                    <span>{{ $primeiroAssinante['unidade_nome'] }}</span>
                 </p>
             </div>
         </div>
@@ -833,7 +833,7 @@
                     CONTRATANTE:
                 </td>
                 <td style="padding:6px;">
-                    PREFEITURA MUNICIPAL DE {{ $processo->prefeitura->cidade }}
+                    <span>{{ $primeiroAssinante['unidade_nome'] }}
                 </td>
             </tr>
 
@@ -924,7 +924,7 @@
                     ASSINATURA (CONTRATANTE):
                 </td>
                 <td style="padding:6px;">
-                    {{ $processo->prefeitura->autoridade_competente }}
+                    {{ $primeiroAssinante['responsavel'] }}
                 </td>
             </tr>
 
