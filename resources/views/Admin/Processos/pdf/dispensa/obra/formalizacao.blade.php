@@ -451,7 +451,7 @@
            DISPENSO a formalização do relatório de estudo técnico preliminar, por se encontrar dentro dos limites prescritos.
         </p>
         <p style="text-align: justify;">
-           Encaminhe-se à {{ $detalhe->encaminhamento_pesquisa_preco }} para a ELABORAÇÃO DE PROJETO BÁSICO.
+           Encaminhe-se à {{ $detalhe->encaminhamento_elaborar_projeto_basico }} para a ELABORAÇÃO DE PROJETO BÁSICO.
         </p>
         <p style="text-align: justify;">
            Encaminhe-se à {{ $detalhe->encaminhamento_doacao_orcamentaria }} para a VERIFICAÇÃO DE DOTACÃO ORÇAMENTÁRIA EXISTENTE.
@@ -477,7 +477,7 @@
             </tr>
         </table>
         <p style="text-align: justify;">
-            Após o cumprimento de todas as etapas acima previstas, determino o retorno do procedimento para a secretaria demandante.
+            Após o cumprimento de todas as etapas acima previstas, determino o encaminhamento dos atos para a Autoridade Competente para a AUTORIZAÇÃO DE ABERTURA DE PROCEDIMENTO LICITATÓRIO.
         </p>
 
         @php

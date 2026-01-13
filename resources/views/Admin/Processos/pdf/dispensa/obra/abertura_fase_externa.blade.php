@@ -416,7 +416,7 @@
                         FUNDAMENTAÇÃO:
                     </td>
                     <td style="border: 1px solid black; padding: 5px;">
-                       Lei 14.133/2021, Art. 75, II – Dispensa para Compras e Outros Serviços Comuns.
+                       Lei 14.133/2021, Art. 75, Inciso I – Dispensa para Obras e Serviços de Engenharia
                     </td>
                 </tr>
             </tbody>

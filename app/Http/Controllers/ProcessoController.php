@@ -251,59 +251,56 @@ class ProcessoController extends Controller
 
             $documentosOrdenados[$tipo] = $this->documentos[$tipo];
 
-            // =========================================
-            // DISPENSA POR OBRA
-            // =========================================
-            if (
-                $processo->modalidade === ModalidadeEnum::DISPENSA &&
-                $processo->tipo_procedimento === TipoProcedimentoEnum::OBRA
-            ) {
-
-                // 🔹 FORMALIZAÇÃO - ALTERAÇÕES SOLICITADAS
-                if ($tipo === 'formalizacao') {
-                    $documentosOrdenados[$tipo]['campos'] = array_filter(
-                        $documentosOrdenados[$tipo]['campos'],
-                        function ($campo) {
-                            // 🔴 REMOVER: descricao_e_quantitativos_itens_xml (quando for obra)
-                            // ✅ MANTER: outros campos
-                            return $campo !== 'descricao_e_quantitativos_itens_xml';
+            // Filtra campos de formalização conforme modalidade e tipo de procedimento
+            if ($tipo === 'formalizacao') {
+                $documentosOrdenados[$tipo]['campos'] = array_filter(
+                    $documentosOrdenados[$tipo]['campos'],
+                    function ($campo) use ($processo) {
+                        // Remove campo de necessidade de autorização em qualquer dispensa
+                        if ($processo->modalidade === ModalidadeEnum::DISPENSA && 
+                            $campo === 'descricao_necessidade_autorizacao') {
+                            return false;
                         }
-                    );
 
-                    // 🔴 ADICIONAR: encaminhamento_elaborar_projeto_basico e encaminhamento_doacao_orcamentaria (quando for obra)
-                    $documentosOrdenados[$tipo]['campos'][] = 'encaminhamento_elaborar_projeto_basico';
-                    $documentosOrdenados[$tipo]['campos'][] = 'encaminhamento_doacao_orcamentaria';
+                        // Remove campo de itens XML quando for dispensa obra
+                        if ($processo->modalidade === ModalidadeEnum::DISPENSA &&
+                            $processo->tipo_procedimento === TipoProcedimentoEnum::OBRA &&
+                            $campo === 'descricao_e_quantitativos_itens_xml') {
+                            return false;
+                        }
+
+                        return true;
+                    }
+                );
+
+                // Adiciona campos extras conforme modalidade e tipo
+                if ($processo->modalidade === ModalidadeEnum::DISPENSA) {
+                    if ($processo->tipo_procedimento === TipoProcedimentoEnum::OBRA) {
+                        $documentosOrdenados[$tipo]['campos'][] = 'encaminhamento_elaborar_projeto_basico';
+                        $documentosOrdenados[$tipo]['campos'][] = 'encaminhamento_doacao_orcamentaria';
+                    } else {
+                        $documentosOrdenados[$tipo]['campos'][] = 'encaminhamento_pesquisa_preco';
+                        $documentosOrdenados[$tipo]['campos'][] = 'encaminhamento_doacao_orcamentaria';
+                    }
                 }
-
-                // 🔹 DISPONIBILIDADE ORÇAMENTÁRIA (fica igual à dispensa normal)
-                if ($tipo === 'disponibilidade_orçamento') {
-                    $documentosOrdenados[$tipo]['campos'][] = 'tipo_srp';
-                }
-
             }
-            // =========================================
-            // DISPENSA NORMAL (COMPRAS / SERVIÇOS)
-            // =========================================
-            else if ($processo->modalidade === ModalidadeEnum::DISPENSA) {
 
-                if ($tipo === 'formalizacao') {
-                    $documentosOrdenados[$tipo]['campos'][] = 'encaminhamento_pesquisa_preco';
-                    $documentosOrdenados[$tipo]['campos'][] = 'encaminhamento_doacao_orcamentaria';
-                }
-
-                if ($tipo === 'disponibilidade_orçamento') {
+            // DISPONIBILIDADE ORÇAMENTÁRIA
+            if ($tipo === 'disponibilidade_orçamento') {
+                if ($processo->modalidade === ModalidadeEnum::DISPENSA) {
                     $documentosOrdenados[$tipo]['campos'][] = 'tipo_srp';
                 }
+            }
 
-                if ($tipo === 'estudo_tecnico') {
-                    $documentosOrdenados[$tipo]['campos'] = array_filter(
-                        $documentosOrdenados[$tipo]['campos'],
-                        fn ($campo) => !in_array($campo, [
-                            'encaminhamento_pesquisa_preco',
-                            'encaminhamento_doacao_orcamentaria'
-                        ])
-                    );
-                }
+            // ESTUDO TÉCNICO
+            if ($tipo === 'estudo_tecnico' && $processo->modalidade === ModalidadeEnum::DISPENSA) {
+                $documentosOrdenados[$tipo]['campos'] = array_filter(
+                    $documentosOrdenados[$tipo]['campos'],
+                    fn($campo) => !in_array($campo, [
+                        'encaminhamento_pesquisa_preco',
+                        'encaminhamento_doacao_orcamentaria'
+                    ])
+                );
             }
         }
 
@@ -988,11 +985,20 @@ class ProcessoController extends Controller
 
     private function juntarTermoReferenciaOuProjetoBasico(Processo $processo, string $caminhoEdital): void
     {
-        // PARA CONCORRÊNCIA: usa projeto básico
-        // PARA PREGÃO E DISPENSA: usa termo de referência
-        $tipoDocumento = $processo->modalidade === ModalidadeEnum::CONCORRENCIA
-            ? 'projeto_basico'
-            : 'termo_referencia';
+        /*
+        * REGRAS:
+        * - Concorrência -> Projeto Básico
+        * - Dispensa por Obra -> Projeto Básico
+        * - Demais casos -> Termo de Referência
+        */
+        $tipoDocumento =
+            $processo->modalidade === ModalidadeEnum::CONCORRENCIA
+            || (
+                $processo->modalidade === ModalidadeEnum::DISPENSA
+                && $processo->tipo_procedimento === TipoProcedimentoEnum::OBRA
+            )
+                ? 'projeto_basico'
+                : 'termo_referencia';
 
         $documento = Documento::where('processo_id', $processo->id)
             ->where('tipo_documento', $tipoDocumento)
@@ -1028,6 +1034,7 @@ class ProcessoController extends Controller
             ]);
         }
     }
+
 
     private function obterAnexos(Processo $processo, string $documento): array
     {

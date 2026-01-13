@@ -232,9 +232,14 @@
         <p>
             CLASSIFICAÇÃO DO OBJETO: {{ $processo->tipo_procedimento->getDisplayName() }}
         </p>
-        <p style="text-align: justify; margin: 0;">
-            <strong>JUSTIFICATIVA DA CONTRATAÇÃO:</strong><br><br>
-            {!! strip_tags($detalhe->justificativa, '<p><span><b><i><u>') !!}
+        <p>
+            JUSTIFICATIVA DA CONTRATAÇÃO:
+            {!! str_replace(
+                    ['<p>', '<strong>', '</strong>'],
+                    ['<p style="text-align: justify;">', '<span style="font-weight: bold;">', '</span>'],
+                    $detalhe->justificativa
+                ) 
+            !!}
         </p>
 
 

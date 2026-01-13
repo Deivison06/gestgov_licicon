@@ -141,7 +141,7 @@
             Considerando a necessidade de {!! strip_tags($processo->objeto) !!}, segue em anexo PROJETO BÁSICO desenvolvido por essa secretaria.
         </p>
         <p style="text-indent: 30px; text-align: justify;">
-            Encaminhe-se à {{ $detalhe->encaminhamento_elaborar_editais }} para a ELABORAÇÃO DE MINUTA DO EDITAL E MINUTA DO CONTRATO.
+            Encaminhe-se à {{ $detalhe->encaminhamento_doacao_orcamentaria }} para a DOTAÇÃO ORÇAMENTÁRIA.
         </p>
 
         @php

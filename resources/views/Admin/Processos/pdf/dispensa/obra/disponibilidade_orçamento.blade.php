@@ -226,7 +226,7 @@
         </p>
         @endif
 
-        <p>Encaminhe-se ao DEMANDANTE para a elaboração do TERMO DE REFERÊNCIA</p>
+        <p>Encaminha-se para a Autoridade Competente para a AUTORIZAÇÃO DE ABERTURA DE PROCEDIMENTO LICITATÓRIO</p>
 
         {{-- Bloco de data e assinatura --}}
         <div class="footer-signature">

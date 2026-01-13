@@ -307,7 +307,7 @@
             page-break-before: auto;
             ">
             <span style="display:block; text-align:center; font-weight:bold;">
-                Justificativa da necessidade da contratação:lllllllll
+                Justificativa da necessidade da contratação:
             </span>
 
             <div style="font-size:11px !important; text-align: justify;">

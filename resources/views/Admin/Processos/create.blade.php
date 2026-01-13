@@ -248,23 +248,37 @@
     }
         // Ocultar campos tipo quando modalidade for "Concorrência"
         const modalidadeSelect = document.getElementById('modalidade');
+        const tipoProcedimentoSelect = document.getElementById('tipo_procedimento');
+
         const tipoProcedimentoDiv = document.getElementById('tipo_procedimento_wrapper');
         const tipoContratacaoDiv = document.getElementById('tipo_contratacao_wrapper');
 
         function atualizarVisibilidadeTipos() {
-            const valor = modalidadeSelect.value;
+            const modalidade = modalidadeSelect.value;
+            const tipoProcedimento = tipoProcedimentoSelect.value;
 
-            // Valor 1 = CONCORRÊNCIA no Enum ModalidadeEnum
-            if (valor == "1") {
+            // Reset padrão
+            tipoProcedimentoDiv.style.display = '';
+            tipoContratacaoDiv.style.display = '';
+
+            // 1 = CONCORRÊNCIA
+            if (modalidade === "1") {
                 tipoProcedimentoDiv.style.display = 'none';
                 tipoContratacaoDiv.style.display = 'none';
-            } else {
-                tipoProcedimentoDiv.style.display = '';
-                tipoContratacaoDiv.style.display = '';
+                return;
+            }
+
+            // 2 = DISPENSA
+            if (modalidade === "2") {
+                // 3 = OBRA
+                if (tipoProcedimento === "3") {
+                    tipoContratacaoDiv.style.display = 'none';
+                }
             }
         }
 
         modalidadeSelect.addEventListener('change', atualizarVisibilidadeTipos);
+        tipoProcedimentoSelect.addEventListener('change', atualizarVisibilidadeTipos);
         atualizarVisibilidadeTipos();
     });
 </script>

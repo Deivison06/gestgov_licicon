@@ -234,7 +234,13 @@
         </p>
         <p>
             JUSTIFICATIVA DA CONTRATAÇÃO:
-            {!! str_replace('<p>', '<p style="text-align: justify;">', $detalhe->justificativa) !!}
+            {!! str_replace(
+                    ['<p>', '<strong>', '</strong>'],
+                    ['<p style="text-align: justify;">', '<span style="font-weight: bold;">', '</span>'],
+                    $detalhe->justificativa
+                ) 
+            !!}
+
         </p>
 
         <p>MODALIDADE: {{ $processo->modalidade->getDisplayName() }}</p>

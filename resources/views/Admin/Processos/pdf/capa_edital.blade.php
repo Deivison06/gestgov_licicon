@@ -82,7 +82,11 @@
             <p style="font-weight: bold; text-align: center; font-size: 14pt;">
                 PROCESSO ADMINISTRATIVO <br>
                 {{ $processo->numero_processo }} <br>
-                {{ $processo->modalidade->getDisplayName() }} <br>
+                @if($processo->modalidade !== \App\Enums\ModalidadeEnum::DISPENSA)
+                    {{ $processo->modalidade->getDisplayName() }} <br>
+                @else
+                    DISPENSA DE LICITAÇÃO
+                @endif
                 {{ $processo->numero_procedimento }}
             </p>
             <p style="text-align: center; font-size: 14pt;">
@@ -94,12 +98,23 @@
                 R$ {{ $detalhe->valor_estimado }}<br>
                 <span style="font-weight: bold;">DATA LIMITE PARA ENVIO DE PROPOSTAS</span> <br>
                 DIA {{ $detalhe->data_hora_limite_edital->translatedFormat('d \d\e F \d\e Y') }}, às {{ $detalhe->data_hora_limite_edital->format('H:i') }}hs (Horário de Brasília)<br>
-                <span style="font-weight: bold;">DATA DA SESSÃO PÚBLICA E FASE DE LANCES</span> <br>
-                DIA {{ $detalhe->data_hora_fase_edital->translatedFormat('d \d\e F \d\e Y') }} às {{ $detalhe->data_hora_fase_edital->format('H:i') }}hs (Horário de Brasília)<br>
-                <span style="font-weight: bold;">PORTAL UTILIZADO:</span> {{ $detalhe->portal }} <br>
-                <span style="font-weight: bold;">HORÁRIO:</span> {{ $detalhe->data_hora_limite_edital->format('H:i') }} (HORÁRIO DE BRASÍLIA/DF)<br>
+                @if($processo->modalidade !== \App\Enums\ModalidadeEnum::DISPENSA)
+                    <span style="font-weight: bold;">DATA DA SESSÃO PÚBLICA E FASE DE LANCES</span> <br>
+                    DIA {{ $detalhe->data_hora_fase_edital->translatedFormat('d \d\e F \d\e Y') }}
+                    às {{ $detalhe->data_hora_fase_edital->format('H:i') }}hs (Horário de Brasília)<br>
+
+                    <span style="font-weight: bold;">PORTAL UTILIZADO:</span> {{ $detalhe->portal }} <br>
+
+                    <span style="font-weight: bold;">HORÁRIO:</span>
+                    {{ $detalhe->data_hora_limite_edital->format('H:i') }} (HORÁRIO DE BRASÍLIA/DF)<br>
+                @endif
+
                 <span style="font-weight: bold;">E-MAIL:</span> {{ $processo->prefeitura->email }}<br><br>
-                <span style="font-weight: bold;">PREGOEIRO</span><br>
+                @if($processo->modalidade->value === \App\Enums\ModalidadeEnum::DISPENSA->value)
+                    <span style="font-weight: bold;">AGENTE DE CONTRATAÇÃO</span><br>
+                @else
+                    <span style="font-weight: bold;">PREGOEIRO</span><br>
+                @endif
                 {{ $detalhe->pregoeiro }}<br>
                 <span style="font-weight: bold;">AUTORIDADE COMPETENTE</span><br>
                 {{ $processo->prefeitura->autoridade_competente }}

@@ -75,8 +75,9 @@
     @elseif($campo === 'nome_equipe_planejamento')
     <x-form-field name="nome_equipe_planejamento" label="EQUIPE DE PLANEJAMENTO" />
 
-    @elseif($campo === 'responsavel_equipe_planejamento')
-    <x-form-field name="responsavel_equipe_planejamento" label="RESPONSAVEL EQUIPE DE PLANEJAMENTO" type="select" :options="$processo->prefeitura->unidades->pluck('nome', 'servidor_responsavel')->toArray()" placeholder="Selecione um Responsavel" />
+    @elseif($campo === 'responsavel_equipe_planejamento' && !($processo->modalidade === \App\Enums\ModalidadeEnum::DISPENSA &&
+        $processo->tipo_procedimento === \App\Enums\TipoProcedimentoEnum::OBRA))
+        <x-form-field name="responsavel_equipe_planejamento" label="RESPONSAVEL EQUIPE DE PLANEJAMENTO" type="select" :options="$processo->prefeitura->unidades->pluck('nome', 'servidor_responsavel')->toArray()" placeholder="Selecione um Responsavel" />
 
     @elseif($campo === 'agente_contratacao')
     <x-form-field name="agente_contratacao" label="Agente contratação" type="select" :options="$processo->prefeitura->unidades->pluck('nome', 'servidor_responsavel')->toArray()" placeholder="Selecione um Responsavel" />
@@ -103,7 +104,8 @@
     @elseif($campo === 'tratamento_diferenciado_MEs_eEPPs')
     <x-form-field name="tratamento_diferenciado_MEs_eEPPs" label="TRATAMENTO DIFERENCIA A MEs e EPPs" type="textarea" rows="5" />
 
-    @elseif($campo === 'intervalo_lances')
+    @elseif($campo === 'intervalo_lances' && 
+        $processo->modalidade !== \App\Enums\ModalidadeEnum::DISPENSA)
     <x-form-field name="intervalo_lances" label="INTERVALO ENTRE OS LANCES" />
 
     @elseif($campo === 'portal')
@@ -260,7 +262,8 @@
         type="datetime"
     />
 
-    @elseif($campo === 'data_hora_fase_edital')
+    @elseif($campo === 'data_hora_fase_edital' && 
+        $processo->modalidade !== \App\Enums\ModalidadeEnum::DISPENSA)
     <x-form-field
         name="data_hora_fase_edital"
         label="📅 Data e Hora - DATA DA SESSÃO PÚBLICA E FASE DE LANCES"

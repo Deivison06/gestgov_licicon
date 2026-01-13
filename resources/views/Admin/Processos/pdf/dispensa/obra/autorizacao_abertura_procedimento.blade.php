@@ -206,8 +206,7 @@
             {!! strip_tags($processo->objeto) !!}.
         </p>
         <p style="text-indent: 30px">
-            O valor estimado para pretendida contratação é de R$ {{ $detalhe->valor_estimado }},
-            conforme Relatório de Pesquisa de Preços.
+            O valor estimado para pretendida contratação é de R$ {{ $detalhe->valor_estimado }}, conforme Projeto Básico.
         </p>
 
         <p style="text-indent: 30px">

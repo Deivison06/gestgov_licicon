@@ -94,45 +94,7 @@
                 seus anexos.
             </p>
             <p style="text-align: justify;">
-                1.2. A contratação ocorrerá conforme tabela abaixo.
-            </p>
-            <table border="1" cellspacing="0" cellpadding="4" style="border-collapse: collapse; width: 100%; text-align: center; font-size: 8pt;">
-                <thead>
-                    <tr>
-                        <th style="width: 6%;">ITEM</th>
-                        <th style="width: 30%;">DESCRIÇÃO</th>
-                        <th style="width: 8%;">UNID</th>
-                        <th style="width: 20%;">QUANTIDADE</th>
-                        <th style="width: 18%;">VALOR UNITÁRIO</th>
-                        <th style="width: 18%;">VALOR TOTAL</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @php
-                    $itens = is_array($detalhe->itens_especificaca_quantitativos_xml)
-                    ? $detalhe->itens_especificaca_quantitativos_xml
-                    : json_decode($detalhe->itens_especificaca_quantitativos_xml, true);
-                    @endphp
-                    @if ($itens && count($itens) > 0)
-                    @foreach ($itens as $item)
-                    <tr>
-                        <td>{{ $item['item'] ?? '' }}</td>
-                        <td style="text-align: left;">{{ $item['especificacoes'] ?? '' }}</td>
-                        <td>{{ $item['unidade'] ?? '' }}</td>
-                        <td>{{ $item['quantidade'] ?? '' }}</td>
-                        <td>{{ $item['valor_unitario'] ?? '' }}</td>
-                        <td>{{ $item['valor_total'] ?? '' }}</td>
-                    </tr>
-                    @endforeach
-                    @else
-                    <tr>
-                        <td colspan="6">Nenhum item encontrado</td>
-                    </tr>
-                    @endif
-                </tbody>
-            </table>
-            <p style="text-align: justify;">
-                1.3. O critério de julgamento adotado será o menor preço observadas as exigências
+                1.2. O critério de julgamento adotado será o menor preço observadas as exigências
                 contidas neste Aviso de Contratação Direta e seus Anexos quanto às especificações do
                 objeto.
             </p>
@@ -192,7 +154,7 @@
             </p>
             <p style="text-align: justify;">
                 3.1. O ingresso do fornecedor na disputa da dispensa ocorrerá com o envio de sua
-                proposta de preços para o objeto constante do Termo de Referência e conforme modelo
+                proposta de preços para o objeto constante do Projeto Básico e conforme modelo
                 de proposta até o dia {{ $detalhe->data_hora_limite_edital->translatedFormat('d \d\e F \d\e Y') }}, às {{ $detalhe->data_hora_limite_edital->format('H:i') }} horas para o e-mail:
                 {{ $processo->prefeitura->email }}, ou entregar pessoalmente na Sala de
                 Licitação do município de {{ $processo->prefeitura->cidade }}, na {{ $processo->prefeitura->endereco }}

@@ -12,7 +12,6 @@ use App\Models\ContratoManual;
 use App\Models\EmpresaContrato;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 
 class ContratoManualController extends Controller
 {
@@ -123,7 +122,6 @@ class ContratoManualController extends Controller
         // Para contratos do sistema, carrega todos os vencedores
         // Para usuários da prefeitura, filtrar vencedores da mesma prefeitura
         if ($isPrefeituraUser) {
-            // CORREÇÃO AQUI: usar 'processo' no singular
             $vencedores = Vencedor::whereHas('processo', function($q) use ($userPrefeituraId) {
                     $q->where('prefeitura_id', $userPrefeituraId);
                 })
@@ -151,9 +149,10 @@ class ContratoManualController extends Controller
     public function create()
     {
         $user = auth()->user();
+        $isPrefeituraUser = $user->hasRole('prefeitura') && $user->prefeitura_id;
         
         // Para usuários da prefeitura, mostrar apenas a prefeitura dele
-        if ($user->hasRole('prefeitura') && $user->prefeitura_id) {
+        if ($isPrefeituraUser) {
             $prefeituras = Prefeitura::where('id', $user->prefeitura_id)->get();
             
             // Buscar apenas unidades da mesma prefeitura
@@ -168,19 +167,24 @@ class ContratoManualController extends Controller
                 ->get();
         }
 
-        return view('Admin.contratos_externos.create', compact('prefeituras', 'secretarias'));
+        return view('Admin.contratos_externos.create', compact(
+            'prefeituras', 
+            'secretarias',
+            'isPrefeituraUser'
+        ));
     }
 
     public function store(Request $request)
     {
-        $user = auth()->user();
-        
-        Log::info('Iniciando store do contrato', [
-            'user_id' => $user->id,
-            'prefeitura_id' => $user->prefeitura_id
+        Log::info('📦 Iniciando store do contrato', [
+            'user_id' => auth()->id(),
+            'user_prefeitura_id' => auth()->user()->prefeitura_id,
+            'dados_recebidos' => $request->except(['_token', 'arquivo_contrato'])
         ]);
         
-        // 1. Validação Unificada SEM prefixo processo.
+        $user = auth()->user();
+        
+        // 1. Validação Unificada
         $request->validate([
             // Dados do Contrato
             'prefeitura_id'     => 'required|exists:prefeituras,id',
@@ -210,7 +214,7 @@ class ContratoManualController extends Controller
         // Para usuários da prefeitura, verificar se estão tentando criar contrato para outra prefeitura
         if ($user->hasRole('prefeitura') && $user->prefeitura_id) {
             if ($request->prefeitura_id != $user->prefeitura_id) {
-                Log::warning('Usuário da prefeitura tentando criar contrato para outra prefeitura', [
+                Log::warning('🚫 Usuário da prefeitura tentando criar contrato para outra prefeitura', [
                     'user_prefeitura_id' => $user->prefeitura_id,
                     'request_prefeitura_id' => $request->prefeitura_id
                 ]);
@@ -224,28 +228,47 @@ class ContratoManualController extends Controller
             $prefeituraId = $request->input('prefeitura_id');
             $unidadeId = $request->input('unidade_id');
             
-            Log::info('Processando empresa', [
-                'cnpj' => $request->input('empresa.cnpj'),
-                'prefeitura_id' => $prefeituraId,
-                'unidade_id' => $unidadeId
-            ]);
-            
             // Verificar se a unidade pertence à prefeitura selecionada
             $unidade = Unidade::find($unidadeId);
             if ($unidade && $unidade->prefeitura_id != $prefeituraId) {
                 throw new \Exception('A unidade selecionada não pertence à prefeitura informada.');
             }
             
-            // A. Tratamento da Empresa (Busca ou Cria)
+            // ============================================
+            // 🎯 TRATAMENTO DA EMPRESA - LÓGICA CORRIGIDA
+            // ============================================
             $cnpjLimpo = preg_replace('/[^0-9]/', '', $request->input('empresa.cnpj'));
-
-            // Busca empresa pelo CNPJ e Prefeitura
-            $empresa = EmpresaContrato::where('cnpj', $cnpjLimpo)
-                ->where('prefeitura_id', $prefeituraId)
-                ->first();
             
-            if (!$empresa) {
-                // Cria uma nova empresa para esta prefeitura
+            Log::info('🔍 Buscando empresa', [
+                'cnpj' => $cnpjLimpo,
+                'prefeitura_id' => $prefeituraId
+            ]);
+
+            // PRIMEIRO: Busca empresa por CNPJ (independente da prefeitura)
+            $empresa = EmpresaContrato::where('cnpj', $cnpjLimpo)->first();
+
+            if ($empresa) {
+                Log::info('✅ Empresa existente encontrada', [
+                    'empresa_id' => $empresa->id,
+                    'prefeitura_empresa' => $empresa->prefeitura_id,
+                    'prefeitura_contrato' => $prefeituraId
+                ]);
+                
+                // 🎯 USA A EMPRESA EXISTENTE E ATUALIZA OS DADOS
+                $empresa->update([
+                    'razao_social' => $request->input('empresa.razao_social'),
+                    'representante' => $request->input('empresa.representante'),
+                    'endereco' => $request->input('empresa.endereco'),
+                    // 🚫 NÃO ALTERA prefeitura_id (mantém a original da empresa)
+                    // 🚫 NÃO ALTERA cnpj (mantém o original)
+                ]);
+                
+                Log::info('📝 Dados da empresa atualizados', [
+                    'empresa_id' => $empresa->id
+                ]);
+                
+            } else {
+                // 📝 Empresa não existe, cria nova
                 $empresa = EmpresaContrato::create([
                     'cnpj' => $cnpjLimpo,
                     'razao_social' => $request->input('empresa.razao_social'),
@@ -253,53 +276,63 @@ class ContratoManualController extends Controller
                     'endereco' => $request->input('empresa.endereco'),
                     'prefeitura_id' => $prefeituraId,
                 ]);
-                Log::info('Nova empresa criada para contrato manual', [
-                    'empresa_id' => $empresa->id,
-                    'prefeitura_id' => $prefeituraId
-                ]);
-            } else {
-                // Atualiza a empresa existente na mesma prefeitura
-                $empresa->update([
-                    'razao_social' => $request->input('empresa.razao_social'),
-                    'representante' => $request->input('empresa.representante'),
-                    'endereco' => $request->input('empresa.endereco'),
-                ]);
-                Log::info('Empresa existente atualizada', [
+                
+                Log::info('➕ Nova empresa criada', [
                     'empresa_id' => $empresa->id,
                     'prefeitura_id' => $prefeituraId
                 ]);
             }
 
+            // ============================================
             // B. Tratamento de Valores Monetários
+            // ============================================
             $valorTotal = $request->input('valor_total');
-            Log::debug('Valor total recebido', ['valor' => $valorTotal]);
             
-            $valorTotalFloat = (float) str_replace(["R$\u{A0}", "R$", ".", ","], ["", "", "", "."], $valorTotal);
-            Log::debug('Valor convertido', ['valor_float' => $valorTotalFloat]);
+            // Converte valor para float (remove R$, pontos e troca vírgula por ponto)
+            $valorTotalFloat = (float) str_replace(
+                ["R$\u{A0}", "R$", ".", ","], 
+                ["", "", "", "."], 
+                $valorTotal
+            );
+            
+            Log::debug('💰 Valor convertido', [
+                'original' => $valorTotal,
+                'convertido' => $valorTotalFloat
+            ]);
 
-            // C. Upload do Arquivo - SALVANDO NA NOVA PASTA
+            // ============================================
+            // C. Upload do Arquivo
+            // ============================================
             $caminhoArquivo = null;
             if ($request->hasFile('arquivo_contrato')) {
                 $arquivo = $request->file('arquivo_contrato');
-                $numeroContrato = preg_replace('/[^A-Za-z0-9\-]/', '_', $request->input('numero_contrato'));
+                $numeroContrato = $request->input('numero_contrato') ?: 'sem_numero';
+                $numeroContratoLimpo = preg_replace('/[^A-Za-z0-9\-]/', '_', $numeroContrato);
                 
                 // Gera um nome único para o arquivo
-                $nomeArquivo = "Contrato_{$numeroContrato}." . $arquivo->getClientOriginalExtension();
+                $nomeArquivo = 'Contrato_' . time() . '_' . $numeroContratoLimpo . '.' . $arquivo->getClientOriginalExtension();
                 
                 // Define o caminho completo
                 $caminho = 'uploads/contratos_externos/' . $nomeArquivo;
                 
-                // Salva o arquivo no diretório public
+                // Cria o diretório se não existir
+                if (!file_exists(public_path('uploads/contratos_externos'))) {
+                    mkdir(public_path('uploads/contratos_externos'), 0755, true);
+                }
+                
+                // Salva o arquivo
                 $arquivo->move(public_path('uploads/contratos_externos'), $nomeArquivo);
                 
                 $caminhoArquivo = $caminho;
-                Log::info('Arquivo uploadado', [
+                Log::info('📄 Arquivo uploadado', [
                     'caminho' => $caminhoArquivo,
-                    'nome_arquivo' => $nomeArquivo
+                    'tamanho' => $arquivo->getSize()
                 ]);
             }
 
+            // ============================================
             // D. Criação do Contrato
+            // ============================================
             $dadosContrato = [
                 'empresa_id'       => $empresa->id,
                 'prefeitura_id'    => $prefeituraId,
@@ -316,50 +349,78 @@ class ContratoManualController extends Controller
                 'arquivo_contrato' => $caminhoArquivo,
             ];
 
-            Log::debug('Dados para criar contrato:', $dadosContrato);
+            Log::debug('📋 Dados para criar contrato:', $dadosContrato);
 
             $contrato = ContratoManual::create($dadosContrato);
 
-            Log::info('Contrato criado com sucesso', [
+            Log::info('🎉 Contrato criado com sucesso', [
                 'contrato_id' => $contrato->id,
                 'numero_processo' => $contrato->numero_processo,
                 'empresa_id' => $empresa->id,
-                'prefeitura_id' => $prefeituraId,
                 'unidade_id' => $unidadeId
             ]);
 
             DB::commit();
 
-            // Redireciona para o EDIT para que o usuário cadastre os LOTES
             return redirect()
-                ->route('contratos.edit', $contrato->id)
-                ->with('success', 'Contrato cadastrado! Agora adicione os Lotes e Itens.');
+                ->route('admin.contratos.index')
+                ->with('success', 'Contrato cadastrado com sucesso!');
 
+        } catch (\Illuminate\Database\QueryException $e) {
+            DB::rollBack();
+            
+            // Tratamento específico para erro de duplicidade
+            if ($e->getCode() == 23000) {
+                Log::error('❌ Erro de duplicidade no CNPJ', [
+                    'error' => $e->getMessage(),
+                    'cnpj' => $cnpjLimpo ?? 'não definido'
+                ]);
+                
+                // Mensagem amigável para o usuário
+                $mensagem = 'Este CNPJ já está cadastrado no sistema. ';
+                $mensagem .= 'O sistema usará automaticamente a empresa existente. ';
+                $mensagem .= 'Tente novamente.';
+                
+                return back()->withInput()->with('error', $mensagem);
+            }
+            
+            Log::error('❌ Erro de banco de dados', [
+                'error' => $e->getMessage(),
+                'code' => $e->getCode()
+            ]);
+            
+            return back()->withInput()->with('error', 
+                'Erro no banco de dados. Por favor, tente novamente.'
+            );
+            
         } catch (\Exception $e) {
             DB::rollBack();
             
-            Log::error('Erro ao salvar contrato', [
+            Log::error('❌ Erro geral ao salvar contrato', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
             
-            return back()->withInput()->with('error', 'Erro ao salvar contrato: ' . $e->getMessage());
+            return back()->withInput()->with('error', 
+                'Erro ao salvar contrato: ' . $e->getMessage()
+            );
         }
     }
 
     public function edit(ContratoManual $contrato)
     {
-        Log::info('Acessando edição do contrato', ['contrato_id' => $contrato->id]);
+        Log::info('✏️ Acessando edição do contrato', ['contrato_id' => $contrato->id]);
         
         $this->authorizeAccess($contrato);
 
-        // Carrega lotes e empresa para a view de edição
-        $contrato->load(['empresa', 'secretaria']);
+        // Carrega dados relacionados
+        $contrato->load(['empresa', 'secretaria', 'prefeitura']);
 
         $user = auth()->user();
+        $isPrefeituraUser = $user->hasRole('prefeitura') && $user->prefeitura_id;
         
         // Para usuários da prefeitura, mostrar apenas a prefeitura dele
-        if ($user->hasRole('prefeitura') && $user->prefeitura_id) {
+        if ($isPrefeituraUser) {
             $prefeituras = Prefeitura::where('id', $user->prefeitura_id)->get();
             
             // Buscar apenas unidades da mesma prefeitura
@@ -374,22 +435,28 @@ class ContratoManualController extends Controller
                 ->get();
         }
 
-        return view('Admin.contratos_externos.edit', compact('contrato', 'prefeituras', 'secretarias'));
+        return view('Admin.contratos_externos.edit', compact(
+            'contrato', 
+            'prefeituras', 
+            'secretarias',
+            'isPrefeituraUser'
+        ));
     }
 
     public function update(Request $request, ContratoManual $contrato)
     {
-        Log::info('Iniciando update do contrato', [
+        Log::info('🔄 Iniciando update do contrato', [
             'contrato_id' => $contrato->id
         ]);
         
         $this->authorizeAccess($contrato);
         
-        // Para usuários da prefeitura, verificar se estão tentando editar contrato de outra prefeitura
         $user = auth()->user();
+        
+        // Para usuários da prefeitura, verificar se estão tentando editar contrato de outra prefeitura
         if ($user->hasRole('prefeitura') && $user->prefeitura_id) {
             if ($contrato->prefeitura_id != $user->prefeitura_id) {
-                Log::warning('Usuário da prefeitura tentando editar contrato de outra prefeitura', [
+                Log::warning('🚫 Usuário da prefeitura tentando editar contrato de outra prefeitura', [
                     'user_prefeitura_id' => $user->prefeitura_id,
                     'contrato_prefeitura_id' => $contrato->prefeitura_id
                 ]);
@@ -422,15 +489,21 @@ class ContratoManualController extends Controller
             
             // Tratamento do Valor
             $valorTotal = $request->input('valor_total');
-            Log::debug('Valor total para update', ['valor' => $valorTotal]);
             
             if (is_string($valorTotal)) {
-                $valorTotalFloat = (float) str_replace(["R$\u{A0}", "R$", ".", ","], ["", "", "", "."], $valorTotal);
+                $valorTotalFloat = (float) str_replace(
+                    ["R$\u{A0}", "R$", ".", ","], 
+                    ["", "", "", "."], 
+                    $valorTotal
+                );
             } else {
                 $valorTotalFloat = $valorTotal;
             }
             
-            Log::debug('Valor convertido para update', ['valor_float' => $valorTotalFloat]);
+            Log::debug('💰 Valor convertido para update', [
+                'original' => $valorTotal,
+                'convertido' => $valorTotalFloat
+            ]);
 
             $dadosAtualizar = [
                 'prefeitura_id'     => $prefeituraId,
@@ -446,46 +519,50 @@ class ContratoManualController extends Controller
                 'unidade_id'        => $request->input('unidade_id'),
             ];
 
-            Log::debug('Dados para atualizar', $dadosAtualizar);
-
-            // Tratamento de Arquivo na Edição - SALVANDO NA NOVA PASTA
+            // Tratamento de Arquivo na Edição
             if ($request->hasFile('arquivo_contrato')) {
-                Log::info('Arquivo recebido para atualização');
+                Log::info('📄 Arquivo recebido para atualização');
                 
                 // Deletar arquivo antigo se existir
                 if ($contrato->arquivo_contrato && file_exists(public_path($contrato->arquivo_contrato))) {
                     unlink(public_path($contrato->arquivo_contrato));
-                    Log::info('Arquivo antigo deletado', ['caminho' => $contrato->arquivo_contrato]);
+                    Log::info('🗑️ Arquivo antigo deletado', ['caminho' => $contrato->arquivo_contrato]);
                 }
                 
                 $arquivo = $request->file('arquivo_contrato');
-                $numeroContrato = preg_replace('/[^A-Za-z0-9\-]/', '_', $request->input('numero_contrato'));
+                $numeroContrato = $request->input('numero_contrato') ?: 'sem_numero';
+                $numeroContratoLimpo = preg_replace('/[^A-Za-z0-9\-]/', '_', $numeroContrato);
                 
                 // Gera um nome único para o arquivo
-                $nomeArquivo = "Contrato_{$numeroContrato}." . $arquivo->getClientOriginalExtension();
+                $nomeArquivo = 'Contrato_' . time() . '_' . $numeroContratoLimpo . '.' . $arquivo->getClientOriginalExtension();
                 
                 // Define o caminho completo
                 $caminho = 'uploads/contratos_externos/' . $nomeArquivo;
                 
-                // Salva o arquivo no diretório public
+                // Cria o diretório se não existir
+                if (!file_exists(public_path('uploads/contratos_externos'))) {
+                    mkdir(public_path('uploads/contratos_externos'), 0755, true);
+                }
+                
+                // Salva o arquivo
                 $arquivo->move(public_path('uploads/contratos_externos'), $nomeArquivo);
                 
                 $dadosAtualizar['arquivo_contrato'] = $caminho;
-                Log::info('Novo arquivo salvo', ['caminho' => $caminho]);
+                Log::info('✅ Novo arquivo salvo', ['caminho' => $caminho]);
             }
 
             $contrato->update($dadosAtualizar);
-            Log::info('Contrato atualizado com sucesso');
+            Log::info('✅ Contrato atualizado com sucesso', ['contrato_id' => $contrato->id]);
 
             DB::commit();
 
-            return redirect()->route('contratos.index')
+            return redirect()->route('admin.contratos.index')
                 ->with('success', 'Contrato atualizado com sucesso!');
 
         } catch (\Exception $e) {
             DB::rollBack();
             
-            Log::error('Erro ao atualizar contrato', [
+            Log::error('❌ Erro ao atualizar contrato', [
                 'contrato_id' => $contrato->id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
@@ -497,7 +574,7 @@ class ContratoManualController extends Controller
 
     public function updateEmpresa(Request $request, $id)
     {
-        Log::info('Iniciando update da empresa', [
+        Log::info('🏢 Iniciando update da empresa', [
             'contrato_id' => $id
         ]);
         
@@ -513,19 +590,19 @@ class ContratoManualController extends Controller
             // Verificar acesso
             $this->authorizeAccess($contrato);
             
-            Log::debug('Contrato encontrado', [
+            Log::debug('🔍 Contrato encontrado', [
                 'contrato_id' => $contrato->id,
                 'empresa_id' => $contrato->empresa->id
             ]);
             
             // Atualiza a empresa vinculada a este contrato
             $contrato->empresa->update($request->all());
-            Log::info('Empresa atualizada com sucesso');
+            Log::info('✅ Empresa atualizada com sucesso');
 
             return response()->json(['success' => true, 'message' => 'Dados da empresa atualizados!']);
             
          } catch (\Exception $e) {
-             Log::error('Erro ao atualizar empresa', [
+             Log::error('❌ Erro ao atualizar empresa', [
                  'contrato_id' => $id,
                  'error' => $e->getMessage(),
                  'trace' => $e->getTraceAsString()
@@ -537,7 +614,7 @@ class ContratoManualController extends Controller
 
     public function destroy(ContratoManual $contrato)
     {
-        Log::info('Iniciando exclusão do contrato', [
+        Log::info('🗑️ Iniciando exclusão do contrato', [
             'contrato_id' => $contrato->id
         ]);
         
@@ -547,7 +624,7 @@ class ContratoManualController extends Controller
         $user = auth()->user();
         if ($user->hasRole('prefeitura') && $user->prefeitura_id) {
             if ($contrato->prefeitura_id != $user->prefeitura_id) {
-                Log::warning('Usuário da prefeitura tentando excluir contrato de outra prefeitura', [
+                Log::warning('🚫 Usuário da prefeitura tentando excluir contrato de outra prefeitura', [
                     'user_prefeitura_id' => $user->prefeitura_id,
                     'contrato_prefeitura_id' => $contrato->prefeitura_id
                 ]);
@@ -559,17 +636,17 @@ class ContratoManualController extends Controller
             // Deletar arquivo físico se existir
             if ($contrato->arquivo_contrato && file_exists(public_path($contrato->arquivo_contrato))) {
                 unlink(public_path($contrato->arquivo_contrato));
-                Log::info('Arquivo do contrato deletado', ['caminho' => $contrato->arquivo_contrato]);
+                Log::info('🗑️ Arquivo do contrato deletado', ['caminho' => $contrato->arquivo_contrato]);
             }
 
             $contrato->delete();
-            Log::info('Contrato deletado com sucesso');
+            Log::info('✅ Contrato deletado com sucesso', ['contrato_id' => $contrato->id]);
 
-            return redirect()->route('contratos.index')
+            return redirect()->route('admin.contratos.index')
                 ->with('success', 'Contrato excluído com sucesso!');
 
         } catch (\Exception $e) {
-            Log::error('Erro ao excluir contrato', [
+            Log::error('❌ Erro ao excluir contrato', [
                 'contrato_id' => $contrato->id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
@@ -578,7 +655,6 @@ class ContratoManualController extends Controller
             return back()->with('error', 'Erro ao excluir: ' . $e->getMessage());
         }
     }
-
     
     /**
      * Autoriza o acesso ao contrato
@@ -594,7 +670,7 @@ class ContratoManualController extends Controller
         
         // Se for usuário da prefeitura, verifica se o contrato pertence à mesma prefeitura
         if ($user->hasRole('prefeitura') && $contrato->prefeitura_id != $user->prefeitura_id) {
-            Log::warning('Tentativa de acesso não autorizado', [
+            Log::warning('🚫 Tentativa de acesso não autorizado', [
                 'user_id' => $user->id,
                 'contrato_prefeitura_id' => $contrato->prefeitura_id,
                 'user_prefeitura_id' => $user->prefeitura_id

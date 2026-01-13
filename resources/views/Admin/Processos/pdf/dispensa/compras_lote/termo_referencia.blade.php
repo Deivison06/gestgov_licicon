@@ -695,149 +695,15 @@
     </div>
     @endif
     @php
-        // Verifica se a variável $assinantes existe e tem itens
         $hasSelectedAssinantes = isset($assinantes) && count($assinantes) > 0;
     @endphp
 
-        @if ($hasSelectedAssinantes)
-        {{-- Renderiza APENAS O PRIMEIRO assinante da lista --}}
-    @php
-        $primeiroAssinante = $assinantes[0]; // Pega o segundo item
-    @endphp
-    {{-- QUEBRA DE PÁGINA --}}
-    <div class="page-break"></div>
-    <div>
-        <p style="font-weight: bold; text-align: center;">{{ $primeiroAssinante['unidade_nome'] }}</p>
+    @if ($hasSelectedAssinantes)
+        @php
+            $primeiroAssinante = $assinantes[0];
+        @endphp
+    @endif
 
-         <table
-            style="border-collapse: collapse; width: 100%; text-align: left; border: 1px solid black;">
-            <thead>
-                <tr>
-                    <td colspan="2"
-                        style="border: 1px solid black; text-align: center; font-weight: bold; padding: 5px;">
-                        RESUMO DOS DADOS DO PROCESSO
-                    </td>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td style="border: 1px solid black; padding: 5px; font-weight: bold; width: 40%;">
-                        Nº PROCESSO ADMINISTRATIVO:
-                    </td>
-                    <td style="border: 1px solid black; padding: 5px;">
-                        {{ $processo->numero_processo }}
-                    </td>
-                </tr>
-                <tr>
-                    <td style="border: 1px solid black; padding: 5px; font-weight: bold;">
-                        Nº PROCESSO DE CONTRATAÇÃO:
-                    </td>
-                    <td style="border: 1px solid black; padding: 5px;">
-                        {{ $processo->numero_procedimento }}
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td style="border: 1px solid black; padding: 5px; font-weight: bold;">
-                        MODALIDADE:
-                    </td>
-                    <td style="border: 1px solid black; padding: 5px;">
-                        {{ $processo->modalidade?->getDisplayName() }}
-                    </td>
-                </tr>
-                <tr>
-                    <td style="border: 1px solid black; padding: 5px; font-weight: bold;">
-                        ÓRGÃO RESPONSÁVEL:
-                    </td>
-                    <td style="border: 1px solid black; padding: 5px;">
-                        {{ $detalhe->unidade_setor }}
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-
-        <p style="text-indent: 30px; text-align: justify;">
-            Esta Secretaria solicitou a elaboração de Cotação de Mercado e emissão de
-            Dotação Orçamentária acerca da {!! strip_tags($processo->objeto) !!}, após
-            sanada as solicitações, foi elaborado o Termo de Referência, encaminha-se para:
-        </p>
-
-        <p style="text-align: justify;">
-            Encaminhe-se à {{ $detalhe->encaminhamento_autorizacao_abertura }} para a AUTORIZAÇÃO DE ABERTURA DE
-            PROCEDIMENTO PELA AUTORIDADE COMPETENTE
-        </p>
-
-        <table style="border-collapse: collapse; width: auto; border: 1px solid black; font-size: 10pt;">
-            <tr>
-                <td style="border: 1px solid black; padding: 6px; font-weight: normal;">
-                    Forma indicada da contratação:
-                </td>
-            </tr>
-            <tr>
-                <td style="border: 1px solid black; padding: 8px;">
-                    <div style="display: block; margin-bottom: 4px;">
-                        <span style="display:inline-block; width:12px; height:12px; border:1px solid #000; margin-right:5px; vertical-align:middle; text-align:center; line-height:10px; font-size:10px; font-weight:bold;">
-                            @if ($processo->modalidade === \App\Enums\ModalidadeEnum::DISPENSA)
-                            X
-                            @endif
-                        </span>
-                        Dispensa de Licitação;
-                    </div>
-                    <div style="display: block; margin-bottom: 4px;">
-                        <span style="display:inline-block; width:12px; height:12px; border:1px solid #000; margin-right:5px; vertical-align:middle; text-align:center; line-height:10px; font-size:10px; font-weight:bold;">
-                            @if ($processo->modalidade === \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO)
-                            X
-                            @endif
-                        </span>
-                        Pregão Eletrônico;
-                    </div>
-                    <div style="display: block; margin-bottom: 4px;">
-                        <span style="display:inline-block; width:12px; height:12px; border:1px solid #000; margin-right:5px; vertical-align:middle; text-align:center; line-height:10px; font-size:10px; font-weight:bold;">
-                            @if ($processo->modalidade === "Pregão Presencial")
-                            X
-                            @endif
-                        </span>
-                        Pregão Presencial;
-                    </div>
-                    <div style="display: block; margin-bottom: 4px;">
-                        <span style="display:inline-block; width:12px; height:12px; border:1px solid #000; margin-right:5px; vertical-align:middle; text-align:center; line-height:10px; font-size:10px; font-weight:bold;">
-                            @if ($processo->modalidade === \App\Enums\ModalidadeEnum::CONCORRENCIA)
-                            X
-                            @endif
-                        </span>
-                        Concorrência;
-                    </div>
-                </td>
-            </tr>
-        </table>
-        {{-- Bloco de data e assinatura --}}
-        <div class="footer-signature">
-            {{ $processo->prefeitura->cidade }},
-            {{ \Carbon\Carbon::parse($dataSelecionada)->translatedFormat('d \d\e F \d\e Y') }}
-        </div>
-
-        
-
-        <div style="margin-top: 40px; text-align: center;">
-            <div class="signature-block" style="display: inline-block; margin: 0 40px;">
-                ___________________________________<br>
-                <p style="line-height: 1.2;">
-                    {{ $primeiroAssinante['responsavel'] }} <br>
-                    <span>{{ $primeiroAssinante['unidade_nome'] }}</span>
-                </p>
-            </div>
-        </div>
-        @else
-        {{-- Bloco Padrão (Fallback) --}}
-        <div class="signature-block" style="margin-top: 40px; text-align: center;">
-            ___________________________________<br>
-            <p style="line-height: 1.2;">
-                {{ $processo->prefeitura->autoridade_competente }} <br>
-                <span style="color: red;">[Pregoeira/Agente de Contratação]</span>
-            </p>
-        </div>
-        @endif
-    </div>
 </body>
 
 </html>
