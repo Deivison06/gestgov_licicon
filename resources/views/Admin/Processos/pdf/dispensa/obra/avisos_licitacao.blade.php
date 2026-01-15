@@ -216,7 +216,7 @@
             O Município de {{ $processo->prefeitura->cidade }}, através de seu Agente de Contratação / Pregoeiro e equipe de Apoio instituída pela Portaria nº {{ $primeiroAssinante['numero_portaria'] }}, de {{ !empty($primeiroAssinante['data_portaria'])
             ? \Carbon\Carbon::parse($primeiroAssinante['data_portaria'])->translatedFormat('d \d\e F \d\e Y')
             : '____________________' }}, torna público, para conhecimento dos interessados que realizará procedimento licitatório na modalidade
-             {{ $processo->modalidade->getDisplayName() }}, tipo {{ $processo->tipo_contratacao->getDisplayName() }}, objeto: {!! strip_tags($processo->objeto) !!},
+             {{ $processo->modalidade->getDisplayName() }}, objeto: {!! strip_tags($processo->objeto) !!},
              conforme as normas Gerais da Lei Federal nº. 14.133/2021, Decretos Municipais, Lei Complementar nº 123/06, alterada pela Lei Complementar nº 147/2014, de 07 de agosto de 2014 e
              demais normas regulamentares aplicáveis à espécie. Informações pelo E-mail: {{ $processo->prefeitura->email }}, e/ou na sede da Prefeitura no horário de 07:30hs às 13:00hs {{ $processo->prefeitura->endereco }}, {{ $detalhe->data_hora->translatedFormat('d \d\e F \d\e Y') }}.
         </p>

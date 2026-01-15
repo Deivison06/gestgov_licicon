@@ -10,6 +10,7 @@ use App\Models\Finalizacao;
 use App\Imports\LotesImport;
 use Illuminate\Http\Request;
 use App\Enums\ModalidadeEnum;
+use App\Enums\TipoProcedimentoEnum;
 use setasign\Fpdi\Tcpdf\Fpdi;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
@@ -92,11 +93,15 @@ class FinalizacaoProcessoController extends Controller
 
     protected $mapeamentoAnexos = [
         'atos_sessao' => 'anexo_atos_sessao',
+        'ata' => 'anexo_atos_sessao',
         'proposta' => 'anexo_proposta',
+        'proposta_vencedora' => 'anexo_proposta_readequada',
         'proposta_readequada' => 'anexo_proposta_readequada',
+        'documento_habilitacao' => 'anexo_habilitacao',
         'documento_habilitacao_empresa_vencedora' => 'anexo_habilitacao',
         'recurso_contratacoes_decisao_recursos' => 'anexo_recurso_contratacoes',
         'termo_adjudicacao' => 'anexo_planilha',
+        'parecer_juridico' => 'anexo_parecer_juridico',
         'publicacoes' => 'anexo_publicacoes',
     ];
 
@@ -132,8 +137,21 @@ class FinalizacaoProcessoController extends Controller
 
     private function getDocumentosOrganizados(Processo $processo): array
     {
-        // Verifica se é SRP (Sistema de Registro de Preços)
-        $isSRP = $processo->detalhe->tipo_srp === 'sim';
+        // Verifica o tipo de procedimento
+        $tipoProcedimento = $processo->detalhe->tipo_procedimento ?? null;
+        
+        // Se for dispensa
+        if ($processo->modalidade === ModalidadeEnum::DISPENSA) {
+            // Verifica se é dispensa de compras/serviços ou obra
+            if ($tipoProcedimento == TipoProcedimentoEnum::OBRA->value) {
+                return $this->getOrdemDispensaObra();
+            } else {
+                // Dispensa de compras ou serviços
+                return $this->getOrdemDispensaComprasServicos();
+            }
+        }
+        
+        $isSRP = $processo->detalhe?->tipo_srp === 'sim';
 
         // Verifica se tem inversão de fases
         $hasInversaoFase = $processo->detalhe && $processo->detalhe->inversao_fase === 'sim';
@@ -153,6 +171,106 @@ class FinalizacaoProcessoController extends Controller
 
         // Se for PREGÃO (comum ou inversão)
         return $this->getOrdemPregao($hasInversaoFase);
+    }
+
+    private function getOrdemDispensaComprasServicos(): array
+    {
+        $documentos = [
+            'atos_sessao' => [
+                'titulo' => 'ATOS DA SESSÃO',
+                'cor' => 'bg-red-500',
+                'campos' => ['anexo_atos_sessao'],
+                'requer_assinatura' => false,
+            ],
+            'documento_habilitacao' => [
+                'titulo' => 'DOCUMENTOS DE HABILITAÇÃO',
+                'cor' => 'bg-green-500',
+                'campos' => ['anexo_habilitacao'],
+                'requer_assinatura' => false,
+            ],
+            'proposta' => [
+                'titulo' => 'PROPOSTAS',
+                'cor' => 'bg-blue-500',
+                'campos' => ['anexo_proposta'],
+                'requer_assinatura' => false,
+            ],
+            'proposta_vencedora' => [
+                'titulo' => 'PROPOSTA VENCEDORA',
+                'cor' => 'bg-purple-500',
+                'campos' => ['anexo_proposta_readequada'],
+                'requer_assinatura' => false,
+            ],
+            'recurso_contratacoes_decisao_recursos' => [
+                'titulo' => 'RECURSOS, CONTRARRAZÕES E DECISÃO DOS RECURSOS',
+                'cor' => 'bg-green-500',
+                'campos' => ['anexo_recurso_contratacoes'],
+                'requer_assinatura' => false,
+            ],
+            'parecer_juridico' => [
+                'titulo' => 'PARECER JURÍDICO',
+                'cor' => 'bg-orange-500',
+                'campos' => [],
+                'requer_assinatura' => true,
+            ],
+            'publicacoes' => [
+                'titulo' => 'PUBLICAÇÕES',
+                'cor' => 'bg-indigo-500',
+                'campos' => ['anexo_publicacoes'],
+                'requer_assinatura' => false,
+            ]
+        ];
+
+        return $documentos;
+    }
+
+    private function getOrdemDispensaObra(): array
+    {
+        $documentos = [
+            'ata' => [
+                'titulo' => 'ATA',
+                'cor' => 'bg-red-500',
+                'campos' => ['anexo_atos_sessao'],
+                'requer_assinatura' => false,
+            ],
+            'documento_habilitacao' => [
+                'titulo' => 'DOCUMENTOS DE HABILITAÇÃO',
+                'cor' => 'bg-green-500',
+                'campos' => ['anexo_habilitacao'],
+                'requer_assinatura' => false,
+            ],
+            'proposta' => [
+                'titulo' => 'PROPOSTAS',
+                'cor' => 'bg-blue-500',
+                'campos' => ['anexo_proposta'],
+                'requer_assinatura' => false,
+            ],
+            'proposta_vencedora' => [
+                'titulo' => 'PROPOSTAS DA EMPRESA VENCEDORA',
+                'cor' => 'bg-purple-500',
+                'campos' => ['anexo_proposta_readequada'],
+                'requer_assinatura' => false,
+            ],
+            'recurso_contratacoes_decisao_recursos' => [
+                'titulo' => 'RECURSOS, CONTRARRAZÕES E DECISÃO DOS RECURSOS',
+                'cor' => 'bg-green-500',
+                'campos' => ['anexo_recurso_contratacoes'],
+                'requer_assinatura' => false,
+            ],
+            'parecer_juridico' => [
+                'titulo' => 'PARECER JURÍDICO',
+                'cor' => 'bg-orange-500',
+                'campos' => [],
+                'requer_assinatura' => true,
+            ],
+            'publicacoes' => [
+                'titulo' => 'PUBLICAÇÕES',
+                'cor' => 'bg-indigo-500',
+                'campos' => ['anexo_publicacoes'],
+                'requer_assinatura' => false,
+            ]
+        ];
+
+        return $documentos;
     }
 
     private function getOrdemPregao(bool $hasInversaoFase = false): array
@@ -625,20 +743,15 @@ class FinalizacaoProcessoController extends Controller
 
             $dado = [
                 'lote' => $this->obterValorColuna($linha, 2, ''),
-                'status' => $this->obterValorColuna($linha, 3, 'HOMOLOGADO'), // Coluna 3: Status
-                'item' => $this->obterValorColuna($linha, 4, ''), // Coluna 4: Item
-                'descricao' => $this->obterValorColuna($linha, 5, ''), // Coluna 5: Descrição
-                'unidade' => $this->obterValorColuna($linha, 6, 'UN'), // Coluna 6: Unidade
-                'marca' => $this->obterValorColuna($linha, 7, ''), // Coluna 7: Marca
-                'modelo' => $this->obterValorColuna($linha, 8, ''), // Coluna 8: Modelo
-                'quantidade' => $this->parseFloat($this->obterValorColuna($linha, 9, 0)), // Coluna 9: Quantidade
-                'vl_unit' => $this->parseFloat($this->obterValorColuna($linha, 10, 0)), // Coluna 10: Vl. Unit.
+                'status' => $this->obterValorColuna($linha, 3, 'HOMOLOGADO'),
+                'item' => $this->obterValorColuna($linha, 4, ''),
+                'descricao' => $this->obterValorColuna($linha, 5, ''),
+                'unidade' => $this->obterValorColuna($linha, 6, 'UN'),
+                'marca' => $this->obterValorColuna($linha, 7, ''),
+                'modelo' => $this->obterValorColuna($linha, 8, ''),
+                'quantidade' => $this->parseFloat($this->obterValorColuna($linha, 9, 0)),
+                'vl_unit' => $this->parseFloat($this->obterValorColuna($linha, 10, 0)),
             ];
-
-            // // Adicionar lote se for do tipo LOTE
-            // if ($tipoContratacao === 'LOTE') {
-            //     $dado['lote'] = $this->obterValorColuna($linha, 2, ''); // Coluna 2: Lote
-            // }
 
             // Validar dados obrigatórios
             if (empty($dado['item']) || empty($dado['descricao']) || $dado['quantidade'] <= 0 || $dado['vl_unit'] <= 0) {
@@ -653,7 +766,7 @@ class FinalizacaoProcessoController extends Controller
             Log::info('Linha processada com sucesso', [
                 'linha' => $i + 1,
                 'dado' => $dado,
-                'lote_valor' => $dado['lote'] // Log específico para debug do lote
+                'lote_valor' => $dado['lote']
             ]);
         }
 
@@ -676,14 +789,14 @@ class FinalizacaoProcessoController extends Controller
         }
 
         // CORREÇÃO: Para campo lote, preservar como string mesmo se for numérico
-        if ($indice === 2) { // Coluna do lote
+        if ($indice === 2) {
             return (string)$valor;
         }
 
         // Se for numérico, converte para string para manter consistência
         if (is_numeric($valor)) {
             // Para CNPJ/CPF, preserva como string sem formatação
-            if ($indice === 1) { // Coluna CPF/CNPJ
+            if ($indice === 1) {
                 return (string)$valor;
             }
             // Para outros números, converte normalmente
@@ -751,6 +864,7 @@ class FinalizacaoProcessoController extends Controller
             ], 500);
         }
     }
+    
     // =========================================================
     // MÉTODOS DE GERAÇÃO E DOWNLOAD DE PDF
     // =========================================================
@@ -871,7 +985,8 @@ class FinalizacaoProcessoController extends Controller
             'anexo_habilitacao' => 'salvarAnexo',
             'anexo_recurso_contratacoes' => 'salvarAnexo',
             'anexo_planilha' => 'salvarAnexo',
-            'anexo_publicacoes' => 'salvarAnexo'
+            'anexo_publicacoes' => 'salvarAnexo',
+            'anexo_parecer_juridico' => 'salvarAnexo'
         ];
 
         foreach ($arquivos as $campo => $metodo) {
@@ -907,7 +1022,8 @@ class FinalizacaoProcessoController extends Controller
             'anexo_habilitacao',
             'anexo_recurso_contratacoes',
             'anexo_planilha',
-            'anexo_publicacoes'
+            'anexo_publicacoes',
+            'anexo_parecer_juridico'
         ];
     }
 
@@ -968,7 +1084,7 @@ class FinalizacaoProcessoController extends Controller
             'dataGeracao' => now()->format('d/m/Y H:i:s'),
             'dataSelecionada' => $validatedData['dataSelecionada'],
             'assinantes' => $validatedData['assinantes'],
-            'hasSelectedAssinantes' => $hasSelectedAssinantes, // ADICIONE ESTA LINHA
+            'hasSelectedAssinantes' => $hasSelectedAssinantes,
             'parecer' => $validatedData['parecerSelecionado'],
         ];
     }
@@ -978,7 +1094,18 @@ class FinalizacaoProcessoController extends Controller
         $viewBase = "Admin.Processos.pdf-finalizacao";
 
         $modalidade = $this->formatarNomeArquivo($processo->modalidade?->name ?? '');
-        $view = "{$viewBase}.{$modalidade}.{$documento}";
+        
+        // Para dispensa, verificar se é obra ou compras/serviços
+        if ($processo->modalidade === ModalidadeEnum::DISPENSA) {
+            $tipoProcedimento = $processo->detalhe->tipo_procedimento ?? null;
+            if ($tipoProcedimento == TipoProcedimentoEnum::OBRA->value) {
+                $view = "{$viewBase}.{$modalidade}.obra.{$documento}";
+            } else {
+                $view = "{$viewBase}.{$modalidade}.{$documento}";
+            }
+        } else {
+            $view = "{$viewBase}.{$modalidade}.{$documento}";
+        }
 
         if (!view()->exists($view)) {
             throw new \Exception("O modelo de PDF para o documento '{$documento}' não foi encontrado. View: {$view}");
@@ -992,7 +1119,6 @@ class FinalizacaoProcessoController extends Controller
         $nome = strtolower(iconv('UTF-8', 'ASCII//TRANSLIT', $nome));
         return str_replace(' ', '_', $nome);
     }
-
 
     private function salvarDocumento(Processo $processo, $pdf, array $validatedData): string
     {
@@ -1016,6 +1142,16 @@ class FinalizacaoProcessoController extends Controller
 
     private function gerarSubpasta(Processo $processo, string $documento): string
     {
+        // Para dispensa, usar subpasta específica
+        if ($processo->modalidade === ModalidadeEnum::DISPENSA) {
+            $tipoProcedimento = $processo->detalhe->tipo_procedimento ?? null;
+            if ($tipoProcedimento == TipoProcedimentoEnum::OBRA->value) {
+                return "finalizacao/dispensa_obra/{$documento}";
+            } else {
+                return "finalizacao/dispensa_compras_servicos/{$documento}";
+            }
+        }
+        
         return "finalizacao/{$documento}";
     }
 
@@ -1462,7 +1598,6 @@ class FinalizacaoProcessoController extends Controller
         $pdf->MultiCell($boxHeight, $boxWidth, $textoCarimbo, 0, 'C', false, 1, '', '', true, 0, false, true, 0, 'T', false);
         $pdf->StopTransform();
     }
-
 
     private function contarPaginasPdf(string $caminhoPdf): int
     {
