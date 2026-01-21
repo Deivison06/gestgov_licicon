@@ -188,7 +188,7 @@
         }
 
         .page-content {
-            padding: 2.5rem;
+            padding: 2.5rem 0;
             flex: 1;
             max-width: 1400px;
             width: 100%;

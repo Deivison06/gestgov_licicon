@@ -8,9 +8,10 @@ use App\Models\Documento;
 use App\Models\Prefeitura;
 use App\Models\EstoqueLote;
 use Illuminate\Http\Request;
-use App\Models\LoteContratado;
 use setasign\Fpdi\Tcpdf\Fpdi;
+use App\Models\LoteContratado;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class AtaController extends Controller
@@ -1598,5 +1599,343 @@ class AtaController extends Controller
         }
         
         return $cpf;
+    }
+
+    /**
+     * Exibir formulário de edição de contratação
+     */
+    public function editContratacao(Processo $processo, LoteContratado $contratacao)
+    {
+        try {
+            // Verificar se a contratação pertence ao processo
+            if ($contratacao->processo_id != $processo->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Contratação não pertence a este processo.'
+                ], 403);
+            }
+
+            // Carregar relacionamentos
+            $contratacao->load(['lote', 'vencedor']);
+            
+            // Buscar estoque atual
+            $estoque = EstoqueLote::where('lote_id', $contratacao->lote_id)
+                ->where('processo_id', $processo->id)
+                ->first();
+
+            // Calcular quantidade disponível no estoque
+            $quantidadeDisponivel = $estoque 
+                ? (float) $estoque->quantidade_disponivel + (float) $contratacao->quantidade_contratada
+                : (float) $contratacao->lote->quantidade;
+
+            return response()->json([
+                'success' => true,
+                'contratacao' => [
+                    'id' => $contratacao->id,
+                    'vencedor_id' => $contratacao->vencedor_id,
+                    'lote_id' => $contratacao->lote_id,
+                    'quantidade_contratada' => (float) $contratacao->quantidade_contratada,
+                    'valor_unitario' => (float) $contratacao->valor_unitario,
+                    'valor_total' => (float) $contratacao->valor_total,
+                    'observacao' => $contratacao->observacao,
+                    'status' => $contratacao->status,
+                    'item' => $contratacao->lote->item,
+                    'descricao' => $contratacao->lote->descricao,
+                    'vencedor' => $contratacao->vencedor->razao_social,
+                ],
+                'estoque' => [
+                    'quantidade_disponivel' => $quantidadeDisponivel,
+                    'quantidade_total_lote' => (float) $contratacao->lote->quantidade,
+                    'quantidade_utilizada' => $estoque ? (float) $estoque->quantidade_utilizada : 0,
+                ],
+                'max_quantidade' => $quantidadeDisponivel
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Erro ao buscar dados para edição de contratação', [
+                'processo_id' => $processo->id,
+                'contratacao_id' => $contratacao->id,
+                'erro' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao carregar dados para edição: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Atualizar contratação existente
+     */
+    public function updateContratacao(Request $request, Processo $processo, LoteContratado $contratacao)
+    {
+        try {
+            $request->validate([
+                'quantidade_contratada' => 'required|numeric|min:0.01',
+                'observacao' => 'nullable|string|max:500',
+            ]);
+
+            DB::beginTransaction();
+
+            // 1. Verificar se pode editar (apenas PENDENTE pode ser editado)
+            if ($contratacao->status !== 'PENDENTE') {
+                throw new \Exception('Apenas contratações com status PENDENTE podem ser editadas.');
+            }
+
+            // 2. Buscar estoque
+            $estoque = EstoqueLote::where('lote_id', $contratacao->lote_id)
+                ->where('processo_id', $processo->id)
+                ->first();
+
+            if (!$estoque) {
+                // Criar estoque se não existir
+                $lote = $contratacao->lote;
+                $estoque = EstoqueLote::create([
+                    'lote_id' => $contratacao->lote_id,
+                    'processo_id' => $processo->id,
+                    'quantidade_disponivel' => $lote->quantidade,
+                    'quantidade_utilizada' => 0
+                ]);
+            }
+
+            // 3. Calcular diferença
+            $novaQuantidade = (float) $request->quantidade_contratada;
+            $quantidadeAtual = (float) $contratacao->quantidade_contratada;
+            $diferenca = $novaQuantidade - $quantidadeAtual;
+
+            // 4. Verificar se há estoque suficiente para aumento
+            if ($diferenca > 0) {
+                $quantidadeDisponivelAtual = (float) $estoque->quantidade_disponivel;
+                
+                if ($diferenca > $quantidadeDisponivelAtual) {
+                    throw new \Exception(
+                        "Quantidade solicitada excede a disponível. " .
+                        "Disponível: " . number_format($quantidadeDisponivelAtual, 2, ',', '.') .
+                        " | Necessário adicional: " . number_format($diferenca, 2, ',', '.')
+                    );
+                }
+            }
+
+            // 5. Atualizar estoque
+            if ($diferenca > 0) {
+                // Aumentando quantidade - reservar mais
+                $estoque->quantidade_disponivel -= $diferenca;
+                $estoque->quantidade_utilizada += $diferenca;
+            } elseif ($diferenca < 0) {
+                // Diminuindo quantidade - liberar
+                $estoque->quantidade_disponivel += abs($diferenca);
+                $estoque->quantidade_utilizada -= abs($diferenca);
+            }
+            $estoque->save();
+
+            // 6. Calcular nova disponibilidade pós-contrato
+            $disponivelApos = (float) $estoque->quantidade_disponivel;
+
+            // 7. Atualizar contratação
+            $contratacao->update([
+                'quantidade_contratada' => $novaQuantidade,
+                'quantidade_disponivel_pos_contrato' => $disponivelApos,
+                'valor_total' => $novaQuantidade * (float) $contratacao->valor_unitario,
+                'observacao' => $request->observacao,
+            ]);
+
+            DB::commit();
+
+            Log::info('Contratação atualizada com sucesso', [
+                'processo_id' => $processo->id,
+                'contratacao_id' => $contratacao->id,
+                'quantidade_anterior' => $quantidadeAtual,
+                'quantidade_nova' => $novaQuantidade,
+                'diferenca' => $diferenca
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Contratação atualizada com sucesso!',
+                'contratacao' => $contratacao->fresh()->load(['lote', 'vencedor']),
+                'estoque' => $estoque->fresh()
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Erro ao atualizar contratação', [
+                'processo_id' => $processo->id,
+                'contratacao_id' => $contratacao->id,
+                'erro' => $e->getMessage(),
+                'dados' => $request->all()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao atualizar contratação: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Excluir contratação (libera estoque)
+     */
+    public function destroyContratacao(Request $request, Processo $processo, LoteContratado $contratacao)
+    {
+        try {
+            DB::beginTransaction();
+
+            // 1. Verificar se pode excluir (apenas PENDENTE pode ser excluído)
+            if ($contratacao->status !== 'PENDENTE') {
+                throw new \Exception('Apenas contratações com status PENDENTE podem ser excluídas.');
+            }
+
+            // 2. Buscar estoque
+            $estoque = EstoqueLote::where('lote_id', $contratacao->lote_id)
+                ->where('processo_id', $processo->id)
+                ->first();
+
+            // 3. Liberar estoque
+            if ($estoque) {
+                $estoque->quantidade_disponivel += (float) $contratacao->quantidade_contratada;
+                $estoque->quantidade_utilizada -= (float) $contratacao->quantidade_contratada;
+                
+                // Garantir que não fique negativo
+                if ($estoque->quantidade_utilizada < 0) {
+                    $estoque->quantidade_utilizada = 0;
+                }
+                
+                $estoque->save();
+            }
+
+            // 4. Salvar dados da contratação antes de excluir (para log)
+            $dadosContratacao = [
+                'id' => $contratacao->id,
+                'lote_id' => $contratacao->lote_id,
+                'vencedor_id' => $contratacao->vencedor_id,
+                'quantidade_contratada' => (float) $contratacao->quantidade_contratada,
+                'valor_total' => (float) $contratacao->valor_total
+            ];
+
+            // 5. Excluir contratação
+            $contratacao->delete();
+
+            DB::commit();
+
+            Log::info('Contratação excluída com sucesso', [
+                'processo_id' => $processo->id,
+                'contratacao_dados' => $dadosContratacao,
+                'estoque_apos' => $estoque ? [
+                    'disponivel' => (float) $estoque->quantidade_disponivel,
+                    'utilizada' => (float) $estoque->quantidade_utilizada
+                ] : null
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Contratação excluída com sucesso!',
+                'estoque' => $estoque ? $estoque->fresh() : null
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Erro ao excluir contratação', [
+                'processo_id' => $processo->id,
+                'contratacao_id' => $contratacao->id,
+                'erro' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao excluir contratação: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    /**
+     * Excluir todas as contratações pendentes
+     */
+    public function excluirTodasContratacoes(Request $request, Processo $processo)
+    {
+        try {
+            DB::beginTransaction();
+
+            // 1. Buscar todas as contratações pendentes do processo
+            $contratacoes = LoteContratado::where('processo_id', $processo->id)
+                ->where('status', 'PENDENTE')
+                ->get();
+
+            if ($contratacoes->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Não há contratações pendentes para excluir.'
+                ], 400);
+            }
+
+            $contador = 0;
+            $erros = [];
+
+            // 2. Excluir cada contratação e liberar estoque
+            foreach ($contratacoes as $contratacao) {
+                try {
+                    // Buscar estoque
+                    $estoque = EstoqueLote::where('lote_id', $contratacao->lote_id)
+                        ->where('processo_id', $processo->id)
+                        ->first();
+
+                    // Liberar estoque
+                    if ($estoque) {
+                        $estoque->quantidade_disponivel += (float) $contratacao->quantidade_contratada;
+                        $estoque->quantidade_utilizada -= (float) $contratacao->quantidade_contratada;
+                        
+                        // Garantir que não fique negativo
+                        if ($estoque->quantidade_utilizada < 0) {
+                            $estoque->quantidade_utilizada = 0;
+                        }
+                        
+                        $estoque->save();
+                    }
+
+                    // Excluir contratação
+                    $contratacao->delete();
+                    $contador++;
+
+                } catch (\Exception $e) {
+                    $erros[] = [
+                        'contratacao_id' => $contratacao->id,
+                        'erro' => $e->getMessage()
+                    ];
+                    continue;
+                }
+            }
+
+            DB::commit();
+
+            Log::info('Todas as contratações pendentes excluídas', [
+                'processo_id' => $processo->id,
+                'excluidas' => $contador,
+                'erros' => $erros
+            ]);
+
+            $mensagem = "{$contador} contratação(ões) pendente(s) excluída(s) com sucesso!";
+            
+            if (!empty($erros)) {
+                $mensagem .= " ({$erros} erro(s) encontrado(s))";
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => $mensagem,
+                'excluidas' => $contador,
+                'erros' => $erros
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Erro ao excluir todas as contratações', [
+                'processo_id' => $processo->id,
+                'erro' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao excluir todas as contratações: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

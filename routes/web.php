@@ -336,6 +336,17 @@ Route::prefix('admin')
 
             Route::get('{processo}/download/{nomeArquivo}', [AtaController::class, 'downloadAta'])
             ->name('admin.atas.download.file');
+
+            Route::get('/{processo}/contratacao/{contratacao}/edit', [AtaController::class, 'editContratacao'])
+                ->name('contratacao.edit');
+            
+            Route::put('/{processo}/contratacao/{contratacao}', [AtaController::class, 'updateContratacao'])
+                ->name('contratacao.update');
+            
+            Route::delete('/{processo}/contratacao/{contratacao}', [AtaController::class, 'destroyContratacao'])
+                ->name('contratacao.destroy');
+            Route::delete('/{processo}/excluir-todas-contratacoes', [AtaController::class, 'excluirTodasContratacoes'])
+                ->name('excluir.todas.contratacoes');
         
         });
     });

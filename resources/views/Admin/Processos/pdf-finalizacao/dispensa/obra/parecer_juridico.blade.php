@@ -153,9 +153,15 @@
                 <!-- Conteúdo da primeira célula -->
                 </td>
                 <td style="width:60%; padding:8px; vertical-align:top; word-wrap:break-word; white-space:normal; font-weight: bold;">
-                    PRINCÍPIO DA LEGALIDADE. EXAME DA POSSIBILIDADE LEGAL DE CONTRATAÇÃO DIRETA. DISPENSA DE LICITAÇÃO COM FUNDAMENTO NO ARTIGO 75, 
-                    INCISO II, DA LEI Nº 14.133/2021. CONTROLE PREVENTIVO DA LEGALIDADE, ARTIGO 53, §1º, INCISO I E II C/C 72, INCISO III, 
-                    DA LEI N° 14.133/2021. CUMPRIMENTO DAS NORMAS E PRINCÍPIOS NORTEADORES DA LICITAÇÃO.
+                    PRINCÍPIO DA LEGALIDADE. EXAME DA
+                    POSSIBILIDADE LEGAL DE CONTRATAÇÃO
+                    DIRETA. DISPENSA DE LICITAÇÃO COM
+                    FUNDAMENTO NO ARTIGO 75, INCISO I, DA
+                    LEI Nº 14.133/2021. CONTROLE PREVENTIVO
+                    DA LEGALIDADE, ARTIGO 53, §1º, INCISO I E
+                    II C/C 72, INCISO III, DA LEI N° 14.133/2021.
+                    CUMPRIMENTO DAS NORMAS E PRINCÍPIOS
+                    NORTEADORES DA LICITAÇÃO.
                 </td>
             </tr>
         </table>
@@ -194,29 +200,17 @@
                 <td style="text-align: justify;">
                     §1º - Na elaboração do parecer jurídico, o
                     órgão de assessoramento jurídico da
-                    Administração deverá:
-                    <br><br>
-                </td>
-            </tr>
-             <tr>
-                <td></td>
-                <td style="text-align: justify;">
+                    Administração deverá: <br>
                     I - Apreciar o processo licitatório conforme
                     critérios objetivos prévios de atribuição de
-                    prioridade;
-                    <br><br>
-                </td>
-            </tr>
-             <tr>
-                <td></td>
-                <td style="text-align: justify;">
+                    prioridade; <br>
                     II - redigir sua manifestação em linguagem
                     simples e compreensível e de forma clara e
                     objetiva, com apreciação de todos os
                     elementos indispensáveis à contratação e
                     com exposição dos pressupostos de fato e
                     de direito levados em consideração na
-                    análise jurídica. ”
+                    análise jurídica. ” 
                     <br><br>
                 </td>
             </tr>
@@ -230,11 +224,12 @@
                     <br><br>
                 </td>
             </tr>
-            <tr>
+             <tr>
                 <td></td>
                 <td style="text-align: justify;">
-                    VI - Razão da escolha do contratado;
-                    <br><br>
+                    III - parecer jurídico e pareceres técnicos, se
+                    for o caso, que demonstrem o atendimento
+                    dos requisitos exigidos”
                 </td>
             </tr>
         </table>
@@ -242,9 +237,8 @@
         <p style="text-indent: 30px; text-align: justify; ">
             Nesse sentido, a presente análise tem a finalidade de verificar a
             conformidade do procedimento, com as disposições fixadas na nova Lei de
-            licitações, em especial no que tange a possibilidade legal de contratação direta pra
-            o fornecimento dos produtos, tendo por fundamento o artigo 75, inciso II, da Lei nº
-            14.133/2021.
+            licitações, em especial no que tange a possibilidade legal de contratação direta dos
+            serviços, tendo por fundamento o artigo 75, inciso I, da Lei nº 14.133/2021.
         </p>
         <p style="text-indent: 30px; text-align: justify;">
             Preliminarmente, cumpre esclarecer que, a presente manifestação
@@ -294,7 +288,7 @@
         <p style="text-indent: 30px; text-align: justify;">
             Assim, se faz necessário o exame prévio, para que a Administração
             não se sujeite a violar um princípio de direito, o que é severamente tão grave como
-            transgredir uma norma.
+            transgredir uma norma. uma norma.
         </p>
         <p style="text-indent: 30px; text-align: justify;">
             Por esse motivo, a Constituição Federal em seu artigo 37 estabelece
@@ -312,15 +306,16 @@
             indispensáveis à garantia do cumprimento das obrigações.
         </p>
         <p style="text-indent: 30px; text-align: justify;">
-            Conforme despacho de solicitação e autorização do Secretário de {{ str_replace('Secretaria Municipal de ', '', $detalhe->unidade_setor ?? 'Unidade 1') }},
-            e considerando que o serviço requisitado é temático à atividade fim da
-            referida Secretaria, faz-se necessário a realização {!! strip_tags($processo->objeto) !!}.
+            Conforme despacho de solicitação e autorização do Secretário de
+            {{ str_replace('Secretaria Municipal de ', '', $detalhe->unidade_setor ?? 'Unidade 1') }}, e considerando que o serviço requisitado é temático à atividade fim da
+            referida Secretaria, faz-se necessário a realização {!! strip_tags($processo->objeto) !!} trazendo dessa forma a prestação de
+            serviços públicos à população.
         </p>
         <p style="text-indent: 30px; text-align: justify;">
             Devidamente instruído, o processo fora remetido a Assessoria
             Jurídica, para emissão de parecer acerca da legalidade do procedimento,
             objetivando a contratação direta de empresa para a execução do serviço ora
-            solicitado.
+            solicitado
         </p>
         <p style="text-indent: 30px; text-align: justify;">
             Desta feita, como previsto na norma superior, a realização do certame
@@ -329,22 +324,25 @@
             que haja a necessidade do procedimento licitatório.
         </p>
         <p style="text-indent: 30px; text-align: justify;">
-            Assim, conforme previsão do Artigo 75, II, da Lei 14.133/2021 (Nova
-            Lei de Licitações) trouxe em seu texto a possibilidade de realizar dispensa de
-            licitações para contratação que envolva valores inferiores a R$ 50.000,00 (cinquenta
-            mil reais), no caso de compras ou outros serviços;
+            Assim, conforme previsão do Artigo 75, I, da Lei 14.133/2021 (Nova
+            Lei de Licitações), (Vide Decreto nº 12.343, de 2024) Vigência, trouxe em seu texto a
+            possibilidade de realizar dispensa de licitações para contratação que envolva
+            valores inferiores a R$ 100.000,00 (cem mil reais), no caso de obras e serviços de
+            engenharia ou de serviços de manutenção de veículos automotores;
         </p>
         <p style="text-indent: 30px; text-align: justify;">
             Com efeito, conforme previsto na norma retrocitada, os critérios se
-            aplicam no caso em tela, uma vez que, consoante disposto no Artigo 75, inciso II, da
-            Nova Lei de Licitações e Contratos (Lei nº 14.133/2021), é autorizado e está em
-            harmonia com a lei a contratação direta para os casos de compras e outros serviços,
-            cujo valor seja de até R$ 62.725,59 (cinquenta mil reais), valor este reajustado
-            anualmente pelo decreto 13.343, para o exercício 2025.
+            aplicam no caso em tela, uma vez que, consoante disposto no Artigo 75, inciso I, da
+            Nova Lei de Licitações e Contratos (Lei nº 14.133/2021) (Vide Decreto nº 12.343, de
+            2024), é autorizado e está em harmonia com a lei a contratação direta de obras e
+            serviços de engenharia ou de serviços de manutenção de veículos automotores,
+            cujo valor seja de até R$ 100.000,00 (cem mil reais), valor este reajustado
+            anualmente pelo decreto 12.343, de 2024, para o exercício 2025 no valor de R$ R$
+            125.451,15 (cento e vinte e cinco mil quatrocentos e cinquenta e um reais e quinze
+            centavos).
         </p>
         <p style="text-indent: 30px; text-align: justify;">
-            Todavia, faz-se necessário transcrever o artigo alhures, que assim
-            dispõe:
+            Todavia, faz-se necessário transcrever o artigo alhures, que assim dispõe:
         </p>
 
         <table style="width: 100%; border-collapse: collapse; page-break-inside: auto;">
@@ -353,11 +351,12 @@
                 <!-- Conteúdo da primeira célula -->
                 </td>
                 <td style="width: 50%; text-align: justify; vertical-align: top;">
-                    Art. 75. É dispensável a licitação: II - para
+                    Art. 75. É dispensável a licitação: I - para
                     contratação que envolva valores inferiores a
-                    R$ 50.000,00 (cinquenta mil reais), no caso de
-                    outros serviços e compras; atualizado para R$
-                    62.725,59 através de decreto federal;
+                    R$ 100.000,00 (cem mil reais), no caso de
+                    obras e serviços de engenharia ou de serviços
+                    de manutenção de veículos automotores; (Vide
+                    Decreto nº 12.343, de 2024) Vigência
                     <br><br>
                 </td>
             </tr>
@@ -365,9 +364,9 @@
 
         <p style="text-indent: 30px; text-align: justify;">
             Assim, é preponderante caminhar, doravante, na linha da
-            possibilidade de contratação direta do fornecimento dos produtos, desde que, o
-            valor dispendido no exercício financeiro em curso, para custear a despesa, não seja
-            superior a cinquenta mil reais
+            possibilidade de contratação direta dos serviços, desde que, o valor dispendido no
+            exercício financeiro em curso, para custear a despesa, não seja superior a
+            cinquenta mil reais
         </p>
         <p style="text-indent: 30px; text-align: justify;">
             Nessa vereda, e seguindo a recomendação contida na nova lei de
@@ -375,10 +374,9 @@
             linguagem simples e compreensível e de forma clara e objetiva, com apreciação de
             todos os elementos indispensáveis à contratação e com exposição dos
             pressupostos de fato e de direito levados em consideração na análise jurídica,
-            entendo ser perfeitamente possível a contratação direta do fornecimento dos
-            produtos, através de dispensa de licitação, com fundamento na Nova Lei de
-            Licitações, desde que observados os requisitos fixados no artigo 72, da Lei nº
-            14.133/21 a saber:
+            entendo ser perfeitamente possível a contratação direta dos serviços, através de
+            dispensa de licitação, com fundamento na Nova Lei de Licitações, desde que
+            observados os requisitos fixados no artigo 72, da Lei nº 14.133/21 a saber:
         </p>
 
        <table style="width: 100%; border-collapse: collapse; page-break-inside: auto;">
@@ -399,8 +397,8 @@
                 <td>
                     I - Documento de formalização de demanda e,
                     se for o caso, estudo técnico preliminar, análise
-                    de riscos, termo de referência, projeto básico
-                    ou projeto executivo;
+                    de riscos, Projeto Básico, projeto básico ou
+                    projeto executivo; <br>
                     II - Estimativa de despesa, que deverá ser
                     calculada na forma estabelecida no art. 23
                     desta Lei;
@@ -412,22 +410,16 @@
                 <td>
                     III - parecer jurídico e pareceres técnicos, se for
                     o caso, que demonstrem o atendimento dos
-                    requisitos exigidos”.
+                    requisitos exigidos”. 
                     <br><br> 
                 </td>
             </tr>
             <tr>
                 <td></td>
                 <td>
-                    IV - Demonstração da compatibilidade da
+                   IV - Demonstração da compatibilidade da
                     previsão de recursos orçamentários com o
-                    compromisso a ser assumido; 
-                    <br><br>
-                </td>
-            </tr>
-            <tr>
-                <td></td>
-                <td>
+                    compromisso a ser assumido; <br>
                     V - Comprovação de que o contratado
                     preenche os requisitos de habilitação e
                     qualificação mínima necessária;
@@ -462,7 +454,7 @@
             contratação direta ou o extrato decorrente do contrato deverá ser divulgado e
             mantido à disposição do público em sítio eletrônico oficial, bem como ser divulgado
             no Diário Oficial dos Municípios por força do disposto no artigo 176, inciso I, da
-            nova Lei de Licitações.
+            nova Lei de Licitações
         </p>
         <p style="text-indent: 30px; text-align: justify;">
             Por conseguinte, pode-se afirmar que, dentro das regras dos valores
@@ -470,9 +462,8 @@
         </p>
         <p style="text-indent: 30px; text-align: justify;">
             Destaca-se, ainda, que nos autos constam os documentos de
-            formalização de demanda e termo de referência, contendo os elementos
-            necessários e suficientes, com nível de precisão adequado, para caracterizar o
-            objeto requisitado.
+            formalização de demanda e Projeto Básico, contendo os elementos necessários e
+            suficientes, com nível de precisão adequado, para caracterizar o objeto requisitado.
         </p>
         <p style="text-indent: 30px; text-align: justify;">
             Consta, ainda, estimativa da despesa, mediante pesquisa direta com
@@ -486,13 +477,11 @@
             tempo e material para sua conclusão.
         </p>
         <p style="text-indent: 30px; text-align: justify;">
-            Considerando que as aquisições a serem realizadas estão estimadas
-            em R$ {{ number_format($vencedores->sum(function($vencedor) {
-                return $vencedor->lotes->sum('vl_total');
-            }), 2, ',', '.') }} é forçoso concluir pela
+            Considerando que os serviços a serem realizadas estão estimadas em 
+             R$ {{ $processo->finalizacao->valor_total }}. é forçoso concluir pela
             possibilidade legal de contratação direta, através de dispensa de licitação, uma vez
             que, o caso em questão, se amolda perfeitamente nos valores previstos no Artigo
-            75, inciso II, da Lei nº 14.133/2021
+            75, inciso I, da Lei nº 14.133/2021
         </p>
         <p style="text-indent: 30px; text-align: justify;">
             Da análise do dispositivo acima, pode-se chegar a uma conclusão
@@ -505,8 +494,8 @@
         <p style="text-indent: 30px; text-align: justify;">
             Na linha de raciocínio aqui sufragada, constata-se que, para haver
             respaldo legal, a contratação direta deve se basear em justificativas. A justificativa
-            de Dispensa de Licitação para a contratação do fornecimento dos produtos se
-            funda no inciso II, do artigo 75, da Lei 14.133/2021.
+            de Dispensa de Licitação para a contratação dos referidos serviços se funda no
+            inciso I, do artigo 75, da Lei 14.133/2021.
         </p>
         <p style="text-indent: 30px; text-align: justify;">
             Como já citado acima, o intuito da dispensa de licitação é dar
@@ -514,7 +503,7 @@
             disso, a contratação direta não significa burlar aos princípios administrativos, pois a
             Lei exige que o contrato somente seja celebrado, após procedimento simplificado
             de concorrência, suficiente para justificar a escolha do contratado, de modo a
-            garantir uma disputa entre potenciais fornecedores.
+            garantir uma disputa entre potenciais fornecedores. 
         </p>
         <p style="text-indent: 30px; text-align: justify;">
             Entretanto, conforme previsto no artigo 75, § 3º, da Nova Lei, as
@@ -525,7 +514,7 @@
             ser selecionada a proposta mais vantajosa.
         </p>
         <p style="text-indent: 30px; text-align: justify;">
-            Assim, para obter preços mais vantajosos dos produtos requisitados,
+            Assim, para obter preços mais vantajosos dos serviços requisitados,
             faz-se necessário que a Administração dê publicidade à intenção de realizar
             contratação com a divulgação de aviso em sítio eletrônico oficial, pelo prazo
             mínimo de 3 (três) dias úteis.
@@ -640,7 +629,7 @@
             Tem-se, assim, que a Lei nº 14.133/2021 é válida, vigente e eficaz, à
             exceção de eventuais normas que dependam de regulamentação, o que irá
             demandar indicação expressa. Então, se a Lei está vigente, portanto, ela pode ser
-            aplicada.
+            aplicada. 
         </p>
         <p style="text-indent: 30px; text-align: justify;">
             Ademais, a própria Lei estabelece que “até o decurso do prazo de que
@@ -657,14 +646,14 @@
         </p>
         <p style="text-indent: 30px; text-align: justify;">
             E esta outra conclusão decorre de uma interpretação sistemática ou
-            sistêmica das normas contidas na Nova Lei de Licitações.
+            sistêmica das normas contidas na Nova Lei de Licitações. 
         </p>
         <p style="text-indent: 30px; text-align: justify;">
             Partindo-se da premissa de que a Lei tem vigência, e tem, como visto,
             e de que não se pode admitir eficácia contida ou limitada de nenhuma de suas
             normas sem expressa previsão também legal – ainda que implícita -, é possível
             deduzir conclusão no sentido da possibilidade de aplicação imediata do regime
-            jurídico da Lei nº 14.133/2021.
+            jurídico da Lei nº 14.133/2021. 
         </p>
         <p style="text-indent: 30px; text-align: justify;">
             O primeiro argumento em favor da eficácia imediata da Lei nova tem
@@ -708,7 +697,7 @@
             há sentido jurídico em vincular a vigência e a eficácia de uma Lei à criação de um
             banco de dados informatizado, que se presta a uma finalidade – conferir
             publicidade aos atos – que pode ser atingida por outros meios jurídicos legítimos e
-            válidos.
+            válidos. 
         </p>
         <p style="text-indent: 30px; text-align: justify;">
             Por hipótese, imagine-se que, transcorridos os 2 anos de que trata o
@@ -721,7 +710,7 @@
         </p>
         <p style="text-indent: 30px; text-align: justify;">
             Assim, concluímos que o a Lei de Licitações está plenamente válida e
-            eficaz, podendo ser utilizada no caso contrato.
+            eficaz, podendo ser utilizada no caso contrato. 
         </p>
         <p style="text-indent: 30px; text-align: justify;">
             Antes de finalizar, compete ressaltar que, o parecer aqui exarado não
@@ -738,7 +727,7 @@
             ensinamentos do doutrinador HELY LOPES MEIRELLES, todas as considerações aqui
             expostas, trata-se de uma opinião técnica, de caráter meramente opinativo, não
             vinculando a Administração ou aos particulares à sua motivação ou conclusões,
-            salvo se aprovado por ato subsequente.
+            salvo se aprovado por ato subsequente. 
         </p>
         <p style="text-indent: 30px; text-align: justify;">
             No caso de Dispensa de Licitação, a legislação não impõe regras
@@ -752,21 +741,20 @@
             deverá ser instruído com elementos que demonstrem a razão da escolha do
             fornecedor ou executante e a justificativa do preço, não impondo de forma objetiva
             as regras quanto à quantidade e a forma de seleção do contratado, ou seja, deve
-            ser justificado no processo a escolha do fornecedor.
+            ser justificado no processo a escolha do fornecedor. 
         </p>
         <p style="text-indent: 30px; text-align: justify;">
             Por fim, recomendo a Comissão Permanente de Licitação que sempre
             análise toda a documentação necessária para verificação da regularidade fiscal e
             trabalhista. Assim, observadas as prescrições suscitadas acima, vislumbro de plano
-            a existência de autorização legal para contratação direta do fornecimento dos
-            produtos.
+            a existência de autorização legal para contratação direta dos serviços.
         </p>
         <p style="text-indent: 30px; text-align: justify;">
             Sendo assim, a celebração do contrato não afronta os princípios
             reguladores da Administração Pública, e neste caso é absolutamente possível a
             contratação na forma prevista no artigo 75, inciso I, da Lei nº 14.133/2021. Dessa
             forma, observadas as prescrições exaradas nesse parecer, opino favoravelmente
-            pela possibilidade de contratação direta do fornecimento dos produtos.
+            pela possibilidade de contratação direta dos serviços.
         </p>
         <p style="text-indent: 30px; text-align: justify;">
             Este é o parecer jurídico, o qual submeto à apreciação e quaisquer
@@ -824,7 +812,8 @@
         </p>
         <p style="text-indent: 30px; text-align: justify; ">
             Encaminho ao Exm. Senhor(a) o Parecer Jurídico acerca do Processo
-            de Dispensa de Licitação nº {{ $processo->numero_procedimento }}, objeto {!! strip_tags($processo->objeto) !!}, para a devida contiuidade do mesmo.
+            de Dispensa de Licitação nº{{ $processo->numero_procedimento }}, 
+            objeto {!! strip_tags($processo->objeto) !!}, para a devida contiuidade do mesmo.
         </p>
 
         {{-- Bloco de data e assinatura --}}

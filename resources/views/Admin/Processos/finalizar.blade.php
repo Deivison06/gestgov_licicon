@@ -24,542 +24,444 @@
     {{-- Fim JSON --}}
 
     <div class="py-8">
-        <div class="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
+        <!-- Seção de Informações do Processo -->
+        <div class="mb-8">
+            <div class="overflow-hidden bg-white border border-gray-100 shadow-sm rounded-2xl">
+                <!-- Header -->
+                <div class="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
+                    <div class="flex flex-col items-start justify-between lg:flex-row lg:items-center">
+                        <h3 class="text-xl font-semibold text-gray-800">Processos Licitatórios</h3>
+                    </div>
+                </div>
 
-            <!-- Seção de Informações do Processo -->
+                <!-- Tabela de Informações -->
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                    Prefeitura
+                                </th>
+                                <th class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                    Modalidade
+                                </th>
+                                <th class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                    Nº Processo
+                                </th>
+                                <th class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                    Nº Procedimento
+                                </th>
+                                <th class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                    Tipo Contratação
+                                </th>
+                                <th class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                    Tipo Procedimento
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <tr class="transition-colors duration-200 hover:bg-gray-50">
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-[#009496]/10 flex items-center justify-center">
+                                            <svg class="w-4 h-4 text-[#009496]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-6 0H5m2 0h4M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                            </svg>
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-gray-900">
+                                                {{ $processo->prefeitura->nome }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex px-2.5 py-0.5 text-xs font-medium rounded-full
+                                        @if ($processo->modalidade->value === 'dispensa') bg-purple-100 text-purple-800
+                                        @elseif($processo->modalidade->value === 'inexigibilidade') bg-pink-100 text-pink-800
+                                        @elseif($processo->modalidade->value === 'pregão') bg-blue-100 text-blue-800
+                                        @elseif($processo->modalidade->value === 'concorrência') bg-green-100 text-green-800
+                                        @else bg-gray-100 text-gray-800 @endif">
+                                        {{ $processo->modalidade->getDisplayName() }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 font-mono text-sm text-gray-900">
+                                    {{ $processo->numero_processo }}
+                                </td>
+                                <td class="px-6 py-4 font-mono text-sm text-gray-900">
+                                    {{ $processo->numero_procedimento }}
+                                </td>
+                                <td class="px-6 py-4 font-mono text-sm text-gray-900">
+                                    {{ $processo->tipo_contratacao_nome }}
+                                </td>
+                                <td class="px-6 py-4 font-mono text-sm text-gray-900">
+                                    {{ $processo->tipo_procedimento_nome }}
+                                </td>
+                            </tr>
+                            <tr class="bg-gray-50">
+                                <td colspan="6" class="px-6 py-4 text-sm text-gray-700">
+                                    <strong>Objeto:</strong> {!! strip_tags($processo->objeto) !!}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabela de Documentos -->
+        <div class="overflow-x-auto rounded-lg shadow-sm">
+            <!-- Área de Mensagens -->
+            <div id="message-container" class="p-4"></div>
+
+            <table class="min-w-full bg-white divide-y divide-gray-200">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="px-6 py-4 text-xs font-semibold tracking-wider text-left text-gray-700 uppercase">
+                            Documentos
+                        </th>
+                        <th class="w-40 px-6 py-4 text-xs font-semibold tracking-wider text-center text-gray-700 uppercase">
+                            Data
+                        </th>
+                        <th class="w-48 px-6 py-4 text-xs font-semibold tracking-wider text-center text-gray-700 uppercase">
+                            Ações
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @foreach ($documentos as $tipo => $doc)
+                    @continue(
+                    $processo->modalidade === \App\Enums\ModalidadeEnum::CONCORRENCIA
+                    && ($tipo === 'termo_referencia' || $tipo === 'analise_mercado')
+                    )
+                    @continue(
+                    $processo->modalidade === \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO
+                    && ($tipo === 'projeto_basico')
+                    )
+
+                    @php
+                    $documentoGerado = $processo->documentos
+                    ->where('tipo_documento', $tipo)
+                    ->first();
+                    $accordionId = "accordion-collapse-{$tipo}";
+                    $requerAssinatura = $doc['requer_assinatura'] ?? false;
+                    $temCampos = !empty($doc['campos']);
+                    @endphp
+
+                    {{-- Linha principal do documento --}}
+                    <tr class="transition-colors duration-150 hover:bg-gray-50">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 w-2 h-2 mr-3 {{ $doc['cor'] }} rounded-full">
+                                </div>
+                                <div class="text-sm font-semibold text-gray-900">
+                                    {{ $doc['titulo'] }}
+                                    @if ($documentoGerado)
+                                    <span class="ml-2 text-xs font-normal text-green-600">
+                                        ✓ Gerado em
+                                        {{ \Carbon\Carbon::parse($documentoGerado->gerado_em)->format('d/m/Y H:i') }}
+                                    </span>
+                                    @endif
+                                </div>
+                            </div>
+                            {{-- Botão para expandir/colapsar o acordeão --}}
+                            @if ($temCampos || $requerAssinatura)
+                            <button type="button" class="mt-2 text-xs font-medium text-red-600 hover:text-red-800" data-collapse-toggle="{{ $accordionId }}" aria-expanded="false" aria-controls="{{ $accordionId }}">
+                                <span class="collapse-text">
+                                    @if($requerAssinatura && $temCampos)
+                                    Definir Assinantes e Campos
+                                    @elseif($requerAssinatura)
+                                    Definir Assinantes
+                                    @else
+                                    Definir Campos
+                                    @endif
+                                </span>
+                            </button>
+                            @endif
+                        </td>
+                        <td class="flex gap-2 px-6 py-4 text-center">
+                            @if ($requerAssinatura)
+                            <input type="date" class="w-40 px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500" id="data_{{ $tipo }}" value="{{ $documentoGerado->data_selecionada ?? '' }}">
+
+                            {{-- Adicionar dropdown de parecer para documentos específicos --}}
+                            @if ($tipo === 'parecer_controle_interno' && $processo->modalidade === \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO)
+                            <!-- Dropdown de Parecer -->
+                            <select id="parecer_select_{{ $tipo }}" name="parecer_select_{{ $tipo }}" class="block w-40 px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm">
+                                <option value="">Selecione o Parecer</option>
+                                <option value="parecer_1">Parecer 1</option>
+                                <option value="parecer_2">Parecer 2</option>
+                            </select>
+                            @endif
+
+                            @else
+                            <span class="text-sm text-gray-500">-</span>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex justify-center space-x-2">
+                                @if ($requerAssinatura)
+                                <button type="button" onclick="gerarPdf('{{ $processo->id }}', '{{ $tipo }}', document.getElementById('data_{{ $tipo }}').value, event)" class="px-4 py-2 text-xs font-medium text-white transition-colors duration-200 bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                                    Gerar PDF
+                                </button>
+                                @else
+                                <button type="button" onclick="gerarPdfSemAssinatura('{{ $processo->id }}', '{{ $tipo }}', event)" class="px-4 py-2 text-xs font-medium text-white transition-colors duration-200 bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                                    Gerar PDF
+                                </button>
+                                @endif
+
+                                @if ($documentoGerado)
+                                <a href="{{ route('admin.processo.finalizardocumento.dowload', ['processo' => $processo->id, 'tipo' => $tipo]) }}" download class="p-2 text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2" aria-label="Baixar documento">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="7 10 12 15 17 10"></polyline>
+                                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                                    </svg>
+                                </a>
+                                @else
+                                <span class="p-2 text-gray-400 bg-gray-100 rounded-md cursor-not-allowed" aria-hidden="true" title="Aguardando geração">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="7 10 12 15 17 10"></polyline>
+                                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                                    </svg>
+                                </span>
+                                @endif
+                            </div>
+                        </td>
+                    </tr>
+
+                    {{-- Linha do Acordeão (Collapse) - Apenas se tem campos OU requer assinatura --}}
+                    @if ($temCampos || $requerAssinatura)
+                    <tr>
+                        <td colspan="3" class="p-0">
+                            <div id="{{ $accordionId }}" class="hidden">
+                                <div class="p-4 border-t border-gray-200 bg-gray-50" id="accordion-content-{{ $tipo }}">
+
+                                    <!-- Seção de Assinantes - Apenas se requer assinatura -->
+                                    @if ($requerAssinatura)
+                                    <div class="pb-4 mb-6 border-b border-gray-200">
+                                        <h4 class="mb-4 text-sm font-semibold text-gray-700">Seleção de Assinantes</h4>
+
+                                        <div id="assinantes-container-{{ $tipo }}" class="space-y-3">
+                                            <div class="flex flex-col gap-3 p-4 bg-white border border-gray-200 rounded-lg assinante-item">
+                                                <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+                                                    {{-- Select da Unidade --}}
+                                                    <div class="flex-1 min-w-[180px]">
+                                                        <label for="assinante_unidade_{{ $tipo }}" class="block mb-1 text-xs font-medium text-gray-600">
+                                                            Unidade
+                                                        </label>
+                                                        <select name="assinante_unidade[]" id="assinante_unidade_{{ $tipo }}" class="block w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 unidade-select" onchange="updateResponsavel(this, '{{ $tipo }}')">
+                                                            <option value="">Selecione a Unidade</option>
+                                                            @foreach ($processo->prefeitura->unidades as $unidade)
+                                                            <option value="{{ $unidade->id }}">{{ $unidade->nome }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+
+                                                    {{-- Campos do Responsável e Portaria --}}
+                                                    <div class="flex flex-col flex-1 gap-2 sm:flex-row sm:items-center sm:gap-3">
+                                                        {{-- Nome do Responsável --}}
+                                                        <div class="flex-1 min-w-[200px]">
+                                                            <label class="block mb-1 text-xs font-medium text-gray-600">
+                                                                Responsável
+                                                            </label>
+                                                            <input type="text" name="assinante_responsavel[]" placeholder="Nome do Responsável" readonly class="block w-full px-3 py-2 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded-md shadow-sm responsavel-input">
+                                                        </div>
+
+                                                        {{-- Número da Portaria --}}
+                                                        <div class="flex-1 min-w-[150px]">
+                                                            <label class="block mb-1 text-xs font-medium text-gray-600">
+                                                                Nº Portaria
+                                                            </label>
+                                                            <input type="text" name="assinante_portaria[]" placeholder="Número da Portaria" readonly class="block w-full px-3 py-2 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded-md shadow-sm portaria-input">
+                                                        </div>
+
+                                                        {{-- Data da Portaria --}}
+                                                        <div class="flex-1 min-w-[150px]">
+                                                            <label class="block mb-1 text-xs font-medium text-gray-600">
+                                                                Data Portaria
+                                                            </label>
+                                                            <input type="text" name="assinante_data_portaria[]" placeholder="Data da Portaria" readonly class="block w-full px-3 py-2 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded-md shadow-sm data-portaria-input">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {{-- Botão de adicionar assinante --}}
+                                        <div class="mt-4">
+                                            <button type="button" onclick="adicionarAssinante('{{ $tipo }}')" class="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-blue-500 rounded-md shadow hover:bg-blue-600 focus:ring-2 focus:ring-blue-300">
+                                                + Adicionar Assinante
+                                            </button>
+                                        </div>
+                                    </div>
+                                    @endif
+
+                                    <!-- Seção de Campos do Formulário (se houver campos) -->
+                                    @if (!empty($doc['campos']))
+                                    <div>
+                                        <h4 class="mb-3 text-sm font-semibold text-gray-700">Campos do Documento</h4>
+                                        <div x-data="formField({{ json_encode($processo->finalizacao ?? null) }})">
+                                            <form action="{{ route('admin.processos.finalizacao.store', $processo) }}" method="POST" @submit.prevent="submitForm">
+                                                @csrf
+                                                <input type="hidden" name="processo_id" value="{{ $processo->id }}">
+
+                                                @foreach ($doc['campos'] as $campo)
+                                                    @include('Admin.Processos.partials.forms-finalizacao')
+                                                @endforeach
+                                            </form>
+                                        </div>
+                                    </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    @endif
+                    @endforeach
+                </tbody>
+            </table>
+
+            <!-- Botão para Baixar Todos os PDFs -->
+            <div class="flex justify-center p-4 mt-6 border-t border-gray-200 bg-gray-50">
+                <a href="{{ route('admin.processo.finalizardocumento.dowload-all', ['processo' => $processo->id]) }}" class="px-6 py-3 text-sm font-semibold text-white transition-colors duration-200 bg-green-600 rounded-lg shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                    📥 Baixar Todos os PDFs
+                </a>
+            </div>
+        </div>
+
+        @if(
+            in_array(
+                $processo->modalidade,
+                [
+                    \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO,
+                    \App\Enums\ModalidadeEnum::DISPENSA,
+                ]
+            )
+            && $processo->tipo_procedimento !== \App\Enums\TipoProcedimentoEnum::OBRA
+        )
+            <!-- Seção de Vencedores -->
             <div class="mb-8">
                 <div class="overflow-hidden bg-white border border-gray-100 shadow-sm rounded-2xl">
                     <!-- Header -->
                     <div class="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
                         <div class="flex flex-col items-start justify-between lg:flex-row lg:items-center">
-                            <h3 class="text-xl font-semibold text-gray-800">Processos Licitatórios</h3>
+                            <h3 class="text-xl font-semibold text-gray-800">Vencedores do Processo</h3>
+                            <button type="button"
+                                    onclick="abrirModalVencedor()"
+                                    class="px-4 py-2 mt-2 text-sm font-medium text-white bg-green-600 rounded-md lg:mt-0 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                                ➕ Adicionar Vencedor
+                            </button>
                         </div>
                     </div>
 
-                    <!-- Tabela de Informações -->
+                    <!-- Tabela de Vencedores -->
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                                        Prefeitura
+                                    <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                        Razão Social
                                     </th>
-                                    <th class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                                        Modalidade
+                                    <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                        CNPJ
                                     </th>
-                                    <th class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                                        Nº Processo
+                                    <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                        Representante
                                     </th>
-                                    <th class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                                        Nº Procedimento
+                                    <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                        CPF
                                     </th>
-                                    <th class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                                        Tipo Contratação
+                                    <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                        Itens/Lotes
                                     </th>
-                                    <th class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                                        Tipo Procedimento
+                                    <th class="px-6 py-3 text-xs font-medium tracking-wider text-center text-gray-500 uppercase">
+                                        Ações
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                <tr class="transition-colors duration-200 hover:bg-gray-50">
-                                    <td class="px-6 py-4">
-                                        <div class="flex items-center">
-                                            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-[#009496]/10 flex items-center justify-center">
-                                                <svg class="w-4 h-4 text-[#009496]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-6 0H5m2 0h4M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                                                </svg>
+                            <tbody class="bg-white divide-y divide-gray-200" id="vencedores-tbody">
+                                @if(isset($processo->vencedores) && count($processo->vencedores) > 0)
+                                    @foreach($processo->vencedores as $index => $vencedor)
+                                    <tr class="vencedor-row" data-vencedor-id="{{ $vencedor->id ?? '' }}">
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm font-medium text-gray-900">{{ $vencedor->razao_social }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900">{{ $vencedor->cnpj }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900">{{ $vencedor->representante }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900">{{ $vencedor->cpf }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900">
+                                                @if(isset($vencedor->lotes) && count($vencedor->lotes) > 0)
+                                                    {{ count($vencedor->lotes) }} {{ $processo->tipo_contratacao === 'LOTE' ? 'lotes' : 'itens' }}
+                                                @else
+                                                    <span class="text-gray-400">Nenhum</span>
+                                                @endif
                                             </div>
-                                            <div class="ml-4">
-                                                <div class="text-sm font-medium text-gray-900">
-                                                    {{ $processo->prefeitura->nome }}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <span class="inline-flex px-2.5 py-0.5 text-xs font-medium rounded-full
-                                            @if ($processo->modalidade->value === 'dispensa') bg-purple-100 text-purple-800
-                                            @elseif($processo->modalidade->value === 'inexigibilidade') bg-pink-100 text-pink-800
-                                            @elseif($processo->modalidade->value === 'pregão') bg-blue-100 text-blue-800
-                                            @elseif($processo->modalidade->value === 'concorrência') bg-green-100 text-green-800
-                                            @else bg-gray-100 text-gray-800 @endif">
-                                            {{ $processo->modalidade->getDisplayName() }}
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 font-mono text-sm text-gray-900">
-                                        {{ $processo->numero_processo }}
-                                    </td>
-                                    <td class="px-6 py-4 font-mono text-sm text-gray-900">
-                                        {{ $processo->numero_procedimento }}
-                                    </td>
-                                    <td class="px-6 py-4 font-mono text-sm text-gray-900">
-                                        {{ $processo->tipo_contratacao_nome }}
-                                    </td>
-                                    <td class="px-6 py-4 font-mono text-sm text-gray-900">
-                                        {{ $processo->tipo_procedimento_nome }}
-                                    </td>
-                                </tr>
-                                <tr class="bg-gray-50">
-                                    <td colspan="6" class="px-6 py-4 text-sm text-gray-700">
-                                        <strong>Objeto:</strong> {!! strip_tags($processo->objeto) !!}
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tabela de Documentos -->
-            <div class="overflow-x-auto rounded-lg shadow-sm">
-                <!-- Área de Mensagens -->
-                <div id="message-container" class="p-4"></div>
-
-                <table class="min-w-full bg-white divide-y divide-gray-200">
-                    <thead class="bg-gray-100">
-                        <tr>
-                            <th class="px-6 py-4 text-xs font-semibold tracking-wider text-left text-gray-700 uppercase">
-                                Documentos
-                            </th>
-                            <th class="w-40 px-6 py-4 text-xs font-semibold tracking-wider text-center text-gray-700 uppercase">
-                                Data
-                            </th>
-                            <th class="w-48 px-6 py-4 text-xs font-semibold tracking-wider text-center text-gray-700 uppercase">
-                                Ações
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        @foreach ($documentos as $tipo => $doc)
-                        @continue(
-                        $processo->modalidade === \App\Enums\ModalidadeEnum::CONCORRENCIA
-                        && ($tipo === 'termo_referencia' || $tipo === 'analise_mercado')
-                        )
-                        @continue(
-                        $processo->modalidade === \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO
-                        && ($tipo === 'projeto_basico')
-                        )
-
-                        @php
-                        $documentoGerado = $processo->documentos
-                        ->where('tipo_documento', $tipo)
-                        ->first();
-                        $accordionId = "accordion-collapse-{$tipo}";
-                        $requerAssinatura = $doc['requer_assinatura'] ?? false;
-                        $temCampos = !empty($doc['campos']);
-                        @endphp
-
-                        {{-- Linha principal do documento --}}
-                        <tr class="transition-colors duration-150 hover:bg-gray-50">
-                            <td class="px-6 py-4">
-                                <div class="flex items-center">
-                                    <div class="flex-shrink-0 w-2 h-2 mr-3 {{ $doc['cor'] }} rounded-full">
-                                    </div>
-                                    <div class="text-sm font-semibold text-gray-900">
-                                        {{ $doc['titulo'] }}
-                                        @if ($documentoGerado)
-                                        <span class="ml-2 text-xs font-normal text-green-600">
-                                            ✓ Gerado em
-                                            {{ \Carbon\Carbon::parse($documentoGerado->gerado_em)->format('d/m/Y H:i') }}
-                                        </span>
-                                        @endif
-                                    </div>
-                                </div>
-                                {{-- Botão para expandir/colapsar o acordeão --}}
-                                @if ($temCampos || $requerAssinatura)
-                                <button type="button" class="mt-2 text-xs font-medium text-red-600 hover:text-red-800" data-collapse-toggle="{{ $accordionId }}" aria-expanded="false" aria-controls="{{ $accordionId }}">
-                                    <span class="collapse-text">
-                                        @if($requerAssinatura && $temCampos)
-                                        Definir Assinantes e Campos
-                                        @elseif($requerAssinatura)
-                                        Definir Assinantes
-                                        @else
-                                        Definir Campos
-                                        @endif
-                                    </span>
-                                </button>
-                                @endif
-                            </td>
-                            <td class="flex gap-2 px-6 py-4 text-center">
-                                @if ($requerAssinatura)
-                                <input type="date" class="w-40 px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500" id="data_{{ $tipo }}" value="{{ $documentoGerado->data_selecionada ?? '' }}">
-
-                                {{-- Adicionar dropdown de parecer para documentos específicos --}}
-                                @if ($tipo === 'parecer_controle_interno' && $processo->modalidade === \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO)
-                                <!-- Dropdown de Parecer -->
-                                <select id="parecer_select_{{ $tipo }}" name="parecer_select_{{ $tipo }}" class="block w-40 px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm">
-                                    <option value="">Selecione o Parecer</option>
-                                    <option value="parecer_1">Parecer 1</option>
-                                    <option value="parecer_2">Parecer 2</option>
-                                </select>
-                                @endif
-
-                                @else
-                                <span class="text-sm text-gray-500">-</span>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="flex justify-center space-x-2">
-                                    @if ($requerAssinatura)
-                                    <button type="button" onclick="gerarPdf('{{ $processo->id }}', '{{ $tipo }}', document.getElementById('data_{{ $tipo }}').value, event)" class="px-4 py-2 text-xs font-medium text-white transition-colors duration-200 bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
-                                        Gerar PDF
-                                    </button>
-                                    @else
-                                    <button type="button" onclick="gerarPdfSemAssinatura('{{ $processo->id }}', '{{ $tipo }}', event)" class="px-4 py-2 text-xs font-medium text-white transition-colors duration-200 bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
-                                        Gerar PDF
-                                    </button>
-                                    @endif
-
-                                    @if ($documentoGerado)
-                                    <a href="{{ route('admin.processo.finalizardocumento.dowload', ['processo' => $processo->id, 'tipo' => $tipo]) }}" download class="p-2 text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2" aria-label="Baixar documento">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                            <polyline points="7 10 12 15 17 10"></polyline>
-                                            <line x1="12" y1="15" x2="12" y2="3"></line>
-                                        </svg>
-                                    </a>
-                                    @else
-                                    <span class="p-2 text-gray-400 bg-gray-100 rounded-md cursor-not-allowed" aria-hidden="true" title="Aguardando geração">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                            <polyline points="7 10 12 15 17 10"></polyline>
-                                            <line x1="12" y1="15" x2="12" y2="3"></line>
-                                        </svg>
-                                    </span>
-                                    @endif
-                                </div>
-                            </td>
-                        </tr>
-
-                        {{-- Linha do Acordeão (Collapse) - Apenas se tem campos OU requer assinatura --}}
-                        @if ($temCampos || $requerAssinatura)
-                        <tr>
-                            <td colspan="3" class="p-0">
-                                <div id="{{ $accordionId }}" class="hidden">
-                                    <div class="p-4 border-t border-gray-200 bg-gray-50" id="accordion-content-{{ $tipo }}">
-
-                                        <!-- Seção de Assinantes - Apenas se requer assinatura -->
-                                        @if ($requerAssinatura)
-                                        <div class="pb-4 mb-6 border-b border-gray-200">
-                                            <h4 class="mb-4 text-sm font-semibold text-gray-700">Seleção de Assinantes</h4>
-
-                                            <div id="assinantes-container-{{ $tipo }}" class="space-y-3">
-                                                <div class="flex flex-col gap-3 p-4 bg-white border border-gray-200 rounded-lg assinante-item">
-                                                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-                                                        {{-- Select da Unidade --}}
-                                                        <div class="flex-1 min-w-[180px]">
-                                                            <label for="assinante_unidade_{{ $tipo }}" class="block mb-1 text-xs font-medium text-gray-600">
-                                                                Unidade
-                                                            </label>
-                                                            <select name="assinante_unidade[]" id="assinante_unidade_{{ $tipo }}" class="block w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 unidade-select" onchange="updateResponsavel(this, '{{ $tipo }}')">
-                                                                <option value="">Selecione a Unidade</option>
-                                                                @foreach ($processo->prefeitura->unidades as $unidade)
-                                                                <option value="{{ $unidade->id }}">{{ $unidade->nome }}</option>
-                                                                @endforeach
-                                                            </select>
-                                                        </div>
-
-                                                        {{-- Campos do Responsável e Portaria --}}
-                                                        <div class="flex flex-col flex-1 gap-2 sm:flex-row sm:items-center sm:gap-3">
-                                                            {{-- Nome do Responsável --}}
-                                                            <div class="flex-1 min-w-[200px]">
-                                                                <label class="block mb-1 text-xs font-medium text-gray-600">
-                                                                    Responsável
-                                                                </label>
-                                                                <input type="text" name="assinante_responsavel[]" placeholder="Nome do Responsável" readonly class="block w-full px-3 py-2 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded-md shadow-sm responsavel-input">
-                                                            </div>
-
-                                                            {{-- Número da Portaria --}}
-                                                            <div class="flex-1 min-w-[150px]">
-                                                                <label class="block mb-1 text-xs font-medium text-gray-600">
-                                                                    Nº Portaria
-                                                                </label>
-                                                                <input type="text" name="assinante_portaria[]" placeholder="Número da Portaria" readonly class="block w-full px-3 py-2 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded-md shadow-sm portaria-input">
-                                                            </div>
-
-                                                            {{-- Data da Portaria --}}
-                                                            <div class="flex-1 min-w-[150px]">
-                                                                <label class="block mb-1 text-xs font-medium text-gray-600">
-                                                                    Data Portaria
-                                                                </label>
-                                                                <input type="text" name="assinante_data_portaria[]" placeholder="Data da Portaria" readonly class="block w-full px-3 py-2 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded-md shadow-sm data-portaria-input">
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {{-- Botão de adicionar assinante --}}
-                                            <div class="mt-4">
-                                                <button type="button" onclick="adicionarAssinante('{{ $tipo }}')" class="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-blue-500 rounded-md shadow hover:bg-blue-600 focus:ring-2 focus:ring-blue-300">
-                                                    + Adicionar Assinante
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex justify-center space-x-2">
+                                                <button type="button"
+                                                        onclick="editarVencedor({{ $index }})"
+                                                        class="px-3 py-1 text-sm text-blue-600 bg-blue-100 rounded-md hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                                    ✏️ Editar
+                                                </button>
+                                                <button type="button"
+                                                        onclick="importarItensVencedor({{ $index }})"
+                                                        class="px-3 py-1 text-sm text-green-600 bg-green-100 rounded-md hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-500">
+                                                    📊 Importar Itens
+                                                </button>
+                                                <button type="button"
+                                                        onclick="removerVencedor({{ $index }})"
+                                                        class="px-3 py-1 text-sm text-red-600 bg-red-100 rounded-md hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500">
+                                                    🗑️ Remover
                                                 </button>
                                             </div>
-                                        </div>
-                                        @endif
-
-                                        <!-- Seção de Campos do Formulário (se houver campos) -->
-                                        @if (!empty($doc['campos']))
-                                        <div>
-                                            <h4 class="mb-3 text-sm font-semibold text-gray-700">Campos do Documento</h4>
-                                            <div x-data="formField({{ json_encode($processo->finalizacao ?? null) }})">
-                                                <form action="{{ route('admin.processos.finalizacao.store', $processo) }}" method="POST" @submit.prevent="submitForm">
-                                                    @csrf
-                                                    <input type="hidden" name="processo_id" value="{{ $processo->id }}">
-
-                                                    @foreach ($doc['campos'] as $campo)
-                                                        @include('Admin.Processos.partials.forms-finalizacao')
-                                                    @endforeach
-                                                </form>
-                                            </div>
-                                        </div>
-                                        @endif
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
-                        @endif
-                        @endforeach
-                    </tbody>
-                </table>
-
-                <!-- Botão para Baixar Todos os PDFs -->
-                <div class="flex justify-center p-4 mt-6 border-t border-gray-200 bg-gray-50">
-                    <a href="{{ route('admin.processo.finalizardocumento.dowload-all', ['processo' => $processo->id]) }}" class="px-6 py-3 text-sm font-semibold text-white transition-colors duration-200 bg-green-600 rounded-lg shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
-                        📥 Baixar Todos os PDFs
-                    </a>
-                </div>
-            </div>
-
-            @if ($processo->modalidade !== \App\Enums\ModalidadeEnum::CONCORRENCIA)
-                <!-- Seção de Vencedores -->
-                <div class="mb-8">
-                    <div class="overflow-hidden bg-white border border-gray-100 shadow-sm rounded-2xl">
-                        <!-- Header -->
-                        <div class="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
-                            <div class="flex flex-col items-start justify-between lg:flex-row lg:items-center">
-                                <h3 class="text-xl font-semibold text-gray-800">Vencedores do Processo</h3>
-                                <button type="button"
-                                        onclick="abrirModalVencedor()"
-                                        class="px-4 py-2 mt-2 text-sm font-medium text-white bg-green-600 rounded-md lg:mt-0 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
-                                    ➕ Adicionar Vencedor
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Tabela de Vencedores -->
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                                            Razão Social
-                                        </th>
-                                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                                            CNPJ
-                                        </th>
-                                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                                            Representante
-                                        </th>
-                                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                                            CPF
-                                        </th>
-                                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                                            Itens/Lotes
-                                        </th>
-                                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-center text-gray-500 uppercase">
-                                            Ações
-                                        </th>
+                                        </td>
                                     </tr>
-                                </thead>
-                                <tbody class="bg-white divide-y divide-gray-200" id="vencedores-tbody">
-                                    @if(isset($processo->vencedores) && count($processo->vencedores) > 0)
-                                        @foreach($processo->vencedores as $index => $vencedor)
-                                        <tr class="vencedor-row" data-vencedor-id="{{ $vencedor->id ?? '' }}">
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm font-medium text-gray-900">{{ $vencedor->razao_social }}</div>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm text-gray-900">{{ $vencedor->cnpj }}</div>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm text-gray-900">{{ $vencedor->representante }}</div>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm text-gray-900">{{ $vencedor->cpf }}</div>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm text-gray-900">
-                                                    @if(isset($vencedor->lotes) && count($vencedor->lotes) > 0)
-                                                        {{ count($vencedor->lotes) }} {{ $processo->tipo_contratacao === 'LOTE' ? 'lotes' : 'itens' }}
-                                                    @else
-                                                        <span class="text-gray-400">Nenhum</span>
-                                                    @endif
-                                                </div>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="flex justify-center space-x-2">
+
+                                    <!-- Linha expansível com os itens/lotes do vencedor -->
+                                    @if(isset($vencedor->lotes) && count($vencedor->lotes) > 0)
+                                    <tr class="bg-gray-50">
+                                        <td colspan="6" class="px-6 py-4">
+                                            <div class="lotes-container">
+                                                <div class="flex items-center justify-between mb-3">
+                                                    <h4 class="text-lg font-semibold text-gray-800">
+                                                        {{ $processo->tipo_contratacao === 'LOTE' ? 'Lotes' : 'Itens' }} do Vencedor
+                                                    </h4>
                                                     <button type="button"
-                                                            onclick="editarVencedor({{ $index }})"
-                                                            class="px-3 py-1 text-sm text-blue-600 bg-blue-100 rounded-md hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                                        ✏️ Editar
-                                                    </button>
-                                                    <button type="button"
-                                                            onclick="importarItensVencedor({{ $index }})"
-                                                            class="px-3 py-1 text-sm text-green-600 bg-green-100 rounded-md hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-500">
-                                                        📊 Importar Itens
-                                                    </button>
-                                                    <button type="button"
-                                                            onclick="removerVencedor({{ $index }})"
-                                                            class="px-3 py-1 text-sm text-red-600 bg-red-100 rounded-md hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500">
-                                                        🗑️ Remover
+                                                            onclick="toggleLotes({{ $index }})"
+                                                            class="flex items-center text-sm text-blue-600 hover:text-blue-800">
+                                                        <span id="toggle-text-{{ $index }}">Mostrar Detalhes</span>
+                                                        <svg id="toggle-icon-{{ $index }}" class="w-4 h-4 ml-1 transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                                        </svg>
                                                     </button>
                                                 </div>
-                                            </td>
-                                        </tr>
 
-                                        <!-- Linha expansível com os itens/lotes do vencedor -->
-                                        @if(isset($vencedor->lotes) && count($vencedor->lotes) > 0)
-                                        <tr class="bg-gray-50">
-                                            <td colspan="6" class="px-6 py-4">
-                                                <div class="lotes-container">
-                                                    <div class="flex items-center justify-between mb-3">
-                                                        <h4 class="text-lg font-semibold text-gray-800">
-                                                            {{ $processo->tipo_contratacao === 'LOTE' ? 'Lotes' : 'Itens' }} do Vencedor
-                                                        </h4>
-                                                        <button type="button"
-                                                                onclick="toggleLotes({{ $index }})"
-                                                                class="flex items-center text-sm text-blue-600 hover:text-blue-800">
-                                                            <span id="toggle-text-{{ $index }}">Mostrar Detalhes</span>
-                                                            <svg id="toggle-icon-{{ $index }}" class="w-4 h-4 ml-1 transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                                            </svg>
-                                                        </button>
-                                                    </div>
+                                                <div id="lotes-details-{{ $index }}" class="hidden">
+                                                    @if($processo->tipo_contratacao === \App\Enums\TipoContratacaoEnum::LOTE)
+                                                        <!-- Estrutura para LOTE - Agrupar por número do lote -->
+                                                        @php
+                                                            $lotesAgrupados = $vencedor->lotes->groupBy('lote');
+                                                        @endphp
 
-                                                    <div id="lotes-details-{{ $index }}" class="hidden">
-                                                        @if($processo->tipo_contratacao === \App\Enums\TipoContratacaoEnum::LOTE)
-                                                            <!-- Estrutura para LOTE - Agrupar por número do lote -->
-                                                            @php
-                                                                $lotesAgrupados = $vencedor->lotes->groupBy('lote');
-                                                            @endphp
-
-                                                            @foreach($lotesAgrupados as $numeroLote => $itensLote)
-                                                            <div class="mb-6 border border-gray-200 rounded-lg">
-                                                                <div class="px-4 py-3 bg-gray-100 border-b border-gray-200">
-                                                                    <h5 class="font-semibold text-gray-800">
-                                                                        LOTE {{ $numeroLote }}
-                                                                    </h5>
-                                                                </div>
-                                                                <div class="overflow-x-auto">
-                                                                    <table class="min-w-full divide-y divide-gray-200">
-                                                                        <thead class="bg-gray-50">
-                                                                            <tr>
-                                                                                <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
-                                                                                    Status
-                                                                                </th>
-                                                                                <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
-                                                                                    Item
-                                                                                </th>
-                                                                                <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
-                                                                                    Descrição
-                                                                                </th>
-                                                                                <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
-                                                                                    UNIDADE
-                                                                                </th>
-                                                                                <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
-                                                                                    Marca
-                                                                                </th>
-                                                                                <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
-                                                                                    Modelo
-                                                                                </th>
-                                                                                <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
-                                                                                    Quantidade
-                                                                                </th>
-                                                                                <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
-                                                                                    Vl. Unit
-                                                                                </th>
-                                                                                <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
-                                                                                    Vl. Total
-                                                                                </th>
-                                                                            </tr>
-                                                                        </thead>
-                                                                        <tbody class="bg-white divide-y divide-gray-200">
-                                                                            @foreach($itensLote as $lote)
-                                                                            <tr class="hover:bg-gray-50">
-                                                                                <td class="px-4 py-2 text-sm text-gray-900">
-                                                                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
-                                                                                        @if($lote->status === 'HOMOLOGADO') bg-green-100 text-green-800
-                                                                                        @elseif($lote->status === 'ADJUDICADO') bg-blue-100 text-blue-800
-                                                                                        @else bg-gray-100 text-gray-800 @endif">
-                                                                                        {{ $lote->status }}
-                                                                                    </span>
-                                                                                </td>
-                                                                                <td class="px-4 py-2 text-sm text-gray-900">
-                                                                                    {{ $lote->item }}
-                                                                                </td>
-                                                                                <td class="px-4 py-2 text-sm text-gray-900">
-                                                                                    <div class="max-w-xs truncate" title="{{ $lote->descricao }}">
-                                                                                        {{ $lote->descricao }}
-                                                                                    </div>
-                                                                                </td>
-                                                                                <td class="px-4 py-2 text-sm text-gray-900">
-                                                                                    {{ $lote->unidade }}
-                                                                                </td>
-                                                                                <td class="px-4 py-2 text-sm text-gray-900">
-                                                                                    {{ $lote->marca }}
-                                                                                </td>
-                                                                                <td class="px-4 py-2 text-sm text-gray-900">
-                                                                                    {{ $lote->modelo }}
-                                                                                </td>
-                                                                                <td class="px-4 py-2 text-sm text-right text-gray-900">
-                                                                                    {{ number_format($lote->quantidade, 0, ',', '.') }}
-                                                                                </td>
-                                                                                <td class="px-4 py-2 text-sm text-right text-gray-900">
-                                                                                    R$ {{ number_format($lote->vl_unit, 2, ',', '.') }}
-                                                                                </td>
-                                                                                <td class="px-4 py-2 text-sm font-semibold text-right text-gray-900">
-                                                                                    R$ {{ number_format($lote->vl_total, 2, ',', '.') }}
-                                                                                </td>
-                                                                            </tr>
-                                                                            @endforeach
-                                                                            <!-- Linha de totais do lote -->
-                                                                            <tr class="font-semibold bg-gray-100">
-                                                                                <td class="px-4 py-2 text-sm text-gray-900" colspan="6">
-                                                                                    TOTAL DO LOTE {{ $numeroLote }}
-                                                                                </td>
-                                                                                <td class="px-4 py-2 text-sm text-right text-gray-900">
-                                                                                    {{ number_format($itensLote->sum('quantidade'), 0, ',', '.') }}
-                                                                                </td>
-                                                                                <td class="px-4 py-2 text-sm text-right text-gray-900">
-                                                                                    -
-                                                                                </td>
-                                                                                <td class="px-4 py-2 text-sm text-right text-green-700">
-                                                                                    R$ {{ number_format($itensLote->sum('vl_total'), 2, ',', '.') }}
-                                                                                </td>
-                                                                            </tr>
-                                                                        </tbody>
-                                                                    </table>
-                                                                </div>
+                                                        @foreach($lotesAgrupados as $numeroLote => $itensLote)
+                                                        <div class="mb-6 border border-gray-200 rounded-lg">
+                                                            <div class="px-4 py-3 bg-gray-100 border-b border-gray-200">
+                                                                <h5 class="font-semibold text-gray-800">
+                                                                    LOTE {{ $numeroLote }}
+                                                                </h5>
                                                             </div>
-                                                            @endforeach
-
-                                                            <!-- Total geral do vencedor -->
-                                                            <div class="p-4 mt-4 border border-blue-200 rounded-lg bg-blue-50">
-                                                                <div class="flex items-center justify-between">
-                                                                    <span class="text-lg font-bold text-blue-800">TOTAL GERAL DO VENCEDOR</span>
-                                                                    <span class="text-lg font-bold text-blue-800">
-                                                                        R$ {{ number_format($vencedor->lotes->sum('vl_total'), 2, ',', '.') }}
-                                                                    </span>
-                                                                </div>
-                                                            </div>
-
-                                                        @else
-                                                            <!-- Estrutura para ITEM - Listar todos os itens -->
                                                             <div class="overflow-x-auto">
                                                                 <table class="min-w-full divide-y divide-gray-200">
-                                                                    <thead class="bg-gray-100">
+                                                                    <thead class="bg-gray-50">
                                                                         <tr>
                                                                             <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
                                                                                 Status
@@ -591,7 +493,7 @@
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody class="bg-white divide-y divide-gray-200">
-                                                                        @foreach($vencedor->lotes as $lote)
+                                                                        @foreach($itensLote as $lote)
                                                                         <tr class="hover:bg-gray-50">
                                                                             <td class="px-4 py-2 text-sm text-gray-900">
                                                                                 <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
@@ -629,141 +531,245 @@
                                                                             </td>
                                                                         </tr>
                                                                         @endforeach
-                                                                        <!-- Linha de totais -->
+                                                                        <!-- Linha de totais do lote -->
                                                                         <tr class="font-semibold bg-gray-100">
                                                                             <td class="px-4 py-2 text-sm text-gray-900" colspan="6">
-                                                                                TOTAL GERAL
+                                                                                TOTAL DO LOTE {{ $numeroLote }}
                                                                             </td>
                                                                             <td class="px-4 py-2 text-sm text-right text-gray-900">
-                                                                                {{ number_format($vencedor->lotes->sum('quantidade'), 0, ',', '.') }}
+                                                                                {{ number_format($itensLote->sum('quantidade'), 0, ',', '.') }}
                                                                             </td>
                                                                             <td class="px-4 py-2 text-sm text-right text-gray-900">
                                                                                 -
                                                                             </td>
                                                                             <td class="px-4 py-2 text-sm text-right text-green-700">
-                                                                                R$ {{ number_format($vencedor->lotes->sum('vl_total'), 2, ',', '.') }}
+                                                                                R$ {{ number_format($itensLote->sum('vl_total'), 2, ',', '.') }}
                                                                             </td>
                                                                         </tr>
                                                                     </tbody>
                                                                 </table>
                                                             </div>
-                                                        @endif
-                                                    </div>
+                                                        </div>
+                                                        @endforeach
+
+                                                        <!-- Total geral do vencedor -->
+                                                        <div class="p-4 mt-4 border border-blue-200 rounded-lg bg-blue-50">
+                                                            <div class="flex items-center justify-between">
+                                                                <span class="text-lg font-bold text-blue-800">TOTAL GERAL DO VENCEDOR</span>
+                                                                <span class="text-lg font-bold text-blue-800">
+                                                                    R$ {{ number_format($vencedor->lotes->sum('vl_total'), 2, ',', '.') }}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+
+                                                    @else
+                                                        <!-- Estrutura para ITEM - Listar todos os itens -->
+                                                        <div class="overflow-x-auto">
+                                                            <table class="min-w-full divide-y divide-gray-200">
+                                                                <thead class="bg-gray-100">
+                                                                    <tr>
+                                                                        <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                                            Status
+                                                                        </th>
+                                                                        <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                                            Item
+                                                                        </th>
+                                                                        <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                                            Descrição
+                                                                        </th>
+                                                                        <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                                            UNIDADE
+                                                                        </th>
+                                                                        <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                                            Marca
+                                                                        </th>
+                                                                        <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                                            Modelo
+                                                                        </th>
+                                                                        <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                                            Quantidade
+                                                                        </th>
+                                                                        <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                                            Vl. Unit
+                                                                        </th>
+                                                                        <th class="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-700 uppercase">
+                                                                            Vl. Total
+                                                                        </th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody class="bg-white divide-y divide-gray-200">
+                                                                    @foreach($vencedor->lotes as $lote)
+                                                                    <tr class="hover:bg-gray-50">
+                                                                        <td class="px-4 py-2 text-sm text-gray-900">
+                                                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
+                                                                                @if($lote->status === 'HOMOLOGADO') bg-green-100 text-green-800
+                                                                                @elseif($lote->status === 'ADJUDICADO') bg-blue-100 text-blue-800
+                                                                                @else bg-gray-100 text-gray-800 @endif">
+                                                                                {{ $lote->status }}
+                                                                            </span>
+                                                                        </td>
+                                                                        <td class="px-4 py-2 text-sm text-gray-900">
+                                                                            {{ $lote->item }}
+                                                                        </td>
+                                                                        <td class="px-4 py-2 text-sm text-gray-900">
+                                                                            <div class="max-w-xs truncate" title="{{ $lote->descricao }}">
+                                                                                {{ $lote->descricao }}
+                                                                            </div>
+                                                                        </td>
+                                                                        <td class="px-4 py-2 text-sm text-gray-900">
+                                                                            {{ $lote->unidade }}
+                                                                        </td>
+                                                                        <td class="px-4 py-2 text-sm text-gray-900">
+                                                                            {{ $lote->marca }}
+                                                                        </td>
+                                                                        <td class="px-4 py-2 text-sm text-gray-900">
+                                                                            {{ $lote->modelo }}
+                                                                        </td>
+                                                                        <td class="px-4 py-2 text-sm text-right text-gray-900">
+                                                                            {{ number_format($lote->quantidade, 0, ',', '.') }}
+                                                                        </td>
+                                                                        <td class="px-4 py-2 text-sm text-right text-gray-900">
+                                                                            R$ {{ number_format($lote->vl_unit, 2, ',', '.') }}
+                                                                        </td>
+                                                                        <td class="px-4 py-2 text-sm font-semibold text-right text-gray-900">
+                                                                            R$ {{ number_format($lote->vl_total, 2, ',', '.') }}
+                                                                        </td>
+                                                                    </tr>
+                                                                    @endforeach
+                                                                    <!-- Linha de totais -->
+                                                                    <tr class="font-semibold bg-gray-100">
+                                                                        <td class="px-4 py-2 text-sm text-gray-900" colspan="6">
+                                                                            TOTAL GERAL
+                                                                        </td>
+                                                                        <td class="px-4 py-2 text-sm text-right text-gray-900">
+                                                                            {{ number_format($vencedor->lotes->sum('quantidade'), 0, ',', '.') }}
+                                                                        </td>
+                                                                        <td class="px-4 py-2 text-sm text-right text-gray-900">
+                                                                            -
+                                                                        </td>
+                                                                        <td class="px-4 py-2 text-sm text-right text-green-700">
+                                                                            R$ {{ number_format($vencedor->lotes->sum('vl_total'), 2, ',', '.') }}
+                                                                        </td>
+                                                                    </tr>
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    @endif
                                                 </div>
-                                            </td>
-                                        </tr>
-                                        @endif
-                                        @endforeach
-                                    @else
-                                    <tr>
-                                        <td colspan="6" class="px-6 py-4 text-sm text-center text-gray-500">
-                                            Nenhum vencedor cadastrado
+                                            </div>
                                         </td>
                                     </tr>
                                     @endif
-                                </tbody>
-                            </table>
-                        </div>
+                                    @endforeach
+                                @else
+                                <tr>
+                                    <td colspan="6" class="px-6 py-4 text-sm text-center text-gray-500">
+                                        Nenhum vencedor cadastrado
+                                    </td>
+                                </tr>
+                                @endif
+                            </tbody>
+                        </table>
                     </div>
                 </div>
+            </div>
 
-                <!-- Seção de Reservas -->
-                <div class="mb-8">
-                    <div class="overflow-hidden bg-white border border-gray-100 shadow-sm rounded-2xl">
-                        <!-- Header -->
-                        <div class="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-yellow-50 to-yellow-100">
-                            <div class="flex flex-col items-start justify-between lg:flex-row lg:items-center">
-                                <h3 class="text-xl font-semibold text-gray-800">Empresas Reservas do Processo</h3>
-                                <button type="button"
-                                        onclick="abrirModalReserva()"
-                                        class="px-4 py-2 mt-2 text-sm font-medium text-white bg-yellow-600 rounded-md lg:mt-0 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2">
-                                    ➕ Adicionar Reserva
-                                </button>
-                            </div>
+            <!-- Seção de Reservas -->
+            <div class="mb-8">
+                <div class="overflow-hidden bg-white border border-gray-100 shadow-sm rounded-2xl">
+                    <!-- Header -->
+                    <div class="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-yellow-50 to-yellow-100">
+                        <div class="flex flex-col items-start justify-between lg:flex-row lg:items-center">
+                            <h3 class="text-xl font-semibold text-gray-800">Empresas Reservas do Processo</h3>
+                            <button type="button"
+                                    onclick="abrirModalReserva()"
+                                    class="px-4 py-2 mt-2 text-sm font-medium text-white bg-yellow-600 rounded-md lg:mt-0 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2">
+                                ➕ Adicionar Reserva
+                            </button>
                         </div>
+                    </div>
 
-                        <!-- Tabela de Reservas -->
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                                            Razão Social
-                                        </th>
-                                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                                            CNPJ
-                                        </th>
-                                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                                            Endereço
-                                        </th>
-                                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                                            Telefone
-                                        </th>
-                                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                                            E-mail
-                                        </th>
-                                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                                            Representante Legal
-                                        </th>
-                                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-center text-gray-500 uppercase">
-                                            Ações
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white divide-y divide-gray-200" id="reservas-tbody">
-                                    @if(isset($processo->reservas) && count($processo->reservas) > 0)
-                                        @foreach($processo->reservas as $index => $reserva)
-                                        <tr class="reserva-row" data-reserva-id="{{ $reserva->id ?? '' }}">
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm font-medium text-gray-900">{{ $reserva->razao_social }}</div>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm text-gray-900">{{ $reserva->cnpj }}</div>
-                                            </td>
-                                            <td class="px-6 py-4">
-                                                <div class="max-w-xs text-sm text-gray-900 truncate" title="{{ $reserva->endereco }}">
-                                                    {{ $reserva->endereco ?? '-' }}
-                                                </div>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm text-gray-900">{{ $reserva->telefone ?? '-' }}</div>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm text-gray-900">{{ $reserva->email ?? '-' }}</div>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm text-gray-900">{{ $reserva->representante_legal ?? '-' }}</div>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="flex justify-center space-x-2">
-                                                    <button type="button"
-                                                            onclick="editarReserva({{ $index }})"
-                                                            class="px-3 py-1 text-sm text-blue-600 bg-blue-100 rounded-md hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                                        ✏️ Editar
-                                                    </button>
-                                                    <button type="button"
-                                                            onclick="removerReserva({{ $index }})"
-                                                            class="px-3 py-1 text-sm text-red-600 bg-red-100 rounded-md hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500">
-                                                        🗑️ Remover
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        @endforeach
-                                    @else
-                                    <tr>
-                                        <td colspan="7" class="px-6 py-4 text-sm text-center text-gray-500">
-                                            Nenhuma empresa reserva cadastrada
+                    <!-- Tabela de Reservas -->
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                        Razão Social
+                                    </th>
+                                    <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                        CNPJ
+                                    </th>
+                                    <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                        Endereço
+                                    </th>
+                                    <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                        Telefone
+                                    </th>
+                                    <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                        E-mail
+                                    </th>
+                                    <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                        Representante Legal
+                                    </th>
+                                    <th class="px-6 py-3 text-xs font-medium tracking-wider text-center text-gray-500 uppercase">
+                                        Ações
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200" id="reservas-tbody">
+                                @if(isset($processo->reservas) && count($processo->reservas) > 0)
+                                    @foreach($processo->reservas as $index => $reserva)
+                                    <tr class="reserva-row" data-reserva-id="{{ $reserva->id ?? '' }}">
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm font-medium text-gray-900">{{ $reserva->razao_social }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900">{{ $reserva->cnpj }}</div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="max-w-xs text-sm text-gray-900 truncate" title="{{ $reserva->endereco }}">
+                                                {{ $reserva->endereco ?? '-' }}
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900">{{ $reserva->telefone ?? '-' }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900">{{ $reserva->email ?? '-' }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900">{{ $reserva->representante_legal ?? '-' }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex justify-center space-x-2">
+                                                <button type="button"
+                                                        onclick="editarReserva({{ $index }})"
+                                                        class="px-3 py-1 text-sm text-blue-600 bg-blue-100 rounded-md hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                                    ✏️ Editar
+                                                </button>
+                                                <button type="button"
+                                                        onclick="removerReserva({{ $index }})"
+                                                        class="px-3 py-1 text-sm text-red-600 bg-red-100 rounded-md hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500">
+                                                    🗑️ Remover
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
-                                    @endif
-                                </tbody>
-                            </table>
-                        </div>
+                                    @endforeach
+                                @else
+                                <tr>
+                                    <td colspan="7" class="px-6 py-4 text-sm text-center text-gray-500">
+                                        Nenhuma empresa reserva cadastrada
+                                    </td>
+                                </tr>
+                                @endif
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-            @endif
-        </div>
+            </div>
+        @endif
     </div>
 
     <!-- Modal para Adicionar/Editar Vencedor -->
@@ -2176,6 +2182,8 @@
                 cargo_responsavel: existing?.cargo_responsavel ?? '',
                 merenda_escolar: existing?.merenda_escolar ?? '',
                 veiculos: existing?.veiculos ?? '',
+                valor_melhor_proposta: existing?.valor_melhor_proposta ?? '',
+                empresas_participantes: existing?.empresas_participantes ?? '',
 
                 // Controle de confirmação
                 confirmed: {
@@ -2201,6 +2209,8 @@
                     cargo_responsavel: !!existing?.cargo_responsavel,
                     merenda_escolar: !!existing?.merenda_escolar,
                     veiculos: !!existing?.veiculos,
+                    valor_melhor_proposta: !!existing?.valor_melhor_proposta,
+                    empresas_participantes: !!existing?.empresas_participantes,
                 },
 
                 toggleConfirm(field) {
@@ -2242,6 +2252,8 @@
                         'cargo_responsavel',
                         'merenda_escolar',
                         'veiculos',
+                        'valor_melhor_proposta',
+                        'empresas_participantes',
                     ];
 
                     if (!allowedFields.includes(field)) {

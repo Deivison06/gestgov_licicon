@@ -32,6 +32,8 @@ class Finalizacao extends Model
         'cargo_responsavel',
         'merenda_escolar',
         'veiculos',
+        'valor_melhor_proposta',
+        'empresas_participantes',
     ];
 
     public function processo()

@@ -23,6 +23,13 @@
             ->with(['lote', 'vencedor'])
             ->get()
             ->groupBy('vencedor_id');
+        $modalidadePregao = in_array(
+            $processo->modalidade,
+            [
+                \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO,
+                \App\Enums\ModalidadeEnum::DISPENSA,
+            ]
+        ) && $processo->tipo_procedimento !== \App\Enums\TipoProcedimentoEnum::OBRA;
     @endphp
     <script>
         const unidadesAssinantes = @json($unidadesData);
@@ -179,7 +186,16 @@
                 </div>
 
                 <!-- Painel 2: Contratação de Itens -->
-                @if($processo->modalidade === \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO)
+                @if(
+                    in_array(
+                        $processo->modalidade,
+                        [
+                            \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO,
+                            \App\Enums\ModalidadeEnum::DISPENSA,
+                        ]
+                    )
+                    && $processo->tipo_procedimento !== \App\Enums\TipoProcedimentoEnum::OBRA
+                )
                     <div class="bg-white border border-gray-200 shadow-sm rounded-xl">
                         <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-purple-100">
                             <div class="flex flex-col justify-between md:flex-row md:items-center">
@@ -1004,10 +1020,10 @@
             // Verificar se é pregão
             const modalidadePregão = @json($processo->modalidade === \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO);
 
-            if (!modalidadePregão) {
-                alert('Esta funcionalidade está disponível apenas para Pregão Eletrônico');
-                return;
-            }
+            // if (!modalidadePregão || ) {
+            //     alert('Esta funcionalidade está disponível apenas para Pregão Eletrônico');
+            //     return;
+            // }
             document.getElementById('contratacaoModalTitle').textContent = 'Contratar Itens';
             document.getElementById('contratacaoId').value = '';
 

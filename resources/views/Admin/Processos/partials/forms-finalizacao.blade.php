@@ -57,6 +57,12 @@
     @elseif($campo === 'valor_total')
     <x-form-field name="valor_total" label="Valor Total" type="text" />
 
+     @elseif($campo === 'valor_melhor_proposta')
+    <x-form-field name="valor_melhor_proposta" label="Valor da Melhor proposta" type="text" />
+
+    @elseif($campo === 'empresas_participantes')
+    <x-form-field name="empresas_participantes" label="Empresas participantes" type="text" />
+
     @elseif($campo === 'numero_ata_registro_precos')
     <x-form-field name="numero_ata_registro_precos" label="Numero ATA" type="text" />
 

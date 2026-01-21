@@ -109,41 +109,54 @@ class FinalizacaoProcessoController extends Controller
     {
         $processo->load(['prefeitura.unidades', 'detalhe']);
 
-        // Obtém os documentos organizados conforme o tipo de procedimento
         $documentos = $this->getDocumentosOrganizados($processo);
 
-        // Adiciona campos extras para concorrência (independente da inversão)
-        if ($processo->modalidade === ModalidadeEnum::CONCORRENCIA) {
-            $camposConcorrencia = [
-                'razao_social',
-                'cnpj_empresa_vencedora',
-                'endereco_empresa_vencedora',
-                'representante_legal_empresa',
-                'cpf_representante',
-                'valor_total',
-            ];
+        $camposExtras = [
+            'razao_social',
+            'cnpj_empresa_vencedora',
+            'endereco_empresa_vencedora',
+            'representante_legal_empresa',
+            'cpf_representante',
+            'valor_total',
+        ];
 
-            // Adiciona os campos extras ao termo de adjudicação
-            if (isset($documentos['termo_adjudicacao'])) {
-                $documentos['termo_adjudicacao']['campos'] = array_merge(
-                    $documentos['termo_adjudicacao']['campos'],
-                    $camposConcorrencia
-                );
-            }
+        // Concorrência → termo_adjudicacao
+        if ($processo->modalidade === ModalidadeEnum::CONCORRENCIA) {
+            $this->adicionarCampos($documentos, 'termo_adjudicacao', $camposExtras);
+        }
+
+        // Dispensa + Obra → atos_sessao
+        if (
+            $processo->modalidade === ModalidadeEnum::DISPENSA
+            && $processo->tipo_procedimento === TipoProcedimentoEnum::OBRA
+        ) {
+            $this->adicionarCampos($documentos, 'ata', $camposExtras);
         }
 
         return view('Admin.Processos.finalizar', compact('processo', 'documentos'));
     }
+    private function adicionarCampos(array &$documentos, string $documento, array $campos): void
+    {
+        if (!isset($documentos[$documento])) {
+            return;
+        }
+
+        $documentos[$documento]['campos'] = array_merge(
+            $documentos[$documento]['campos'],
+            $campos
+        );
+    }
+
 
     private function getDocumentosOrganizados(Processo $processo): array
     {
         // Verifica o tipo de procedimento
-        $tipoProcedimento = $processo->detalhe->tipo_procedimento ?? null;
+        $tipoProcedimento = $processo->tipo_procedimento ?? null;
         
         // Se for dispensa
         if ($processo->modalidade === ModalidadeEnum::DISPENSA) {
             // Verifica se é dispensa de compras/serviços ou obra
-            if ($tipoProcedimento == TipoProcedimentoEnum::OBRA->value) {
+            if ($tipoProcedimento == TipoProcedimentoEnum::OBRA) {
                 return $this->getOrdemDispensaObra();
             } else {
                 // Dispensa de compras ou serviços
@@ -179,8 +192,19 @@ class FinalizacaoProcessoController extends Controller
             'atos_sessao' => [
                 'titulo' => 'ATOS DA SESSÃO',
                 'cor' => 'bg-red-500',
-                'campos' => ['anexo_atos_sessao'],
-                'requer_assinatura' => false,
+                'campos' => [
+                    'anexo_atos_sessao',
+                    'orgao_responsavel',
+                    'cargo_responsavel',
+                    'cnpj',
+                    'endereco',
+                    'responsavel',
+                    'cpf_responsavel',
+                    'merenda_escolar',
+                    'veiculos',
+                    'empresas_participantes',
+                ],
+                'requer_assinatura' => true,
             ],
             'documento_habilitacao' => [
                 'titulo' => 'DOCUMENTOS DE HABILITAÇÃO',
@@ -212,6 +236,12 @@ class FinalizacaoProcessoController extends Controller
                 'campos' => [],
                 'requer_assinatura' => true,
             ],
+            'atos_autorizacao_dispensa' => [
+                'titulo' => 'ATO DE AUTORIZAÇÃO DE DISPENSA DE LICITAÇÃO',
+                'cor' => 'bg-yellow-500',
+                'campos' => [],
+                'requer_assinatura' => true,
+            ],
             'publicacoes' => [
                 'titulo' => 'PUBLICAÇÕES',
                 'cor' => 'bg-indigo-500',
@@ -229,8 +259,19 @@ class FinalizacaoProcessoController extends Controller
             'ata' => [
                 'titulo' => 'ATA',
                 'cor' => 'bg-red-500',
-                'campos' => ['anexo_atos_sessao'],
-                'requer_assinatura' => false,
+                'campos' => [
+                    'anexo_atos_sessao',
+                    'orgao_responsavel',
+                    'cargo_responsavel',
+                    'cnpj',
+                    'endereco',
+                    'responsavel',
+                    'cpf_responsavel',
+                    'merenda_escolar',
+                    'veiculos',
+                    'empresas_participantes',
+                ],
+                'requer_assinatura' => true,
             ],
             'documento_habilitacao' => [
                 'titulo' => 'DOCUMENTOS DE HABILITAÇÃO',
@@ -259,6 +300,12 @@ class FinalizacaoProcessoController extends Controller
             'parecer_juridico' => [
                 'titulo' => 'PARECER JURÍDICO',
                 'cor' => 'bg-orange-500',
+                'campos' => [],
+                'requer_assinatura' => true,
+            ],
+            'atos_autorizacao_dispensa' => [
+                'titulo' => 'ATO DE AUTORIZAÇÃO DE DISPENSA DE LICITAÇÃO',
+                'cor' => 'bg-yellow-500',
                 'campos' => [],
                 'requer_assinatura' => true,
             ],
@@ -872,6 +919,7 @@ class FinalizacaoProcessoController extends Controller
     public function gerarPdf(Request $request, Processo $processo)
     {
         try {
+            set_time_limit(300);
             Log::info('Iniciando geração de PDF - Finalização', [
                 'processo_id' => $processo->id,
                 'documento' => $request->query('documento'),
@@ -929,6 +977,11 @@ class FinalizacaoProcessoController extends Controller
 
     public function baixarTodosDocumentos(Processo $processo)
     {
+
+        set_time_limit(600);
+        
+        // Aumentar memória
+        ini_set('memory_limit', '512M');
         $ordem = $this->getOrdemDocumentos($processo);
         $documentos = Documento::where('processo_id', $processo->id)->get()->keyBy('tipo_documento');
 
@@ -1097,8 +1150,8 @@ class FinalizacaoProcessoController extends Controller
         
         // Para dispensa, verificar se é obra ou compras/serviços
         if ($processo->modalidade === ModalidadeEnum::DISPENSA) {
-            $tipoProcedimento = $processo->detalhe->tipo_procedimento ?? null;
-            if ($tipoProcedimento == TipoProcedimentoEnum::OBRA->value) {
+            $tipoProcedimento = $processo->tipo_procedimento ?? null;
+            if ($tipoProcedimento == TipoProcedimentoEnum::OBRA) {
                 $view = "{$viewBase}.{$modalidade}.obra.{$documento}";
             } else {
                 $view = "{$viewBase}.{$modalidade}.{$documento}";
@@ -1144,7 +1197,7 @@ class FinalizacaoProcessoController extends Controller
     {
         // Para dispensa, usar subpasta específica
         if ($processo->modalidade === ModalidadeEnum::DISPENSA) {
-            $tipoProcedimento = $processo->detalhe->tipo_procedimento ?? null;
+            $tipoProcedimento = $processo->tipo_procedimento ?? null;
             if ($tipoProcedimento == TipoProcedimentoEnum::OBRA->value) {
                 return "finalizacao/dispensa_obra/{$documento}";
             } else {
@@ -1199,14 +1252,21 @@ class FinalizacaoProcessoController extends Controller
                 'anexos' => $anexos
             ]);
 
-            $resultado = $this->juntarPdfsComGhostscript($caminhoPrincipal, $anexos);
+            // **DECISÃO: Usar método especial para atos da sessão**
+            if ($documento === 'atos_sessao') {
+                $resultado = $this->juntarPdfsComCapa($caminhoPrincipal, $anexos);
+            } else {
+                // Para outros documentos, usar o método padrão
+                $resultado = $this->juntarPdfsComGhostscript($caminhoPrincipal, $anexos);
+            }
 
             if ($resultado && file_exists($resultado)) {
                 Log::info("✅ Anexos processados com SUCESSO - Finalização", [
                     'documento' => $documento,
                     'arquivo_final' => $resultado,
                     'tamanho_final' => filesize($resultado),
-                    'anexos_mesclados' => count($anexos)
+                    'anexos_mesclados' => count($anexos),
+                    'metodo_usado' => $documento === 'atos_sessao' ? 'com capa' : 'padrão'
                 ]);
             } else {
                 Log::error("❌ Falha ao processar anexos - Finalização", [
@@ -1220,6 +1280,109 @@ class FinalizacaoProcessoController extends Controller
         }
 
         Log::info("🏁 PROCESSAMENTO DE ANEXOS CONCLUÍDO - Finalização: {$documento}");
+    }
+
+    private function juntarPdfsComCapa(string $pdfBasePath, array $anexoPaths): ?string
+    {
+        try {
+            set_time_limit(180); 
+            Log::info("INICIANDO JUNÇÃO DE PDFs COM CAPA ESPECIAL - Finalização", [
+                'pdf_base' => $pdfBasePath,
+                'anexos' => $anexoPaths
+            ]);
+
+            // Se não há anexos, retornar o arquivo base
+            if (empty($anexoPaths)) {
+                return $pdfBasePath;
+            }
+
+            // Verificar se o arquivo base existe
+            if (!file_exists($pdfBasePath)) {
+                Log::error('Arquivo base não encontrado - Finalização', ['caminho' => $pdfBasePath]);
+                return null;
+            }
+
+            // Filtrar apenas anexos válidos
+            $anexosValidos = [];
+            foreach ($anexoPaths as $index => $anexoPath) {
+                if (file_exists($anexoPath) && filesize($anexoPath) > 0) {
+                    $anexosValidos[] = $anexoPath;
+                }
+            }
+
+            if (empty($anexosValidos)) {
+                return $pdfBasePath;
+            }
+
+            // Criar arquivo temporário para resultado
+            $tempOutput = tempnam(sys_get_temp_dir(), 'capa_special_') . '.pdf';
+            
+            // **CORREÇÃO AQUI**: Dividir o PDF base em partes
+            // 1. Primeira página (capa)
+            // 2. Demais páginas
+            $primeiraPaginaTemp = tempnam(sys_get_temp_dir(), 'primeira_pagina_capa_') . '.pdf';
+            $restoPaginasTemp = null;
+            
+            // Extrair a primeira página
+            $this->extrairPaginasPdf($pdfBasePath, $primeiraPaginaTemp, 1, 1);
+            
+            // Contar páginas do PDF base
+            $pageCount = $this->contarPaginasPdf($pdfBasePath);
+            
+            if ($pageCount > 1) {
+                // Extrair o restante das páginas
+                $restoPaginasTemp = tempnam(sys_get_temp_dir(), 'resto_paginas_capa_') . '.pdf';
+                $this->extrairPaginasPdf($pdfBasePath, $restoPaginasTemp, 2, $pageCount);
+                
+                // Ordem correta: Primeira página + Anexos + Restante do PDF
+                $todosArquivos = array_merge([$primeiraPaginaTemp], $anexosValidos, [$restoPaginasTemp]);
+            } else {
+                // Se só tiver uma página (apenas capa)
+                $todosArquivos = array_merge([$primeiraPaginaTemp], $anexosValidos);
+            }
+            
+            Log::info("Estrutura de mesclagem com capa", [
+                'total_arquivos' => count($todosArquivos),
+                'arquivos' => $todosArquivos,
+                'estrutura' => 'Capa (página 1) → Anexos → Resto do conteúdo',
+                'page_count' => $pageCount
+            ]);
+            
+            // Usar o método Ghostscript para mesclar
+            $sucesso = $this->mesclarPdfsComGhostscript($todosArquivos, $tempOutput);
+            
+            if ($sucesso && file_exists($tempOutput) && filesize($tempOutput) > 0) {
+                // Substituir o arquivo original
+                copy($tempOutput, $pdfBasePath);
+                unlink($tempOutput);
+                
+                // Limpar arquivos temporários
+                if (file_exists($primeiraPaginaTemp)) unlink($primeiraPaginaTemp);
+                if ($restoPaginasTemp && file_exists($restoPaginasTemp)) unlink($restoPaginasTemp);
+                
+                Log::info("PDFs mesclados com estrutura de capa - SUCESSO", [
+                    'arquivo_final' => $pdfBasePath,
+                    'tamanho_final' => filesize($pdfBasePath),
+                    'anexos_mesclados' => count($anexosValidos),
+                    'estrutura' => 'Capa (página 1) + Anexos + Resto do conteúdo'
+                ]);
+                
+                return $pdfBasePath;
+            }
+            
+            // Limpeza em caso de erro
+            if (file_exists($tempOutput)) unlink($tempOutput);
+            if (file_exists($primeiraPaginaTemp)) unlink($primeiraPaginaTemp);
+            if ($restoPaginasTemp && file_exists($restoPaginasTemp)) unlink($restoPaginasTemp);
+            
+            return null;
+        } catch (\Exception $e) {
+            Log::error('Erro ao mesclar PDFs com capa', [
+                'erro' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return null;
+        }
     }
 
     private function obterAnexos(Processo $processo, string $documento): array
@@ -1270,7 +1433,7 @@ class FinalizacaoProcessoController extends Controller
     private function juntarPdfsComGhostscript(string $pdfBasePath, array $anexoPaths): ?string
     {
         try {
-            Log::info("INICIANDO JUNÇÃO DE PDFs - Finalização", [
+            Log::info("INICIANDO JUNÇÃO DE PDFs COM PÁGINA DE CAPA - Finalização", [
                 'pdf_base' => $pdfBasePath,
                 'anexos_recebidos' => $anexoPaths,
                 'base_existe' => file_exists($pdfBasePath),
@@ -1323,13 +1486,37 @@ class FinalizacaoProcessoController extends Controller
             // Criar arquivo temporário para o resultado
             $tempOutput = tempnam(sys_get_temp_dir(), 'merged_pdf_finalizacao_') . '.pdf';
 
-            // Ordem: base + anexos
-            $todosArquivos = array_merge([$pdfBasePath], $anexosValidos);
+            // **ALTERAÇÃO AQUI**: Dividir o PDF base em duas partes
+            // 1. Primeira página (capa)
+            // 2. Demais páginas
+            $primeiraPaginaTemp = tempnam(sys_get_temp_dir(), 'primeira_pagina_') . '.pdf';
+            $restoPaginasTemp = tempnam(sys_get_temp_dir(), 'resto_paginas_') . '.pdf';
+            
+            // Extrair a primeira página
+            $this->extrairPaginasPdf($pdfBasePath, $primeiraPaginaTemp, 1, 1);
+            
+            // Extrair o restante das páginas (se houver)
+            $pageCount = $this->contarPaginasPdf($pdfBasePath);
+            if ($pageCount > 1) {
+                $this->extrairPaginasPdf($pdfBasePath, $restoPaginasTemp, 2, $pageCount);
+                
+                // Ordem: primeira página + anexos + restante das páginas
+                $todosArquivos = array_merge(
+                    [$primeiraPaginaTemp], 
+                    $anexosValidos, 
+                    [$restoPaginasTemp]
+                );
+            } else {
+                // Se só tiver uma página (apenas capa)
+                $todosArquivos = array_merge([$primeiraPaginaTemp], $anexosValidos);
+            }
 
-            Log::info("🔄 Iniciando mesclagem com Ghostscript - Finalização", [
+            Log::info("🔄 Iniciando mesclagem com estrutura de capa - Finalização", [
                 'total_arquivos' => count($todosArquivos),
                 'arquivos' => $todosArquivos,
-                'arquivo_saida_temp' => $tempOutput
+                'arquivo_saida_temp' => $tempOutput,
+                'pagina_capa' => $primeiraPaginaTemp,
+                'resto_paginas' => $restoPaginasTemp ?? 'N/A'
             ]);
 
             // Mesclar usando Ghostscript
@@ -1340,7 +1527,8 @@ class FinalizacaoProcessoController extends Controller
 
                 Log::info("✅ Arquivo temporário gerado com sucesso - Finalização", [
                     'caminho_temp' => $tempOutput,
-                    'tamanho_temp' => $tamanhoTemp
+                    'tamanho_temp' => $tamanhoTemp,
+                    'estrutura' => 'Capa → Anexos → Resto do conteúdo'
                 ]);
 
                 // Substituir o arquivo base pelo resultado mesclado
@@ -1349,11 +1537,15 @@ class FinalizacaoProcessoController extends Controller
                     Log::info("🎉 PDFs mesclados com SUCESSO - Finalização", [
                         'arquivo_final' => $pdfBasePath,
                         'tamanho_final' => $tamanhoFinal,
-                        'anexos_mesclados' => count($anexosValidos)
+                        'anexos_mesclados' => count($anexosValidos),
+                        'estrutura_final' => 'Capa (página 1) + Anexos + Resto do conteúdo'
                     ]);
 
-                    // Limpar arquivo temporário
+                    // Limpar arquivos temporários
                     unlink($tempOutput);
+                    if (file_exists($primeiraPaginaTemp)) unlink($primeiraPaginaTemp);
+                    if (file_exists($restoPaginasTemp)) unlink($restoPaginasTemp);
+                    
                     return $pdfBasePath;
                 } else {
                     Log::error('❌ Falha ao copiar arquivo temporário para destino - Finalização');
@@ -1367,9 +1559,9 @@ class FinalizacaoProcessoController extends Controller
             }
 
             // Limpeza em caso de erro
-            if (file_exists($tempOutput)) {
-                unlink($tempOutput);
-            }
+            if (file_exists($tempOutput)) unlink($tempOutput);
+            if (file_exists($primeiraPaginaTemp)) unlink($primeiraPaginaTemp);
+            if (file_exists($restoPaginasTemp)) unlink($restoPaginasTemp);
 
             return null;
         } catch (\Exception $e) {
@@ -1380,6 +1572,43 @@ class FinalizacaoProcessoController extends Controller
                 'anexos' => $anexoPaths
             ]);
             return null;
+        }
+    }
+
+    private function extrairPaginasPdf(string $inputPath, string $outputPath, int $startPage, int $endPage): bool
+    {
+        try {
+            $comando = sprintf(
+                'gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -dPDFSETTINGS=/prepress -dFirstPage=%d -dLastPage=%d -sOutputFile="%s" "%s"',
+                $startPage,
+                $endPage,
+                $outputPath,
+                $inputPath
+            );
+
+            $output = [];
+            $returnCode = 0;
+            exec($comando . ' 2>&1', $output, $returnCode);
+
+            if ($returnCode === 0 && file_exists($outputPath) && filesize($outputPath) > 0) {
+                Log::info('Páginas extraídas com sucesso', [
+                    'arquivo_entrada' => $inputPath,
+                    'arquivo_saida' => $outputPath,
+                    'pagina_inicio' => $startPage,
+                    'pagina_fim' => $endPage,
+                    'tamanho_saida' => filesize($outputPath)
+                ]);
+                return true;
+            } else {
+                Log::error('Erro ao extrair páginas', [
+                    'return_code' => $returnCode,
+                    'saida' => implode("\n", $output)
+                ]);
+                return false;
+            }
+        } catch (\Exception $e) {
+            Log::error('Exceção ao extrair páginas', ['erro' => $e->getMessage()]);
+            return false;
         }
     }
 

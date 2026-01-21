@@ -6,9 +6,11 @@ use App\Models\Contrato;
 use App\Models\Processo;
 use App\Models\Documento;
 use Illuminate\Http\Request;
+use App\Enums\ModalidadeEnum;
 use setasign\Fpdi\Tcpdf\Fpdi;
 use App\Models\LoteContratado;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Enums\TipoProcedimentoEnum;
 use Illuminate\Support\Facades\Log;
 
 class ContratoProcessoController extends Controller
@@ -663,19 +665,31 @@ class ContratoProcessoController extends Controller
         return $itens;
     }
 
-    private function determinarViewContrato(Processo $processo): string
+   private function determinarViewContrato(Processo $processo): string
     {
-        $viewBase = "Admin.Processos.contrato";
+        $viewBase = 'Admin.Processos.contrato';
 
         $modalidade = $this->formatarNomeArquivo($processo->modalidade?->name ?? '');
-        $view = "{$viewBase}.{$modalidade}.contrato";
+
+        // Caso especial: Dispensa por Obra
+        if (
+            $processo->modalidade === ModalidadeEnum::DISPENSA
+            && $processo->tipo_procedimento === TipoProcedimentoEnum::OBRA
+        ) {
+            $view = "{$viewBase}.{$modalidade}.obra.contrato";
+        } else {
+            $view = "{$viewBase}.{$modalidade}.contrato";
+        }
 
         if (!view()->exists($view)) {
-            throw new \Exception("O modelo de contrato para a modalidade '{$modalidade}' não foi encontrado. View: {$view}");
+            throw new \Exception(
+                "O modelo de contrato não foi encontrado. View: {$view}"
+            );
         }
 
         return $view;
     }
+
 
     private function formatarNomeArquivo(string $nome): string
     {

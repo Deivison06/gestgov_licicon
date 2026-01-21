@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Atos da Sessão - Processo {{ $processo->numero_processo ?? $processo->id }}</title>
+    <title>ATA - Processo {{ $processo->numero_processo ?? $processo->id }}</title>
     <style type="text/css">
         @font-face {
             font-family: 'Aptos';
@@ -121,7 +121,7 @@
     <div id="cover-page">
         <img src="{{ public_path('icons/capa-documento.png') }}" alt="Martelo da Justiça" class="cover-image">
         <div class="cover-title">
-            ATOS DA SESSÃO
+            ATA
         </div>
     </div>
 
@@ -134,24 +134,20 @@
         <h4 style="text-align: center">ATA DE RECONHECIMENTO DA DISPENSA DE LICITAÇÃO</h4>
 
         <p style="text-align: justify;">
-            Assunto: reconhecimento e solicitação de Ratificação de Dispensa de Licitação - (Artigo 78 da Lei nº 14.133/2021). 
+            Assunto: reconhecimento e solicitação de Ratificação de Dispensa de Licitação - (Artigo 78 da Lei nº 14.133/2021).  
         </p>
 
         <p>
             Processo Administrativo nº {{ $processo->numero_processo }} <br>
             Dispensa de Licitação nº {{ $processo->numero_procedimento }} <br>
             REFERENTE: <br>
-            {!! strip_tags($processo->objeto) !!}
-            <br>
-            VALOR TOTAL: R$ {{ number_format($vencedores->sum(function($vencedor) {
-                return $vencedor->lotes->sum('vl_total');
-            }), 2, ',', '.') }}
+            {{ $processo->finalizacao->valor_total }}.
         </p>
         <p style="text-align: justify;">
-            BASE LEGAL: Art. 75, inciso II, da Lei nº 14.133 de 01 de ABRIL de 2021
+            BASE LEGAL: Art. 75, inciso I, da Lei nº 14.133 de 01 de ABRIL de 2021
         </p>
         @php
-            use Carbon\Carbon;
+             use Carbon\Carbon;
 
             $data = Carbon::parse($dataSelecionada);
 
@@ -165,17 +161,16 @@
             Aos {{ $dia }} dias do mês de {{ $mes }} de {{ $anoExtenso }}, reuniu-se a
             Comissão de Licitação, para deliberar sobre a {!! strip_tags($processo->objeto) !!}, foi enviado a esta
             comissão de Contratação propostas de preços: {{ $processo->finalizacao->empresas_participantes }} após análise e verificação dos preços propostos, a
-            comissão julgou e decidiu em favor da empresa @foreach($vencedores as $vencedor) {{ $vencedor->razao_social }}, 
-            CNPJ: {{ $vencedor->cnpj_formatado ?? preg_replace('/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/', '$1.$2.$3/$4-$5', $vencedor->cnpj) }} @break
-            @endforeach, respaldado no Art. 75, inciso II, da Lei nº
+            comissão julgou e decidiu em favor da empresa {{ $processo->finalizacao->razao_social }}, 
+            CNPJ: {{ $processo->finalizacao->cnpj_empresa_vencedora }}, respaldado no Art. 75, inciso I, da Lei nº
             14.133 de 01 de ABRIL de 2021 e demais documentos objeto do Processo.
         </p>
 
         <h4 style="text-align: center">JUSTIFICATIVA DA CONTRATAÇÃO</h4>
 
         <p style="text-align: justify; text-indent: 30px;">
-            A contratação encontra-se respaldado no Art. 75, inciso II, da Lei nº 14.133 de 01
-            de ABRIL de 2021, que viabiliza a contratação em comento, diante da realidade, a própria Lei de
+           A contratação encontra-se respaldado no Art. 75, inciso I, da Lei nº 14.133 de 01 de
+            ABRIL de 2021, que viabiliza a contratação em comento, diante da realidade, a própria Lei de
             Licitação se preocupou prevendo a contratação nos casos que se caracterizam como dispensa.
         </p>
         <table style="width: 100%; border-collapse: collapse; page-break-inside: auto;">
@@ -201,8 +196,8 @@
                 <!-- Conteúdo da primeira célula -->
                 </td>
                 <td style="width: 50%; text-align: justify; vertical-align: top; ">
-                    II - para contratação que envolva valores
-                    inferiores a R$ 62.725,59 vide O Decreto nº
+                    I - para contratação que envolva valores
+                    inferiores a R$ 125.451,15 vide O Decreto nº
                     12.343/2024, de 30 de dezembro de 2021, no
                     caso de outros serviços e compras;
                 </td>
@@ -250,65 +245,52 @@
         </table>
 
         <h4>III – DA JUSTIFICATIVA DA DISPENSA</h4>
-        <p style="text-align: justify; text-indent: 30px;">
-            {!! str_replace(
-                ['<p>', '<p class="MsoNormal">', '<strong>', '</strong>'],
-                [
-                    '<p style="text-indent:30px; text-align: justify;">',
-                    '<p style="text-indent:30px; text-align: justify;">',
-                    '<span style="font-weight: bold;">',
-                    '</span>'
-                ],
-                $processo->detalhe->justificativa
-            ) !!}
-        </p>
+        @php
+            $html = $processo->detalhe->justificativa;
+
+            // Substitui <p> com estilo
+            $html = preg_replace(
+                '/<p([^>]*)>/i',
+                '<p style="text-indent:30px; text-align: justify;">',
+                $html
+            );
+
+            // Substitui <strong ...> por <span style="font-weight:bold;">
+            $html = preg_replace(
+                '/<strong[^>]*>/i',
+                '<span style="font-weight: bold;">',
+                $html
+            );
+
+            // Fecha corretamente
+            $html = str_replace('</strong>', '</span>', $html);
+        @endphp
+
+        <div>
+            {!! $html !!}
+        </div>
+
         <h4>IV – DA RAZÃO DA ESCOLHA DO FORNECEDOR OU EXECUTANTE</h4>
         <p style="text-align: justify; text-indent: 30px;">
             O serviço será disponibilizado pela empresa supracitada é compatível e não
             apresenta diferença que venha a influenciar na escolha, ficando está vinculada apenas à
             verificação do critério do menor preço.
         </p>
-        <h4>V – DAS COTAÇÕES</h4>
-        <p style="text-align: justify; text-indent: 30px;">
-            Em análise aos presentes autos, observamos que foram realizadas pesquisas de
-            preços junto ao Painel de Preços Públicos do Tribunal de Contas do Estado do Piauí, tendo a
-            Empresa @foreach($vencedores as $vencedor) {{ $vencedor->razao_social }}, 
-            CNPJ: {{ $vencedor->cnpj_formatado ?? preg_replace('/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/', '$1.$2.$3/$4-$5', $vencedor->cnpj) }} @break
-            @endforeach, apresentado melhor proposta e preços compatíveis com os
-            praticados no mercado.
-        </p>
-        <p style="text-align: justify; text-indent: 30px;">
-            Assim, diante do exposto nos documentos restou comprovado ser a melhor
-            proposta e estando no preço médio de mercado o valor de
-            {{ number_format($vencedores->sum(function($vencedor) {
-                return $vencedor->lotes->sum('vl_total');
-            }), 2, ',', '.') }}.
-        </p>
-        <p style="text-align: justify; text-indent: 30px;">
-            O valor ofertado pela empresa
-            @foreach($vencedores as $vencedor) {{ $vencedor->razao_social }}, 
-            CNPJ: {{ $vencedor->cnpj_formatado ?? preg_replace('/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/', '$1.$2.$3/$4-$5', $vencedor->cnpj) }} @break
-            @endforeach foi de {{ number_format($vencedores->sum(function($vencedor) {
-                return $vencedor->lotes->sum('vl_total');
-            }), 2, ',', '.') }}.
-        </p>
-        <h4>VI – DA JUSTIFICATIVA DO PREÇO</h4>
+        <h4>V – DA JUSTIFICATIVA DO PREÇO</h4>
         <p style="text-align: justify; text-indent: 30px;">
             O critério do menor preço deve presidir a escolha do adjudicatário direto como regra
             geral, e o meio de aferi-lo está em juntar aos autos do respectivo processo.
         </p>
-        <h4>VII – DA ESCOLHA</h4>
+        
+        <h4>VI – DA ESCOLHA</h4>
         <p style="text-align: justify; text-indent: 30px;">
-            A empresa escolhida neste processo para sacramentar a contratação de
+             A empresa escolhida neste processo para sacramentar a contratação de
             fornecimento dos produtos pretendidos, foi:
-            @foreach($vencedores as $vencedor) {{ $vencedor->razao_social }}, 
-            CNPJ: {{ $vencedor->cnpj_formatado ?? preg_replace('/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/', '$1.$2.$3/$4-$5', $vencedor->cnpj) }} @break
-            @endforeach foi
-            de R$ {{ number_format($vencedores->sum(function($vencedor) {
-                return $vencedor->lotes->sum('vl_total');
-            }), 2, ',', '.') }}.
+            {{ $processo->finalizacao->razao_social }}, 
+            CNPJ: {{ $processo->finalizacao->cnpj_empresa_vencedora }} foi
+            de R$ {{ $processo->finalizacao->valor_total }}.
         </p>
-        <h4>IX – CONCLUSÃO</h4>
+        <h4>VII – CONCLUSÃO</h4>
         <p style="text-align: justify; text-indent: 30px;">
             Por tudo isso, viemos RECONHECER o procedimento de Dispensa de
             Licitação, e de forma a cumprir o disposto no art. 75, da mesma lei, e tendo em vista
@@ -349,7 +331,6 @@
                 </p>
             </div>
         @endif
-
     </div>
 
     {{-- QUEBRA DE PÁGINA --}}
