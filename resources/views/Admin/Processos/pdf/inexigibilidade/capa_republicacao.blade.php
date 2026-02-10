@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Minutas - Processo {{ $processo->numero_processo ?? $processo->id }}</title>
+    <title>Avisos - Processo {{ $processo->numero_processo ?? $processo->id }}</title>
     <style type="text/css">
         @font-face {
             font-family: 'Aptos';
@@ -114,64 +114,35 @@
 </head>
 
 <body>
+<div>
+    <h4 style="text-align: center;">
+        AVISO DE REPUBLICAÇÃO DE EDITAL
+    </h4>
+    <p style="text-align: justify; text-indent: 30px">
+        A Prefeitura Municipal de
+        <span style="font-weight: bold">
+            {{ $processo->prefeitura->cidade }}
+        </span>, por meio de
+        <span style="font-weight: bold">seu Agente de Contratação</span>,
+        torna público, para conhecimento dos interessados, a
+        <span style="font-weight: bold">
+            REPUBLICAÇÃO do Edital referente ao
+            @if ($processo->modalidade !== \App\Enums\ModalidadeEnum::DISPENSA)
+                {{ $processo->modalidade->getDisplayName() }}
+            @else
+                DISPENSA DE LICITAÇÃO
+            @endif
+            nº {{ $processo->numero_procedimento }},
+        </span>
+        cujo objeto é {!! strip_tags($processo->objeto) !!}.
+        Em virtude das alterações promovidas, fica reaberto o prazo para apresentação
+        das propostas/documentos, nos termos do edital republicado.
+        {{ $processo->prefeitura->cidade }}, [Data].
+    </p>
 
-    {{-- ====================================================================== --}}
-    {{-- BLOCO 1: CAPA DO DOCUMENTO --}}
-    {{-- ====================================================================== --}}
-    <div id="cover-page">
-        <img src="{{ public_path('icons/capa-documento.png') }}" alt="Martelo da Justiça" class="cover-image">
-        <div class="cover-title">
-            MINUTAS
-        </div>
-    </div>
+    <h6 style="text-align: center">[Agente de Contratação]</h6>
 
-    {{-- QUEBRA DE PÁGINA --}}
-    <div class="page-break"></div>
-
-    @php
-    // Verifica se a variável $assinantes existe e tem itens
-    $hasSelectedAssinantes = isset($assinantes) && count($assinantes) > 0;
-    $primeiroAssinante = $hasSelectedAssinantes ? $assinantes[0] : null;
-    @endphp
-
-    <div id="minutas" style="margin-top: 200px">
-        <h1 style="font-size: 16pt; text-align:center;margin-bottom: 30px">
-            {{ $primeiroAssinante ? $primeiroAssinante['unidade_nome'] : 'Unidade não informada' }}
-        </h1>
-
-        <p style="text-align: justify;">
-            Considerando a necessidade de {!! strip_tags($processo->objeto) !!}, segue em anexo Minuta de
-            Edital e Minuta do Contrato desenvolvido por este departamento.
-        </p>
-
-        <p>
-            Base Legal: 14.133 e legislação complementar.
-        </p>
-
-        @if ($hasSelectedAssinantes)
-        <div style="margin-top: 40px; text-align: center;">
-            <div class="signature-block" style="display: inline-block; margin: 0 40px;">
-                ___________________________________<br>
-                <p style="line-height: 1.2;">
-                    {{ $primeiroAssinante['responsavel'] }} <br>
-                    <span>{{ $primeiroAssinante['unidade_nome'] }}</span>
-                </p>
-            </div>
-        </div>
-        @else
-        <div class="signature-block" style="margin-top: 40px; text-align: center;">
-            ___________________________________<br>
-            <p style="line-height: 1.2;">
-                {{ $processo->prefeitura->autoridade_competente }} <br>
-                <span style="color: red;">[Cargo/Título Padrão - A ser ajustado]</span>
-            </p>
-        </div>
-        @endif
-
-        <p>
-            Encaminhe-se à PROCURADORIA DO MUNICÍPIO para a ELABORAÇÃO DE PARECER JURÍDICO.
-        </p>
-    </div>
+</div>
 
 </body>
 

@@ -16,6 +16,7 @@ class ProcessoDetalhe extends Model
     protected $fillable = [
         'processo_id',
         'secretaria',
+        'data_publicacao',
         'unidade_setor',
         'servidor_responsavel',
         'demanda',
@@ -88,6 +89,7 @@ class ProcessoDetalhe extends Model
     ];
 
     protected $casts = [
+        'data_publicacao' => 'date',
         'data_hora' => 'datetime',
         'data_hora_limite_edital' => 'datetime',
         'data_hora_fase_edital' => 'datetime',

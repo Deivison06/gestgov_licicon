@@ -525,7 +525,7 @@
 
         <p style="text-align: justify;">
             10.1 Os recursos destinados à cobertura das despesas referentes ao objeto licitado no
-            exercício de 2023, são provenientes da seguinte dotação orçamentária:
+            exercício de {{ now()->year }}, são provenientes da seguinte dotação orçamentária:
         </p>
         <table style="border-collapse: collapse; width: 100%; border: 1px solid black;">
             <tr>
@@ -833,7 +833,7 @@
                     CONTRATANTE:
                 </td>
                 <td style="padding:6px;">
-                    <span>{{ $primeiroAssinante['unidade_nome'] }}
+                    <span>{{ $processo->prefeitura->nome }}</span>
                 </td>
             </tr>
 

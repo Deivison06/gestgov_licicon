@@ -3,9 +3,9 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Minutas - Processo {{ $processo->numero_processo ?? $processo->id }}</title>
+    <title>Avisos - Processo {{ $processo->numero_processo ?? $processo->id }}</title>
     <style type="text/css">
-         @font-face {
+        @font-face {
             font-family: 'Aptos';
             src: url('{{ public_path('storage/fonts/Aptos.ttf') }}') format('truetype');
             font-style: normal;
@@ -109,23 +109,41 @@
             display: block;
             /* Garante que o strong ocupe a largura total */
         }
+
     </style>
 </head>
 
 <body>
+<div>
+    <h4 style="text-align: center;">
+        AVISO DE REPUBLICAÇÃO DE EDITAL
+    </h4>
+    <p style="text-align: justify; text-indent: 30px">
+        A Prefeitura Municipal de
+        <span style="font-weight: bold">
+            {{ $processo->prefeitura->cidade }}
+        </span>, por meio de
+        <span style="font-weight: bold">seu Agente de Contratação</span>,
+        torna público, para conhecimento dos interessados, a
+        <span style="font-weight: bold">
+            REPUBLICAÇÃO do Edital referente ao
+            @if ($processo->modalidade !== \App\Enums\ModalidadeEnum::DISPENSA)
+                {{ $processo->modalidade->getDisplayName() }}
+            @else
+                DISPENSA DE LICITAÇÃO
+            @endif
+            nº {{ $processo->numero_procedimento }},
+        </span>
+        cujo objeto é {!! strip_tags($processo->objeto) !!}.
+        Em virtude das alterações promovidas, fica reaberto o prazo para apresentação
+        das propostas/documentos, nos termos do edital republicado.
+        {{ $processo->prefeitura->cidade }}, [Data].
+    </p>
 
-    {{-- ====================================================================== --}}
-    {{-- BLOCO 1: CAPA DO DOCUMENTO --}}
-    {{-- ====================================================================== --}}
-    <div id="cover-page">
-        <img src="{{ public_path('icons/capa-documento.png') }}" alt="Martelo da Justiça" class="cover-image">
-        <div class="cover-title">
-            PUBLICAÇÕES DOS AVISOS DE LICITAÇÃO
-        </div>
-    </div>
 
-    {{-- QUEBRA DE PÁGINA
-    <div class="page-break"></div> --}}
+    <h6 style="text-align: center">[Agente de Contratação]</h6>
+
+</div>
 
 </body>
 

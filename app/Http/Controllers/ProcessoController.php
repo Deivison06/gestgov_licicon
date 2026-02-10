@@ -3,197 +3,89 @@
 namespace App\Http\Controllers;
 
 use App\Models\Processo;
-use App\Models\Documento;
 use App\Models\Prefeitura;
-use Illuminate\Http\Request;
-use App\Enums\ModalidadeEnum;
-use setasign\Fpdi\Tcpdf\Fpdi;
-use App\Models\ProcessoDetalhe;
-use Barryvdh\DomPDF\Facade\Pdf;
-use App\Services\ProcessoService;
-use App\Enums\TipoProcedimentoEnum;
-use Illuminate\Support\Facades\Log;
+use App\Models\Documento;
 use App\Http\Requests\ProcessoRequest;
-use PhpOffice\PhpSpreadsheet\IOFactory;
+use App\Services\ProcessoService;
+use App\Services\ProcessoPdfService;
+use App\Services\ProcessoDocumentoService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Enums\ProcessoStatusEnum;
+use Carbon\Carbon;
 
 class ProcessoController extends Controller
 {
-    protected $service;
+    protected ProcessoService $processoService;
+    protected ProcessoPdfService $pdfService;
+    protected ProcessoDocumentoService $documentoService;
 
-    // Documentos configuration
-    protected $documentos = [
-        'capa' => [
-            'titulo' => 'Capa do documento',
-            'cor' => '#EF4444', // red-500
-            'data_id' => 'data_capa',
-            'campos' => [''],
-        ],
-        'formalizacao' => [
-            'titulo' => 'DOCUMENTO DE FORMALIZAÇÃO DE DEMANDA',
-            'cor' => '#3B82F6', // blue-500
-            'data_id' => 'data_formalizacao',
-            'campos' => [
-                'secretaria',
-                'justificativa',
-                'prazo_entrega',
-                'local_entrega',
-                'contratacoes_anteriores',
-                'instrumento_vinculativo',
-                'prazo_vigencia',
-                'objeto_continuado',
-                'descricao_necessidade_autorizacao',
-                'descricao_e_quantitativos_itens_xml',
-                'responsavel_equipe_planejamento',
-            ],
-        ],
-        'estudo_tecnico' => [
-            'titulo' => 'INSTRUMENTOS DE PLANEJAMENTO ETP E MAPA DE RISCOS',
-            'cor' => '#A855F7', // purple-500
-            'data_id' => 'data_estudo_tecnico',
-            'campos' => [
-                'problema_resolvido',
-                'descricao_necessidade',
-                'inversao_fase',
-                'solucoes_disponivel_mercado',
-                'incluir_requisito_cada_caso_concreto',
-                'solucao_escolhida',
-                'justificativa_solucao_escolhida',
-                'resultado_pretendidos',
-                'impacto_ambiental',
-                'riscos_extra',
-                'tipo_srp',
-                'prevista_plano_anual',
-                'encaminhamento_elaborar_editais',
-                'encaminhamento_elaborar_projeto_basico',
-                'encaminhamento_pesquisa_preco',
-                'encaminhamento_doacao_orcamentaria',
-                'itens_e_seus_quantitativos_xml',
-            ],
-        ],
-        'projeto_basico' => [
-            'titulo' => 'PROJETO BÁSICO',
-            'cor' => '#22C55E', // green-500
-            'data_id' => 'data_projeto_basico',
-            'campos' => ['projeto_basico_pdf'],
-        ],
-        'analise_mercado' => [
-            'titulo' => 'ANÁLISE DE MERCADO (PESQUISA DE PREÇOS)',
-            'cor' => '#22C55E', // green-500
-            'data_id' => 'data_analise_mercado',
-            'campos' => ['painel_preco_tce', 'anexo_pdf_analise_mercado'],
-        ],
-        'disponibilidade_orçamento' => [
-            'titulo' => 'DISPONIBILIDADE ORÇAMENTÁRIA',
-            'cor' => '#EAB308', // yellow-500
-            'data_id' => 'data_disponibilidade_orçamento',
-            'campos' => [
-                'valor_estimado',
-                'dotacao_orcamentaria',
-            ],
-        ],
-        'termo_referencia' => [
-            'titulo' => 'TERMO DE REFERÊNCIA',
-            'cor' => '#F97316', // orange-500
-            'data_id' => 'data_termo_referencia',
-            'campos' => [
-                'encaminhamento_parecer_juridico',
-                'encaminhamento_autorizacao_abertura',
-                'itens_especificaca_quantitativos_xml',
-                'info_extras'
-            ],
-        ],
-        'minutas' => [
-            'titulo' => 'MINUTAS',
-            'cor' => '#EC4899', // pink-500
-            'data_id' => 'data_minutas',
-            'campos' => ['anexar_minuta'],
-        ],
-        'parecer_juridico' => [
-            'titulo' => 'PARECER JURÍDICO',
-            'cor' => '#10B981', // emerald-500
-            'data_id' => 'data_parecer_juridico',
-            'campos' => [''],
-        ],
-        'autorizacao_abertura_procedimento' => [
-            'titulo' => 'AUTORIZAÇÃO ABERTURA PROCEDIMENTO LICITATÓRIO',
-            'cor' => '#14B8A6', // teal-500
-            'data_id' => 'data_autorizacao_abertura_procedimento',
-            'campos' => ['tratamento_diferenciado_MEs_eEPPs', 'agente_contratacao'],
-        ],
-        'abertura_fase_externa' => [
-            'titulo' => 'ABERTURA FASE EXTERNA',
-            'cor' => '#06B6D4', // cyan-500
-            'data_id' => 'data_abertura_fase_externa',
-            'campos' => [''],
-        ],
-        'avisos_licitacao' => [
-            'titulo' => 'AVISOS DE LICITAÇÃO',
-            'cor' => '#6366F1', // indigo-500
-            'data_id' => 'data_avisos_licitacao',
-            'campos' => ['data_hora', 'portal'],
-        ],
-        'edital' => [
-            'titulo' => 'EDITAL',
-            'cor' => '#6366F1', // indigo-500
-            'data_id' => 'data_edital',
-            'campos' => [
-                'exige_atestado',
-                'data_hora_limite_edital',
-                'data_hora_fase_edital',
-                'pregoeiro',
-                'intervalo_lances',
-                'exigencia_garantia_proposta',
-                'exigencia_garantia_contrato',
-                'participacao_exclusiva_mei_epp',
-                'reserva_cotas_mei_epp',
-                'prioridade_contratacao_mei_epp',
-                'regularidade_fisica',
-                'qualificacao_economica',
-                'exigencias_tecnicas',
-                'anexo_pdf_minuta_contrato',
-                'numero_items',
-            ],
-        ],
-        'publicacoes_avisos_licitacao' => [
-            'titulo' => 'PUBLICAÇÕES',
-            'cor' => '#6366F1', // indigo-500
-            'data_id' => 'data_publicacoes_avisos_licitacao',
-            'campos' => ['anexo_pdf_publicacoes'],
-        ],
-    ];
-
-    // Mapeamento de anexos
-    protected $mapeamentoAnexos = [
-        'analise_mercado' => 'anexo_pdf_analise_mercado',
-        'minutas' => 'anexar_minuta',
-        'publicacoes_avisos_licitacao' => 'anexo_pdf_publicacoes',
-        'edital' => ['anexo_pdf_minuta_contrato'],
-        'projeto_basico' => 'projeto_basico_pdf',
-    ];
-
-    public function __construct(ProcessoService $service)
-    {
-        $this->service = $service;
+    public function __construct(
+        ProcessoService $processoService,
+        ProcessoPdfService $pdfService,
+        ProcessoDocumentoService $documentoService
+    ) {
+        $this->processoService = $processoService;
+        $this->pdfService = $pdfService;
+        $this->documentoService = $documentoService;
     }
 
-    // =========================================================
-    // MÉTODOS CRUD PRINCIPAIS
-    // =========================================================
-
-    public function index()
+    // No controlador
+    public function index(Request $request)
     {
         $prefeituras = Prefeitura::withCount('processos')->get();
-        $query = Processo::with('prefeitura');
+        $query = Processo::with(['prefeitura', 'detalhe', 'user']);
 
-        if (request('prefeitura_id')) {
-            $query->where('prefeitura_id', request('prefeitura_id'));
+        // Filtro por prefeitura
+        if ($request->prefeitura_id) {
+            $query->where('prefeitura_id', $request->prefeitura_id);
         }
+
+        // Filtro por pesquisa livre
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('objeto', 'like', "%{$search}%")
+                    ->orWhere('numero_processo', 'like', "%{$search}%")
+                    ->orWhere('numero_procedimento', 'like', "%{$search}%")
+                    ->orWhereHas('prefeitura', function($q2) use ($search) {
+                        $q2->where('nome', 'like', "%{$search}%")
+                            ->orWhere('cidade', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('user', function($q3) use ($search) {
+                        $q3->where('name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        // Filtro por modalidade (opcional)
+        if ($request->filled('modalidade')) {
+            $query->where('modalidade', $request->modalidade);
+        }
+
+        // Filtro por status (opcional) - Se não especificar, mostra apenas não finalizados
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        } else {
+            // Por padrão, mostrar apenas processos que NÃO estão finalizados
+            $query->where('status', '!=', ProcessoStatusEnum::FINALIZADO->value);
+        }
+
+        // Ordenar do mais recente para o mais antigo
+        $query->orderBy('created_at', 'desc');
 
         $processos = $query->paginate(10)->withQueryString();
 
+        // Debug: verifique os status dos processos
+        foreach ($processos as $processo) {
+            if (!$processo->status instanceof ProcessoStatusEnum) {
+                $processo->status = ProcessoStatusEnum::tryFrom($processo->status) ?? ProcessoStatusEnum::RASCUNHO;
+            }
+        }
+
         return view('Admin.Processos.index', compact('processos', 'prefeituras'));
     }
-
     public function create()
     {
         $prefeituras = Prefeitura::with('unidades')->get();
@@ -202,8 +94,15 @@ class ProcessoController extends Controller
 
     public function store(ProcessoRequest $request)
     {
-        $this->service->create($request->validated());
-        return redirect()->route('admin.processos.index')->with('success', 'Processo criado com sucesso.');
+        $dados = $request->validated();
+        $dados['user_id'] = auth()->id();
+        $dados['status'] = ProcessoStatusEnum::RASCUNHO;
+
+        $processo = $this->processoService->create($dados);
+
+        return redirect()
+            ->route('admin.processos.iniciar', $processo->id)
+            ->with('success', 'Processo criado com sucesso.');
     }
 
     public function edit(Processo $processo)
@@ -214,274 +113,120 @@ class ProcessoController extends Controller
 
     public function update(ProcessoRequest $request, Processo $processo)
     {
-        $this->service->update($processo, $request->validated());
+        $this->processoService->update($processo, $request->validated());
         return redirect()->route('admin.processos.index')->with('success', 'Processo atualizado com sucesso.');
     }
 
     public function destroy(Processo $processo)
     {
-        $this->service->delete($processo);
+        $this->processoService->delete($processo);
         return redirect()->route('admin.processos.index')->with('success', 'Processo removido com sucesso.');
     }
 
-    // =========================================================
-    // MÉTODOS DE INICIALIZAÇÃO DO PROCESSO
-    // =========================================================
+    public function updateStatus(Request $request, Processo $processo)
+    {
+        $request->validate([
+            'status' => 'required|string|in:' . implode(',', ProcessoStatusEnum::values()),
+        ]);
+
+        try {
+            $novoStatus = ProcessoStatusEnum::tryFrom($request->status);
+
+            if (!$novoStatus) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Status inválido.'
+                ], 400);
+            }
+
+            $processo->update([
+                'status' => $novoStatus
+            ]);
+
+            // Se for cancelado, pode adicionar data de cancelamento
+            if ($novoStatus === ProcessoStatusEnum::CANCELADO && !$processo->data_cancelamento) {
+                $processo->update([
+                    'data_cancelamento' => now()
+                ]);
+            }
+
+            // Se for adiado, pode adicionar data de adiamento
+            if ($novoStatus === ProcessoStatusEnum::ADIADO && !$processo->data_adiamento) {
+                $processo->update([
+                    'data_adiamento' => now()
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Status atualizado com sucesso!',
+                'data' => [
+                    'status' => $processo->status->value,
+                    'status_label' => $processo->status->label(),
+                    'status_color' => $processo->status->color()
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao atualizar status: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 
     public function iniciar(Processo $processo)
     {
-        $processo->load('prefeitura.unidades');
-        $documentos = $this->getDocumentosPorModalidade($processo);
+        $processo->load('prefeitura.unidades', 'user');
+        $processo->loadMissing('documentos');
+
+        // Garantir que o status seja uma instância do Enum
+        if (!$processo->status instanceof ProcessoStatusEnum) {
+            $processo->status = ProcessoStatusEnum::tryFrom($processo->status) ?? ProcessoStatusEnum::RASCUNHO;
+        }
+
+        $documentos = $this->documentoService->getDocumentosPorModalidade($processo);
+
         return view('Admin.Processos.iniciar', compact('processo', 'documentos'));
-    }
-
-    // =========================================================
-    // MÉTODOS PARA ORDEM DE DOCUMENTOS POR MODALIDADE
-    // =========================================================
-
-    private function getDocumentosPorModalidade(Processo $processo): array
-    {
-        $ordemDocumentos = $this->getOrdemDocumentosParaView($processo);
-        $documentosOrdenados = [];
-
-        foreach ($ordemDocumentos as $tipo) {
-            if (!isset($this->documentos[$tipo])) {
-                continue;
-            }
-
-            $documentosOrdenados[$tipo] = $this->documentos[$tipo];
-
-            // Filtra campos de formalização conforme modalidade e tipo de procedimento
-            if ($tipo === 'formalizacao') {
-                $documentosOrdenados[$tipo]['campos'] = array_filter(
-                    $documentosOrdenados[$tipo]['campos'],
-                    function ($campo) use ($processo) {
-                        // Remove campo de necessidade de autorização em qualquer dispensa
-                        if ($processo->modalidade === ModalidadeEnum::DISPENSA && 
-                            $campo === 'descricao_necessidade_autorizacao') {
-                            return false;
-                        }
-
-                        // Remove campo de itens XML quando for dispensa obra
-                        if ($processo->modalidade === ModalidadeEnum::DISPENSA &&
-                            $processo->tipo_procedimento === TipoProcedimentoEnum::OBRA &&
-                            $campo === 'descricao_e_quantitativos_itens_xml') {
-                            return false;
-                        }
-
-                        return true;
-                    }
-                );
-
-                // Adiciona campos extras conforme modalidade e tipo
-                if ($processo->modalidade === ModalidadeEnum::DISPENSA) {
-                    if ($processo->tipo_procedimento === TipoProcedimentoEnum::OBRA) {
-                        $documentosOrdenados[$tipo]['campos'][] = 'encaminhamento_elaborar_projeto_basico';
-                        $documentosOrdenados[$tipo]['campos'][] = 'encaminhamento_doacao_orcamentaria';
-                    } else {
-                        $documentosOrdenados[$tipo]['campos'][] = 'encaminhamento_pesquisa_preco';
-                        $documentosOrdenados[$tipo]['campos'][] = 'encaminhamento_doacao_orcamentaria';
-                    }
-                }
-            }
-
-            // DISPONIBILIDADE ORÇAMENTÁRIA
-            if ($tipo === 'disponibilidade_orçamento') {
-                if ($processo->modalidade === ModalidadeEnum::DISPENSA) {
-                    $documentosOrdenados[$tipo]['campos'][] = 'tipo_srp';
-                }
-            }
-
-            // ESTUDO TÉCNICO
-            if ($tipo === 'estudo_tecnico' && $processo->modalidade === ModalidadeEnum::DISPENSA) {
-                $documentosOrdenados[$tipo]['campos'] = array_filter(
-                    $documentosOrdenados[$tipo]['campos'],
-                    fn($campo) => !in_array($campo, [
-                        'encaminhamento_pesquisa_preco',
-                        'encaminhamento_doacao_orcamentaria'
-                    ])
-                );
-            }
-        }
-
-        return $documentosOrdenados;
-    }
-
-    /**
-     * Retorna a ordem de documentos para visualização na view
-     */
-    private function getOrdemDocumentosParaView(Processo $processo): array
-    {
-        // 📌 DISPENSA DE COMPRAS E SERVIÇOS (10 documentos)
-        if ($processo->modalidade === ModalidadeEnum::DISPENSA) {
-            if ($processo->tipo_procedimento === TipoProcedimentoEnum::OBRA) {
-                return [
-                    'capa',                              // 1. Capa do Processo
-                    'formalizacao',                     // 2. Documento de Formalização da Demanda
-                    'projeto_basico',                   // 3. Projeto Básico (ESPECÍFICO PARA OBRAS)
-                    'disponibilidade_orçamento',        // 4. Dotação Orçamentária
-                    'autorizacao_abertura_procedimento', // 5. Autorização de Abertura do Procedimento Licitatório
-                    'abertura_fase_externa',            // 6. Abertura da Fase Externa
-                    'avisos_licitacao',                 // 7. Aviso de Dispensa (Avisos de Licitação)
-                    'edital',                           // 8. Edital
-                    'publicacoes_avisos_licitacao',     // 9. Publicações
-                ];
-            }
-            return [
-                'capa',                              // 1. Capa do Processo
-                'formalizacao',                     // 2. Documento de Formalização da Demanda
-                'analise_mercado',                  // 3. Pesquisa de Preços
-                'disponibilidade_orçamento',        // 4. Dotação Orçamentária
-                'termo_referencia',                 // 5. Termo de Referência
-                'autorizacao_abertura_procedimento', // 6. Autorização de Abertura do Procedimento Licitatório
-                'abertura_fase_externa',            // 7. Abertura da Fase Externa
-                'avisos_licitacao',                 // 8. Aviso de Dispensa (Avisos de Licitação)
-                'edital',                           // 9. Edital
-                'publicacoes_avisos_licitacao',     // 10. Publicações
-            ];
-        }
-        
-        // 📌 PREGÃO ELETRÔNICO (13 documentos)
-        if ($processo->modalidade === ModalidadeEnum::PREGAO_ELETRONICO) {
-            return [
-                'capa',                              // 1. Capa do Processo
-                'formalizacao',                     // 2. Documento de Formalização da Demanda
-                'estudo_tecnico',                   // 3. Instrumentos de Planejamento (ETP e Mapa de Riscos)
-                'analise_mercado',                  // 4. Pesquisa de Preços
-                'disponibilidade_orçamento',        // 5. Dotação Orçamentária
-                'termo_referencia',                 // 6. Termo de Referência
-                'minutas',                          // 7. Minutas
-                'parecer_juridico',                 // 8. Parecer Jurídico
-                'autorizacao_abertura_procedimento', // 9. Autorização de Abertura do Procedimento Licitatório
-                'abertura_fase_externa',            // 10. Abertura da Fase Externa
-                'avisos_licitacao',                 // 11. Avisos de Licitação
-                'edital',                           // 12. Edital
-                'publicacoes_avisos_licitacao',     // 13. Publicações
-            ];
-        }
-        
-        // 📌 CONCORRÊNCIA (12 documentos)
-        if ($processo->modalidade === ModalidadeEnum::CONCORRENCIA) {
-            return [
-                'capa',                              // 1. Capa do Processo
-                'formalizacao',                     // 2. Documento de Formalização da Demanda
-                'estudo_tecnico',                   // 3. Instrumentos de Planejamento (ETP e Mapa de Riscos)
-                'projeto_basico',                   // 4. Projeto Básico
-                'disponibilidade_orçamento',        // 5. Disponibilidade Orçamentária
-                'minutas',                          // 6. Minutas
-                'parecer_juridico',                 // 7. Parecer Jurídico
-                'autorizacao_abertura_procedimento', // 8. Autorização de Abertura do Procedimento Licitatório
-                'abertura_fase_externa',            // 9. Abertura da Fase Externa
-                'avisos_licitacao',                 // 10. Avisos de Licitação
-                'edital',                           // 11. Edital
-                'publicacoes_avisos_licitacao',     // 12. Publicações
-            ];
-        }
-        
-        // 📌 OUTRAS MODALIDADES (ordem padrão - 15 documentos)
-        return [
-            'capa',
-            'formalizacao',
-            'estudo_tecnico',
-            'projeto_basico',
-            'analise_mercado',
-            'disponibilidade_orçamento',
-            'termo_referencia',
-            'minutas',
-            'parecer_juridico',
-            'autorizacao_abertura_procedimento',
-            'abertura_fase_externa',
-            'avisos_licitacao',
-            'publicacoes_avisos_licitacao',
-            'edital'
-        ];
-    }
-
-    /**
-     * Retorna a ordem de documentos para download (mesma ordem da view)
-     */
-    private function getOrdemDocumentosParaDownload(Processo $processo): array
-    {
-        return $this->getOrdemDocumentosParaView($processo);
     }
 
     public function storeDetalhe(Request $request, Processo $processo)
     {
         try {
-            $detalhe = $processo->detalhe ?? new ProcessoDetalhe();
-            $detalhe->processo_id = $processo->id;
-
-            // Processa arquivos
-            $this->processarArquivos($request, $detalhe);
-
-            // Salva outros campos
-            $dataToSave = $request->except($this->getExcludedFields());
-            foreach ($dataToSave as $field => $value) {
-                $detalhe->{$field} = $value;
-            }
-
-            $detalhe->save();
+            $detalhe = $this->processoService->salvarDetalhe($processo, $request->all());
 
             return response()->json([
                 'success' => true,
                 'data' => $detalhe->toArray()
             ]);
         } catch (\Exception $e) {
-            Log::error('Erro ao salvar detalhe do processo', [
+            \Log::error('Erro ao salvar detalhe do processo', [
                 'processo_id' => $processo->id,
-                'erro' => $e->getMessage()
+                'erro' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Erro ao salvar os dados.'
+                'message' => 'Erro ao salvar os dados: ' . $e->getMessage()
             ], 500);
         }
     }
 
-    // =========================================================
-    // MÉTODOS DE GERAÇÃO E DOWNLOAD DE PDF
-    // =========================================================
-
     public function gerarPdf(Request $request, Processo $processo)
     {
         try {
-            Log::info('Iniciando geração de PDF', [
-                'processo_id' => $processo->id,
-                'documento' => $request->query('documento'),
-                'request_data' => $request->all()
-            ]);
-
-            $validatedData = $this->validarRequisicaoPdf($request, $processo);
-            $data = $this->prepararDadosPdf($processo, $validatedData);
-            $view = $this->determinarViewPdf($processo, $validatedData['documento']);
-
-            Log::info('View selecionada para PDF', ['view' => $view]);
-
-            $pdf = Pdf::loadView($view, $data)->setPaper('a4', 'portrait');
-
-            $caminhoCompleto = $this->salvarDocumento($processo, $pdf, $validatedData);
-
-            $this->processarAnexos($processo, $validatedData['documento'], $caminhoCompleto);
-
-            Log::info('PDF gerado com sucesso', [
-                'processo_id' => $processo->id,
-                'documento' => $validatedData['documento'],
-                'caminho' => $caminhoCompleto
-            ]);
+            $resultado = $this->pdfService->gerarPdf($processo, $request->all());
 
             return response()->json([
                 'success' => true,
                 'message' => '✅ PDF gerado com sucesso! Clique em "Download" para visualizar o arquivo.',
-                'documento' => $validatedData['documento']
+                'documento' => $request->query('documento')
             ]);
-        } catch (\Throwable $e) {
-            Log::error('Erro ao gerar PDF', [
+        } catch (\Exception $e) {
+            \Log::error('Erro ao gerar PDF', [
                 'processo_id' => $processo->id,
-                'documento' => $request->query('documento'),
                 'erro' => $e->getMessage(),
-                'linha' => $e->getLine(),
-                'arquivo' => $e->getFile(),
                 'trace' => $e->getTraceAsString()
             ]);
 
@@ -494,6 +239,29 @@ class ProcessoController extends Controller
 
     public function baixarDocumento(Processo $processo, $tipo)
     {
+        // Se for para baixar edital, verifique se existe republicação mais recente
+        if ($tipo === 'edital_republicado') {
+            $republicacaoRecente = Documento::where('processo_id', $processo->id)
+                ->where(function ($q) {
+                    $q->where('tipo_documento', 'republicacao_edital')
+                        ->orWhere('tipo_documento', 'edital_adiado');
+                })
+                ->latest('gerado_em')
+                ->firstOrFail();
+
+            return response()->download(public_path($republicacaoRecente->caminho));
+        }
+
+        // "Edital" (original) deve baixar o documento original, sem trocar pelo mais recente
+        if ($tipo === 'edital') {
+            $documento = Documento::where('processo_id', $processo->id)
+                ->where('tipo_documento', 'edital')
+                ->firstOrFail();
+
+            return response()->download(public_path($documento->caminho));
+        }
+
+        // Caso contrário, baixe o documento pelo tipo informado
         $documento = Documento::where('processo_id', $processo->id)
             ->where('tipo_documento', $tipo)
             ->firstOrFail();
@@ -503,808 +271,621 @@ class ProcessoController extends Controller
 
     public function baixarTodosDocumentos(Processo $processo)
     {
-        $ordem = $this->getOrdemDocumentosParaDownload($processo);
-        $documentos = Documento::where('processo_id', $processo->id)->get()->keyBy('tipo_documento');
+        try {
+            return $this->pdfService->baixarTodosDocumentos($processo);
+        } catch (\Exception $e) {
+            \Log::error('Erro ao baixar todos os documentos', [
+                'processo_id' => $processo->id,
+                'erro' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
 
-        // Usar Ghostscript diretamente - mais confiável e rápido
-        return $this->baixarTodosDocumentosComGhostscript($processo, $ordem, $documentos);
-    }
-
-    private function baixarTodosDocumentosComGhostscript(Processo $processo, array $ordem, $documentos)
-    {
-        // Preparar lista de arquivos na ordem correta
-        $arquivos = [];
-        foreach ($ordem as $tipo) {
-            if (!isset($documentos[$tipo])) continue;
-            $caminho = public_path($documentos[$tipo]->caminho);
-            if (!file_exists($caminho)) continue;
-            $arquivos[] = $caminho;
-        }
-
-        if (empty($arquivos)) {
-            throw new \Exception('Nenhum documento encontrado para mesclar.');
-        }
-
-        $nomeArquivo = "processo_" . str_replace(['/', '\\'], '_', $processo->numero_processo) . "_todos_documentos_" . now()->format('Ymd_His') . '.pdf';
-        $caminhoArquivo = public_path('uploads/documentos/' . $nomeArquivo);
-
-        // Mesclar PDFs usando Ghostscript
-        $sucesso = $this->mesclarPdfsComGhostscript($arquivos, $caminhoArquivo);
-
-        if ($sucesso) {
-            // CONTAR PÁGINAS DO ARQUIVO FINAL E SALVAR NO BANCO
-            $totalPaginas = $this->contarPaginasPdf($caminhoArquivo);
-            $this->salvarTotalPaginas($processo, $totalPaginas);
-
-            // Adicionar carimbo ao PDF mesclado
-            $caminhoCarimbado = $this->adicionarCarimboAoPdfComGhostscript($caminhoArquivo, $processo);
-
-            if ($caminhoCarimbado) {
-                return response()->download($caminhoCarimbado)->deleteFileAfterSend(true);
-            } else {
-                // Se não conseguiu carimbar, retorna o arquivo sem carimbo
-                Log::warning('PDF mesclado com Ghostscript sem carimbo', ['processo_id' => $processo->id]);
-                return response()->download($caminhoArquivo)->deleteFileAfterSend(true);
+            // Verificar se é o erro de instanciação do enum
+            if (str_contains($e->getMessage(), 'Cannot instantiate enum')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro interno do sistema ao processar os documentos. Contate o suporte técnico.'
+                ], 500);
             }
-        } else {
-            throw new \Exception('Erro ao mesclar documentos com Ghostscript');
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao baixar documentos: ' . $e->getMessage()
+            ], 500);
         }
     }
 
-    private function salvarTotalPaginas(Processo $processo, int $totalPaginas): void
+    public function republicarEdital(Request $request, Processo $processo)
     {
         try {
-            // Atualizar o total de páginas no processo
-            $processo->contTotalPage = $totalPaginas;
+            \Log::info('Iniciando republicação de edital', ['processo_id' => $processo->id]);
+
+            $request->validate([
+                'data' => 'nullable|date',
+                'justificativa' => 'nullable|string',
+            ]);
+
+            DB::beginTransaction();
+
+            // Buscar edital existente
+            $editalExistente = $processo->documentos()
+                ->where('tipo_documento', 'edital')
+                ->first();
+
+            if (!$editalExistente) {
+                throw new \Exception('Edital original não encontrado.');
+            }
+
+            // GERAR MINUTA DE REPUBLICAÇÃO (usando a lógica correta)
+            $dataMinuta = [
+                'processo' => $processo,
+                'prefeitura' => $processo->prefeitura,
+                'detalhe' => $processo->detalhe,
+                'dataGeracao' => now()->format('d/m/Y H:i:s'),
+                'dataSelecionada' => $request->input('data', now()->format('Y-m-d')),
+                'titulo' => 'REPUBLICAÇÃO DE EDITAL',
+                'justificativa' => $request->input('justificativa'),
+                'numero_republicacao' => $this->obterNumeroRepublicacao($processo),
+            ];
+
+            // Usar o método do serviço para determinar a view correta
+            $viewMinuta = $this->pdfService->determinarViewRepublicacao($processo);
+
+            \Log::info('Gerando minuta de republicação', [
+                'view' => $viewMinuta,
+                'processo_id' => $processo->id,
+                'modalidade' => $processo->modalidade?->name,
+                'procedimento' => $processo->tipo_procedimento?->name,
+                'contratacao' => $processo->tipo_contratacao?->name
+            ]);
+
+            $pdfMinuta = Pdf::loadView($viewMinuta, $dataMinuta)
+                ->setPaper('a4', 'portrait');
+
+            $caminhoMinuta = storage_path('app/temp_minuta_republicacao_' . uniqid() . '.pdf');
+            $pdfMinuta->save($caminhoMinuta);
+
+            // Caminho para o edital original
+            $caminhoEditalOriginal = public_path($editalExistente->caminho);
+
+            if (!file_exists($caminhoEditalOriginal)) {
+                throw new \Exception('Arquivo do edital original não encontrado.');
+            }
+
+            // Caminho para o arquivo final (minuta + edital original)
+            $numeroProcessoLimpo = str_replace(['/', '\\'], '_', $processo->numero_processo);
+            $subpasta = $this->pdfService->gerarSubpasta($processo, 'republicacao_edital');
+            $diretorio = public_path("uploads/documentos/{$subpasta}");
+
+            if (!file_exists($diretorio)) {
+                mkdir($diretorio, 0777, true);
+            }
+
+            $nomeArquivo = "processo_{$numeroProcessoLimpo}_republicacao_edital_" . now()->format('Ymd_His') . '.pdf';
+            $caminhoRelativo = "uploads/documentos/{$subpasta}/{$nomeArquivo}";
+            $caminhoCompleto = "{$diretorio}/{$nomeArquivo}";
+
+            // Mesclar minuta + edital original
+            $sucesso = $this->pdfService->mesclarPdfsComGhostscript(
+                [$caminhoMinuta, $caminhoEditalOriginal],
+                $caminhoCompleto
+            );
+
+            if (!$sucesso || !file_exists($caminhoCompleto)) {
+                throw new \Exception('Erro ao mesclar minuta com edital original.');
+            }
+
+            // Criar registro do documento de republicação
+            $novoEdital = Documento::create([
+                'processo_id' => $processo->id,
+                'tipo_documento' => 'republicacao_edital',
+                'data_selecionada' => $request->input('data', now()->format('Y-m-d')),
+                'justificativa' => $request->input('justificativa'),
+                'caminho' => $caminhoRelativo,
+                'gerado_em' => now(),
+            ]);
+
+            // Atualizar status do processo
+            $processo->status = ProcessoStatusEnum::REPUBLICADO;
             $processo->save();
 
-            // Atualizar também todos os documentos do processo com o total de páginas
-            Documento::where('processo_id', $processo->id)
-                ->update(['contTotalPage' => $totalPaginas]);
+            // Limpar arquivos temporários
+            if (file_exists($caminhoMinuta)) {
+                unlink($caminhoMinuta);
+            }
 
-            Log::info('Total de páginas salvo no banco', [
+            DB::commit();
+
+            \Log::info('Edital republicado com sucesso', [
                 'processo_id' => $processo->id,
-                'total_paginas' => $totalPaginas
+                'documento_id' => $novoEdital->id,
+                'view_usada' => $viewMinuta
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Edital republicado com sucesso!',
+                'documento_id' => $novoEdital->id,
+                'documento_nome' => $nomeArquivo
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Erro ao salvar total de páginas no banco', [
+            DB::rollBack();
+            \Log::error('Erro ao republicar edital', [
                 'processo_id' => $processo->id,
-                'total_paginas' => $totalPaginas,
-                'erro' => $e->getMessage()
-            ]);
-        }
-    }
-
-    // =========================================================
-    // MÉTODOS PRIVADOS - ARMAZENAMENTO DE DETALHES
-    // =========================================================
-
-    private function processarArquivos(Request $request, ProcessoDetalhe $detalhe): void
-    {
-        $arquivos = [
-            'itens_e_seus_quantitativos_xml' => 'processarArquivoItens',
-            'itens_especificaca_quantitativos_xml' => 'processarArquivoEspecificacao',
-            'descricao_e_quantitativos_itens_xml'=> 'processarArquivoItens',
-            'painel_preco_tce' => 'processarPainelPrecos',
-            'anexo_pdf_analise_mercado' => 'salvarAnexo',
-            'anexar_minuta' => 'salvarAnexo',
-            'anexo_pdf_publicacoes' => 'salvarAnexo',
-            'anexo_pdf_minuta_contrato' => 'salvarAnexo',
-            'projeto_basico_pdf' => 'salvarAnexo'
-        ];
-
-        foreach ($arquivos as $campo => $metodo) {
-            if ($request->hasFile($campo)) {
-                $this->{$metodo}($request->file($campo), $detalhe, $campo);
-            }
-        }
-    }
-
-    private function processarArquivoItens($file, ProcessoDetalhe $detalhe, string $campo): void
-    {
-        $spreadsheet = IOFactory::load($file->getRealPath());
-        $sheet = $spreadsheet->getActiveSheet();
-        $rows = $sheet->toArray();
-
-        $itens = [];
-        foreach ($rows as $index => $row) {
-            if ($index === 0) continue;
-            $itens[] = [
-                'numero'     => $row[0] ?? null,
-                'descricao'  => $row[1] ?? null,
-                'und'        => $row[2] ?? null,
-                'quantidade' => $row[3] ?? null,
-            ];
-        }
-
-        $detalhe->{$campo} = json_encode($itens, JSON_UNESCAPED_UNICODE);
-    }
-
-    private function processarArquivoEspecificacao($file, ProcessoDetalhe $detalhe, string $campo): void
-    {
-        $spreadsheet = IOFactory::load($file->getRealPath());
-        $sheet = $spreadsheet->getActiveSheet();
-        $rows = $sheet->toArray();
-
-        $itens = [];
-        foreach ($rows as $index => $row) {
-            if ($index === 0) continue;
-            $itens[] = [
-                'item'              => $row[0] ?? null,
-                'especificacoes'    => $row[1] ?? null,
-                'unidade'           => $row[2] ?? null,
-                'quantidade'        => $row[3] ?? null,
-                'valor_unitario'    => $this->normalizarValor($row[4] ?? null),
-                'valor_total'       =>$this->normalizarValor($row[5] ?? null),
-            ];
-        }
-
-        $detalhe->{$campo} = json_encode($itens, JSON_UNESCAPED_UNICODE);
-    }
-
-    private function processarPainelPrecos($file, ProcessoDetalhe $detalhe, string $campo): void
-    {
-        $spreadsheet = IOFactory::load($file->getRealPath());
-        $sheet = $spreadsheet->getActiveSheet();
-        $rows = $sheet->toArray();
-
-        $painelPrecos = [];
-        foreach ($rows as $index => $row) {
-            if ($index === 0) continue;
-            $painelPrecos[] = [
-                'item' => $row[0] ?? null,
-                'valor_tce_1' => $row[1] ?? null,
-                'valor_tce_2' => $this->normalizarValor($row[2] ?? null),
-                'valor_tce_3' => $this->normalizarValor($row[3] ?? null),
-                'fornecedor_local' => $this->normalizarValor($row[4] ?? null),
-                'media' => $this->normalizarValor($row[5] ?? null),
-            ];
-        }
-
-        $detalhe->{$campo} = json_encode($painelPrecos, JSON_UNESCAPED_UNICODE);
-    }
-
-    private function normalizarValor($valor)
-    {
-        if (is_null($valor)) return null;
-
-        // Remove espaços e converte para string
-        $valor = trim((string)$valor);
-
-        // Caso venha número puro (ex: 135)
-        if (is_numeric($valor)) {
-            return number_format((float)$valor, 2, ',', '.');
-        }
-
-        // Se vier no formato americano (1,323.20)
-        if (preg_match('/^\d{1,3}(,\d{3})*\.\d{2}$/', $valor)) {
-            $valor = str_replace(',', '', $valor); // remove separador de milhar americano
-            return number_format((float)$valor, 2, ',', '.');
-        }
-
-        // Se vier no formato brasileiro, apenas padroniza
-        if (preg_match('/^\d{1,3}(\.\d{3})*,\d{2}$/', $valor)) {
-            return $valor;
-        }
-
-        // Último caso: troca ponto ↔ vírgula
-        $valor = str_replace(['.', ','], ['#', '.'], $valor);
-        $valor = str_replace('#', ',', $valor);
-
-        return $valor;
-    }
-
-    private function salvarAnexo($file, ProcessoDetalhe $detalhe, string $campo): void
-    {
-        $filename = $campo . '_' . time() . '.' . $file->getClientOriginalExtension();
-        $destinationPath = public_path('uploads/anexos');
-
-        if (!file_exists($destinationPath)) {
-            mkdir($destinationPath, 0777, true);
-        }
-
-        $file->move($destinationPath, $filename);
-        $detalhe->{$campo} = 'uploads/anexos/' . $filename;
-    }
-
-    private function getExcludedFields(): array
-    {
-        return [
-            '_token',
-            'processo_id',
-            'itens_e_seus_quantitativos_xml',
-            'descricao_e_quantitativos_itens_xml',
-            'painel_preco_tce',
-            'anexo_pdf_analise_mercado',
-            'anexar_minuta',
-            'anexo_pdf_publicacoes',
-            'itens_especificaca_quantitativos_xml',
-            'anexo_pdf_minuta_contrato',
-            'projeto_basico_pdf'
-        ];
-    }
-
-    // =========================================================
-    // MÉTODOS PRIVADOS - GERAÇÃO DE PDF
-    // =========================================================
-
-    private function validarRequisicaoPdf(Request $request, Processo $processo): array
-    {
-        $documento = $request->query('documento', 'capa');
-        $dataSelecionada = $request->query('data');
-        $parecerSelecionado = $request->query('parecer');
-
-        if (empty($dataSelecionada)) {
-            throw new \Exception('É necessário selecionar uma data antes de gerar o PDF.');
-        }
-
-        $assinantes = $this->processarAssinantes($request);
-        $this->validarAssinantes($documento, $assinantes);
-
-        return [
-            'documento' => $documento,
-            'dataSelecionada' => $dataSelecionada,
-            'parecerSelecionado' => $parecerSelecionado,
-            'assinantes' => $assinantes
-        ];
-    }
-
-    private function processarAssinantes(Request $request): array
-    {
-        $assinantesJson = $request->query('assinantes');
-
-        if (!$assinantesJson) {
-            return [];
-        }
-
-        $assinantesDecoded = urldecode($assinantesJson);
-        $assinantes = json_decode($assinantesDecoded, true);
-
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            Log::error("Erro ao decodificar JSON de assinantes: " . json_last_error_msg());
-            throw new \Exception('Ocorreu um erro ao processar a lista de assinantes. Tente novamente.');
-        }
-
-        return $assinantes;
-    }
-
-    private function validarAssinantes(string $documento, array $assinantes): void
-    {
-        if ($documento === 'capa') {
-            return;
-        }
-
-        if (empty($assinantes)) {
-            throw new \Exception('É necessário adicionar pelo menos um assinante para este documento.');
-        }
-
-        $documentosComDoisAssinantes = ['estudo_tecnico'];
-
-        if (in_array($documento, $documentosComDoisAssinantes) && count($assinantes) < 2) {
-            throw new \Exception('Este documento requer duas assinaturas obrigatórias (ex.: responsável técnico e jurídico).');
-        }
-    }
-
-    private function prepararDadosPdf(Processo $processo, array $validatedData): array
-    {
-        $processo->load(['detalhe', 'prefeitura']);
-
-        return [
-            'processo' => $processo,
-            'prefeitura' => $processo->prefeitura,
-            'detalhe' => $processo->detalhe,
-            'dataGeracao' => now()->format('d/m/Y H:i:s'),
-            'dataSelecionada' => $validatedData['dataSelecionada'],
-            'assinantes' => $validatedData['assinantes'],
-            'parecer' => $validatedData['parecerSelecionado'],
-        ];
-    }
-
-    private function determinarViewPdf(Processo $processo, string $documento): string
-    {
-        $viewBase = "Admin.Processos.pdf";
-        $procedimento = $this->formatarNomeArquivo($processo->tipo_procedimento?->name ?? '');
-        $contratacao = $this->formatarNomeArquivo($processo->tipo_contratacao?->name ?? '');
-        // PREGÃO ELETRÔNICO
-        if ($processo->modalidade === ModalidadeEnum::PREGAO_ELETRONICO) {
-            $view = "{$viewBase}.pregao_eletronico.{$procedimento}_{$contratacao}.{$documento}";
-        }
-        // DISPENSA
-        elseif ($processo->modalidade === ModalidadeEnum::DISPENSA) {
-            // 🔴 REGRA ESPECIAL: DISPENSA + OBRA
-            if ($processo->tipo_procedimento === TipoProcedimentoEnum::OBRA) {
-                $view = "{$viewBase}.dispensa.{$procedimento}.{$documento}";
-            } 
-            // REGRA PADRÃO
-            else {
-                $view = "{$viewBase}.dispensa.{$procedimento}_{$contratacao}.{$documento}";
-            }
-        }
-
-        // CONCORRÊNCIA
-        elseif ($processo->modalidade === ModalidadeEnum::CONCORRENCIA) {
-            $view = "{$viewBase}.concorrencia.{$documento}";
-        }
-        // OUTRAS MODALIDADES
-        else {
-            $modalidade = $this->formatarNomeArquivo($processo->modalidade?->name ?? '');
-            $view = "{$viewBase}.{$modalidade}.{$documento}";
-        }
-
-        if (!view()->exists($view)) {
-            throw new \Exception("Modelo de PDF não encontrado. View: {$view}");
-        }
-
-        return $view;
-    }
-
-
-    private function salvarDocumento(Processo $processo, $pdf, array $validatedData): string
-    {
-        $numeroProcessoLimpo = str_replace(['/', '\\'], '_', $processo->numero_processo);
-        $subpasta = $this->gerarSubpasta($processo, $validatedData['documento']);
-
-        $diretorio = public_path("uploads/documentos/{$subpasta}");
-        if (!file_exists($diretorio)) {
-            mkdir($diretorio, 0777, true);
-        }
-
-        $nomeArquivo = "processo_{$numeroProcessoLimpo}_{$validatedData['documento']}_" . now()->format('Ymd_His') . '.pdf';
-        $caminhoRelativo = "uploads/documentos/{$subpasta}/{$nomeArquivo}";
-        $caminhoCompleto = "{$diretorio}/{$nomeArquivo}";
-
-        $pdf->save($caminhoCompleto);
-        $this->atualizarRegistroDocumento($processo, $validatedData['documento'], $validatedData['dataSelecionada'], $caminhoRelativo);
-
-        return $caminhoCompleto;
-    }
-
-    private function gerarSubpasta(Processo $processo, string $documento): string
-    {
-        // DISPENSA
-        if ($processo->modalidade === ModalidadeEnum::DISPENSA) {
-            $procedimento = $this->formatarNomeArquivo($processo->tipo_procedimento?->name ?? '');
-            $contratacao = $this->formatarNomeArquivo($processo->tipo_contratacao?->name ?? '');
-
-            return "dispensa/{$procedimento}_{$contratacao}/{$documento}";
-        }
-        
-        // PREGÃO ELETRÔNICO
-        if ($processo->modalidade === ModalidadeEnum::PREGAO_ELETRONICO) {
-            $procedimento = $this->formatarNomeArquivo($processo->tipo_procedimento?->name ?? '');
-            $contratacao = $this->formatarNomeArquivo($processo->tipo_contratacao?->name ?? '');
-
-            return "pregao_eletronico/{$procedimento}_{$contratacao}/{$documento}";
-        }
-        
-        // CONCORRÊNCIA
-        if ($processo->modalidade === ModalidadeEnum::CONCORRENCIA) {
-            $procedimento = $this->formatarNomeArquivo($processo->tipo_procedimento?->name ?? '');
-            $contratacao = $this->formatarNomeArquivo($processo->tipo_contratacao?->name ?? '');
-
-            return "concorrencia/{$procedimento}_{$contratacao}/{$documento}";
-        }
-
-        // OUTRAS MODALIDADES
-        $modalidade = $this->formatarNomeArquivo($processo->modalidade?->name ?? 'sem_modalidade');
-        return "{$modalidade}/{$documento}";
-    }
-
-    private function atualizarRegistroDocumento(Processo $processo, string $documento, string $dataSelecionada, string $caminhoRelativo): void
-    {
-        $documentoExistente = Documento::where('processo_id', $processo->id)
-            ->where('tipo_documento', $documento)
-            ->first();
-
-        if ($documentoExistente) {
-            $caminhoAntigo = public_path($documentoExistente->caminho);
-            if (file_exists($caminhoAntigo)) {
-                unlink($caminhoAntigo);
-            }
-
-            $documentoExistente->update([
-                'data_selecionada' => $dataSelecionada,
-                'caminho' => $caminhoRelativo,
-                'gerado_em' => now(),
-            ]);
-        } else {
-            Documento::create([
-                'processo_id' => $processo->id,
-                'tipo_documento' => $documento,
-                'data_selecionada' => $dataSelecionada,
-                'caminho' => $caminhoRelativo,
-                'gerado_em' => now(),
-            ]);
-        }
-    }
-
-    private function processarAnexos(Processo $processo, string $documento, string $caminhoPrincipal): void
-    {
-        Log::info("Iniciando processamento de anexos para: {$documento}", [
-            'caminho_principal' => $caminhoPrincipal,
-            'tamanho_inicial' => file_exists($caminhoPrincipal) ? filesize($caminhoPrincipal) : 0
-        ]);
-
-        // Primeiro processa as junções específicas (como termo de referência)
-        if ($documento === 'edital') {
-            Log::info("Processando junção de termo/projeto básico para edital");
-            $this->juntarTermoReferenciaOuProjetoBasico($processo, $caminhoPrincipal);
-
-            // Verificar tamanho após junção
-            if (file_exists($caminhoPrincipal)) {
-                Log::info("Tamanho após junção termo/projeto: " . filesize($caminhoPrincipal));
-            }
-        }
-
-        // Depois processa os anexos regulares
-        $anexos = $this->obterAnexos($processo, $documento);
-
-        if (!empty($anexos)) {
-            Log::info("Processando anexos regulares para documento: {$documento}", [
-                'pdf_base' => $caminhoPrincipal,
-                'anexos' => $anexos,
-                'tamanho_base' => file_exists($caminhoPrincipal) ? filesize($caminhoPrincipal) : 0
+                'erro' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
 
-            $resultado = $this->juntarPdfsComGhostscript($caminhoPrincipal, $anexos);
-
-            if ($resultado) {
-                Log::info("Anexos regulares processados com sucesso", [
-                    'documento' => $documento,
-                    'arquivo_final' => $resultado,
-                    'tamanho_final' => filesize($resultado)
-                ]);
-            } else {
-                Log::error("Falha ao processar anexos regulares", [
-                    'documento' => $documento,
-                    'pdf_base' => $caminhoPrincipal
-                ]);
-            }
-        }
-
-        // Processamento específico para SRP - DEVE SER O ÚLTIMO
-        if ($documento === 'edital' && $processo->detalhe && $processo->detalhe->tipo_srp === 'sim') {
-            Log::info("Processando ATA de Registro de Preço para SRP");
-
-            // Verificar tamanho antes de adicionar ATA
-            if (file_exists($caminhoPrincipal)) {
-                Log::info("Tamanho antes da ATA: " . filesize($caminhoPrincipal));
-            }
-
-            $this->gerarEJuntarAtaRegistroPreco($processo, $caminhoPrincipal);
-
-            // Verificar tamanho final
-            if (file_exists($caminhoPrincipal)) {
-                Log::info("Tamanho final após ATA: " . filesize($caminhoPrincipal));
-            }
-        }
-
-        Log::info("Processamento de anexos concluído para: {$documento}");
-    }
-
-    private function juntarTermoReferenciaOuProjetoBasico(Processo $processo, string $caminhoEdital): void
-    {
-        /*
-        * REGRAS:
-        * - Concorrência -> Projeto Básico
-        * - Dispensa por Obra -> Projeto Básico
-        * - Demais casos -> Termo de Referência
-        */
-        $tipoDocumento =
-            $processo->modalidade === ModalidadeEnum::CONCORRENCIA
-            || (
-                $processo->modalidade === ModalidadeEnum::DISPENSA
-                && $processo->tipo_procedimento === TipoProcedimentoEnum::OBRA
-            )
-                ? 'projeto_basico'
-                : 'termo_referencia';
-
-        $documento = Documento::where('processo_id', $processo->id)
-            ->where('tipo_documento', $tipoDocumento)
-            ->first();
-
-        if ($documento && file_exists(public_path($documento->caminho))) {
-            $caminhoDocumento = public_path($documento->caminho);
-
-            Log::info("Juntando {$tipoDocumento} com edital", [
-                'edital' => $caminhoEdital,
-                'documento' => $caminhoDocumento,
-                'tamanho_edital' => filesize($caminhoEdital),
-                'tamanho_documento' => filesize($caminhoDocumento)
-            ]);
-
-            $sucesso = $this->juntarPdfsComGhostscript($caminhoEdital, [$caminhoDocumento]);
-
-            if ($sucesso) {
-                Log::info("{$tipoDocumento} juntado com sucesso ao edital", [
-                    'caminho_final' => $caminhoEdital,
-                    'tamanho_final' => filesize($caminhoEdital)
-                ]);
-            } else {
-                Log::error('Falha ao juntar termo de referência/projeto básico com edital', [
-                    'edital' => $caminhoEdital,
-                    'documento' => $caminhoDocumento
-                ]);
-            }
-        } else {
-            Log::warning("Documento {$tipoDocumento} não encontrado para junção com edital", [
-                'processo_id' => $processo->id,
-                'tipo_documento' => $tipoDocumento
-            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao republicar edital: ' . $e->getMessage()
+            ], 500);
         }
     }
 
-
-    private function obterAnexos(Processo $processo, string $documento): array
-    {
-        $anexos = [];
-        $camposAnexo = $this->mapeamentoAnexos[$documento] ?? null;
-
-        if (!$camposAnexo) {
-            return $anexos;
-        }
-
-        if (is_array($camposAnexo)) {
-            foreach ($camposAnexo as $campo) {
-                if (!empty($processo->detalhe->$campo)) {
-                    $caminho = public_path($processo->detalhe->$campo);
-                    $anexos[] = $caminho;
-                    Log::info("Anexo encontrado para $documento", ['campo' => $campo, 'caminho' => $caminho, 'existe' => file_exists($caminho)]);
-                }
-            }
-        } else {
-            if (!empty($processo->detalhe->$camposAnexo)) {
-                $caminho = public_path($processo->detalhe->$camposAnexo);
-                $anexos[] = $caminho;
-                Log::info("Anexo encontrado para $documento", ['campo' => $camposAnexo, 'caminho' => $caminho, 'existe' => file_exists($caminho)]);
-            }
-        }
-
-        return $anexos;
-    }
-
-    private function juntarPdfsComGhostscript(string $pdfBasePath, array $anexoPaths): ?string
+    /**
+     * Criar edital com capa de republicação - NOVO MÉTODO
+     */
+    private function criarEditalComCapaRepublicacao(string $caminhoEdital, Processo $processo, ?string $justificativa = null): ?string
     {
         try {
-            // Verificar se o arquivo base existe e é válido
-            if (!file_exists($pdfBasePath) || filesize($pdfBasePath) === 0) {
-                Log::error('Arquivo base não encontrado ou vazio', ['caminho' => $pdfBasePath]);
-                return null;
+            // Criar capa de republicação
+            $dataCapa = [
+                'processo' => $processo,
+                'prefeitura' => $processo->prefeitura,
+                'dataGeracao' => now()->format('d/m/Y H:i:s'),
+                'titulo' => 'REPUBLICAÇÃO DE EDITAL',
+                'justificativa' => $justificativa,
+                'numero_republicacao' => $this->obterNumeroRepublicacao($processo),
+            ];
+
+            $pdfCapa = Pdf::loadView('Admin.Processos.pdf.capa_republicacao', $dataCapa)
+                ->setPaper('a4', 'portrait');
+
+            $caminhoCapa = storage_path('app/temp_capa_republicacao_' . uniqid() . '.pdf');
+            $pdfCapa->save($caminhoCapa);
+
+            // Caminho para o arquivo final com capa
+            $caminhoFinal = str_replace('.pdf', '_com_capa.pdf', $caminhoEdital);
+
+            // Mesclar capa + edital usando Ghostscript
+            $this->pdfService->mesclarPdfsComGhostscript([$caminhoCapa, $caminhoEdital], $caminhoFinal);
+
+            // Limpar arquivo temporário da capa
+            if (file_exists($caminhoCapa)) {
+                unlink($caminhoCapa);
             }
 
-            // Filtrar apenas anexos válidos
-            $anexosValidos = [];
-            foreach ($anexoPaths as $anexoPath) {
-                if (file_exists($anexoPath) && filesize($anexoPath) > 0) {
-                    $anexosValidos[] = $anexoPath;
-                    Log::info("Anexo válido encontrado", [
-                        'caminho' => $anexoPath,
-                        'tamanho' => filesize($anexoPath)
-                    ]);
-                } else {
-                    Log::warning('Anexo ignorado (não existe ou está vazio)', ['caminho' => $anexoPath]);
-                }
-            }
-
-            // Se não há anexos válidos, retornar o base original
-            if (empty($anexosValidos)) {
-                Log::info('Nenhum anexo válido para mesclar', ['base' => $pdfBasePath]);
-                return $pdfBasePath;
-            }
-
-            // Criar arquivo temporário para o resultado
-            $tempOutput = tempnam(sys_get_temp_dir(), 'merged_pdf_') . '.pdf';
-
-            // Juntar base + anexos - ORDEM CORRETA: base primeiro, depois anexos
-            $todosArquivos = array_merge([$pdfBasePath], $anexosValidos);
-
-            Log::info("Mesclando PDFs com Ghostscript - INÍCIO", [
-                'arquivo_base' => $pdfBasePath,
-                'tamanho_base' => filesize($pdfBasePath),
-                'anexos_validos' => $anexosValidos,
-                'total_arquivos' => count($todosArquivos),
-                'arquivo_saida_temp' => $tempOutput
-            ]);
-
-            $sucesso = $this->mesclarPdfsComGhostscript($todosArquivos, $tempOutput);
-
-            if ($sucesso && file_exists($tempOutput) && filesize($tempOutput) > 0) {
-                // Verificar se o arquivo temporário tem conteúdo
-                $tamanhoTemp = filesize($tempOutput);
-                Log::info("Arquivo temporário gerado com sucesso", [
-                    'caminho_temp' => $tempOutput,
-                    'tamanho_temp' => $tamanhoTemp
+            // Verificar se o arquivo final foi criado
+            if (file_exists($caminhoFinal) && filesize($caminhoFinal) > 0) {
+                \Log::info('Edital com capa criado com sucesso', [
+                    'caminho_final' => $caminhoFinal,
+                    'tamanho' => filesize($caminhoFinal)
                 ]);
-
-                // Substituir o arquivo base pelo resultado mesclado
-                copy($tempOutput, $pdfBasePath);
-                unlink($tempOutput);
-
-                $tamanhoFinal = filesize($pdfBasePath);
-                Log::info("PDFs mesclados com sucesso - FIM", [
-                    'arquivo_final' => $pdfBasePath,
-                    'tamanho_final' => $tamanhoFinal,
-                    'tamanho_esperado' => filesize($pdfBasePath) + array_sum(array_map('filesize', $anexosValidos))
-                ]);
-
-                return $pdfBasePath;
-            } else {
-                Log::error('Falha ao mesclar PDFs com Ghostscript', [
-                    'sucesso' => $sucesso,
-                    'temp_output_existe' => file_exists($tempOutput),
-                    'temp_output_tamanho' => file_exists($tempOutput) ? filesize($tempOutput) : 0,
-                    'arquivos_entrada' => $todosArquivos
-                ]);
-
-                // Limpar arquivo temporário em caso de erro
-                if (file_exists($tempOutput)) {
-                    unlink($tempOutput);
-                }
-                return null;
+                return $caminhoFinal;
             }
+
+            return null;
+
         } catch (\Exception $e) {
-            Log::error('Exceção ao mesclar PDFs com Ghostscript', [
+            \Log::error('Erro ao criar edital com capa', [
+                'caminho_edital' => $caminhoEdital,
                 'erro' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'pdf_base' => $pdfBasePath,
-                'anexos' => $anexoPaths
+                'trace' => $e->getTraceAsString()
             ]);
             return null;
         }
     }
 
-    private function mesclarPdfsComGhostscript(array $arquivos, string $outputPath): bool
+    /**
+     * Republicar processo completo
+     */
+    public function republicarProcesso(Request $request, Processo $processo)
     {
-        $listaArquivos = null;
-
         try {
-            // VERIFICAÇÃO CRÍTICA: garantir que todos os arquivos existem e são válidos
-            $arquivosValidos = [];
-            foreach ($arquivos as $index => $arquivo) {
-                if (!file_exists($arquivo)) {
-                    Log::error('Arquivo não encontrado para mesclagem', [
-                        'arquivo' => $arquivo,
-                        'index' => $index,
-                        'todos_arquivos' => $arquivos
-                    ]);
-                    return false;
-                }
+            \Log::info('Iniciando republicação de processo', ['processo_original_id' => $processo->id]);
 
-                $tamanho = filesize($arquivo);
-                if ($tamanho === 0) {
-                    Log::error('Arquivo vazio encontrado', [
-                        'arquivo' => $arquivo,
-                        'index' => $index,
-                        'tamanho' => $tamanho
-                    ]);
-                    return false;
-                }
-
-                $arquivosValidos[] = $arquivo;
-                Log::debug("Arquivo validado para mesclagem", [
-                    'arquivo' => $arquivo,
-                    'tamanho' => $tamanho,
-                    'index' => $index
-                ]);
-            }
-
-            // Criar arquivo de lista para Ghostscript
-            $listaArquivos = tempnam(sys_get_temp_dir(), 'gs_list_');
-            file_put_contents($listaArquivos, implode("\n", $arquivosValidos));
-
-            $comando = sprintf(
-                'gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -dPDFSETTINGS=/prepress -sOutputFile="%s" @"%s"',
-                $outputPath,
-                $listaArquivos
-            );
-
-            Log::info('Executando Ghostscript - COMANDO', [
-                'comando' => $comando,
-                'arquivos_entrada' => $arquivosValidos,
-                'quantidade_arquivos' => count($arquivosValidos),
-                'arquivo_saida' => $outputPath
+            $request->validate([
+                'novo_numero_processo' => 'required|string|',
+                'novo_numero_procedimento' => 'required|string',
+                'data_publicacao' => 'required|date',
             ]);
 
-            $output = [];
-            $returnCode = 0;
-            exec($comando . ' 2>&1', $output, $returnCode);
+            DB::beginTransaction();
 
-            // Aguardar um pouco para garantir que o processo terminou
-            sleep(2);
+            // Duplicar processo usando o serviço
+            $novoProcesso = $this->processoService->duplicarProcesso($processo, [
+                'numero_processo' => $request->novo_numero_processo,
+                'numero_procedimento' => $request->novo_numero_procedimento,
+                'user_id' => auth()->id(),
+                'status' => ProcessoStatusEnum::RASCUNHO,
+            ]);
 
-            $outputExiste = file_exists($outputPath);
-            $outputTamanho = $outputExiste ? filesize($outputPath) : 0;
+            // Marcar como republicado e referenciar original
+            $novoProcesso->status = ProcessoStatusEnum::REPUBLICADO;
+            $novoProcesso->processo_original_id = $processo->id;
 
-            if ($returnCode === 0 && $outputExiste && $outputTamanho > 0) {
-                Log::info('PDFs mesclados com sucesso usando Ghostscript', [
-                    'arquivo_saida' => $outputPath,
-                    'tamanho' => $outputTamanho,
-                    'return_code' => $returnCode,
-                    'output_ghostscript' => implode("\n", array_slice($output, 0, 10)) // Primeiras 10 linhas do output
-                ]);
-                return true;
-            } else {
-                Log::error('Erro ao mesclar PDFs com Ghostscript', [
-                    'return_code' => $returnCode,
-                    'output' => implode("\n", $output),
-                    'arquivos_entrada' => $arquivosValidos,
-                    'arquivo_saida_existe' => $outputExiste,
-                    'arquivo_saida_tamanho' => $outputTamanho
-                ]);
-                return false;
-            }
+            // Aqui está a correção: Não tente atualizar data_publicacao no ProcessoDetalhe
+            // porque esse campo não existe na tabela processo_detalhes
+            $novoProcesso->save();
+
+            // Registrar log
+            \Log::info('Processo republicado', [
+                'processo_original_id' => $processo->id,
+                'novo_processo_id' => $novoProcesso->id,
+                'usuario_id' => auth()->id(),
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Processo republicado com sucesso!',
+                'processo_id' => $novoProcesso->id,
+                'redirect_url' => route('admin.processos.iniciar', $novoProcesso->id)
+            ]);
+
         } catch (\Exception $e) {
-            Log::error('Exceção ao mesclar PDFs com Ghostscript', [
+            DB::rollBack();
+            \Log::error('Erro ao republicar processo', [
+                'processo_id' => $processo->id,
                 'erro' => $e->getMessage(),
-                'arquivos' => $arquivos
+                'trace' => $e->getTraceAsString()
             ]);
-            return false;
-        } finally {
-            if ($listaArquivos && file_exists($listaArquivos)) {
-                unlink($listaArquivos);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao republicar processo: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Cancelar licitação
+     */
+    public function cancelarLicitacao(Request $request, Processo $processo)
+    {
+        try {
+            \Log::info('Iniciando cancelamento de licitação', ['processo_id' => $processo->id]);
+
+            $request->validate([
+                'data_cancelamento' => 'required|date',
+                'motivo_cancelamento' => 'nullable|string',
+            ]);
+
+            DB::beginTransaction();
+
+            $modeloPath = resource_path('views/Admin/Processos/pdf/cancelamento.blade.php');
+            if (!file_exists($modeloPath)) {
+                throw new \Exception('Modelo de cancelamento não encontrado.');
+            }
+
+            $data = [
+                'processo' => $processo,
+                'prefeitura' => $processo->prefeitura,
+                'detalhe' => $processo->detalhe,
+                'data_cancelamento' => $request->data_cancelamento,
+                'motivo_cancelamento' => $request->motivo_cancelamento,
+                'dataGeracao' => now()->format('d/m/Y H:i:s'),
+                'usuario' => auth()->user(),
+            ];
+
+            $pdf = Pdf::loadView('Admin.Processos.pdf.cancelamento', $data)->setPaper('a4', 'portrait');
+
+            $numeroProcessoLimpo = str_replace(['/', '\\'], '_', $processo->numero_processo);
+            $diretorio = public_path("uploads/documentos/cancelamentos");
+
+            if (!file_exists($diretorio)) {
+                mkdir($diretorio, 0777, true);
+            }
+
+            $nomeArquivo = "processo_{$numeroProcessoLimpo}_cancelamento_" . now()->format('Ymd_His') . '.pdf';
+            $caminhoRelativo = "uploads/documentos/cancelamentos/{$nomeArquivo}";
+            $caminhoCompleto = "{$diretorio}/{$nomeArquivo}";
+
+            $pdf->save($caminhoCompleto);
+
+            // Registrar no banco (usar campo existente no Documento)
+            Documento::create([
+                'processo_id' => $processo->id,
+                'tipo_documento' => 'minuta_cancelamento',
+                'data_selecionada' => $request->data_cancelamento,
+                'caminho' => $caminhoRelativo,
+                'gerado_em' => now(),
+                'justificativa' => $request->motivo_cancelamento,
+            ]);
+
+            $processo->status = ProcessoStatusEnum::CANCELADO;
+            $processo->data_cancelamento = $request->data_cancelamento;
+            $processo->motivo_cancelamento = $request->motivo_cancelamento;
+            $processo->save();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Licitação cancelada com sucesso! Documento gerado.',
+                'documento_nome' => $nomeArquivo
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Erro ao cancelar licitação', [
+                'processo_id' => $processo->id,
+                'erro' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao cancelar licitação: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Reverter cancelamento de processo
+     */
+    public function reverterCancelamento(Request $request, Processo $processo)
+    {
+        try {
+            \Log::info('Iniciando reversão de cancelamento', ['processo_id' => $processo->id]);
+
+            // Verificar se o processo está cancelado
+            if ($processo->status !== ProcessoStatusEnum::CANCELADO) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Este processo não está cancelado.'
+                ], 400);
+            }
+
+            DB::beginTransaction();
+
+            // Reverter para status anterior (ou definir um status padrão)
+            // Você pode querer salvar o status anterior em um campo separado
+            // ou usar uma lógica para determinar qual status reverter
+            $novoStatus = ProcessoStatusEnum::EM_INICIO; // Ou outro status apropriado
+
+            // Atualizar status
+            $processo->status = $novoStatus;
+
+            // Limpar dados de cancelamento
+            $processo->data_cancelamento = null;
+            $processo->motivo_cancelamento = null;
+
+            // Salvar alterações
+            $processo->save();
+
+            // Registrar log da ação
+            \Log::info('Cancelamento revertido', [
+                'processo_id' => $processo->id,
+                'novo_status' => $novoStatus->value,
+                'usuario_id' => auth()->id(),
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Cancelamento revertido com sucesso!',
+                'data' => [
+                    'status' => $processo->status->value,
+                    'status_label' => $processo->status->label(),
+                    'status_color' => $processo->status->color()
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Erro ao reverter cancelamento', [
+                'processo_id' => $processo->id,
+                'erro' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao reverter cancelamento: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Adiar licitação - CORRIGIDO
+     */
+    public function adiarLicitacao(Request $request, Processo $processo)
+    {
+        try {
+            \Log::info('Iniciando adiamento de licitação', ['processo_id' => $processo->id]);
+
+            $request->validate([
+                'nova_data' => 'required|date',
+                'novo_horario' => 'required|string',
+                'justificativa_adiamento' => 'nullable|string',
+            ]);
+
+            DB::beginTransaction();
+
+            $dataHoraAnterior = $processo->detalhe?->data_hora_limite_edital;
+
+            $dataHoraNova = $request->nova_data . ' ' . $request->novo_horario . ':00';
+
+            if ($processo->detalhe) {
+                $processo->detalhe->data_hora_limite_edital = $dataHoraNova;
+                $processo->detalhe->data_hora_fase_edital = $dataHoraNova;
+                $processo->detalhe->save();
+            }
+
+            $editalExistente = $processo->documentos()
+                ->where('tipo_documento', 'edital')
+                ->first();
+
+            if ($editalExistente) {
+                $data = $this->pdfService->prepararDadosPdf($processo, [
+                    'dataSelecionada' => $request->nova_data,
+                    'assinantes' => [],
+                    'parecerSelecionado' => null,
+                ]);
+
+                $data['adiamento'] = true;
+                $data['justificativa_adiamento'] = $request->justificativa_adiamento;
+                $data['data_hora_original'] = $dataHoraAnterior ?? 'Não informada';
+
+                $view = $this->pdfService->determinarViewPdf($processo, 'edital');
+                $pdf = Pdf::loadView($view, $data)->setPaper('a4', 'portrait');
+
+                $numeroProcessoLimpo = str_replace(['/', '\\'], '_', $processo->numero_processo);
+                $subpasta = $this->pdfService->gerarSubpasta($processo, 'edital_adiado');
+                $diretorio = public_path("uploads/documentos/{$subpasta}");
+
+                if (!file_exists($diretorio)) {
+                    mkdir($diretorio, 0777, true);
+                }
+
+                $nomeArquivo = "processo_{$numeroProcessoLimpo}_edital_adiado_" . now()->format('Ymd_His') . '.pdf';
+                $caminhoRelativo = "uploads/documentos/{$subpasta}/{$nomeArquivo}";
+                $caminhoCompleto = "{$diretorio}/{$nomeArquivo}";
+
+                $pdf->save($caminhoCompleto);
+
+                Documento::create([
+                    'processo_id' => $processo->id,
+                    'tipo_documento' => 'edital_adiado',
+                    'data_selecionada' => $request->nova_data,
+                    'caminho' => $caminhoRelativo,
+                    'gerado_em' => now(),
+                    'justificativa' => $request->justificativa_adiamento,
+                ]);
+            }
+
+            $processo->status = ProcessoStatusEnum::ADIADO;
+            $processo->data_adiamento = $request->nova_data;
+            $processo->justificativa_adiamento = $request->justificativa_adiamento;
+            $processo->save();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Licitação adiada com sucesso! Novo edital gerado.',
+                'documento_nome' => $nomeArquivo ?? null
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Erro ao adiar licitação', [
+                'processo_id' => $processo->id,
+                'erro' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao adiar licitação: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Métodos auxiliares
+     */
+    private function adicionarCapaRepublicacao(string $caminhoPdf, Processo $processo, ?string $justificativa = null): void
+    {
+        try {
+            $data = [
+                'processo' => $processo,
+                'prefeitura' => $processo->prefeitura,
+                'dataGeracao' => now()->format('d/m/Y H:i:s'),
+                'titulo' => 'REPUBLICAÇÃO DE EDITAL',
+                'justificativa' => $justificativa,
+                'numero_republicacao' => $this->obterNumeroRepublicacao($processo),
+            ];
+
+            $pdfCapa = Pdf::loadView('Admin.Processos.pdf.capa_republicacao', $data)->setPaper('a4', 'portrait');
+            $caminhoCapa = storage_path('app/temp_capa_republicacao_' . uniqid() . '.pdf');
+            $pdfCapa->save($caminhoCapa);
+
+            // Mesclar capa com edital
+            $this->pdfService->mesclarPdfsComGhostscript([$caminhoCapa, $caminhoPdf], $caminhoPdf);
+
+            // Remover arquivo temporário
+            if (file_exists($caminhoCapa)) {
+                unlink($caminhoCapa);
+            }
+
+        } catch (\Exception $e) {
+            \Log::error('Erro ao adicionar capa de republicação', [
+                'caminho_pdf' => $caminhoPdf,
+                'erro' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+        }
+    }
+
+    private function obterNumeroRepublicacao(Processo $processo): int
+    {
+        $republicacoes = Documento::where('processo_id', $processo->id)
+            ->where('tipo_documento', 'like', '%republicacao%')
+            ->count();
+
+        return $republicacoes + 1;
+    }
+
+    private function regenerarDocumentosComNovosDados(Processo $processo, array $dados): void
+    {
+        // Regenerar documentos com novas numerações
+        $tiposDocumentos = ['edital', 'capa', 'formalizacao', 'parecer_juridico'];
+
+        foreach ($tiposDocumentos as $tipo) {
+            $documento = $processo->documentos()->where('tipo_documento', $tipo)->first();
+
+            if ($documento && file_exists(public_path($documento->caminho))) {
+                // Gerar novo PDF com dados atualizados
+                $this->regenerarDocumentoIndividual($processo, $tipo, $dados);
             }
         }
     }
 
-    private function gerarEJuntarAtaRegistroPreco(Processo $processo, string $caminhoPrincipal): void
+    private function regenerarDocumentoIndividual(Processo $processo, string $tipo, array $dados): void
     {
         try {
-            Log::info("Gerando ATA de Registro de Preço", ['processo_id' => $processo->id]);
-
-            // Verificar se o arquivo principal ainda existe e é válido
-            if (!file_exists($caminhoPrincipal) || filesize($caminhoPrincipal) === 0) {
-                Log::error('Arquivo principal não encontrado ou vazio antes de gerar ATA', [
-                    'caminho' => $caminhoPrincipal
-                ]);
-                return;
-            }
-
-            $viewAta = $this->determinarViewPdf($processo, 'ata_registro_preco');
-            $data = $this->prepararDadosPdf($processo, [
-                'dataSelecionada' => now()->format('Y-m-d'),
+            $data = $this->pdfService->prepararDadosPdf($processo, [
+                'dataSelecionada' => $dados['data_publicacao'] ?? now()->format('Y-m-d'),
                 'assinantes' => [],
                 'parecerSelecionado' => null,
             ]);
 
-            $pdfAta = Pdf::loadView($viewAta, $data)->setPaper('a4', 'portrait');
-            $arquivoAta = storage_path('app/temp_ata_' . $processo->id . '_' . uniqid() . '.pdf');
-            $pdfAta->save($arquivoAta);
+            $view = $this->pdfService->determinarViewPdf($processo, $tipo);
+            $pdf = Pdf::loadView($view, $data)->setPaper('a4', 'portrait');
 
-            if (file_exists($arquivoAta) && filesize($arquivoAta) > 0) {
-                Log::info("ATA gerada com sucesso", [
-                    'caminho_ata' => $arquivoAta,
-                    'tamanho_ata' => filesize($arquivoAta),
-                    'caminho_principal' => $caminhoPrincipal,
-                    'tamanho_principal' => filesize($caminhoPrincipal)
-                ]);
+            // Salvar documento
+            $numeroProcessoLimpo = str_replace(['/', '\\'], '_', $processo->numero_processo);
+            $subpasta = $this->pdfService->gerarSubpasta($processo, $tipo);
+            $diretorio = public_path("uploads/documentos/{$subpasta}");
 
-                // Juntar principal + ATA (não substituir!)
-                $sucesso = $this->juntarPdfsComGhostscript($caminhoPrincipal, [$arquivoAta]);
-
-                if ($sucesso) {
-                    Log::info("ATA juntada com sucesso ao edital", [
-                        'caminho_final' => $caminhoPrincipal,
-                        'tamanho_final' => filesize($caminhoPrincipal)
-                    ]);
-                } else {
-                    Log::error('Falha ao juntar ata de registro de preço', [
-                        'principal' => $caminhoPrincipal,
-                        'ata' => $arquivoAta
-                    ]);
-                }
-
-                // Limpar arquivo temporário
-                unlink($arquivoAta);
-            } else {
-                Log::error('ATA não foi gerada corretamente', [
-                    'arquivo_ata' => $arquivoAta,
-                    'existe' => file_exists($arquivoAta),
-                    'tamanho' => file_exists($arquivoAta) ? filesize($arquivoAta) : 0
-                ]);
+            if (!file_exists($diretorio)) {
+                mkdir($diretorio, 0777, true);
             }
+
+            $nomeArquivo = "processo_{$numeroProcessoLimpo}_{$tipo}_" . now()->format('Ymd_His') . '.pdf';
+            $caminhoRelativo = "uploads/documentos/{$subpasta}/{$nomeArquivo}";
+
+            $pdf->save($diretorio . '/' . $nomeArquivo);
+
+            // Atualizar registro no banco
+            Documento::updateOrCreate(
+                [
+                    'processo_id' => $processo->id,
+                    'tipo_documento' => $tipo,
+                ],
+                [
+                    'data_selecionada' => $dados['data_publicacao'] ?? now()->format('Y-m-d'),
+                    'caminho' => $caminhoRelativo,
+                    'gerado_em' => now(),
+                ]
+            );
+
         } catch (\Exception $e) {
-            Log::error('Erro ao gerar e juntar ATA de registro de preço', [
+            \Log::warning("Erro ao regenerar documento {$tipo}", [
                 'processo_id' => $processo->id,
                 'erro' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
@@ -1312,157 +893,11 @@ class ProcessoController extends Controller
         }
     }
 
-    // =========================================================
-    // MÉTODOS PRIVADOS - CARIMBAGEM DE PDF
-    // =========================================================
-
-    private function adicionarCarimboAoPdfComGhostscript(string $caminhoPdf, Processo $processo): ?string
+    public function byPrefeitura(Request $request)
     {
-        $paginasTemp = [];
+        $prefeituraId = $request->input('prefeitura_id');
+        $processos = Processo::where('prefeitura_id', $prefeituraId)->get();
 
-        try {
-            // Primeiro, contar as páginas do PDF
-            $pageCount = $this->contarPaginasPdf($caminhoPdf);
-
-            if ($pageCount === 0) {
-                Log::error('PDF vazio ou inválido', ['caminho' => $caminhoPdf]);
-                return null;
-            }
-
-            $caminhoCarimbado = str_replace('.pdf', '_carimbado.pdf', $caminhoPdf);
-
-            // Para cada página, adicionar carimbo
-            for ($pagina = 1; $pagina <= $pageCount; $pagina++) {
-                $paginaAtual = $pagina;
-
-                // Criar PDF temporário com carimbo para esta página
-                $pdf = new Fpdi();
-                $this->configurarFonte($pdf);
-
-                $pdf->setSourceFile($caminhoPdf);
-                $tplId = $pdf->importPage($pagina);
-                $pdf->AddPage();
-                $pdf->useTemplate($tplId);
-
-                // Adicionar carimbo (assumindo que a capa é a primeira página)
-                if ($pagina !== 1) {
-                    $this->adicionarCarimbo($pdf, $processo, $paginaAtual - 1, $pageCount - 1);
-                }
-
-                $tempPath = sys_get_temp_dir() . "/pagina_{$pagina}_" . uniqid() . '.pdf';
-                $pdf->Output($tempPath, 'F');
-                $paginasTemp[] = $tempPath;
-            }
-
-            // Mesclar todas as páginas carimbadas
-            $sucesso = $this->mesclarPdfsComGhostscript($paginasTemp, $caminhoCarimbado);
-
-            if ($sucesso && file_exists($caminhoCarimbado) && filesize($caminhoCarimbado) > 0) {
-                // Substituir o arquivo original pelo carimbado
-                if (file_exists($caminhoPdf)) {
-                    unlink($caminhoPdf);
-                }
-                rename($caminhoCarimbado, $caminhoPdf);
-                return $caminhoPdf;
-            } else {
-                Log::error('Falha ao mesclar páginas carimbadas', [
-                    'caminho_original' => $caminhoPdf,
-                    'caminho_carimbado' => $caminhoCarimbado,
-                    'sucesso' => $sucesso,
-                    'arquivo_existe' => file_exists($caminhoCarimbado),
-                    'tamanho' => file_exists($caminhoCarimbado) ? filesize($caminhoCarimbado) : 0
-                ]);
-                return null;
-            }
-        } catch (\Exception $e) {
-            Log::error('Erro ao adicionar carimbo ao PDF com Ghostscript', [
-                'caminho' => $caminhoPdf,
-                'erro' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            return null;
-        } finally {
-            // Limpar arquivos temporários
-            foreach ($paginasTemp as $tempFile) {
-                if (file_exists($tempFile)) {
-                    unlink($tempFile);
-                }
-            }
-        }
-    }
-
-    private function configurarFonte(Fpdi $pdf): void
-    {
-        $fontPath = public_path('storage/app/public/fonts/Aptos.ttf');
-        if (file_exists($fontPath)) {
-            $pdf->AddFont('Aptos', '', 'Aptos.ttf', true);
-            $pdf->SetFont('Aptos', '', 8);
-        } else {
-            $pdf->SetFont('helvetica', '', 6);
-        }
-    }
-
-    private function adicionarCarimbo(Fpdi $pdf, Processo $processo, int $paginaAtual, int $pageCountTotal, int $paginaInicial = 1): void
-    {
-        $pageWidth = $pdf->GetPageWidth();
-        $pageHeight = $pdf->GetPageHeight();
-
-        $boxWidth = 8;
-        $boxHeight = 150;
-
-        $x = $pageWidth - $boxWidth - 1;
-        $y = ($pageHeight - $boxHeight) / 2;
-
-        $pdf->SetDrawColor(0, 0, 0);
-        $pdf->Rect($x, $y, $boxWidth, $boxHeight, 'D');
-        $pdf->SetTextColor(0, 0, 0);
-
-        // CALCULAR PÁGINA ABSOLUTA (inicialização)
-        $paginaAbsoluta = $paginaInicial + $paginaAtual;
-        $totalAbsoluto = $paginaInicial + $pageCountTotal;
-
-        $codigoAutenticacao = $processo->prefeitura->id . now()->format('HisdmY');
-        $textoCarimbo = "Processo numerado por: {$processo->responsavel_numeracao} " .
-            "Cargo: {$processo->unidade_numeracao} " .
-            "Portaria nº {$processo->portaria_numeracao} " .
-            "Pág. {$paginaAbsoluta} / {$totalAbsoluto} - " .
-            "Documento gerado na Plataforma GestGov - Licenciado para Prefeitura de {$processo->prefeitura->cidade}. " .
-            "Cod. de Autenticação: {$codigoAutenticacao} - Para autenticar acesse gestgov.com.br/autenticacao";
-
-        $pdf->StartTransform();
-        $rotateX = $x + ($boxWidth / 2);
-        $rotateY = $y + ($boxHeight / 2);
-        $pdf->Rotate(90, $rotateX, $rotateY);
-
-        $textX = $rotateX - ($boxHeight / 2);
-        $textY = $rotateY - ($boxWidth / 2);
-        $pdf->SetXY($textX, $textY);
-
-        $pdf->MultiCell($boxHeight, $boxWidth, $textoCarimbo, 0, 'C', false, 1, '', '', true, 0, false, true, 0, 'T', false);
-        $pdf->StopTransform();
-    }
-
-    private function contarPaginasPdf(string $caminhoPdf): int
-    {
-        try {
-            $pdf = new Fpdi();
-            return $pdf->setSourceFile($caminhoPdf);
-        } catch (\Exception $e) {
-            Log::error('Erro ao contar páginas do PDF', [
-                'caminho' => $caminhoPdf,
-                'erro' => $e->getMessage()
-            ]);
-            return 0;
-        }
-    }
-
-    // =========================================================
-    // MÉTODOS AUXILIARES
-    // =========================================================
-
-    private function formatarNomeArquivo(string $nome): string
-    {
-        $nome = strtolower(iconv('UTF-8', 'ASCII//TRANSLIT', $nome));
-        return str_replace(' ', '_', $nome);
+        return response()->json($processos);
     }
 }

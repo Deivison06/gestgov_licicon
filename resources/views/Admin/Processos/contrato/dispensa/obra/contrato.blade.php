@@ -399,7 +399,7 @@
                 das obras e determinar a correção das imperfeições verificadas; 3.6.7
                 Atestar a veracidade dos registros efetuados pela CONTRATADA no Diário
                 de Ocorrências, principalmente os relativos às condições meteorológicas
-                prejudiciais ao andamento das obras. 
+                prejudiciais ao andamento das obras.
             </span>
         </p>
 
@@ -431,7 +431,7 @@
             <br><br>
             4.4 As alterações de especificações obrigatoriamente deverão ser
             discriminadas em planilhas que deverão ser juntadas aos autos do processo
-            autorizativo da contratação. 
+            autorizativo da contratação.
         </p>
 
         <div style="margin-bottom: 20px;">
@@ -444,7 +444,7 @@
 
         <p style="text-align: justify;">
             5.1 O preço global deste contrato é de R$ {{ $processo->finalizacao->valor_total }}, referente ao valor total
-            da obra prevista no presente contrato. 
+            da obra prevista no presente contrato.
             <br><br>
             5.2 A CONTRATADA fica obrigada a aceitar nas mesmas condições
             contratuais os acréscimos ou supressões que se fizerem nas obras,
@@ -548,7 +548,7 @@
             8.2 A CONTRATADA deverá comparecer à Sede da Prefeitura Municipal de
             {{ $processo->prefeitura->cidade }}, no prazo de até 10 (dez) dias corridos, para assinatura e
             recebimento da Ordem de Serviço, contados a partir da assinatura do
-            contrato, sob pena de aplicação da multa. 
+            contrato, sob pena de aplicação da multa.
         </p>
 
         <div style="margin-bottom: 20px;">
@@ -585,7 +585,7 @@
 
         <p style="text-align: justify;">
             10.1 Os recursos destinados à cobertura das despesas referentes ao objeto
-            licitado no exercício de 2023, são provenientes da seguinte dotação
+            licitado no exercício de {{ now()->year }}, são provenientes da seguinte dotação
             orçamentária:
         </p>
         <table style="border-collapse: collapse; width: 100%; border: 1px solid black;">
@@ -629,7 +629,7 @@
                 11.1.4 Adquirir e manter permanentemente no escritório da obra, um
                 livro de ocorrência, para registro obrigatório de todas e quaisquer
                 ocorrências que merecerem destaque;
-                <br><br> 
+                <br><br>
                 11.1.5 Manter permanentemente no canteiro de Obras, engenheiro
                 residente com plenos poderes de decisão na área técnica;
                 <br><br>
@@ -639,7 +639,7 @@
                 <br><br>
                 11.1.7 Promover e responder por todos os fornecimentos de água e
                 energia elétrica necessárias à execução da obra, inclusive as instalações
-                provisórias destinadas ao atendimento das necessidades; 
+                provisórias destinadas ao atendimento das necessidades;
                 <br><br>
                 11.1.8 Responsabilizar-se por quaisquer ações decorrentes de pleitos referentes
                 a direitos, patentes e royalties, face à utilização de técnicas, materiais,
@@ -693,7 +693,7 @@
             parcelas devidas, custeando a publicação do extrato deste instrumento no
             MURAL DA PREFEITURA, DIÁRIO OFICIAL DA UNIÃO, JORNAL DE GRANDE
             CIRCULAÇÃO, DIÁRIO OFICIAL DOS MUNICÍPIOS, LICITAÇÕES WEB – TCE/PI E
-            PORTAL DA TRANSPARÊNCIA. 
+            PORTAL DA TRANSPARÊNCIA.
         </p>
 
         <div style="margin-bottom: 20px;">
@@ -799,7 +799,7 @@
                 determinada:
                 <br><br>
                 a) Por ato unilateral, nos casos elencados no art. 138, inciso I e 139, da Lei
-                nº 14.133/2021; 
+                nº 14.133/2021;
                 <br><br>
                 b)Por acordo das partes, desde que seja conveniente, segundo os
                 objetivos da Administração, com fulcro no art. 138, inciso II da Lei
@@ -831,7 +831,7 @@
                 desde que conveniente aos interesses da Administração;
                 <br><br>
                 17.1.4 a rescisão contratual, deverá ser precedida de autorização
-                escrita e fundamentada da autoridade superior. 
+                escrita e fundamentada da autoridade superior.
             </span>
         </p>
 
@@ -848,7 +848,7 @@
             dúvidas decorrentes de fatos não contemplados no presente contrato, estas
             serão dirimidas segundo os princípios jurídicos, aplicáveis a situação fática
             existente, preservando-se o direito da CONTRATADA, sem prejuízo da
-            prevalência do interesse público. 
+            prevalência do interesse público.
         </p>
 
         <div style="margin-bottom: 20px;">
@@ -863,7 +863,7 @@
             Após as assinaturas deste contrato, o CONTRATANTE providenciará a
             publicação do resumo no Diário Oficial dos Municípios.
         </p>
-        
+
         <div style="margin-bottom: 20px;">
             <img src="{{ public_path('icons/descricao-necessidade.png') }}" width="30px"
             alt="DESCRIÇÃO DA NECESSIDADE">
@@ -1101,7 +1101,7 @@
                     FUNDAMENTAÇÃO LEGAL:
                 </td>
                 <td style="padding:6px; text-align:justify;">
-                    Será regida pelas normas fixadas na DISPENSA DE LICITAÇÃO dispensa de lic Eletrônica nº {{ $processo->numero_procedimento }},
+                    Será regida pelas normas fixadas na DISPENSA DE LICITAÇÃO nº {{ $processo->numero_procedimento }},
                     e pela Lei 14.133/21, de 1 de abril de 2021, e legislação posterior,
                     que o suplementam no que for omisso.
                 </td>

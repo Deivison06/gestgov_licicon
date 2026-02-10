@@ -208,7 +208,7 @@
     <div class="container">
         <div class="conteudo-all">
             <div style="margin: 30px 0 0;">
-                <div class="title">ANEXO I <br> TERMO DE REFERÊNCIA</div>
+                <div class="title">TERMO DE REFERÊNCIA</div>
             </div>
             <div class="conteudo">
                 <!-- Objeto -->
@@ -226,24 +226,7 @@
                     </table>
                 </div>
 
-                <!-- Alinhamento com Planejamento Anual -->
-                <div class="section">
-                    <table>
-                        <tr>
-                            <td class="icon">
-                                <img src="{{ public_path('icons/dinheiro.png') }}" width="40">
-                            </td>
-                            <td class="content">
-                                <div style=" font-weight: bold; margin-bottom: 3px;">VALOR PREVISTO</div>
-                                <div>
-                                    R$ {{ $detalhe->valor_estimado }}
-                                </div>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-
-                <!-- Equipe de Planejamento -->
+                <!-- Prazo virgencia -->
                 <div class="section">
                     <table>
                         <tr>
@@ -253,7 +236,8 @@
                             <td class="content">
                                 <div style=" font-weight: bold; margin-bottom: 3px;">PRAZO DE VIGÊNCIA DA CONTRATAÇÃO</div>
                                 <div style="">
-                                    O prazo de vigência da contratação é de {{ $vigencia_formatada }} contados da assinatura do contrato, na forma do artigo 105 da Lei n° 14.133, de 2021
+                                    O prazo de vigência da contratação é de {{ $vigencia_formatada }} contados do(a) assinatura do
+                                    Contrato, na forma do artigo 105 da Lei n° 14.133, de 2021
                                 </div>
                             </td>
                         </tr>
@@ -271,457 +255,609 @@
         </p>
 
         <p style="text-align: justify;">
-            1.1 O objeto da presente licitação consiste {!! strip_tags($processo->objeto) !!}, na modalidade Pregão Eletrônico, nos moldes do art. 28, I da Lei
-            14.133/2021.
+            1.1. O presente Termo de Referência tem como finalidade a{!! strip_tags($processo->objeto) !!}
+        </p>
+        <p style="display: flex; align-items: center; font-weight: bold; ">
+            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 2. JUSTIFICATIVA
         </p>
         <p style="text-align: justify;">
-            1.2 JUSTIFICATIVA PARA CONTRATAÇÃO {!! strip_tags($detalhe->justificativa) !!}
-        </p>
-        <p style="text-align: justify;">
-            1.3. Este procedimento licitatório adotará como critério de julgamento, a forma de adjudicação por {{ $processo->tipo_contratacao->getDisplayName() }}, com base nas
-            justificativas:
-        </p>
-        <p style="text-align: justify;">
-            O fracionamento do objeto da licitação em itens encontra amparo legal no art. 40, § 1º da Lei nº 14.133/2021, que
-            incentiva o parcelamento sempre que viável, desde que não comprometa a execução do objeto. A medida visa
-            permitir a ampla participação de fornecedores, principalmente de pequeno porte, bem como alcançar melhor
-            resultado para a Administração. <br>
-            O objeto da presente licitação abrange diversos produtos/serviços com características distintas, que podem ser
-            adquiridos, entregues ou executados de forma independente, sem prejuízo à integridade da execução contratual.
-            A divisão por itens não compromete a obtenção de preços vantajosos, e ao contrário, estimula a competitividade,
-            ao permitir que microempresas, empresas locais e fornecedores especializados possam concorrer apenas nos
-            itens de sua capacidade técnica e logística. <br>
-            Com isso, evita-se a concentração do fornecimento em um único fornecedor, promovendo maior eficiência,
-            economicidade e mitigação de riscos contratuais
-        </p>
-        <div>A adoção do parcelamento por itens está alinhada ao planejamento da Administração Pública, favorecendo:</div>
-        <ul style="text-align: justify;">
-            <li>Atendimento adequado às necessidades específicas de cada unidade administrativa;</li>
-            <li>Diversificação de fornecedores e redução do risco de desabastecimento;</li>
-            <li>Fortalecimento da economia local/regional;</li>
-            <li>Observância ao princípio da isonomia, conforme art. 5º da Lei nº 14.133/2021.</li>
-        </ul>
-        <p style="text-align: justify;">
-            Além disso, o parcelamento da contratação em lotes favorece uma competição saudável entre fornecedores, o
-            que pode resultar em custos mais baixos e condições mais vantajosas para a Administração Pública. Ao permitir
-            que empresas ofereçam suas propostas, a Prefeitura pode beneficiar-se da especialização dos fornecedores,
-            garantindo aquisições de melhor qualidade. Essa dinâmica também contribui para minimizar riscos, uma vez que
-            cada item pode ser ajustado conforme a resposta do mercado e as demandas emergentes, facilitando
-            adaptações ao longo do fornecimento.
+            {!! strip_tags($detalhe->justificativa) !!}
         </p>
 
-        <p style="text-align: justify;">
-            1.4 Para a cotação de preços a ser realizada neste certame, esta administração coloca à disposição dos licitantes, as
-            informações e preços unitários a seguir:
+        <p style="display: flex; align-items: center; font-weight: bold; ">
+            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 3. ENQUADRAMENTO LEGAL
         </p>
-        <table border="1" cellspacing="0" cellpadding="4" style="border-collapse: collapse; width: 100%; text-align: center; font-size: 8pt;">
-            <thead>
-                <tr>
-                    <th style="width: 6%;">ITEM</th>
-                    <th style="width: 30%;">ESPECIFICAÇÃO</th>
-                    <th style="width: 8%;">UNIDADE</th>
-                    <th style="width: 20%;">QUANTIDADE ESTIMADA</th>
-                    <th style="width: 18%;">VALOR UNITÁRIO</th>
-                    <th style="width: 18%;">VALOR TOTAL</th>
-                </tr>
-            </thead>
-            <tbody>
-                @php
-                $itens = is_array($detalhe->itens_especificaca_quantitativos_xml)
-                ? $detalhe->itens_especificaca_quantitativos_xml
-                : json_decode($detalhe->itens_especificaca_quantitativos_xml, true);
-                @endphp
-                @if ($itens && count($itens) > 0)
-                @foreach ($itens as $item)
-                <tr>
-                    <td>{{ $item['item'] ?? '' }}</td>
-                    <td style="text-align: left;">{{ $item['especificacoes'] ?? '' }}</td>
-                    <td>{{ $item['unidade'] ?? '' }}</td>
-                    <td>{{ $item['quantidade'] ?? '' }}</td>
-                    <td>{{ $item['valor_unitario'] ?? '' }}</td>
-                    <td>{{ $item['valor_total'] ?? '' }}</td>
-                </tr>
-                @endforeach
-                @else
-                <tr>
-                    <td colspan="6">Nenhum item encontrado</td>
-                </tr>
-                @endif
-            </tbody>
-        </table>
-
-
         <p style="text-align: justify;">
-            1.5 Com base nos quantitativos e especificações acima, o valor global estimado para esta Licitação será de R$ {{ $detalhe->valor_estimado }}
+            3.1. O presente termo de referência tem como base legai a Lei Federal 14.133/2021
+            (Nova Lei de Licitações), especificamente seu artigo art. 74, inciso III, alínea “c”.
+            <br>
+            3.2. O procedimento observado obedece ao disposto no artigo 72, incisos I a VIII, bem
+            como o Decreto Municipal.
+            <br>
+            3.3. Nas palavras do ilustre professor Ronny Charles: “Quando a lei prevê hipóteses de
+            contratação direta (dispensa e inexigibilidade) é porque admite que nem sempre a
+            realização do certame levará à melhor forma de contratação pela Administração ou que,
+            pelo menos, a sujeição do negócio ao procedimento formal e burocrático previsto pelo
+            estatuto não serve eficaz ao atendimento do interesse público naquela hipótese
+            específica.”
+            <br>
+            3.4. Nesse mesmo sentido, o nobre doutrinador Adilson Abreu Dallari destaca que: “Nem
+            sempre, é verdade, a licitação leva uma contratação mais vantajosa. Não pode ocorrer,
+            em virtude da realização do procedimento licitatório, é o sacrifício de outros valores e
+            princípios consagrados pela ordem jurídica, especialmente o princípio da eficiência.”
+            <br>
+            3.5. No presente caso, a inexigibilidade de licitação torna-se mais viável ao procedimento
+            licitatório, porém deve ser pormenorizada em um procedimento formal, não sendo
+            afastado nenhuma das premissas básicas de um procedimento licitatório, como a busca
+            pelo melhor atendimento à finalidade pública e respeito a princípios basilares como a
+            impessoalidade, moralidade, publicidade dentre outros;
+            <br>
+            3.6. A contratação, via inexigibilidade de licitação, em razão da inviabilidade de
+            competição para a contratação de serviço técnico especializado e de natureza
+            predominantemente intelectual de empresa especializada com notória especialização à
+            realização do processo licitatório, além de tornar mais célere e eficiente a contratação,
+            que visa à consecução do interesse público.
+            <br>
+            3.7. Ainda, a modalidade de contratação é definida pela impossibilidade de adoção de
+            critérios objetivos, a serem definidos num processo licitatório, posto que os serviços a
+            serem prestados possuem natureza intelectual, sendo que a contratada possui traços
+            próprios e únicos para a execução desse serviço.
         </p>
 
-        <p style="text-align: justify;">
-            1.6. O prazo de vigência da contratação é de {{ $vigencia_formatada }} contados da assinatura do contrato, na forma do artigo 105 da Lei
-            n° 14.133, de 2021.
-        </p>
-        @if($detalhe->objeto_continuado === 'sim')
-        <p style="text-align: justify;">
-            1.7. O fornecimento de bens é ou não é enquadrado como continuado sendo a vigência plurianual mais vantajosa.
-        </p>
-        @endif
-        <p style="text-align: justify;">
-            1.8. O contrato oferece maior detalhamento das regras que serão aplicadas em relação à vigência da contratação.
+        <p style="display: flex; align-items: center; font-weight: bold; ">
+            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 4. APRESENTAÇÃO DA PROPOSTA DE PREÇOS
         </p>
         <p style="text-align: justify;">
-            1.9. A pesquisa de preços foi realizada por meio do <span style="font-weight: bold;">Painel de Preços do Tribunal de Contas do Estado (TCE)</span>, ferramenta
-            oficial que disponibiliza dados atualizados, consolidados e oriundos de contratações efetivamente realizadas pela
-            Administração Pública. Tal metodologia foi adotada em observância ao disposto nos artigos 23, 40 e 41 da Lei nº 14.133/2021,
-            que determinam que a estimativa de preços deve ser obtida a partir de fontes idôneas, garantindo fidedignidade e
-            transparência ao processo de contratação.
+            4.1. A proposta de preço deverá conter os seguintes elementos:
+            <br>
+            <span style="margin-left: 20px;">
+                a) Nome; Endereço; CNPJ; Inscrição Estadual/Municipal.
+                <br>
+                b) Deverá ser organizada por lote, descrevendo todos os preços por item de acordo
+                com o objeto devendo a negociação ocorrer por menor preço por item, e ratificação por
+                item embora a contratação possa ser por lote ou por itens do lote a fim de atender e
+                otimizar o empenhamento das despesas em atendimento a necessidade pontual da
+                contratante.
+                <br>
+                c) Prazo de validade da proposta não poderá ser inferior a 60 (sessenta) dias.
+                <br>
+                d) A proposta que omitir o prazo de validade será considerada como válida pelo
+                período de 60 (sessenta) dias.
+                <br>
+                e) O valor a ser cotado deve levar em consideração o valor total da proposta, em
+                moeda corrente nacional, algarismo e/ou por extenso, apurado à data de sua
+                apresentação, sem inclusão de qualquer encargo financeiro que deve ser assumido pelo
+                potencial contratado ou previsão inflacionária. Nos preços propostos deverão estar
+                incluídos, além do lucro, todas as despesas e custos, como por exemplo: transportes,
+                fretes, tributos de qualquer natureza e todas as despesas, diretas ou indiretas,
+                relacionadas com o objeto da licitação.
+                <br>
+                f) As propostas deverão ser apresentadas contemplando os quantitativos fixados,
+                conforme anexo I, não sendo permitidas ofertas com quantitativo inferior.
+                <br>
+                g) O licitante deverá demonstrar na sua proposta, quantidade, e demais informações
+                a fim de viabilizar as requisições demandadas respeitadas a forma e condições
+                estabelecida no Termo de Referência.
+                <br>
+                h) O preço cotado permanecerá fixo e irreajustável pelo período do contrato, exceto
+                quando confirmado motivo justo para revisão ou atualização, na forma que determina a
+                legislação.
+            </span>
+        </p>
+
+        <p style="display: flex; align-items: center; font-weight: bold; ">
+            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 5. DA ESPECIFICAÇÃO DOS SERVIÇOS
         </p>
         <p style="text-align: justify;">
-            1.10. O uso do Painel de Preços do TCE assegura <span style="font-weight: bold;">vantajosidade, economicidade e eficiência</span>, uma vez que contempla
-            valores praticados em licitações recentes, com base em contratos já homologados e fiscalizados, permitindo aferir médias
-            de mercado consistentes. Ademais, a utilização desta fonte atende às orientações do Tribunal de Contas e às boas práticas
-            de planejamento da contratação, mitigando riscos de sobrepreço ou subpreço.
+            XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+            XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.
+        </p>
+
+        <p style="display: flex; align-items: center; font-weight: bold; ">
+            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 6. DO REGIME DE EXECUÇÃO
         </p>
         <p style="text-align: justify;">
-            1.11. Dessa forma, a escolha pelo <span style="font-weight: bold;">Painel de Preços do TCE</span> como parâmetro principal de pesquisa confere <span style="font-weight: bold;">maior
-                confiabilidade</span> ao levantamento de valores, reduz a possibilidade de distorções e fortalece a fundamentação técnica da
-            estimativa de custos constante neste Termo de Referência.
+            6.1. O objeto contratado será realizado por execução indireta;
+            <br>
+            6.2. A execução do objeto seguirá a seguinte dinâmica, sendo de inteira responsabilidade
+            da contratada a realização das atividades abaixo relacionadas:
+            <br>
+            <span style="margin-left: 20px;">
+                a) Os serviços contratados, além da execução de trabalhos técnicos e profissionais
+                específicos, compreendem, a disponibilização de serviços especializados na modalidade
+                de assessoria e consultoria no Setor Público; visando o aprimoramento e o
+                desenvolvimento operacional das ações governamentais no âmbito do Poder Executivo
+                com vistas ao atingimento de metas de eficiência, eficácia e qualidade nas atividades
+                institucionais do Órgão, bem como do atendimento das exigências e obrigações
+                constantes da legislação governamental vigente;
+                <br>
+                b) Poderão ser realizados concomitantemente nas sedes administrativas da
+                contratante e da contratada, por meio de disponibilização de mão de obra especializada
+                por sócios da empresa ou de propostos quando se tratar de trabalhos específicos e por
+                meio de visitas técnicas* semanais de profissionais, bem como no atendimento de
+                consultas formuladas por telefone e por meio eletrônica quando se tratar de assessoria e
+                consultoria técnica;
+                <br>
+                c) Quando se tratar de reuniões técnicas para capacitação e orientação de
+                servidores ou audiências públicas, estas poderão ser realizadas fora do expediente
+                normal de trabalho da Contratante, mediante o agendamento e comunicação prévia por
+                parte da Contratante;
+                <br>
+                d) Em razão da necessidade e da excepcionalidade por parte da Contratante e por se
+                tratar de disponibilização de mão de obra por pessoa jurídica, que compreende serviços
+                técnicos profissionais especializados, não haverá limitação de tempo e horário na
+                execução dos trabalhos, porém, a execução de serviços na sede da Contratante não
+                obrigará os profissionais ou prepostos designados pela Contratada à obrigatoriedade de
+                cumprimento de horários diários, descaracterizando a subordinação e o vínculo
+                empregatício entre ambas as partes;
+                <br>
+                e) Deverão ser disponibilizados canais de comunicação por parte da Contratada,
+                para o atendimento de consultas à distância, através de telefones fixo e móvel, fax, e-mail
+                e outras formas de tecnologia disponíveis;
+                <br>
+                f) A contratação não envolve a disponibilização de quaisquer tipos de equipamentos
+                ou aplicativos, necessários às atividades operacionais de ambas as partes;
+                <br>
+                g) Os trabalhos específicos desdobram-se nos itens a seguir discriminados.
+                <br>
+                6.3. A CONTRATADA deverá executar o serviço utilizando-se dos materiais e
+                equipamentos necessários à perfeita execução dos serviços a serem prestados;
+                <br>
+                6.4. Não será necessária a utilização de uniforme pela contratada, no entanto os
+                funcionários deverão estar identificados no local de prestação de serviço;
+                <br>
+                6.5. Os Serviços deverão ser executados no município, nas semanas em que o
+                profissional estiver no município e sempre à distância quando não houver profissional in
+                loco no município.
+            </span>
+        </p>
+
+        <p style="display: flex; align-items: center; font-weight: bold; ">
+            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 7. DA DESCRIÇÃO DA SOLUÇÃO
+        </p>
+        <p style="text-align: justify;">
+            7.1. A descrição da solução como um todo, abrange a
+            {!! strip_tags($processo->objeto) !!}
+            <br>
+            7.2. A contratação em tela visa dar continuidade aos serviços acessórios que dão
+            sustentabilidade à otimização e adequação das atividades da administração pública, em
+            suas atribuições finalísticas.
+            <br>
+            7.3. Os serviços deverão ser executados com zelo e destreza, e de acordo com as
+            descrições, detalhamento e especificações contidas nesse Termo de Referência, não
+            eximindo a empresa da responsabilidade de execução de outras atividades atinentes ao
+            objeto, a qualquer tempo e a critério da Administração.
+        </p>
+
+        <p style="display: flex; align-items: center; font-weight: bold; ">
+            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 8. DA VIGÊNCIA
+        </p>
+        <p style="text-align: justify;">
+            8.1. O período de vigência do instrumento contratual será de {{ $vigencia_formatada }},
+            contados da data de sua assinatura, podendo este ser rescindido ou ter seu prazo
+            prorrogado na forma da Lei.
+        </p>
+
+        <p style="display: flex; align-items: center; font-weight: bold; ">
+            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 9. REQUISITOS DA CONTRATAÇÃO
+        </p>
+        <p style="text-align: justify;">
+            9.1. Para que o objeto da contratação seja atendido, é necessário o atendimento de
+            alguns requisitos mínimos necessários, dentre eles os de qualidade e capacidade de
+            execução pelo contratado, nos termos do artigo 72, da Lei Federal 14.133/2021.
+            <br>
+            9.2. Será exigido, conforme artigo 62 da Lei Federal 14.133/2021, documentos referentes
+            a habilitação jurídica (premissa do artigo 66), habilitação técnica (rol do artigo 67),
+            habilitação fiscal, social e trabalhista (artigo 68) habilitação econômico-financeira (rol do
+            artigo 69), todos da mesma legislação (Lei Federal 14.133/2021).
+            <br>
+            9.3. Sendo assim, os documentos exigidos serão:
+            <br>
+            <span style="margin-left: 20px;">
+                o Contrato social da empresa (todas as alterações ou última consolidação);
+                <br>
+                o Documento de Identificação dos sócios da empresa;
+                <br>
+                o Prova de inscrição no Cadastro Nacional da Pessoa Jurídica (CNPJ);
+                <br>
+                o Prova de inscrição no cadastro de contribuintes estadual e/ou municipal
+                <br>
+                o Regularidade perante a Fazenda Municipal;
+                <br>
+                o Regularidade perante a Fazenda Estadual;
+                <br>
+                o Regularidade perante a Fazenda Federal;
+                <br>
+                o Regularidade perante a Caixa Econômica Federal;
+                <br>
+                o Regularidade perante a Justiça do Trabalho;
+                <br>
+                o Atestado de capacidade técnica profissional e/ou operacional;
+                <br>
+                o Atestado de exclusividade, contrato de exclusividade, declaração do fabricante ou
+                outro documento idôneo capaz de comprovar que o objeto é fornecido ou prestado por
+                produtor, empresa ou representante comercial exclusivos (se for o caso).
+            </span>
+        </p>
+
+        <p style="display: flex; align-items: center; font-weight: bold; ">
+            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 10. MODELO DE GESTÃO DO CONTRATO
+        </p>
+        <p style="text-align: justify;">
+            10.1. A fiscalização da contratação, decorrente desta inexigibilidade de licitação, será
+            acompanhada e fiscalizada por servidor da Administração, especialmente designados,
+            nos termos do artigo 117 da Lei Federal 14.133/2021.
+            <br>
+            10.2. A contratante deverá indiciar um responsável legal, através de documento
+            encaminhado para o e-mail da prefeitura Municipal ou protocolado pessoalmente no
+            setor de licitações e contratos deste município, indicando os respectivos contatos (e-mail,
+            celular e Whatsapp), com poderes para representá-lo perante essa municipalidade na
+            execução do contrato decorrente da inexigibilidade de licitação objeto deste termo de
+            referência.
+        </p>
+
+        <p style="display: flex; align-items: center; font-weight: bold; ">
+            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 11. DO RECEBIMENTO DO OBJETO E DOS CRITÉRIOS PARA MEDIÇÃO E PAGAMENTO
+        </p>
+        <p style="text-align: justify;">
+            11.1. O recebimento do objeto do contrato, decorrente da referida inexigibilidade de
+            licitação, se dará:
+            <br>
+            <span style="margin-left: 20px;">
+                a) provisoriamente, pelo responsável por seu acompanhamento e fiscalização, mediante
+                termo detalhado, quando verificado o cumprimento das exigências de caráter técnico;
+                <br>
+                b) definitivamente, por servidor ou comissão designada pela autoridade competente,
+                mediante termo detalhado que comprove o atendimento das exigências contratuais;
+            </span>
+            11.2. O pagamento será realizado no prazo máximo de até 30 (trinta) dias, contados a
+            partir do recebimento da Nota Fiscal ou Fatura, através de ordem bancária, para crédito
+            em banco, agência e conta corrente indicados pelo contratado, respeitada a ordem
+            cronológica.
+            <br>
+            11.3. A emissão da Nota Fiscal/Fatura deve ser precedida do recebimento definitivo do
+            objeto, nos termos abaixo.
+            <br>
+            11.4. No prazo de até 5 dias corridos do adimplemento da parcela, a CONTRATADA
+            deverá entregar toda a documentação comprobatória do cumprimento da obrigação
+            contratual;
+            <br>
+            11.5. A contratante realizará inspeção minuciosa de todos os objetos
+            executados/fornecidos, por meio de profissionais técnicos competentes, acompanhados
+            dos profissionais encarregados pelo serviço, com a finalidade de verificar a adequação
+            do objeto e constatar e relacionar os arremates, retoques e revisões finais que se fizerem
+            necessários.
+            <br>
+            11.6. Para efeito de recebimento provisório, ao final de cada período de faturamento, o
+            fiscal técnico do contrato irá apurar o resultado das avaliações da execução do objeto e,
+            se for o caso, a análise do desempenho e qualidade dos mesmos em consonância com
+            os indicadores previstos, que poderá resultar no redimensionamento de valores a serem
+            pagos à contratada, registrando em relatório a ser encaminhado ao gestor do contrato.
+            <br>
+            11.7. A Contratada fica obrigada a reparar, corrigir, remover, reconstruir ou substituir, às
+            suas expensas, no todo ou em parte, o objeto em que se verificarem vícios, defeitos ou
+            incorreções resultantes da execução ou materiais empregados, cabendo à fiscalização
+            não atestar a última e/ou única medição de serviços até que sejam sanadas todas as
+            eventuais pendências que possam vir a ser apontadas no Recebimento Provisório.
+            <br>
+            11.8. No prazo de até 10 (dez) dias corridos a partir do recebimento provisório, o Gestor
+            do Contrato deverá providenciar o recebimento definitivo, ato quo concretiza o ateste da
+            execução/fornecimento, obedecendo as seguintes diretrizes:
+            <br>
+            11.9. Realizar a análise dos relatórios e de toda a documentação apresentada pela
+            fiscalização e, caso haja irregularidades que impeçam a liquidação e o pagamento da
+            despesa, indicar as cláusulas contratuais pertinentes, solicitando à CONTRATADA, por
+            escrito, as respectivas correções;
+            <br>
+            11.10. O recebimento provisório ou definitivo do objeto não exclui a responsabilidade da
+            Contratada pelos prejuízos resultantes da incorreta execução do contrato, ou, em
+            qualquer época, das garantias concedidas e das responsabilidades assumidas em
+            contrato e por força das disposições legais em vigor.
+            <br>
+            11.11. Os serviços/produtos poderão ser rejeitados, no todo ou em parte, quando em
+            desacordo com as especificações constantes neste Termo de Referência e na proposta,
+            devendo ser corrigidos/refeitos/substituídos no prazo fixado pelo fiscal do contrato, às
+            custas da Contratada, sem prejuízo da aplicação de penalidades.
+            <br>
+            11.12. A Nota Fiscal ou Fatura deverá ser obrigatoriamente acompanhada da
+            comprovação da regularidade fiscal, mediante consulta aos sítios eletrônicos oficiais ou à
+            documentação mencionada no art. 68 da Lei Federal 14.133/2021.
+        </p>
+
+       <p style="display: flex; align-items: center; font-weight: bold; ">
+            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 12. DOTAÇÃO ORÇAMENTÁRIA
+        </p>
+        <p style="text-align: justify;">
+            12.1. Os custos com a presente contratação correrão por conta da seguinte dotação
+            orçamentária:
+        </p>
+
+        <p style="display: flex; align-items: center; font-weight: bold; ">
+            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 13. FORMA E CRITÉRIO DE SELEÇÃO DO FORNECEDOR/PRESTADOR
+        </p>
+        <p style="text-align: justify;">
+            13.1. A seleção do prestador de serviço foi realizada com base nos requisitos previstos
+            neste termo de referência, atrelado a proposta vantajosa apresentada pelo(a)
+            contratado(a) XXXXXXXXXXXXXXXXX, inscrito(a) sob o CPF/CNPJ de n°
+            XXXXXXXXXXXX, conforme documentos acostados aos autos do processo.
+            <br>
+            13.2. O contratado(a) é notória em sua área de especialização, tendo cumprido todos os
+            requisitos de habilitação exigidos, especialmente a habilitação jurídica, regularidade
+            fiscal e trabalhista, qualificação econômico-financeira e qualificação técnica.
+        </p>
+
+        <p style="display: flex; align-items: center; font-weight: bold; ">
+            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 14. DA RAZÃO E ESCOLHA DO CONTRATADO
+        </p>
+        <p style="text-align: justify;">
+            14.1. XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+            (JUSTIFICATIVA);
+        </p>
+
+        <p style="display: flex; align-items: center; font-weight: bold; ">
+            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 15. DA JUSTIFICATIVA DOS PREÇOS:
+        </p>
+        <p style="text-align: justify;">
+            15.1. No que diz respeito a JUSTIFICATIVA DE PREÇOS, em atendimento ao que
+            preconiza o artigo 72, da Lei 14.133/2021 para elaboração do custo, deverá ser
+            apresentado valores praticados nos mercados, através de contratações com objetos
+            similares.
+            <br>
+            15.2. O contratado(a) apresentou notas fiscais e extratos de contratos de outros entes
+            públicos, onde notadamente é similar ao valor proposto.
+            15.3. Sendo assim, declara-se que o preço praticado para a presente contratação é
+            compatível com o mercado sendo considerado justo para esta Administração.
+        </p>
+
+        <p style="display: flex; align-items: center; font-weight: bold; ">
+            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 16. OBRIGAÇÕES DO(A) CONTRATADO(A) (ADICIONAR CAIXA DE TEXTO PARA QUE
+            POSSA SER INSERIDO OUTRAS OBRIGAÇÕES EXTRAS)
+        </p>
+        <p style="text-align: justify;">
+            Quando for contratação de assessorias ou consultorias técnicas e auditorias financeiras
+            ou tributárias (Art. 74, inc. III, alínea “c”, da Lei 14.133/21), manter o seguinte texto:
+
+            16.1. O(A) CONTRATADO(A) obriga-se a:
+            <br>
+            16.1.1. executar os serviços conforme especificações do Termo de Referência e de sua
+            proposta, com os recursos necessários ao perfeito cumprimento das cláusulas
+            contratuais;
+            <br>
+            16.1.2. reparar, corrigir, remover, reconstruir ou substituir, às suas expensas, no total ou
+            em parte, os serviços efetuados em que se verificarem vícios, defeitos ou incorreções
+            resultantes da execução ou dos materiais empregados, a critério da Administração;
+            <br>
+            16.1.3. arcar com a responsabilidade civil por todos e quaisquer danos materiais e morais
+            causados pela ação ou omissão de seus empregados, trabalhadores, prepostos ou
+            representantes, dolosa ou culposamente, à Prefeitura ou a terceiros;
+            <br>
+            16.1.4. utilizar empregados habilitados e com conhecimentos básicos dos serviços a
+            serem executados, de conformidade com as normas e determinações em
+            <br>
+            16.1.6. apresentar à CONTRATANTE, quando for o caso, a relação nominal dos
+            empregados que adentrarão o órgão para a execução do serviço, os quais devem estar
+            devidamente identificados por meio de crachá;
+            <br>
+            16.1.7. responsabilizar-se por todas as obrigações trabalhistas, sociais, previdenciárias,
+            tributárias e as demais previstas na legislação específica;
+            <br>
+            16.1.8. instruir seus empregados quanto à necessidade de acatar as orientações da
+            Administração, inclusive quanto ao cumprimento das Normas Internas, quando for o
+            caso;
+            <br>
+            16.1.9. relatar à Prefeitura toda e qualquer irregularidade verificada no decorrer da
+            prestação dos serviços;
+            <br>
+            16.1.10. não permitir a utilização de qualquer trabalho do menor de dezesseis anos,
+            exceto na condição de aprendiz para os maiores de quatorze anos; nem permitir a
+            utilização do trabalho do menor de dezoito anos em trabalho noturno, perigoso ou
+            insalubre;
+            <br>
+            16.1.11. manter durante toda a vigência do contrato, em compatibilidade com as
+            obrigações assumidas, todas as condições de habilitação e qualificação exigidas na
+            contratação;
+            <br>
+            16.1.12. não transferir a terceiros, por qualquer forma, nem mesmo parcialmente, as
+            obrigações assumidas, nem subcontratar qualquer das prestações a que está obrigada,
+            exceto nas condições se previamente autorizadas pela Administração;
+            <br>
+            16.1.13. Utilizar empregados habilitados e com conhecimentos básicos dos serviços a
+            serem executados, em conformidade com as normas e determinações em vigor;
+            <br>
+            16.1.14. Vedar a utilização, na execução dos serviços, de empregado que seja familiar de
+            agente público ocupante de cargo em comissão ou função de confiança no órgão
+            Contratante.
+            <br>
+            16.1.15. Disponibilizar à Contratante os empregados devidamente uniformizados e
+            identificados por meio de crachá, além de provê-los com os Equipamentos de Proteção
+            Individual - EPI, quando for o caso;
+            <br>
+            16.1.16. Fornecer os uniformes a serem utilizados por seus empregados, conforme
+            disposto neste Termo de Referência, sem repassar quaisquer custos a estes;
+            <br>
+            16.1.17. As empresas contratadas que sejam regidas pela Consolidação das Leis do
+            Trabalho (CLT) deverão apresentar a seguinte documentação no primeiro mês de
+            prestação dos serviços:
+            <br>
+            16.1.18. Substituir, no prazo de 02:00 (horas), em caso de eventual ausência, tais como
+            faltas e licenças, o empregado posto a serviço da Contratante, devendo identificar
+            previamente o respectivo substituto ao Fiscal do Contrato:
+            <br>
+            16.1.19. Responsabilizar-se pelo cumprimento das obrigações previstas em Acordo,
+            Convenção, Dissídio Coletivo de Trabalho ou equivalentes das categorias abrangidas
+            pelo contrato, por todas as obrigações trabalhistas, sociais, previdenciárias, tributárias e
+            as demais previstas em legislação específica, cuja inadimplência não transfere a
+            responsabilidade à Contratante;
+            <br>
+            16.1.19.1. Não serão incluídas nas planilhas de custos e formação de preços as
+            disposições contidas em Acordos, Dissídios ou Convenções Coletivas que tratem de
+            pagamento de participação dos trabalhadores nos lucros ou resultados da empresa
+            contratada, de matéria não trabalhista, de obrigações e direitos que somente se aplicam
+            aos contratos com a Administração Pública, ou que estabeleçam direitos não previstos
+            em lei, tais como valores ou índices obrigatórios de encargos sociais ou previdenciários,
+            bem como de preços para os insumos relacionados ao exercício da atividade.
+            <br>
+            16.1.20. Efetuar o pagamento dos salários dos empregados alocados na execução
+            contratual mediante depósito na conta bancária de titularidade do trabalhador, em
+            agência situada na localidade ou região metropolitana em que ocorre a prestação dos
+            serviços, de modo a possibilitar a conferência do pagamento por parte da Contratante.
+            Em caso de impossibilidade de cumprimento desta disposição, a contratada deverá
+            apresentar justificativa, a fim de que a Administração analise sua plausibilidade e possa
+            verificar a realização do pagamento:
+            <br>
+            16.2. Assegurar à CONTRATANTE:
+            <br>
+            16.2.1. O direito de propriedade intelectual dos produtos desenvolvidos, inclusive sobre
+            as eventuais adequações e atualizações que vierem a ser realizadas, logo após o
+            recebimento de cada parcela, de forma permanente, permitindo à Contratante distribuir,
+            alterar e utilizar os mesmos sem limitações;
+            <br>
+            16.2.2. Os direitos autorais da solução, do projeto, de suas especificações técnicas, da
+            documentação produzida e congêneres, e de todos os demais produtos gerados na
+            execução do contrato, inclusive aqueles produzidos por terceiros subcontratados, ficando
+            proibida a sua utilização sem que exista autorização expressa da Contratante, sob pena
+            de multa, sem prejuízo das sanções civis e penais cabíveis;
+            <br>
+            16.3. Os serviços serão executados pela CONTRATADA na forma descrita no Termo de
+            Referência;
+            <br>
+            16.4. Os termos indicados na proposta vinculam a referida contratação;
+        </p>
+
+        <p style="display: flex; align-items: center; font-weight: bold; ">
+            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 17. OBRIGAÇÕES DA CONTRATANTE (ADICIONAR CAIXA DE TEXTO PARA QUE POSSA
+            SER INSERIDO OUTRAS OBRIGAÇÕES EXTRAS)
+        </p>
+        <p style="text-align: justify;">
+            17.1. A CONTRATANTE obriga-se a:
+            <br>
+            17.1.1 Proporcionar todas as condições para que a CONTRATADA possa desempenhar
+            seus serviços de acordo com as determinações do Contrato e do Termo de Referência;
+            <br>
+            17.1.2. Exigir o cumprimento de todas as obrigações assumidas pela CONTRATADA, de
+            acordo com as cláusulas contratuais e os termos de sua proposta;
+            <br>
+            17.1.3. Exercer o acompanhamento e a fiscalização do objeto contratado, por servidor
+            especialmente designado, anotando em registro próprio as falhas detectadas, indicando
+            dia, mês e ano, bem como o nome dos empregados eventualmente envolvidos, e
+            encaminhando os apontamentos à autoridade competente para as providências cabíveis;
+            <br>
+            17.1.4. Notificar a CONTRATADA por escrito da ocorrência de eventuais imperfeições no
+            curso da execução dos serviços, fixando prazo para a sua correção;
+            <br>
+            17.1.5. Pagar à CONTRATADA o valor resultante do objeto contratado, na forma do
+            contrato;
+            <br>
+            17.1.6. Efetuar as retenções tributárias devidas sobre o valor da Nota Fiscal/Fatura da
+            contratada, no que couber, em conformidade com a legislação.
+            <br>
+            17.2. Não praticar atos de ingerência na administração da Contratada, tais como:
+            <br>
+            17.2.1. exercer o poder de mando sobre os empregados da Contratada, devendo
+            reportar-se somente aos prepostos ou responsáveis por ela indicados, exceto quando o
+            objeto da contratação previr o atendimento direto, tais como nos serviços de recepção e
+            apoio ao usuário;
+            <br>
+            17.2.2. direcionar a contratação de pessoas para trabalhar nas empresas Contratadas;
+            <br>
+            17.2.3. promover ou aceitar o desvio de funções dos trabalhadores da Contratada,
+            mediante a utilização destes em atividades distintas daquelas previstas no objeto da
+            contratação e em relação à função específica para a qual o trabalhador foi contratado;
+            <br>
+            17.2.4. considerar os trabalhadores da Contratada como colaboradores eventuais do
+            próprio órgão ou entidade responsável pela contratação, especial mente para efeito de
+            concessão de diárias e passagens;
+            <br>
+            17.3. fiscalizar mensalmente, por amostragem, o cumprimento das obrigações
+            trabalhistas, previdenciárias e para com o FGTS, especialmente:
+            <br>
+            17.3.1. A concessão de férias remuneradas e o pagamento do respectivo adicional, bem
+            como de auxílio-transporte, auxílio-alimentação e auxílio-saúde, quando for devido;
+            <br>
+            17.3.2. O recolhimento das contribuições previdenciárias e do FGTS dos empregados
+            que efetivamente participem da execução dos serviços contratados, a fim de verificar
+            qualquer irregularidade:
+            <br>
+            17.3.3. O pagamento de obrigações trabalhistas e previdenciárias dos empregados
+            dispensados até a data da extinção do contrato;
+            <br>
+            17.4. Analisar os termos de rescisão dos contratos de trabalho do pessoal empregado na
+            execução do objeto contratado no prazo de 30 (trinta) dias, prorrogável por igual período,
+            após a extinção ou rescisão do contrato;
+            <br>
+            17.5. Fornecer por escrito às informações necessárias para a execução do objeto
+            contratado;
+            <br>
+            17.6. Realizar avaliações periódicas da qualidade do objeto contratado, após seu
+            recebimento;
+            <br>
+            17.7. Cientificar o órgão de representação judicial do município para adoção das medidas
+            cabíveis quando do descumprimento das obrigações pela Contratada;
+            <br>
+            17.8. Arquivar, entre outros documentos, projetos, "as built", especificações técnicas,
+            orçamentos, termos de recebimento, contratos e aditamentos, relatórios de inspeções
+            técnicas após o recebimento do serviço e notificações expedidas;
+            <br>
+            17.9. Assegurar que o ambiente de trabalho, inclusive seus equipamentos e instalações,
+            apresentem condições adequadas ao cumprimento, pela contratada, das normas de
+            segurança e saúde no trabalho, quando o serviço for executado em suas dependências,
+            ou em local por ela designado;
+            <br>
+            17.10. Verificar, no ato do recebimento, se o objeto entregue corresponde exatamente à
+            marca/modelo/serviço contratado.
+        </p>
+
+        <p style="display: flex; align-items: center; font-weight: bold; ">
+            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 18. SUBCONTRATAÇÃO
+        </p>
+        <p style="text-align: justify;">
+            18.1. Não será admitida a subcontratação total do objeto licitatório;
+        </p>
+
+        <p style="display: flex; align-items: center; font-weight: bold; ">
+            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 19. REAJUSTE
+        </p>
+        <p style="text-align: justify;">
+            19.1 Os preços são fixos e irreajustáveis no prazo de um ano contado da data limite para
+            a apresentação das propostas;
+            <br>
+            19.1.1 Dentro do prazo de vigência do contrato e mediante solicitação da contratada, os
+            preços contratados poderão sofrer reajuste após o interregno de um ano, aplicando-se o
+            índice IGPM exclusiva mente para as obrigações iniciadas e concluídas após a
+            ocorrência da anualidade;
+            <br>
+            19.2. Nos reajustes subsequentes ao primeiro, o interregno mínimo de um ano será
+            contado a partir dos efeitos financeiros do último reajuste;
+            <br>
+            19.3. No caso de atraso ou não divulgação do índice de reajustamento, o
+            CONTRATANTE pagará à CONTRATADA a importância calculada pela última variação
+            conhecida, liquidando a diferença correspondente, tão logo seja divulgado o índice
+            definitivo. Fica a CONTRATADA obrigada a apresentar memória de cálculo referente ao
+            reajustamento de preços do valor remanescente, sempre que este ocorrer;
+            <br>
+            19.4. Nas aferições finais, o índice utilizado para reajuste será, obrigatoriamente, o
+            definitivo;
+            <br>
+            19.5. Caso o índice estabelecido para reajustamento venha a ser extinto ou de qualquer
+            forma não possa mais ser utilizado, será adotado, em substituição, o que vier a ser
+            determinado pela legislação então em vigor;
+            <br>
+            19.6. Na ausência dê previsão legal quanto ao índice substituto, as partes elegerão novo
+            índice oficial, para reajustamento do preço do valor remanescente, por meio de termo
+            aditivo;
+            <br>
+            19.7. O reajuste será realizado por apostilamento;
+        </p>
+
+        <p style="display: flex; align-items: center; font-weight: bold; ">
+            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 20. DAS SANÇÕES:
+        </p>
+        <p style="text-align: justify;">
+            20.1. Pela inexecução total ou parcial do objeto deste contrato, a Administração pode
+            aplicar à CONTRATADA, sanções previstas em lei, sempre respeitando com contraditório
+            e ampla defesa.
         </p>
     </div>
-    <div>
-        <p style="display: flex; align-items: center; font-weight: bold;">
-            <img src="{{ public_path('icons/engrenagem.png') }}" width="20" style="margin-right: 10px;">2. REQUISITOS DA CONTRATAÇÃO
-        </p>
-
-        <p style="text-align: justify;">
-            2.1 Para uma contratação mais segura e eficaz, sugerimos como técnica de averiguação, e controle, as seguintes exigências
-            mínimas:
-        </p>
-        <p style="text-align: justify;">
-            2.1.1. Os produtos deverão ser executados de forma parcelada, de acordo com as solicitações da CONTRATANTE, por meio
-            de suas respectivas OF.’s;
-        </p>
-        <p style="text-align: justify;">
-            2.1.2. Os produtos deverão ser entregues em até 48 (quarenta e oito) horas contadas do envio do Pedido de
-            Fornecimento/serviço Empenho, devendo a contratada manter estoques compatíveis com as quantidades solicitadas
-            durante o prazo de vigência do contrato, evitando atrasos nas entregas/fornecimentos, sem a exigência de valor ou
-            quantitativo mínimo e sem custos adicionais.
-        </p>
-        <p style="text-align: justify;">
-            2.1.3. Os produtos deverão ser de boa qualidade e procedência.
-        </p>
-        <p style="text-align: justify;">
-            2.1.4. Os produtos deverão ser executados/entregues nas respectivas Unidades e locais de indicação do CONTRATANTE, em
-            horários e datas previamente estabelecidas na respectiva Ordem de Serviço;
-        </p>
-        <p style="text-align: justify;">
-            2.1.5. A nota fiscal deverá ser apresentada no ato da entrega informado o número da ordem de fornecimento correspondente
-            no campo “Dados Adicionais”.
-        </p>
-        <p style="text-align: justify;">
-            2.1.6. A Contratada deverá arcar com as despesas de frete, deslocamento e demais despesas referentes às entregas dos
-            produtos, inclusive as oriundas da devolução e reposição de mercadorias acessórias ao objeto.
-        </p>
-        <p style="text-align: justify;">
-            2.1.7. A parte contratada sempre deverá atualizar, no período de a cada 03 (três) meses, sua sede central e sede de
-            distribuição, assim como, também, sua sede administrativa, visando garantir sua existência física e melhor execução do
-            contrato.
-        </p>
-        <p style="text-align: justify;">
-            2.1.8. Serão exigidas comprovações de localização da sede da empresa, com apresentação de fotos da infraestrutura
-            interna, com objetivo precípuo de averiguar a veracidade sobre a real existência da empresa, evitando a contratação de
-            empresas fantasmas ou de caráter inidôneo.
-        </p>
-        <p style="text-align: justify;">
-            2.1.9. Também serão exigidas as regulamentações e autorizações do órgão competente em relação ao objeto licitado, tais
-            como autorizações e permissões em geral;
-        </p>
-        <p style="text-align: justify;">
-            2.1.10. Serão exigidas composições de custos que reflitam a realidade econômica da empresa licitante, a ser definido no
-            próprio edital, que estabelecem critérios de custos com despesas diretas e indiretas;
-        </p>
-        <p style="text-align: justify;">
-            2.1.11. Também será exigido garantia de proposta, nos termos do art. 96 e seguintes, visando estabelecer a segurança do
-            preço ofertado pelo licitante, garantindo assim, o seguro do custeio realizado pela Administração no momento da abertura
-            do certame;
-
-        </p>
-        <p style="text-align: justify;">
-            2.2. Não é admitida a subcontratação do objeto contratual.
-        </p>
-    </div>
-    <div>
-        <p style="display: flex; align-items: center; font-weight: bold;">
-            <img src="{{ public_path('icons/check.png') }}" width="20" style="margin-right: 10px;">3. MODELO DE EXECUÇÃO DO OBJETO
-        </p>
-
-        <p style="text-align: justify;">
-            3.1. O prazo de entrega dos bens é de 02 (dois) dias, contados da Ordem de Fornecimento, em remessa parcelada de acordo
-            com a necessidade da Administração.
-        </p>
-        <p style="text-align: justify;">
-            3.2. Caso não seja possível a entrega na data assinalada, a empresa deverá comunicar as razões respectivas com pelo
-            menos (01) dias de antecedência para que qualquer pleito de prorrogação de prazo seja analisado, ressalvadas situações de
-            caso fortuito e força maior.
-        </p>
-        <p style="text-align: justify;">
-            3.3. Os bens deverão ser entregues na sede da Prefeitura Municipal ou em local indicado pela administração em Ordem de
-            Fornecimento.
-
-        </p>
-        <p style="text-align: justify;">
-            3.4. No caso de produtos perecíveis, o prazo de validade na data da entrega não poderá ser inferior a 180 (cento e oitenta)
-        </p>
-        <p style="text-align: justify;">
-            3.5. O prazo de garantia é aquele estabelecido na Lei nº 8.078, de 11 de setembro de 1990 (Código de Defesa do Consumidor)
-
-        </p>
-    </div>
-    <div>
-        <p style="display: flex; align-items: center; font-weight: bold;">
-            <img src="{{ public_path('icons/check.png') }}" width="20" style="margin-right: 10px;">4. MODELO DE GESTÃO DO CONTRATO
-        </p>
-
-        <p style="text-align: justify;">
-            4.1. O contrato deverá ser executado fielmente pelas partes, de acordo com as cláusulas avençadas e as normas da Lei nº
-            14.133, de 2021, e cada parte responderá pelas consequências de sua inexecução total ou parcial.
-        </p>
-        <p style="text-align: justify;">
-            4.2. Em caso de impedimento, ordem de paralisação ou suspensão do contrato, o cronograma de execução será prorrogado
-            automaticamente pelo tempo correspondente, anotadas tais circunstâncias mediante simples apostila.
-        </p>
-        <p style="text-align: justify;">
-            4.3. As comunicações entre o órgão ou entidade e a contratada devem ser realizadas por escrito sempre que o ato exigir tal
-            formalidade, admitindo-se o uso de mensagem eletrônica para esse fim.
-        </p>
-        <p style="text-align: justify;">
-            4.4. O órgão ou entidade poderá convocar representante da empresa para adoção de providências que devam ser cumpridas
-            de imediato.
-        </p>
-        <p style="text-align: justify;">
-            4.5. Após a assinatura do contrato ou instrumento equivalente, o órgão ou entidade poderá convocar o representante da
-            empresa contratada para reunião inicial para apresentação do plano de fiscalização, que conterá informações acerca das
-            obrigações contratuais, dos mecanismos de fiscalização, das estratégias para execução do objeto, do plano complementar
-            de execução da contratada, quando houver, do método de aferição dos resultados e das sanções aplicáveis, dentre outros.
-        </p>
-        <p style="text-align: justify;">
-            4.6. A execução do contrato deverá ser acompanhada e fiscalizada pelo(s) fiscal(is) do contrato, ou pelos respectivos
-            substitutos.
-        </p>
-        <p style="text-align: justify;">
-            4.7. O fiscal administrativo do contrato verificará a manutenção das condições de habilitação da contratada, acompanhará
-            o empenho, o pagamento, as garantias, as glosas e a formalização de apostilamento e termos aditivos, solicitando quaisquer
-            documentos comprobatórios pertinentes, caso necessário.
-        </p>
-        <p style="text-align: justify;">
-            4.8. Caso ocorram descumprimento das obrigações contratuais, o fiscal administrativo do contrato atuará tempestivamente
-            na solução do problema, reportando ao gestor do contrato para que tome as providências cabíveis, quando ultrapassar a sua
-            competência;
-        </p>
-        <p style="text-align: justify;">
-            4.9. O gestor do contrato coordenará a atualização do processo de acompanhamento e fiscalização do contrato contendo
-            todos os registros formais da execução no histórico de gerenciamento do contrato, a exemplo da ordem de serviço, do
-            registro de ocorrências, das alterações e das prorrogações contratuais, elaborando relatório com vistas à verificação da
-            necessidade de adequações do contrato para fins de atendimento da finalidade da administração.
-        </p>
-        <p style="text-align: justify;">
-            4.10 O gestor do contrato acompanhará a manutenção das condições de habilitação da contratada, para fins de empenho
-            de despesa e pagamento, e anotará os problemas que obstem o fluxo normal da liquidação e do pagamento da despesa no
-            relatório de riscos eventuais.
-        </p>
-        <p style="text-align: justify;">
-            4.11. O gestor do contrato acompanhará os registros realizados pelos fiscais do contrato, de todas as ocorrências
-            relacionadas à execução do contrato e as medidas adotadas, informando, se for o caso, à autoridade superior àquelas que
-            ultrapassarem a sua competência
-        </p>
-        <p style="text-align: justify;">
-            4.12. O gestor do contrato emitirá documento comprobatório da avaliação realizada pelos fiscais técnico, administrativo e
-            setorial quanto ao cumprimento de obrigações assumidas pelo contratado, com menção ao seu desempenho na execução
-            contratual, baseado nos indicadores objetivamente definidos e aferidos, e a eventuais penalidades aplicadas, devendo
-            constar do cadastro de atesto de cumprimento de obrigações.
-        </p>
-        <p style="text-align: justify;">
-            4.13. O gestor do contrato tomará providências para a formalização de processo administrativo de responsabilização para
-            fins de aplicação de sanções, a ser conduzido pela comissão de que trata o art. 158 da Lei nº 14.133, de 2021, ou pelo agente
-            ou pelo setor com competência para tal, conforme o caso.
-        </p>
-        <p style="text-align: justify;">
-            4.14. O fiscal administrativo do contrato comunicará ao gestor do contrato, em tempo hábil, o término do contrato sob sua
-            responsabilidade, com vistas à tempestiva renovação ou prorrogação contratual.
-        </p>
-        <p style="text-align: justify;">
-            4.15. O gestor do contrato deverá elaborará relatório final com informações sobre a consecução dos objetivos que tenham
-            justificado a contratação e eventuais condutas a serem adotadas para o aprimoramento das atividades da Administração.
-        </p>
-    </div>
-    <div>
-        <p style="display: flex; align-items: center; font-weight: bold;">
-            <img src="{{ public_path('icons/mao.png') }}" width="20" style="margin-right: 10px;">5. CRITÉRIOS DE RECEBIMENTO E DE PAGAMENTO
-        </p>
-
-        <p style="text-align: justify;">
-            5.1. Os bens serão recebidos provisoriamente, de forma sumária, no ato da entrega, juntamente com a nota fiscal ou
-            instrumento de cobrança equivalente, pelo(a) responsável pelo acompanhamento e fiscalização do contrato, para efeito de
-            posterior verificação de sua conformidade com as especificações constantes no Termo de Referência e na proposta.
-        </p>
-        <p style="text-align: justify;">
-            5.2. Os bens poderão ser rejeitados, no todo ou em parte, inclusive antes do recebimento provisório, quando em desacordo
-            com as especificações constantes no Termo de Referência e na proposta, devendo ser substituídos no prazo de 02 (dois)
-            dias, a contar da notificação da contratada, às suas custas, sem prejuízo da aplicação das penalidades.
-        </p>
-        <p style="text-align: justify;">
-            5.3. O recebimento definitivo ocorrerá no prazo de 05 (cinco) dias úteis, a contar do recebimento da nota fiscal ou instrumento
-            de cobrança equivalente pela Administração, após a verificação da qualidade e quantidade do material e consequente
-            aceitação mediante termo detalhado.
-        </p>
-        <p style="text-align: justify;">
-            5.4. O prazo para recebimento definitivo poderá ser excepcionalmente prorrogado, de forma justificada, por igual período,
-            quando houver necessidade de diligências para a aferição do atendimento das exigências contratuais.
-
-        </p>
-        <p style="text-align: justify;">
-            5.5. No caso de controvérsia sobre a execução do objeto, quanto à dimensão, qualidade e quantidade, deverá ser observado
-            o teor do art. 143 da Lei nº 14.133, de 2021, comunicando-se à empresa para emissão de Nota Fiscal no que pertine à parcela
-            incontroversa da execução do objeto, para efeito de liquidação e pagamento.
-        </p>
-        <p style="text-align: justify;">
-            5.6. O prazo para a solução, pelo contratado, de inconsistências na execução do objeto ou de saneamento da nota fiscal ou
-            de instrumento de cobrança equivalente, verificadas pela Administração durante a análise prévia à liquidação de despesa,
-            não será computado para os fins do recebimento definitivo.
-        </p>
-        <p style="text-align: justify;">
-            5.7. O recebimento provisório ou definitivo não excluirá a responsabilidade civil pela solidez e pela segurança do serviço nem
-            a responsabilidade ético-profissional pela perfeita execução do contrato.
-        </p>
-        <p style="text-align: justify;">
-            5.8. Recebida a Nota Fiscal ou documento de cobrança equivalente, correrá o prazo de trinta dias para fins de liquidação, na
-            forma desta seção, prorrogáveis por igual período.
-        </p>
-    </div>
-    <div>
-        <p style="display: flex; align-items: center; font-weight: bold;">
-            <img src="{{ public_path('icons/bolsa.png') }}" width="20" style="margin-right: 10px;">6. DA POSSIBILIDADE DE REAJUSTE
-        </p>
-
-        <p style="text-align: justify;">
-            6.1. Os preços são fixos e irreajustáveis no prazo de um ano contado da data limite para a apresentação das propostas.
-        </p>
-        <p style="text-align: justify;">
-            6.2. Dentro do prazo de vigência do contrato e mediante solicitação da contratada, os preços contratados poderão sofrer
-            reajuste após o interregno de um ano, aplicando-se o índice IPCA/IBGE, exclusivamente para as obrigações iniciadas e
-            concluídas após a ocorrência da anualidade, com base na seguinte fórmula:
-        </p>
-        <p style="text-align: justify;">
-            R = V (I – Iº) / Iº, onde: R = Valor do reajuste procurado; V = Valor contratual a ser reajustado; Iº = índice inicial - refere-se ao
-            índice de custos ou de preços correspondente à data fixada para entrega da proposta na licitação; I = Índice relativo ao mês
-            do reajustamento;
-        </p>
-        <p style="text-align: justify;">
-            6.3. Nos reajustes subsequentes ao primeiro, o interregno mínimo de um ano será contado a partir dos efeitos financeiros do
-            último reajuste.
-        </p>
-        <p style="text-align: justify;">
-            6.4. No caso de atraso ou não divulgação do índice de reajustamento, o CONTRATANTE pagará à CONTRATADA a importância
-            calculada pela última variação conhecida, liquidando a diferença correspondente tão logo seja divulgado o índice definitivo.
-        </p>
-        <p style="text-align: justify;">
-            6.5. Fica a CONTRATADA obrigada a apresentar memória de cálculo referente ao reajustamento de preços do valor
-            remanescente, sempre que este ocorrer.
-        </p>
-        <p style="text-align: justify;">
-            6.7. Caso o índice estabelecido para reajustamento venha a ser extinto ou de qualquer forma não possa mais ser utilizado,
-            será adotado, em substituição, o que vier a ser determinado pela legislação então em vigor, levando em consideração a
-            natureza do objeto que terá o preço reajustado.
-        </p>
-        <p style="text-align: justify;">
-            6.8. Na ausência de previsão legal quanto ao índice substituto, as partes elegerão novo índice oficial, para reajustamento do
-            preço do valor remanescente, por meio de termo aditivo.;
-        </p>
-    </div>
-    <div>
-        <p style="display: flex; align-items: center; font-weight: bold;">
-            <img src="{{ public_path('icons/selo.png') }}" width="20" style="margin-right: 10px;">7. DA POSSIBILIDADE DE REAJUSTE
-        </p>
-
-        <p style="text-align: justify;">
-            7.1. Para este procedimento apenas se aplicará a garantia de proposta na fase inicial dos lances.
-        </p>
-    </div>
-    <div>
-        <p style="display: flex; align-items: center; font-weight: bold;">
-            <img src="{{ public_path('icons/calc.png') }}" width="20" style="margin-right: 10px;">8. ADEQUAÇÃO ORÇAMENTÁRIA
-        </p>
-
-        <p style="text-align: justify;">
-            8.1. As despesas decorrentes da presente contratação correrão à conta de recursos específicos consignados no Orçamento
-            Geral da Município.
-        </p>
-        <p style="text-align: justify;">
-            8.2. A contratação será atendida pela seguinte dotação:
-        </p>
-         @if ($detalhe->tipo_srp == 'nao')
-        <table style="border-collapse: collapse; width: 100%; border: 1px solid black;">
-            <tr>
-                <!-- Coluna da esquerda -->
-                <td style="vertical-align: top; padding: 10px;">
-                    {!! str_replace('<p>', '<p style="text-indent:30px; text-align: justify;">', $detalhe->dotacao_orcamentaria) !!}
-                </td>
-            </tr>
-        </table>
-        @else
-        <p style="text-indent: 30px; text-align: justify;">
-            Declaro, para os devidos fins, que a presente licitação será realizada sob a forma de <span style="font-weight: bold;">Sistema de
-                Registro de Preços (SRP)</span>, nos termos do art. 82 e seguintes da Lei nº 14.133/2021.<br>
-            Por se tratar de procedimento que visa apenas ao registro formal de preços, <span style="font-weight: bold;">não há necessidade de
-                indicação de dotação orçamentária nesta fase</span>, ficando a alocação de recursos vinculada e
-            obrigatória somente no
-            momento da contratação efetiva, mediante emissão da Nota de Empenho correspondente, conforme as demandas
-            das
-            Secretarias/Órgãos requisitantes.<br>
-            Tal medida encontra respaldo legal e visa garantir o adequado planejamento das contratações, respeitando
-            os
-            princípios da eficiência, economicidade e responsabilidade fiscal.
-        </p>
-        @endif
-        <p style="text-align: justify;">
-            8.3. A dotação relativa aos exercícios financeiros subsequentes será indicada após aprovação da Lei Orçamentária
-            respectiva e liberação dos créditos correspondentes, mediante apostilamento.
-        </p>
-    </div>
-    {{-- Bloco de data e assinatura --}}
-    <div class="footer-signature">
-            {{ $processo->prefeitura->cidade }},
-            {{ \Carbon\Carbon::parse($dataSelecionada)->translatedFormat('d \d\e F \d\e Y') }}
-        </div>
-
-    @php
-    // Verifica se a variável $assinantes existe e tem itens
-    $hasSelectedAssinantes = isset($assinantes) && count($assinantes) > 0;
-    @endphp
-
-    @if ($hasSelectedAssinantes)
-    {{-- Renderiza APENAS O PRIMEIRO assinante da lista --}}
-    @php
-    $primeiroAssinante = $assinantes[0]; // Pega o segundo item
-    @endphp
-
-    <div style="margin-top: 40px; text-align: center;">
-        <div class="signature-block" style="display: inline-block; margin: 0 40px;">
-            ___________________________________<br>
-            <p style="line-height: 1.2;">
-                {{ $primeiroAssinante['responsavel'] }} <br>
-                <span>{{ $primeiroAssinante['unidade_nome'] }}</span>
-            </p>
-        </div>
-    </div>
-    @else
-    {{-- Bloco Padrão (Fallback) --}}
-    <div class="signature-block" style="margin-top: 40px; text-align: center;">
-        ___________________________________<br>
-        <p style="line-height: 1.2;">
-            {{ $processo->prefeitura->autoridade_competente }} <br>
-            <span style="color: red;">[Pregoeira/Agente de Contratação]</span>
-        </p>
-    </div>
-    @endif
 
 </body>
 

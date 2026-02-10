@@ -882,6 +882,30 @@
                         </p>
                     </div>
 
+                    <!-- No modal de importação, adicione este script após o input do arquivo -->
+                    <script>
+                        document.getElementById('excelFileVencedor').addEventListener('change', function(e) {
+                            const file = e.target.files[0];
+                            const fileSize = file ? file.size : 0;
+                            const maxSize = 10 * 1024 * 1024; // 10MB
+
+                            if (fileSize > maxSize) {
+                                showMessage('Arquivo muito grande. Tamanho máximo: 10MB', 'error');
+                                e.target.value = '';
+                                return;
+                            }
+
+                            // Verificar extensão
+                            const allowedExtensions = ['xlsx', 'xls', 'csv'];
+                            const extension = file.name.split('.').pop().toLowerCase();
+                            if (!allowedExtensions.includes(extension)) {
+                                showMessage('Extensão não permitida. Use .xlsx, .xls ou .csv', 'error');
+                                e.target.value = '';
+                                return;
+                            }
+                        });
+                    </script>
+
                     <div class="mb-4">
                         <label class="flex items-center">
                             <input type="checkbox" id="sobrescreverVencedor" class="text-blue-600 border-gray-300 rounded shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
@@ -1289,7 +1313,7 @@
             console.log('=== DEBUG INICIO salvarVencedor ===');
 
             const formData = new FormData(event.target);
-            
+
             const vencedorIndex = document.getElementById('vencedorIndex').value;
             const vencedorId = document.getElementById('vencedorId').value;
 
@@ -1314,7 +1338,7 @@
 
             // Preparar dados para enviar
             let requestData = {};
-            
+
             if (vencedorIndex !== '') {
                 // Se está editando, envia apenas o vencedor específico
                 requestData = {
@@ -1433,35 +1457,63 @@
 
             showMessage('Processando arquivo Excel...', 'info');
 
+            // Adicionar timeout
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 segundos
+
             fetch("{{ route('admin.processos.finalizacao.importar-excel', $processo) }}", {
                 method: 'POST',
-                body: formData
+                body: formData,
+                signal: controller.signal
             })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    showMessage(data.message, 'success');
-                    fecharImportarModal();
-                    atualizarTabelaVencedores();
-                } else {
-                    showMessage(data.message, 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Erro completo:', error);
-                showMessage('Erro ao processar arquivo: ' + error.message, 'error');
-            })
-            .finally(() => {
-                importButton.textContent = originalText;
-                importButton.disabled = false;
-            });
-        }
+                .then(response => {
+                    clearTimeout(timeoutId);
 
+                    if (!response.ok) {
+                        if (response.status === 413) {
+                            throw new Error('Arquivo muito grande. Tamanho máximo: 10MB');
+                        }
+                        return response.text().then(text => {
+                            try {
+                                const data = JSON.parse(text);
+                                throw new Error(`HTTP ${response.status}: ${data.message || text}`);
+                            } catch {
+                                throw new Error(`HTTP ${response.status}: ${text}`);
+                            }
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        showMessage(data.message, 'success');
+                        fecharImportarModal();
+                        atualizarTabelaVencedores();
+
+                        // Limpar o input de arquivo
+                        fileInput.value = '';
+                    } else {
+                        showMessage('Erro: ' + data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    clearTimeout(timeoutId);
+
+                    let errorMessage = 'Erro ao processar arquivo: ';
+                    if (error.name === 'AbortError') {
+                        errorMessage += 'Tempo esgotado (60 segundos). O arquivo pode ser muito grande ou complexo.';
+                    } else {
+                        errorMessage += error.message;
+                    }
+
+                    console.error('Erro completo:', error);
+                    showMessage(errorMessage, 'error');
+                })
+                .finally(() => {
+                    importButton.textContent = originalText;
+                    importButton.disabled = false;
+                });
+        }
         // Atualizar tabela de vencedores
         function atualizarTabelaVencedores() {
             fetch('{{ route("admin.processos.finalizacao.vencedores.get", $processo) }}')
@@ -2138,22 +2190,36 @@
 
         function showMessage(message, type) {
             const container = document.getElementById('message-container');
-            const bgColor = type === 'success' ? 'bg-green-100 border-green-400' : 'bg-red-100 border-red-400';
-            const textColor = type === 'success' ? 'text-green-800' : 'text-red-800';
-            const icon = type === 'success' ? '✅' : '❌';
+            const bgColor = type === 'success' ? 'bg-green-100 border-green-400' :
+                type === 'error' ? 'bg-red-100 border-red-400' :
+                    type === 'info' ? 'bg-blue-100 border-blue-400' :
+                        'bg-gray-100 border-gray-400';
+            const textColor = type === 'success' ? 'text-green-800' :
+                type === 'error' ? 'text-red-800' :
+                    type === 'info' ? 'text-blue-800' :
+                        'text-gray-800';
+            const icon = type === 'success' ? '✅' :
+                type === 'error' ? '❌' :
+                    type === 'info' ? 'ℹ️' :
+                        '⚠️';
 
             container.innerHTML = `
-                <div class="p-4 mb-4 border-l-4 rounded-md ${bgColor} ${textColor}">
-                    <div class="flex items-center">
-                        <span class="mr-2 text-lg">${icon}</span>
-                        <span class="font-semibold">${message}</span>
-                    </div>
+        <div class="p-4 mb-4 border-l-4 rounded-md ${bgColor} ${textColor}">
+            <div class="flex items-center">
+                <span class="mr-2 text-lg">${icon}</span>
+                <div>
+                    <span class="font-semibold">${message}</span>
+                    ${type === 'error' ? '<div class="mt-1 text-sm opacity-75">Verifique o formato do arquivo e tente novamente.</div>' : ''}
                 </div>
-            `;
+            </div>
+        </div>
+    `;
 
+            // Auto-remover após 8 segundos para erros, 5 para outros
+            const timeout = type === 'error' ? 8000 : 5000;
             setTimeout(() => {
                 container.innerHTML = '';
-            }, 6000);
+            }, timeout);
         }
 
         // Alpine.js Component

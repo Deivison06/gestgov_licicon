@@ -50,7 +50,7 @@
 
                         {{-- Nº PROCESSO --}}
                         <div>
-                            <label for="numero_processo" class="block text-sm font-medium text-gray-700">Nº do Processo</label>
+                            <label for="numero_processo" class="block text-sm font-medium text-gray-700">Nº DO PROCESSO ADMINISTRATIVO</label>
                             <input type="text" name="numero_processo" id="numero_processo" value="{{ old('numero_processo', $processo->numero_processo) }}" class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">
                             @error('numero_processo')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>

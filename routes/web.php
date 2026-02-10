@@ -64,9 +64,9 @@ Route::prefix('admin')
         // ========================================
         // 3. CONTRATOS MANUAIS (EXTERNOS)
         // ========================================
-         Route::get('contratos', [ContratoManualController::class, 'index'])
+        Route::get('contratos', [ContratoManualController::class, 'index'])
             ->name('contratos.index');
-            
+
         Route::resource('contratos', ContratoManualController::class)
             ->names([
                 'create'  => 'contratos.create',
@@ -76,6 +76,11 @@ Route::prefix('admin')
                 'destroy' => 'contratos.destroy',
             ])
             ->except(['show']);
+
+        Route::prefix('contratos')->name('contratos.')->group(function () {
+            Route::get('/manual/{id}', [ContratoManualController::class, 'showManual'])->name('show.manual');
+            Route::get('/sistema/{id}', [ContratoManualController::class, 'showSistema'])->name('show.sistema');
+        });
 
         // Rota para atualizar dados da empresa via AJAX
         Route::put('/contratos/{id}/empresa', [ContratoManualController::class, 'updateEmpresa'])
@@ -119,21 +124,41 @@ Route::prefix('admin')
             // Iniciar processo
             Route::get('/iniciar', [ProcessoController::class, 'iniciar'])
                 ->name('processos.iniciar');
-            
+
+            // As rotas já estão definidas no seu arquivo de rotas:
+            Route::post('/republicar-edital', [ProcessoController::class, 'republicarEdital'])
+                ->name('processos.republicar.edital');
+
+            Route::post('/republicar-processo', [ProcessoController::class, 'republicarProcesso'])
+                ->name('processos.republicar.processo');
+
+            Route::post('/cancelar-licitacao', [ProcessoController::class, 'cancelarLicitacao'])
+                ->name('processos.cancelar.licitacao');
+
+            // Adicione esta linha às rotas do ProcessoController
+            Route::post('/reverter-cancelamento', [ProcessoController::class, 'reverterCancelamento'])
+                ->name('processos.reverter-cancelamento');
+
+            Route::post('/adiar-licitacao', [ProcessoController::class, 'adiarLicitacao'])
+                ->name('processos.adiar.licitacao');
+
             Route::post('/iniciar', [ProcessoController::class, 'storeDetalhe'])
                 ->name('processos.detalhes.store');
+
+            Route::put('/status', [ProcessoController::class, 'updateStatus'])
+                ->name('processos.status.update');
 
             // Gerar PDF
             Route::get('/pdf', [ProcessoController::class, 'gerarPdf'])
                 ->name('processos.pdf');
-            
+
             Route::get('/visualizar-pdf', [ProcessoController::class, 'visualizarPdf'])
                 ->name('processos.visualizar-pdf');
 
             // Download documentos
             Route::get('/documento/{tipo}/baixar', [ProcessoController::class, 'baixarDocumento'])
                 ->name('processo.documento.dowload');
-            
+
             Route::get('/documentos/baixar-todos', [ProcessoController::class, 'baixarTodosDocumentos'])
                 ->name('processo.documento.dowload-all');
         });
@@ -145,14 +170,14 @@ Route::prefix('admin')
             // Finalizar processo
             Route::get('/', [FinalizacaoProcessoController::class, 'finalizar'])
                 ->name('finalizar');
-            
+
             Route::post('/', [FinalizacaoProcessoController::class, 'storeFinalizacao'])
                 ->name('store');
 
             // Vencedores
             Route::post('/vencedores', [FinalizacaoProcessoController::class, 'storeVencedores'])
                 ->name('vencedores.store');
-            
+
             Route::get('/vencedores', [FinalizacaoProcessoController::class, 'getVencedores'])
                 ->name('vencedores.get');
 
@@ -163,7 +188,7 @@ Route::prefix('admin')
             // Reservas
             Route::post('/reservas', [ReservaController::class, 'store'])
                 ->name('reservas.store');
-            
+
             Route::get('/reservas', [ReservaController::class, 'getReservas'])
                 ->name('reservas.get');
 
@@ -174,7 +199,7 @@ Route::prefix('admin')
             // Download documentos da finalização
             Route::get('/documento/{tipo}/baixar', [FinalizacaoProcessoController::class, 'baixarDocumento'])
                 ->name('documento.dowload');
-            
+
             Route::get('/documentos/baixar-todos', [FinalizacaoProcessoController::class, 'baixarTodosDocumentos'])
                 ->name('documento.dowload-all');
         });
@@ -190,7 +215,7 @@ Route::prefix('admin')
             // Gerenciamento de campos do contrato
             Route::post('/salvar-campo', [ContratoProcessoController::class, 'salvarCampoContrato'])
                 ->name('salvar-campo');
-            
+
             Route::get('/dados', [ContratoProcessoController::class, 'obterDadosContrato'])
                 ->name('dados');
 
@@ -210,23 +235,23 @@ Route::prefix('admin')
             // Contratações individuais
             Route::post('/contratacao', [ContratacaoController::class, 'store'])
                 ->name('processos.contratacao.store');
-            
+
             Route::get('/contratacao/{contratacao}/edit', [ContratacaoController::class, 'edit'])
                 ->name('processos.contratacao.edit');
-            
+
             Route::put('/contratacao/{contratacao}', [ContratacaoController::class, 'update'])
                 ->name('processos.contratacao.update');
-            
+
             Route::put('/contratacao/{contratacao}/confirmar', [ContratacaoController::class, 'confirmar'])
                 ->name('processos.contratacao.confirmar');
-            
+
             Route::delete('/contratacao/{contratacao}', [ContratacaoController::class, 'destroy'])
                 ->name('processos.contratacao.destroy');
 
             // Contratações em lote
             Route::post('/contratacoes-em-lote', [ContratacaoController::class, 'storeEmLote'])
                 ->name('processos.contratacao.store-em-lote');
-            
+
             Route::get('/contratacao/listar', [ContratacaoController::class, 'listar'])
                 ->name('processos.contratacao.listar');
 
@@ -238,13 +263,13 @@ Route::prefix('admin')
             Route::prefix('estoque')->name('processos.estoque.')->group(function () {
                 Route::post('/verificar', [ContratacaoController::class, 'verificarDisponibilidade'])
                     ->name('verificar');
-                
+
                 Route::get('/relatorio', [ContratacaoController::class, 'relatorio'])
                     ->name('relatorio');
-                
+
                 Route::post('/recalcular', [ContratacaoController::class, 'recalcularEstoque'])
                     ->name('recalcular');
-                
+
                 Route::get('/dashboard', [ContratacaoController::class, 'dashboardEstoque'])
                     ->name('dashboard');
             });
@@ -260,16 +285,16 @@ Route::prefix('admin')
         Route::prefix('contratacao')->name('processos.contratacao.')->group(function () {
             Route::get('/', [ContratacaoController::class, 'index'])
                 ->name('index');
-            
+
             Route::post('/', [ContratacaoController::class, 'store'])
                 ->name('store');
-            
+
             Route::get('/listar', [ContratacaoController::class, 'listar'])
                 ->name('listar');
-            
+
             Route::put('/{contratacao}', [ContratacaoController::class, 'finalizar'])
                 ->name('finalizar');
-            
+
             Route::delete('/{contratacao}', [ContratacaoController::class, 'destroy'])
                 ->name('destroy');
         });
@@ -280,7 +305,7 @@ Route::prefix('admin')
         Route::prefix('contrato')->name('processo.contrato.')->group(function () {
             Route::get('/processos/{processo}/pdf', [ContratoProcessoController::class, 'gerarPdf'])
                 ->name('gerar-pdf');
-            
+
             Route::get('/processo/{processo}/baixar', [ContratoProcessoController::class, 'baixarContrato'])
                 ->name('download');
         });
@@ -291,16 +316,16 @@ Route::prefix('admin')
         Route::prefix('finalizacao')->name('processo.finalizar')->group(function () {
             Route::get('/processos/{processo}/pdf', [FinalizacaoProcessoController::class, 'gerarPdf'])
                 ->name('documento.pdf');
-            
+
             Route::get('/processo/{processo}/documento/{tipo}/baixar', [FinalizacaoProcessoController::class, 'baixarDocumento'])
                 ->name('documento.dowload');
-            
+
             Route::get('/processo/{processo}/documentos/baixar-todos', [FinalizacaoProcessoController::class, 'baixarTodosDocumentos'])
                 ->name('documento.dowload-all');
         });
 
         Route::get('/processos/by-prefeitura', [ProcessoController::class, 'byPrefeitura'])
-        ->name('atas.processos-by-prefeitura');
+            ->name('atas.processos-by-prefeitura');
 
 
         Route::prefix('atas')->name('atas.')->group(function () {
@@ -310,23 +335,23 @@ Route::prefix('admin')
             Route::post('/{processo}/gerar', [AtaController::class, 'gerarESalvarAta'])->name('gerar');
             Route::get('/{processo}/download', [AtaController::class, 'downloadAta'])->name('download');
             Route::get('/{processo}/dados', [AtaController::class, 'getDadosAta'])->name('dados');
-            
+
             // Novas rotas para a nova lógica
             Route::get('/{processo}/lotes-disponiveis/{vencedorId}', [AtaController::class, 'getLotesDisponiveis'])->name('lotes.disponiveis');
             Route::post('/{processo}/contratacao-direta', [AtaController::class, 'criarContratacaoDireta'])->name('contratacao.direta');
             Route::post('/{processo}/marcar-contratado', [AtaController::class, 'marcarComoContratado'])->name('marcar.contratado');
-            
+
             // Rotas para salvar dados
             Route::post('/{processo}/salvar-campo', [AtaController::class, 'salvarCampoContrato'])->name('salvar.campo');
             Route::post('/{processo}/salvar-assinantes', [AtaController::class, 'salvarAssinantesAta'])->name('salvar.assinantes');
             Route::post('/{processo}/salvar-contratacoes', [AtaController::class, 'salvarContratacoesSelecionadas'])->name('salvar.contratacoes');
-            
+
             Route::post('/relatorio-consolidado', [AtaController::class, 'relatorioConsolidado'])->name('relatorio.consolidado');
 
             // Nas suas rotas de atas, adicione:
             Route::get('/{processo}/get-contratacoes-pendentes', [AtaController::class, 'getContratacoesPendentes'])->name('get.contratacoes.pendentes');
             Route::get('/{processo}/get-contratacoes-atualizadas', [AtaController::class, 'getContratacoesAtualizadas'])->name('get.contratacoes.atualizadas');
-            
+
             // Adicione esta rota dentro do grupo de atas, antes do fechamento do grupo:
             Route::get('/{processo}/contrato-itens/{documentoId}', [AtaController::class, 'getItensContrato'])
                 ->name('contrato.itens');
@@ -335,19 +360,24 @@ Route::prefix('admin')
                 ->name('admin.atas.debug');
 
             Route::get('{processo}/download/{nomeArquivo}', [AtaController::class, 'downloadAta'])
-            ->name('admin.atas.download.file');
+                ->name('admin.atas.download.file');
 
             Route::get('/{processo}/contratacao/{contratacao}/edit', [AtaController::class, 'editContratacao'])
                 ->name('contratacao.edit');
-            
+
             Route::put('/{processo}/contratacao/{contratacao}', [AtaController::class, 'updateContratacao'])
                 ->name('contratacao.update');
-            
+
             Route::delete('/{processo}/contratacao/{contratacao}', [AtaController::class, 'destroyContratacao'])
                 ->name('contratacao.destroy');
             Route::delete('/{processo}/excluir-todas-contratacoes', [AtaController::class, 'excluirTodasContratacoes'])
                 ->name('excluir.todas.contratacoes');
-        
+
+            // Dentro do grupo de atas, adicione essas novas rotas:
+
+            // Desfazer/cancelar contrato
+            Route::post('/{processo}/desfazer-contrato/{documento}', [AtaController::class, 'desfazerContrato'])
+                ->name('contrato.desfazer');
         });
     });
 

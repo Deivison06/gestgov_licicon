@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Unidade;
+use App\Models\Contrato;
 use App\Models\Processo;
 use App\Models\Prefeitura;
 use Illuminate\Http\Request;
+use App\Models\ContratoManual;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class PrefeituraController extends Controller
@@ -163,11 +166,79 @@ class PrefeituraController extends Controller
         }
     }
 
-    public function dashboard()
+    public function dashboard(Request $request)
     {
-        $processos = Processo::all();
+        // Dashboard geral ou por cidade específica
+        $cidadeId = $request->query('cidade');
+
+        if ($cidadeId) {
+            // Dashboard específico da cidade
+            $prefeitura = Prefeitura::findOrFail($cidadeId);
+            $processos = Processo::where('prefeitura_id', $cidadeId)
+                ->with(['prefeitura', 'vencedores'])
+                ->get();
+        } else {
+            // Dashboard geral
+            $prefeitura = null;
+            $processos = Processo::with(['prefeitura', 'vencedores'])->get();
+        }
+
+        // Contar por modalidade
+        $pregioes = $processos->where('modalidade.value', 4)->count(); // PREGAO_ELETRONICO
+        $dispensas = $processos->where('modalidade.value', 2)->count(); // DISPENSA
+        $inexigibilidades = $processos->where('modalidade.value', 3)->count(); // INEXIGIBILIDADE
+        $concorrencia = $processos->where('modalidade.value', 1)->count(); // CONCORRENCIA
+
+        // Contar por status
+        $emAndamento = $processos->where('status.value', 'analise')->count();
+        $concluido = $processos->where('status.value', 'aprovado')->count();
+        $cancelados = $processos->where('status.value', 'aprovado')->count();
+
+        // Listar prefeituras para o filtro
         $prefeituras = Prefeitura::all();
 
-        return view('dashboard', compact('processos', 'prefeituras'));
+        return view('dashboard', compact(
+            'prefeitura',
+            'processos',
+            'prefeituras',
+            'pregioes',
+            'dispensas',
+            'inexigibilidades',
+            'concorrencia',
+            'emAndamento',
+            'concluido'
+        ));
+    }
+
+    private function getAtividadesRecentes($processos, $contratosManuais)
+    {
+        $atividades = [];
+
+        // Processos recentes
+        $processosRecentes = $processos->sortByDesc('created_at')->take(3);
+        foreach ($processosRecentes as $processo) {
+            $atividades[] = [
+                'type' => 'processo',
+                'description' => "Processo #{$processo->numero_processo} criado",
+                'time' => $processo->created_at->diffForHumans()
+            ];
+        }
+
+        // Contratos manuais recentes
+        $contratosRecentes = $contratosManuais->sortByDesc('created_at')->take(2);
+        foreach ($contratosRecentes as $contrato) {
+            $atividades[] = [
+                'type' => 'contrato',
+                'description' => "Contrato #{$contrato->numero_contrato} criado",
+                'time' => $contrato->created_at->diffForHumans()
+            ];
+        }
+
+        // Ordenar por data mais recente
+        usort($atividades, function ($a, $b) {
+            return strtotime($b['time']) - strtotime($a['time']);
+        });
+
+        return array_slice($atividades, 0, 5); // Limitar a 5 atividades
     }
 }

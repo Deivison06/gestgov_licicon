@@ -21,7 +21,8 @@ class Documento extends Model
         'quantidade_itens',      // <-- ADICIONAR
         'campos',                // JSON com campos do contrato
         'assinantes',            // JSON com assinantes
-        'contratacoes_selecionadas' // JSON com IDs das contratações
+        'contratacoes_selecionadas', // JSON com IDs das contratações
+        'justificativa',
     ];
 
     protected $casts = [
@@ -67,5 +68,24 @@ class Documento extends Model
     public function getSubcontratacaoAttribute()
     {
         return $this->campos['subcontratacao'] ?? null;
+    }
+
+    /**
+     * Replicar documento com novos dados
+     */
+    public function replicarParaRepublicacao(array $novosDados = [])
+    {
+        $replica = $this->replicate();
+
+        foreach ($novosDados as $campo => $valor) {
+            if (in_array($campo, $this->fillable)) {
+                $replica->$campo = $valor;
+            }
+        }
+
+        $replica->gerado_em = now();
+        $replica->save();
+
+        return $replica;
     }
 }

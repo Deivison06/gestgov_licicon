@@ -37,7 +37,7 @@
             @php
                 $isPrefeituraUser = auth()->user()->hasRole('prefeitura') && auth()->user()->prefeitura_id;
             @endphp
-            
+
             <label class="block mb-2 text-sm font-medium text-gray-700">Prefeitura</label>
             @if($isPrefeituraUser)
                 <input type="hidden" name="prefeitura_id" value="{{ auth()->user()->prefeitura_id }}">
@@ -92,13 +92,13 @@
         {{-- Linha 3: Modalidade e Contratante --}}
         <div class="grid grid-cols-1 gap-6 md:grid-cols-2 mb-6">
             <div>
-                <label class="block mb-2 text-sm font-medium text-gray-700">Modalidade</label>
-                <select name="modalidade" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496]">
+                <label for="modalidade" class="block text-sm font-medium text-gray-700">Modalidade</label>
+                <select name="modalidade" id="modalidade" class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">
                     <option value="">Selecione a modalidade</option>
                     @foreach (\App\Enums\ModalidadeEnum::cases() as $modalidade)
-                    <option value="{{ $modalidade->value }}" {{ $contrato->modalidade == $modalidade->value ? 'selected' : '' }}>
-                        {{ $modalidade->getDisplayName() }}
-                    </option>
+                        <option value="{{ $modalidade->value }}" {{ old('modalidade', $contrato->modalidade?->value ?? $contrato->modalidade) == $modalidade->value ? 'selected' : '' }}>
+                            {{ $modalidade->getDisplayName() }}
+                        </option>
                     @endforeach
                 </select>
                 @error('modalidade')
@@ -162,11 +162,11 @@
             <h4 class="text-sm font-semibold text-blue-800 mb-3 flex items-center gap-2">
                 <i class="fas fa-file-pdf"></i> Arquivo do Contrato
             </h4>
-            
+
             @if($contrato->arquivo_contrato)
                 <div class="mb-4">
                     <p class="text-sm text-gray-600 mb-2">Arquivo atual:</p>
-                    <a href="{{ url($contrato->arquivo_contrato) }}" 
+                    <a href="{{ url($contrato->arquivo_contrato) }}"
                        target="_blank"
                        class="block group">
                         <div class="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition-colors cursor-pointer">
@@ -189,7 +189,7 @@
                         </div>
                     </a>
                 </div>
-                
+
                 <div class="flex items-center gap-3 mb-3">
                     <div class="flex-1 h-px bg-gray-200"></div>
                     <span class="text-xs text-gray-500">ou</span>
@@ -201,7 +201,7 @@
                 <label class="block mb-2 text-sm font-medium text-gray-700">
                     {{ $contrato->arquivo_contrato ? 'Substituir arquivo' : 'Enviar arquivo' }} (PDF)
                 </label>
-                <input type="file" name="arquivo_contrato" id="arquivo_contrato" 
+                <input type="file" name="arquivo_contrato" id="arquivo_contrato"
                        class="block w-full px-3 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 transition-colors cursor-pointer focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                        accept=".pdf">
                 <p class="mt-2 text-xs text-gray-500">
@@ -280,7 +280,7 @@
     document.addEventListener('DOMContentLoaded', function() {
         const prefeituraSelect = document.getElementById('prefeitura_id');
         const unidadeSelect = document.getElementById('unidade_id');
-        
+
         // Dados das unidades vindo do PHP
         const unidadesPorPrefeitura = {!! $secretarias->groupBy('prefeitura_id')->map(function($unidades) {
             return $unidades->map(function($unidade) {
@@ -294,14 +294,14 @@
         // Função para carregar unidades baseadas na prefeitura selecionada
         function carregarUnidades() {
             let prefeituraId;
-            
+
             // Se for usuário da prefeitura, usar o ID da prefeitura do usuário
             @if($isPrefeituraUser)
                 prefeituraId = "{{ auth()->user()->prefeitura_id }}";
             @else
                 prefeituraId = prefeituraSelect ? prefeituraSelect.value : null;
             @endif
-            
+
             // Limpar o select de unidades
             unidadeSelect.innerHTML = '<option value="">@if($isPrefeituraUser) Selecione a secretaria @else Primeiro selecione a prefeitura @endif</option>';
 
@@ -313,7 +313,7 @@
                     option.textContent = unidade.nome;
                     unidadeSelect.appendChild(option);
                 });
-                
+
                 // Selecionar a unidade atual do contrato
                 const currentUnidadeId = "{{ $contrato->unidade_id }}";
                 if (currentUnidadeId) {
@@ -330,7 +330,7 @@
             if (prefeituraSelect) {
                 prefeituraSelect.addEventListener('change', carregarUnidades);
             }
-            
+
             // Executar carregamento inicial
             carregarUnidades();
         @endif
@@ -373,7 +373,7 @@
                         e.target.value = '';
                         return;
                     }
-                    
+
                     // Verificar tamanho (5MB máximo)
                     if (e.target.files[0].size > 5 * 1024 * 1024) {
                         alert('O arquivo é muito grande. Tamanho máximo permitido: 5MB.');

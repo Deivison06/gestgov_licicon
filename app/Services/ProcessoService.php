@@ -3,88 +3,410 @@
 namespace App\Services;
 
 use App\Models\Processo;
-use App\enums\ModalidadeEnum;
 use App\Models\ProcessoDetalhe;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\Documento;
+use App\Models\Vencedor;
+use App\Models\Lote;
+use App\Models\Reserva;
+use Illuminate\Support\Facades\DB;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class ProcessoService
 {
-    /**
-     * Cria um novo processo
-     */
+    protected array $excludedFields = [
+        '_token',
+        'processo_id',
+        'itens_e_seus_quantitativos_xml',
+        'descricao_e_quantitativos_itens_xml',
+        'painel_preco_tce',
+        'anexo_pdf_analise_mercado',
+        'anexar_minuta',
+        'anexo_pdf_publicacoes',
+        'itens_especificaca_quantitativos_xml',
+        'anexo_pdf_minuta_contrato',
+        'projeto_basico_pdf'
+    ];
+
+    protected array $arquivosConfig = [
+        'itens_e_seus_quantitativos_xml' => 'processarArquivoItens',
+        'itens_especificaca_quantitativos_xml' => 'processarArquivoEspecificacao',
+        'descricao_e_quantitativos_itens_xml' => 'processarArquivoItens',
+        'painel_preco_tce' => 'processarPainelPrecos',
+        'anexo_pdf_analise_mercado' => 'salvarAnexo',
+        'anexar_minuta' => 'salvarAnexo',
+        'anexo_pdf_publicacoes' => 'salvarAnexo',
+        'anexo_pdf_minuta_contrato' => 'salvarAnexo',
+        'projeto_basico_pdf' => 'salvarAnexo'
+    ];
+
     public function create(array $data): Processo
     {
-        if (isset($data['modalidade']) && is_int($data['modalidade'])) {
-            $data['modalidade'] = ModalidadeEnum::from($data['modalidade']);
-        }
-
-        // Adiciona automaticamente o usuário logado
-        $data['user_id'] = auth()->id();
-
         return Processo::create($data);
     }
 
-
-    public function createDetalhe(array $data): ProcessoDetalhe
-    {
-        return ProcessoDetalhe::create($data);
-    }
-
-    /**
-     * Atualiza um processo existente
-     */
     public function update(Processo $processo, array $data): Processo
     {
-        if (isset($data['modalidade']) && is_int($data['modalidade'])) {
-            $data['modalidade'] = ModalidadeEnum::from($data['modalidade']);
-        }
-
         $processo->update($data);
-
         return $processo;
     }
 
-    /**
-     * Remove um processo
-     */
-    public function delete(Processo $processo): bool
+    public function delete(Processo $processo): void
     {
-        return $processo->delete();
+        $processo->delete();
     }
 
-    /**
-     * Gera PDF do processo sem salvar no sistema
-     */
-    public function gerarPdf(Processo $processo)
+    public function salvarDetalhe(Processo $processo, array $data): ProcessoDetalhe
     {
-        // Carrega os relacionamentos necessários
-        $processo->load(['detalhe', 'prefeitura']);
+        $detalhe = $processo->detalhe ?? new ProcessoDetalhe();
+        $detalhe->processo_id = $processo->id;
 
-        $data = [
-            'processo' => $processo,
-            'prefeitura' => $processo->prefeitura,
-            'detalhe' => $processo->detalhe,
-            'dataGeracao' => now()->format('d/m/Y H:i:s'),
-        ];
+        $this->processarArquivos($data, $detalhe);
 
-        // Configurações do PDF
-        $pdf = Pdf::loadView('Admin.Processos.pdf.capa', $data)
-            ->setPaper('a4', 'portrait')
-            ->setOption([
-                'defaultFont' => 'sans-serif',
-                'isHtml5ParserEnabled' => true,
-                'isRemoteEnabled' => true,
+        foreach ($data as $field => $value) {
+            if (!in_array($field, $this->excludedFields)) {
+                $detalhe->{$field} = $value;
+            }
+        }
+
+        $detalhe->save();
+        return $detalhe;
+    }
+
+    private function processarArquivos(array $data, ProcessoDetalhe $detalhe): void
+    {
+        foreach ($this->arquivosConfig as $campo => $metodo) {
+            if (isset($data[$campo]) && $data[$campo] instanceof \Illuminate\Http\UploadedFile) {
+                $this->{$metodo}($data[$campo], $detalhe, $campo);
+            }
+        }
+    }
+
+    private function processarArquivoItens($file, ProcessoDetalhe $detalhe, string $campo): void
+    {
+        $spreadsheet = IOFactory::load($file->getRealPath());
+        $sheet = $spreadsheet->getActiveSheet();
+        $rows = $sheet->toArray();
+
+        $itens = [];
+        $linhasEmBranco = [];
+        $linhasInvalidas = [];
+
+        foreach ($rows as $index => $row) {
+
+            // Ignorar cabeçalho
+            if ($index === 0) {
+                continue;
+            }
+
+            /**
+             * 1️⃣ Verificar se a linha está completamente vazia
+             */
+            $linhaVazia = true;
+            foreach ($row as $celula) {
+                if (!empty(trim((string) ($celula ?? '')))) {
+                    $linhaVazia = false;
+                    break;
+                }
+            }
+
+            if ($linhaVazia) {
+                $linhasEmBranco[] = $index + 1;
+                continue;
+            }
+
+            /**
+             * 2️⃣ Normalizar campos
+             */
+            $numero     = trim((string) ($row[0] ?? ''));
+            $descricao  = trim((string) ($row[1] ?? ''));
+            $unidade    = trim((string) ($row[2] ?? ''));
+            $quantidade = trim((string) ($row[3] ?? ''));
+
+            /**
+             * 3️⃣ Validar linha mínima
+             * Regra de negócio:
+             * - descrição obrigatória
+             * - quantidade numérica e > 0
+             */
+            if (
+                $descricao === '' ||
+                !is_numeric(str_replace(',', '.', $quantidade)) ||
+                (float) str_replace(',', '.', $quantidade) <= 0
+            ) {
+                $linhasInvalidas[] = $index + 1;
+                continue;
+            }
+
+            /**
+             * 4️⃣ Salvar item válido
+             */
+            $itens[] = [
+                'numero'     => $numero !== '' ? $numero : null,
+                'descricao'  => $descricao,
+                'und'        => $unidade !== '' ? $unidade : null,
+                'quantidade' => (float) str_replace(',', '.', $quantidade),
+            ];
+        }
+
+        /**
+         * 5️⃣ Persistir apenas linhas válidas
+         */
+        $detalhe->{$campo} = json_encode($itens, JSON_UNESCAPED_UNICODE);
+
+        /**
+         * 6️⃣ Log estruturado (auditoria)
+         */
+        if (!empty($linhasEmBranco) || !empty($linhasInvalidas)) {
+            \Log::warning('Processamento de itens com linhas ignoradas', [
+                'campo'             => $campo,
+                'linhas_em_branco'  => $linhasEmBranco,
+                'linhas_invalidas'  => $linhasInvalidas,
+                'total_linhas'      => count($rows),
+                'linhas_salvas'     => count($itens),
+                'processo_id'       => $detalhe->processo_id ?? null,
             ]);
+        }
+    }
 
-        return $pdf;
+    private function processarArquivoEspecificacao($file, ProcessoDetalhe $detalhe, string $campo): void
+    {
+        $spreadsheet = IOFactory::load($file->getRealPath());
+        $sheet = $spreadsheet->getActiveSheet();
+        $rows = $sheet->toArray();
+
+        $itens = [];
+        $linhasEmBranco = [];
+
+        foreach ($rows as $index => $row) {
+            // Pular cabeçalho
+            if ($index === 0) continue;
+
+            // Verificar se a linha está em branco
+            $linhaVazia = true;
+            foreach ($row as $celula) {
+                if (!empty(trim($celula ?? ''))) {
+                    $linhaVazia = false;
+                    break;
+                }
+            }
+
+            // Se a linha estiver vazia, registrar e pular
+            if ($linhaVazia) {
+                $linhasEmBranco[] = $index + 1;
+                continue;
+            }
+
+            $itens[] = [
+                'item'              => $row[0] ?? null,
+                'especificacoes'    => $row[1] ?? null,
+                'unidade'           => $row[2] ?? null,
+                'quantidade'        => $row[3] ?? null,
+                'valor_unitario'    => $this->normalizarValor($row[4] ?? null),
+                'valor_total'       => $this->normalizarValor($row[5] ?? null),
+            ];
+        }
+
+        // Salvar dados
+        $detalhe->{$campo} = json_encode($itens, JSON_UNESCAPED_UNICODE);
+
+        // Logar linhas em branco encontradas
+        if (!empty($linhasEmBranco)) {
+            \Log::warning('Linhas em branco identificadas no arquivo de especificação', [
+                'campo' => $campo,
+                'linhas' => $linhasEmBranco,
+                'total_linhas' => count($rows),
+                'processo_id' => $detalhe->processo_id ?? null
+            ]);
+        }
+    }
+
+    private function processarPainelPrecos($file, ProcessoDetalhe $detalhe, string $campo): void
+    {
+        $spreadsheet = IOFactory::load($file->getRealPath());
+        $sheet = $spreadsheet->getActiveSheet();
+        $rows = $sheet->toArray();
+
+        $painelPrecos = [];
+        foreach ($rows as $index => $row) {
+            if ($index === 0) continue;
+            $painelPrecos[] = [
+                'item' => $row[0] ?? null,
+                'valor_tce_1' => $row[1] ?? null,
+                'valor_tce_2' => $this->normalizarValor($row[2] ?? null),
+                'valor_tce_3' => $this->normalizarValor($row[3] ?? null),
+                'fornecedor_local' => $this->normalizarValor($row[4] ?? null),
+                'media' => $this->normalizarValor($row[5] ?? null),
+            ];
+        }
+
+        $detalhe->{$campo} = json_encode($painelPrecos, JSON_UNESCAPED_UNICODE);
+    }
+
+    private function normalizarValor($valor)
+    {
+        if (is_null($valor)) return null;
+
+        $valor = trim((string)$valor);
+
+        if (is_numeric($valor)) {
+            return number_format((float)$valor, 2, ',', '.');
+        }
+
+        if (preg_match('/^\d{1,3}(,\d{3})*\.\d{2}$/', $valor)) {
+            $valor = str_replace(',', '', $valor);
+            return number_format((float)$valor, 2, ',', '.');
+        }
+
+        if (preg_match('/^\d{1,3}(\.\d{3})*,\d{2}$/', $valor)) {
+            return $valor;
+        }
+
+        $valor = str_replace(['.', ','], ['#', '.'], $valor);
+        $valor = str_replace('#', ',', $valor);
+
+        return $valor;
+    }
+
+    private function salvarAnexo($file, ProcessoDetalhe $detalhe, string $campo): void
+    {
+        $filename = $campo . '_' . time() . '.' . $file->getClientOriginalExtension();
+        $destinationPath = public_path('uploads/anexos');
+
+        if (!file_exists($destinationPath)) {
+            mkdir($destinationPath, 0777, true);
+        }
+
+        $file->move($destinationPath, $filename);
+        $detalhe->{$campo} = 'uploads/anexos/' . $filename;
     }
 
     /**
-     * Obtém o nome do arquivo PDF
+     * Duplicar processo completo com todos os relacionamentos
      */
-    public function getNomeArquivo(Processo $processo): string
+    public function duplicarProcesso(Processo $processoOriginal, array $novosDados): Processo
     {
-        $numeroProcesso = $processo->numero_processo ?? $processo->id;
-        return "processo_{$numeroProcesso}_" . now()->format('Ymd_His') . '.pdf';
+        DB::beginTransaction();
+
+        try {
+            // Duplicar processo principal
+            $novoProcesso = $processoOriginal->replicate();
+            $novoProcesso->numero_processo = $novosDados['numero_processo'];
+            $novoProcesso->numero_procedimento = $novosDados['numero_procedimento'];
+            $novoProcesso->status = $novosDados['status'] ?? 'RASCUNHO';
+            $novoProcesso->user_id = $novosDados['user_id'] ?? auth()->id();
+            $novoProcesso->created_at = now();
+            $novoProcesso->updated_at = now();
+            $novoProcesso->save();
+
+            // Duplicar detalhes
+            if ($processoOriginal->detalhe) {
+                $novoDetalhe = $processoOriginal->detalhe->replicate();
+                $novoDetalhe->processo_id = $novoProcesso->id;
+                $novoDetalhe->created_at = now();
+                $novoDetalhe->updated_at = now();
+                $novoDetalhe->save();
+            }
+
+            // Duplicar documentos
+            $this->duplicarDocumentos($processoOriginal, $novoProcesso);
+
+            // Duplicar vencedores
+            $this->duplicarVencedores($processoOriginal, $novoProcesso);
+
+            DB::commit();
+
+            return $novoProcesso;
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Erro ao duplicar processo', [
+                'processo_original_id' => $processoOriginal->id,
+                'erro' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e;
+        }
+    }
+
+    private function duplicarDocumentos(Processo $processoOriginal, Processo $novoProcesso): void
+    {
+        foreach ($processoOriginal->documentos as $documento) {
+            try {
+                $novoDocumento = $documento->replicate();
+                $novoDocumento->processo_id = $novoProcesso->id;
+                $novoDocumento->gerado_em = now();
+                $novoDocumento->created_at = now();
+                $novoDocumento->updated_at = now();
+
+                // Copiar arquivo físico se existir
+                if (file_exists(public_path($documento->caminho))) {
+                    $extensao = pathinfo($documento->caminho, PATHINFO_EXTENSION);
+
+                    // Gerar novo nome de arquivo com novo número de processo
+                    $numeroOriginalLimpo = str_replace(['/', '\\'], '_', $processoOriginal->numero_processo);
+                    $numeroNovoLimpo = str_replace(['/', '\\'], '_', $novoProcesso->numero_processo);
+
+                    $novoCaminho = str_replace(
+                        $numeroOriginalLimpo,
+                        $numeroNovoLimpo,
+                        $documento->caminho
+                    );
+
+                    // Verificar se já existe arquivo com esse nome
+                    if (file_exists(public_path($novoCaminho))) {
+                        $novoCaminho = preg_replace(
+                            '/\.' . $extensao . '$/',
+                            '_' . time() . '.' . $extensao,
+                            $novoCaminho
+                        );
+                    }
+
+                    $diretorioNovo = dirname(public_path($novoCaminho));
+                    if (!file_exists($diretorioNovo)) {
+                        mkdir($diretorioNovo, 0777, true);
+                    }
+
+                    // Copiar arquivo
+                    copy(public_path($documento->caminho), public_path($novoCaminho));
+                    $novoDocumento->caminho = $novoCaminho;
+                }
+
+                $novoDocumento->save();
+
+            } catch (\Exception $e) {
+                \Log::warning('Erro ao duplicar documento', [
+                    'documento_id' => $documento->id,
+                    'erro' => $e->getMessage()
+                ]);
+                continue;
+            }
+        }
+    }
+
+    private function duplicarVencedores(Processo $processoOriginal, Processo $novoProcesso): void
+    {
+        foreach ($processoOriginal->vencedores as $vencedor) {
+            try {
+                $novoVencedor = $vencedor->replicate();
+                $novoVencedor->processo_id = $novoProcesso->id;
+                $novoVencedor->created_at = now();
+                $novoVencedor->updated_at = now();
+                $novoVencedor->save();
+
+                // Duplicar lotes do vencedor
+                foreach ($vencedor->lotes as $lote) {
+                    $novoLote = $lote->replicate();
+                    $novoLote->vencedor_id = $novoVencedor->id;
+                    $novoLote->save();
+                }
+
+            } catch (\Exception $e) {
+                \Log::warning('Erro ao duplicar vencedor', [
+                    'vencedor_id' => $vencedor->id,
+                    'erro' => $e->getMessage()
+                ]);
+                continue;
+            }
+        }
     }
 }

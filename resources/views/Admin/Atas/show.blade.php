@@ -34,13 +34,13 @@
                 : [];
         @endphp
 
-        <!-- Cabeçalho -->
+            <!-- Cabeçalho -->
         <div class="mb-8">
             <div class="flex items-center mb-4">
                 <a href="{{ route('admin.atas.index') }}" class="text-blue-600 hover:text-blue-800 flex items-center">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                              d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                     </svg>
                     Voltar para Atas
                 </a>
@@ -57,10 +57,10 @@
 
                 <div class="mt-4 lg:mt-0">
                     <button onclick="abrirModalContratacao()"
-                        class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center">
+                            class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                  d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                         </svg>
                         Nova Contratação
                     </button>
@@ -78,7 +78,7 @@
                     <div class="bg-blue-100 p-3 rounded-lg mr-4">
                         <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                         </svg>
                     </div>
                     <div>
@@ -93,7 +93,7 @@
                     <div class="bg-green-100 p-3 rounded-lg mr-4">
                         <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
                     <div>
@@ -108,7 +108,7 @@
                     <div class="bg-purple-100 p-3 rounded-lg mr-4">
                         <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
                     <div>
@@ -125,7 +125,7 @@
                     <div class="bg-yellow-100 p-3 rounded-lg mr-4">
                         <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                  d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                     </div>
                     <div>
@@ -141,19 +141,19 @@
             <div class="border-b border-gray-200">
                 <nav class="flex space-x-8">
                     <button onclick="mostrarAba('contratacoes')" class="tab-button py-4 px-1 border-b-2 font-medium text-sm"
-                        data-tab="contratacoes">
+                            data-tab="contratacoes">
                         Contratações
                     </button>
                     <button onclick="mostrarAba('contratos')" class="tab-button py-4 px-1 border-b-2 font-medium text-sm"
-                        data-tab="contratos">
+                            data-tab="contratos">
                         Contratos Gerados
                     </button>
                     <button onclick="mostrarAba('gerar-ata')" class="tab-button py-4 px-1 border-b-2 font-medium text-sm"
-                        data-tab="gerar-ata">
+                            data-tab="gerar-ata">
                         Gerar Contrato
                     </button>
                     <button onclick="mostrarAba('itens')" class="tab-button py-4 px-1 border-b-2 font-medium text-sm"
-                        data-tab="itens">
+                            data-tab="itens">
                         Itens da Ata
                     </button>
                 </nav>
@@ -166,7 +166,7 @@
                 <div class="text-center py-12 bg-white rounded-xl shadow">
                     <svg class="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                            d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                              d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                     </svg>
                     <h3 class="mt-4 text-lg font-medium text-gray-900">Nenhuma contratação pendente</h3>
                     <p class="mt-2 text-gray-500">Clique em "Nova Contratação" para começar</p>
@@ -184,11 +184,11 @@
                         <div class="flex space-x-3">
                             <!-- Botão para excluir todas -->
                             <button onclick="excluirTodasContratacoes()"
-                                class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg flex items-center"
-                                title="Excluir todas as contratações pendentes">
+                                    class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg flex items-center"
+                                    title="Excluir todas as contratações pendentes">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                 </svg>
                                 Excluir Todas
                             </button>
@@ -222,94 +222,94 @@
                                 <div class="overflow-x-auto">
                                     <table class="w-full">
                                         <thead class="bg-gray-50">
-                                            <tr class="text-xs text-gray-500 uppercase">
-                                                <th class="px-6 py-3 text-left">Item</th>
-                                                <th class="px-6 py-3 text-left">Descrição</th>
-                                                <th class="px-6 py-3 text-left">Quantidade</th>
-                                                <th class="px-6 py-3 text-left">Valor</th>
-                                                <th class="px-6 py-3 text-left">Status</th>
-                                                <th class="px-6 py-3 text-left">Ações</th>
-                                            </tr>
+                                        <tr class="text-xs text-gray-500 uppercase">
+                                            <th class="px-6 py-3 text-left">Item</th>
+                                            <th class="px-6 py-3 text-left">Descrição</th>
+                                            <th class="px-6 py-3 text-left">Quantidade</th>
+                                            <th class="px-6 py-3 text-left">Valor</th>
+                                            <th class="px-6 py-3 text-left">Status</th>
+                                            <th class="px-6 py-3 text-left">Ações</th>
+                                        </tr>
                                         </thead>
                                         <tbody class="divide-y divide-gray-200">
-                                            @foreach ($vencedorContratacoes as $contratacao)
-                                                <tr class="hover:bg-gray-50"
-                                                    data-contratacao-id="{{ $contratacao->id }}">
-                                                    <td class="px-6 py-4">
-                                                        <div class="font-medium text-gray-900">
-                                                            {{ $contratacao->lote->item }}</div>
-                                                    </td>
-                                                    <td class="px-6 py-4">
-                                                        <div class="text-sm text-gray-500">
-                                                            {{ $contratacao->lote->descricao }}</div>
-                                                    </td>
-                                                    <td class="px-6 py-4">
-                                                        {{ number_format($contratacao->quantidade_contratada, 2, ',', '.') }}
-                                                    </td>
-                                                    <td class="px-6 py-4">
-                                                        <div class="font-bold">R$
-                                                            {{ number_format($contratacao->valor_total, 2, ',', '.') }}
-                                                        </div>
-                                                        <div class="text-sm text-gray-500">
-                                                            R$
-                                                            {{ number_format($contratacao->valor_unitario, 2, ',', '.') }}
-                                                            un
-                                                        </div>
-                                                    </td>
-                                                    <td class="px-6 py-4">
-                                                        @if ($contratacao->status === 'CONTRATADO')
-                                                            <span
-                                                                class="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                        @foreach ($vencedorContratacoes as $contratacao)
+                                            <tr class="hover:bg-gray-50"
+                                                data-contratacao-id="{{ $contratacao->id }}">
+                                                <td class="px-6 py-4">
+                                                    <div class="font-medium text-gray-900">
+                                                        {{ $contratacao->lote->item }}</div>
+                                                </td>
+                                                <td class="px-6 py-4">
+                                                    <div class="text-sm text-gray-500">
+                                                        {{ $contratacao->lote->descricao }}</div>
+                                                </td>
+                                                <td class="px-6 py-4">
+                                                    {{ number_format($contratacao->quantidade_contratada, 2, ',', '.') }}
+                                                </td>
+                                                <td class="px-6 py-4">
+                                                    <div class="font-bold">R$
+                                                        {{ number_format($contratacao->valor_total, 2, ',', '.') }}
+                                                    </div>
+                                                    <div class="text-sm text-gray-500">
+                                                        R$
+                                                        {{ number_format($contratacao->valor_unitario, 2, ',', '.') }}
+                                                        un
+                                                    </div>
+                                                </td>
+                                                <td class="px-6 py-4">
+                                                    @if ($contratacao->status === 'CONTRATADO')
+                                                        <span
+                                                            class="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
                                                                 Contratado
                                                             </span>
-                                                        @else
-                                                            <span
-                                                                class="px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                                    @else
+                                                        <span
+                                                            class="px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
                                                                 Pendente
                                                             </span>
-                                                        @endif
-                                                    </td>
-                                                    <td class="px-6 py-4">
-                                                        <div class="flex space-x-2">
-                                                            <!-- Botão Editar -->
-                                                            <button onclick="editarContratacao({{ $contratacao->id }})"
+                                                    @endif
+                                                </td>
+                                                <td class="px-6 py-4">
+                                                    <div class="flex space-x-2">
+                                                        <!-- Botão Editar -->
+                                                        <button onclick="editarContratacao({{ $contratacao->id }})"
                                                                 class="text-blue-600 hover:text-blue-800"
                                                                 title="Editar Contratação">
-                                                                <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                                                                    viewBox="0 0 24 24">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                                        stroke-width="2"
-                                                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                                </svg>
-                                                            </button>
+                                                            <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                                                 viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                                      stroke-width="2"
+                                                                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                            </svg>
+                                                        </button>
 
-                                                            <!-- Botão Marcar como Contratado -->
-                                                            <button onclick="marcarComoContratado({{ $contratacao->id }})"
+                                                        <!-- Botão Marcar como Contratado -->
+                                                        <button onclick="marcarComoContratado({{ $contratacao->id }})"
                                                                 class="text-green-600 hover:text-green-800"
                                                                 title="Marcar como Contratado">
-                                                                <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                                                                    viewBox="0 0 24 24">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                                        stroke-width="2"
-                                                                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                                </svg>
-                                                            </button>
+                                                            <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                                                 viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                                      stroke-width="2"
+                                                                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                            </svg>
+                                                        </button>
 
-                                                            <!-- Botão Excluir -->
-                                                            <button onclick="excluirContratacao({{ $contratacao->id }})"
+                                                        <!-- Botão Excluir -->
+                                                        <button onclick="excluirContratacao({{ $contratacao->id }})"
                                                                 class="text-red-600 hover:text-red-800"
                                                                 title="Excluir Contratação">
-                                                                <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                                                                    viewBox="0 0 24 24">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                                        stroke-width="2"
-                                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                                </svg>
-                                                            </button>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
+                                                            <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                                                 viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                                      stroke-width="2"
+                                                                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endforeach
                                         </tbody>
                                     </table>
                                 </div>
@@ -331,9 +331,9 @@
                 @if ($documentos->isEmpty())
                     <div class="p-12 text-center">
                         <svg class="w-16 h-16 mx-auto text-gray-400" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
+                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                         <h3 class="mt-4 text-lg font-medium text-gray-900">Nenhum contrato gerado ainda</h3>
                         <p class="mt-2 text-gray-500">Gere o primeiro contrato na aba "Gerar Contrato"</p>
@@ -342,79 +342,92 @@
                     <div class="overflow-x-auto">
                         <table class="w-full">
                             <thead class="bg-gray-50">
-                                <tr class="text-xs text-gray-500 uppercase">
-                                    <th class="px-6 py-3 text-left">Data Geração</th>
-                                    <th class="px-6 py-3 text-left">Contrato Nº</th>
-                                    <th class="px-6 py-3 text-left">Itens Incluídos</th>
-                                    <th class="px-6 py-3 text-left">Valor Total</th>
-                                    <th class="px-6 py-3 text-left">Ações</th>
-                                </tr>
+                            <tr class="text-xs text-gray-500 uppercase">
+                                <th class="px-6 py-3 text-left">Data Geração</th>
+                                <th class="px-6 py-3 text-left">Contrato Nº</th>
+                                <th class="px-6 py-3 text-left">Itens Incluídos</th>
+                                <th class="px-6 py-3 text-left">Valor Total</th>
+                                <th class="px-6 py-3 text-left">Ações</th>
+                            </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200">
-                                @foreach ($documentos as $documento)
-                                    @php
-                                        // Tenta acessar de duas formas: do JSON do documento ou do modelo Contrato
-                                        $camposJson = json_decode($documento->campos ?? '{}', true);
-                                        $numeroContrato = $camposJson['numero_contrato'] ?? 'Não informado';
-                                        $dataAssinatura =
-                                            $documento->campos['data_assinatura_contrato'] ??
-                                            ($documento->contrato->data_assinatura_contrato ?? null);
-                                        $contratacoesIncluidas = $documento->contratacoes_selecionadas ?? [];
-                                        $valorTotal = $documento->valor_total ?? 0;
-                                        $quantidadeItens = $documento->quantidade_itens ?? 0;
-                                    @endphp
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-6 py-4">
-                                            <div class="font-medium">
-                                                {{ \Carbon\Carbon::parse($documento->gerado_em)->format('d/m/Y') }}
-                                            </div>
-                                            <div class="text-sm text-gray-500">
-                                                {{ \Carbon\Carbon::parse($documento->gerado_em)->format('H:i') }}
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <div class="font-medium text-gray-900">
-                                                {{ $numeroContrato }}
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <div class="font-medium">{{ $quantidadeItens }} itens</div>
-                                            <button onclick="mostrarItensContrato({{ $documento->id }})"
+                            @foreach ($documentos as $documento)
+                                @php
+                                    // Tenta acessar de duas formas: do JSON do documento ou do modelo Contrato
+                                    $camposJson = json_decode($documento->campos ?? '{}', true);
+                                    $numeroContrato = $camposJson['numero_contrato'] ?? 'Não informado';
+                                    $dataAssinatura =
+                                        $documento->campos['data_assinatura_contrato'] ??
+                                        ($documento->contrato->data_assinatura_contrato ?? null);
+                                    $contratacoesIncluidas = $documento->contratacoes_selecionadas ?? [];
+                                    $valorTotal = $documento->valor_total ?? 0;
+                                    $quantidadeItens = $documento->quantidade_itens ?? 0;
+                                @endphp
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4">
+                                        <div class="font-medium">
+                                            {{ \Carbon\Carbon::parse($documento->gerado_em)->format('d/m/Y') }}
+                                        </div>
+                                        <div class="text-sm text-gray-500">
+                                            {{ \Carbon\Carbon::parse($documento->gerado_em)->format('H:i') }}
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="font-medium text-gray-900">
+                                            {{ $numeroContrato }}
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="font-medium">{{ $quantidadeItens }} itens</div>
+                                        <button onclick="mostrarItensContrato({{ $documento->id }})"
                                                 class="text-blue-600 hover:text-blue-800 text-sm mt-1">
-                                                Ver detalhes
+                                            Ver detalhes
+                                        </button>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="font-bold">R$ {{ number_format($valorTotal, 2, ',', '.') }}</div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex space-x-2">
+                                            <a href="{{ url($documento->caminho) }}" target="_blank"
+                                               class="text-blue-600 hover:text-blue-800 flex items-center">
+                                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor"
+                                                     viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                          stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                          stroke-width="2"
+                                                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                </svg>
+                                                Visualizar
+                                            </a>
+                                            <a href="{{ url($documento->caminho) }}"
+                                               download
+                                               class="text-green-600 hover:text-green-800 flex items-center">
+                                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor"
+                                                     viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                          stroke-width="2"
+                                                          d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                </svg>
+                                                Baixar
+                                            </a>
+                                            <!-- Botão Desfazer Contrato -->
+                                            <button onclick="desfazerContrato({{ $documento->id }})"
+                                                    class="text-red-600 hover:text-red-800 flex items-center"
+                                                    title="Cancelar Contrato">
+                                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor"
+                                                     viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                          stroke-width="2"
+                                                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                                Cancelar
                                             </button>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <div class="font-bold">R$ {{ number_format($valorTotal, 2, ',', '.') }}</div>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <div class="flex space-x-2">
-                                                <a href="{{ url($documento->caminho) }}" target="_blank"
-                                                    class="text-blue-600 hover:text-blue-800 flex items-center">
-                                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor"
-                                                        viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                                    </svg>
-                                                    Visualizar
-                                                </a>
-                                                <a href="{{ route('admin.atas.download', $processo->id) }}"
-                                                    class="text-green-600 hover:text-green-800 flex items-center">
-                                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor"
-                                                        viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                    </svg>
-                                                    Baixar
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @endforeach
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
                             </tbody>
                         </table>
                     </div>
@@ -428,9 +441,9 @@
                                         <h3 class="text-lg font-bold">Itens do Contrato</h3>
                                         <button onclick="fecharModalItens()" class="text-gray-400 hover:text-gray-600">
                                             <svg class="w-6 h-6" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
+                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M6 18L18 6M6 6l12 12" />
+                                                      d="M6 18L18 6M6 6l12 12" />
                                             </svg>
                                         </button>
                                     </div>
@@ -443,7 +456,7 @@
                                 <div class="px-6 py-4 border-t bg-gray-50 rounded-b-xl">
                                     <div class="flex justify-end">
                                         <button onclick="fecharModalItens()"
-                                            class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                                                class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
                                             Fechar
                                         </button>
                                     </div>
@@ -469,24 +482,24 @@
                     <div class="overflow-x-auto">
                         <table class="w-full">
                             <thead class="bg-gray-50">
-                                <tr class="text-xs text-gray-500 uppercase">
-                                    <th class="px-4 py-2 text-left">Selecionar</th>
-                                    <th class="px-4 py-2 text-left">Item</th>
-                                    <th class="px-4 py-2 text-left">Vencedor</th>
-                                    <th class="px-4 py-2 text-left">Quantidade</th>
-                                    <th class="px-4 py-2 text-left">Valor Unitário</th>
-                                    <th class="px-4 py-2 text-left">Valor Total</th>
-                                </tr>
+                            <tr class="text-xs text-gray-500 uppercase">
+                                <th class="px-4 py-2 text-left">Selecionar</th>
+                                <th class="px-4 py-2 text-left">Item</th>
+                                <th class="px-4 py-2 text-left">Vencedor</th>
+                                <th class="px-4 py-2 text-left">Quantidade</th>
+                                <th class="px-4 py-2 text-left">Valor Unitário</th>
+                                <th class="px-4 py-2 text-left">Valor Total</th>
+                            </tr>
                             </thead>
                             <tbody id="tabela-contratacoes-pendentes">
-                                <!-- As linhas serão preenchidas via JavaScript -->
+                            <!-- As linhas serão preenchidas via JavaScript -->
                             </tbody>
                             <tfoot class="bg-gray-50">
-                                <tr>
-                                    <td colspan="5" class="px-4 py-2 text-right font-bold">Total:</td>
-                                    <td id="total-contratacoes-pendentes" class="px-4 py-2 font-bold text-green-600">R$
-                                        0,00</td>
-                                </tr>
+                            <tr>
+                                <td colspan="5" class="px-4 py-2 text-right font-bold">Total:</td>
+                                <td id="total-contratacoes-pendentes" class="px-4 py-2 font-bold text-green-600">R$
+                                    0,00</td>
+                            </tr>
                             </tfoot>
                         </table>
                     </div>
@@ -500,9 +513,9 @@
                             Número do Contrato *
                         </label>
                         <input type="text" id="numero_contrato" name="numero_contrato"
-                            value="{{ $camposAta['numero_contrato'] ?? '' }}" placeholder="Ex: 001/2024"
-                            class="campo-ata w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            onblur="salvarCampo('numero_contrato', this.value)">
+                               value="{{ $camposAta['numero_contrato'] ?? '' }}" placeholder="Ex: 001/2024"
+                               class="campo-ata w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                               onblur="salvarCampo('numero_contrato', this.value)">
                     </div>
 
                     <!-- Data de Assinatura -->
@@ -511,9 +524,9 @@
                             Data de Assinatura *
                         </label>
                         <input type="date" id="data_assinatura_contrato" name="data_assinatura_contrato"
-                            value="{{ $camposAta['data_assinatura_contrato'] ?? now()->format('Y-m-d') }}"
-                            class="campo-ata w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            onblur="salvarCampo('data_assinatura_contrato', this.value)">
+                               value="{{ $camposAta['data_assinatura_contrato'] ?? now()->format('Y-m-d') }}"
+                               class="campo-ata w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                               onblur="salvarCampo('data_assinatura_contrato', this.value)">
                     </div>
 
                     <!-- Número do Extrato -->
@@ -522,9 +535,9 @@
                             Número do Extrato
                         </label>
                         <input type="text" id="numero_extrato" name="numero_extrato"
-                            value="{{ $camposAta['numero_extrato'] ?? '' }}" placeholder="Ex: EXT/001/2024"
-                            class="campo-ata w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            onblur="salvarCampo('numero_extrato', this.value)">
+                               value="{{ $camposAta['numero_extrato'] ?? '' }}" placeholder="Ex: EXT/001/2024"
+                               class="campo-ata w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                               onblur="salvarCampo('numero_extrato', this.value)">
                     </div>
 
                     <!-- Comarca -->
@@ -533,9 +546,9 @@
                             Comarca *
                         </label>
                         <input type="text" id="comarca" name="comarca" value="{{ $camposAta['comarca'] ?? '' }}"
-                            placeholder="Ex: Comarca de São Paulo"
-                            class="campo-ata w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            onblur="salvarCampo('comarca', this.value)">
+                               placeholder="Ex: Comarca de São Paulo"
+                               class="campo-ata w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                               onblur="salvarCampo('comarca', this.value)">
                     </div>
 
                     <!-- Fonte de Recurso -->
@@ -544,8 +557,8 @@
                             Fonte de Recurso *
                         </label>
                         <textarea id="fonte_recurso" name="fonte_recurso" rows="3"
-                            class="campo-ata w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            onblur="salvarCampo('fonte_recurso', this.value)" placeholder="Descreva a fonte de recurso...">{{ $camposAta['fonte_recurso'] ?? '' }}</textarea>
+                                  class="campo-ata w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                  onblur="salvarCampo('fonte_recurso', this.value)" placeholder="Descreva a fonte de recurso...">{{ $camposAta['fonte_recurso'] ?? '' }}</textarea>
                     </div>
 
                     <!-- Subcontratação -->
@@ -554,8 +567,8 @@
                             Subcontratação
                         </label>
                         <select id="subcontratacao" name="subcontratacao"
-                            class="campo-ata w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            onchange="salvarCampo('subcontratacao', this.value)">
+                                class="campo-ata w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                onchange="salvarCampo('subcontratacao', this.value)">
                             <option value="">Selecione...</option>
                             <option value="1" @if (($camposAta['subcontratacao'] ?? '') == '1') selected @endif>Sim</option>
                             <option value="0" @if (($camposAta['subcontratacao'] ?? '') == '0') selected @endif>Não</option>
@@ -571,10 +584,10 @@
                             <p class="text-gray-600">Adicione as pessoas que irão assinar o contrato</p>
                         </div>
                         <button onclick="adicionarAssinanteAta()"
-                            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center">
+                                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                      d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                             </svg>
                             Adicionar Assinante
                         </button>
@@ -592,12 +605,12 @@
                                                 Unidade *
                                             </label>
                                             <select name="assinante_unidade[]"
-                                                class="assinante-unidade w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                                onchange="updateResponsavelAta(this)">
+                                                    class="assinante-unidade w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                    onchange="updateResponsavelAta(this)">
                                                 <option value="">Selecione a Unidade</option>
                                                 @foreach ($processo->prefeitura->unidades as $unidade)
                                                     <option value="{{ $unidade->id }}"
-                                                        @if ($assinante['unidade_id'] == $unidade->id) selected @endif>
+                                                            @if ($assinante['unidade_id'] == $unidade->id) selected @endif>
                                                         {{ $unidade->nome }}
                                                     </option>
                                                 @endforeach
@@ -610,9 +623,9 @@
                                                 Responsável *
                                             </label>
                                             <input type="text" name="assinante_responsavel[]"
-                                                value="{{ $assinante['responsavel'] ?? '' }}"
-                                                placeholder="Nome do Responsável" required
-                                                class="assinante-responsavel w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                                   value="{{ $assinante['responsavel'] ?? '' }}"
+                                                   placeholder="Nome do Responsável" required
+                                                   class="assinante-responsavel w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                         </div>
 
                                         <!-- Cargo -->
@@ -621,9 +634,9 @@
                                                 Cargo
                                             </label>
                                             <input type="text" name="assinante_cargo[]"
-                                                value="{{ $assinante['cargo'] ?? '' }}"
-                                                placeholder="Cargo do Responsável"
-                                                class="assinante-cargo w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                                   value="{{ $assinante['cargo'] ?? '' }}"
+                                                   placeholder="Cargo do Responsável"
+                                                   class="assinante-cargo w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                         </div>
 
                                         <!-- Número da Portaria -->
@@ -632,9 +645,9 @@
                                                 Nº Portaria
                                             </label>
                                             <input type="text" name="assinante_portaria[]"
-                                                value="{{ $assinante['numero_portaria'] ?? '' }}"
-                                                placeholder="Número da Portaria"
-                                                class="assinante-portaria w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                                   value="{{ $assinante['numero_portaria'] ?? '' }}"
+                                                   placeholder="Número da Portaria"
+                                                   class="assinante-portaria w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                         </div>
 
                                         <!-- Data da Portaria -->
@@ -643,19 +656,19 @@
                                                 Data Portaria
                                             </label>
                                             <input type="date" name="assinante_data_portaria[]"
-                                                value="{{ $assinante['data_portaria'] ?? '' }}"
-                                                class="assinante-data-portaria w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                                   value="{{ $assinante['data_portaria'] ?? '' }}"
+                                                   class="assinante-data-portaria w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                         </div>
                                     </div>
 
                                     <!-- Botão Remover -->
                                     <div class="flex justify-end mt-4">
                                         <button type="button" onclick="removerAssinanteAta(this)"
-                                            class="px-3 py-1.5 text-xs font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 flex items-center">
+                                                class="px-3 py-1.5 text-xs font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 flex items-center">
                                             <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
+                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
                                             Remover Assinante
                                         </button>
@@ -672,8 +685,8 @@
                                             Unidade *
                                         </label>
                                         <select name="assinante_unidade[]"
-                                            class="assinante-unidade w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                            onchange="updateResponsavelAta(this)">
+                                                class="assinante-unidade w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                onchange="updateResponsavelAta(this)">
                                             <option value="">Selecione a Unidade</option>
                                             @foreach ($processo->prefeitura->unidades as $unidade)
                                                 <option value="{{ $unidade->id }}">{{ $unidade->nome }}</option>
@@ -687,8 +700,8 @@
                                             Responsável *
                                         </label>
                                         <input type="text" name="assinante_responsavel[]"
-                                            placeholder="Nome do Responsável" required
-                                            class="assinante-responsavel w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                               placeholder="Nome do Responsável" required
+                                               class="assinante-responsavel w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                     </div>
 
                                     <!-- Cargo -->
@@ -697,7 +710,7 @@
                                             Cargo
                                         </label>
                                         <input type="text" name="assinante_cargo[]" placeholder="Cargo do Responsável"
-                                            class="assinante-cargo w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                               class="assinante-cargo w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                     </div>
 
                                     <!-- Número da Portaria -->
@@ -706,8 +719,8 @@
                                             Nº Portaria
                                         </label>
                                         <input type="text" name="assinante_portaria[]"
-                                            placeholder="Número da Portaria"
-                                            class="assinante-portaria w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                               placeholder="Número da Portaria"
+                                               class="assinante-portaria w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                     </div>
 
                                     <!-- Data da Portaria -->
@@ -716,7 +729,7 @@
                                             Data Portaria
                                         </label>
                                         <input type="date" name="assinante_data_portaria[]"
-                                            class="assinante-data-portaria w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                               class="assinante-data-portaria w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                     </div>
                                 </div>
                             </div>
@@ -727,10 +740,10 @@
                 <!-- Botões -->
                 <div class="flex justify-end space-x-4 pt-6 border-t">
                     <button onclick="gerarAtaFinal()"
-                        class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium flex items-center">
+                            class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium flex items-center">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         Gerar e Salvar Contrato
                     </button>
@@ -745,53 +758,54 @@
                     <div class="overflow-x-auto">
                         <table class="w-full">
                             <thead class="bg-gray-50">
-                                <tr class="text-xs text-gray-500 uppercase">
-                                    <th class="px-6 py-3 text-left">Item</th>
-                                    <th class="px-6 py-3 text-left">Vencedor</th>
-                                    <th class="px-6 py-3 text-left">Quantidade</th>
-                                    <th class="px-6 py-3 text-left">Valor</th>
-                                    <th class="px-6 py-3 text-left">Status</th>
-                                </tr>
+                            <tr class="text-xs text-gray-500 uppercase">
+                                <th class="px-6 py-3 text-left">Item</th>
+                                <th class="px-6 py-3 text-left">Vencedor</th>
+                                <th class="px-6 py-3 text-left">Quantidade</th>
+                                <th class="px-6 py-3 text-left">Valor</th>
+                                <th class="px-6 py-3 text-left">Status</th>
+                            </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200">
-                                @foreach ($dadosAtas as $item)
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-6 py-4">
-                                            <div class="font-medium text-gray-900">{{ $item['item'] }}</div>
-                                            <div class="text-sm text-gray-500">{{ $item['descricao'] }}</div>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            {{ $item['vencedor'] }}
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <div class="font-medium">
-                                                {{ number_format($item['quantidade_contratada'], 2, ',', '.') }}</div>
-                                            <div class="text-sm text-gray-500">
-                                                Disp: {{ number_format($item['quantidade_disponivel'], 2, ',', '.') }}
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <div class="font-bold">R$
-                                                {{ number_format($item['valor_total_contratado'], 2, ',', '.') }}</div>
-                                            <div class="text-sm text-gray-500">
-                                                R$ {{ number_format($item['valor_unitario'], 2, ',', '.') }} un
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            @if ($item['status'] === 'ESGOTADO')
-                                                <span
-                                                    class="px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                            @foreach ($dadosAtas as $item)
+
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4">
+                                        <div class="font-medium text-gray-900">{{ $item['item'] }}</div>
+                                        <div class="text-sm text-gray-500">{{ $item['descricao'] }}</div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        {{ $item['vencedor'] }}
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="font-medium">
+                                            {{ number_format($item['quantidade_contratada'], 2, ',', '.') }}</div>
+                                        <div class="text-sm text-gray-500">
+                                            Disp: {{ number_format($item['quantidade_disponivel'], 2, ',', '.') }}
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="font-bold">R$
+                                            {{ number_format($item['valor_total_contratado'], 2, ',', '.') }}</div>
+                                        <div class="text-sm text-gray-500">
+                                            R$ {{ number_format($item['valor_unitario'], 2, ',', '.') }} un
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        @if ($item['status'] === 'ESGOTADO')
+                                            <span
+                                                class="px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
                                                     Esgotado
                                                 </span>
-                                            @else
-                                                <span
-                                                    class="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                        @else
+                                            <span
+                                                class="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
                                                     Disponível
                                                 </span>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                @endforeach
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
                             </tbody>
                         </table>
                     </div>
@@ -815,7 +829,7 @@
                         <button onclick="fecharModal()" class="text-gray-400 hover:text-gray-600">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M6 18L18 6M6 6l12 12" />
+                                      d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </button>
                     </div>
@@ -844,7 +858,7 @@
                 <div class="px-6 py-4 border-t bg-gray-50 flex-shrink-0">
                     <div id="modal-buttons-step-1" class="flex justify-end">
                         <button onclick="avancarStep2()"
-                            class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
+                                class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
                             Próximo
                         </button>
                     </div>
@@ -852,21 +866,21 @@
                     <div id="modal-buttons-step-2" class="hidden">
                         <div class="flex justify-between items-center">
                             <button onclick="voltarStep1()"
-                                class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                                    class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
                                 <svg class="w-4 h-4 inline-block mr-2" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
+                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                                          d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                                 </svg>
                                 Voltar
                             </button>
                             <button onclick="salvarContratacoesSelecionadasModal()"
-                                class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg"
-                                id="btn-salvar-modal">
+                                    class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg"
+                                    id="btn-salvar-modal">
                                 <svg class="w-4 h-4 inline-block mr-2" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
+                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M5 13l4 4L19 7" />
+                                          d="M5 13l4 4L19 7" />
                                 </svg>
                                 Salvar e Ir para Gerar Contrato
                             </button>
@@ -945,7 +959,7 @@
                 row.className = 'border-b hover:bg-gray-50';
                 row.innerHTML = `
                 <td class="px-4 py-2">
-                    <input type="checkbox" 
+                    <input type="checkbox"
                         class="contratacao-pendente w-4 h-4 text-blue-600 rounded"
                         value="${contratacao.id}"
                         checked
@@ -1148,68 +1162,68 @@
                             onchange="updateResponsavelAta(this)">
                         <option value="">Selecione a Unidade</option>
                         @foreach ($processo->prefeitura->unidades as $unidade)
-                            <option value="{{ $unidade->id }}">{{ $unidade->nome }}</option>
+            <option value="{{ $unidade->id }}">{{ $unidade->nome }}</option>
                         @endforeach
-                    </select>
-                </div>
+            </select>
+        </div>
 
-                <!-- Responsável -->
-                <div>
-                    <label class="block mb-1 text-xs font-medium text-gray-600">
-                        Responsável *
-                    </label>
-                    <input type="text"
-                        name="assinante_responsavel[]"
-                        placeholder="Nome do Responsável"
-                        required
-                        class="assinante-responsavel w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                </div>
+        <!-- Responsável -->
+        <div>
+            <label class="block mb-1 text-xs font-medium text-gray-600">
+                Responsável *
+            </label>
+            <input type="text"
+                name="assinante_responsavel[]"
+                placeholder="Nome do Responsável"
+                required
+                class="assinante-responsavel w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        </div>
 
-                <!-- Cargo -->
-                <div>
-                    <label class="block mb-1 text-xs font-medium text-gray-600">
-                        Cargo
-                    </label>
-                    <input type="text"
-                        name="assinante_cargo[]"
-                        placeholder="Cargo do Responsável"
-                        class="assinante-cargo w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                </div>
+        <!-- Cargo -->
+        <div>
+            <label class="block mb-1 text-xs font-medium text-gray-600">
+                Cargo
+            </label>
+            <input type="text"
+                name="assinante_cargo[]"
+                placeholder="Cargo do Responsável"
+                class="assinante-cargo w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        </div>
 
-                <!-- Número da Portaria -->
-                <div>
-                    <label class="block mb-1 text-xs font-medium text-gray-600">
-                        Nº Portaria
-                    </label>
-                    <input type="text"
-                        name="assinante_portaria[]"
-                        placeholder="Número da Portaria"
-                        class="assinante-portaria w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                </div>
+        <!-- Número da Portaria -->
+        <div>
+            <label class="block mb-1 text-xs font-medium text-gray-600">
+                Nº Portaria
+            </label>
+            <input type="text"
+                name="assinante_portaria[]"
+                placeholder="Número da Portaria"
+                class="assinante-portaria w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        </div>
 
-                <!-- Data da Portaria -->
-                <div>
-                    <label class="block mb-1 text-xs font-medium text-gray-600">
-                        Data Portaria
-                    </label>
-                    <input type="date"
-                        name="assinante_data_portaria[]"
-                        class="assinante-data-portaria w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                </div>
-            </div>
+        <!-- Data da Portaria -->
+        <div>
+            <label class="block mb-1 text-xs font-medium text-gray-600">
+                Data Portaria
+            </label>
+            <input type="date"
+                name="assinante_data_portaria[]"
+                class="assinante-data-portaria w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        </div>
+    </div>
 
-            <!-- Botão Remover -->
-            <div class="flex justify-end mt-4">
-                <button type="button"
-                        onclick="removerAssinanteAta(this)"
-                        class="px-3 py-1.5 text-xs font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 flex items-center">
-                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                    </svg>
-                    Remover Assinante
-                </button>
-            </div>
-        `;
+    <!-- Botão Remover -->
+    <div class="flex justify-end mt-4">
+        <button type="button"
+                onclick="removerAssinanteAta(this)"
+                class="px-3 py-1.5 text-xs font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 flex items-center">
+            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+            Remover Assinante
+        </button>
+    </div>
+`;
             container.appendChild(novoAssinante);
         }
 
@@ -1351,10 +1365,10 @@
                                         R$ ${parseFloat(lote.vl_unit).toLocaleString('pt-BR', {minimumFractionDigits: 2})}
                                     </td>
                                     <td class="px-4 py-3">
-                                        <input type="number" 
+                                        <input type="number"
                                             id="quantidade-${lote.id}"
                                             data-lote-id="${lote.id}"
-                                            min="0.01" 
+                                            min="0.01"
                                             max="${lote.quantidade_disponivel}"
                                             step="0.01"
                                             placeholder="0.00"
@@ -1370,7 +1384,7 @@
                                     </tbody>
                                 </table>
                             </div>
-                            
+
                             <div id="resumo-selecionados" class="mt-4 p-4 bg-blue-50 rounded-lg">
                                 <h5 class="font-bold text-blue-800 mb-2">Resumo da Contratação</h5>
                                 <div id="itens-selecionados-lista"></div>
@@ -1474,8 +1488,8 @@
 
                     html += `
                     <div class="text-sm text-blue-700 mb-1">
-                        ${lote.item}: ${lote.quantidade.toLocaleString('pt-BR', {minimumFractionDigits: 2})} x 
-                        R$ ${lote.valorUnitario.toLocaleString('pt-BR', {minimumFractionDigits: 2})} = 
+                        ${lote.item}: ${lote.quantidade.toLocaleString('pt-BR', {minimumFractionDigits: 2})} x
+                        R$ ${lote.valorUnitario.toLocaleString('pt-BR', {minimumFractionDigits: 2})} =
                         R$ ${valorItem.toLocaleString('pt-BR', {minimumFractionDigits: 2})}
                     </div>
                 `;
@@ -1733,7 +1747,7 @@
                         Vencedor: ${contratacao.vencedor} | Lote: ${contratacao.lote_id}
                     </p>
                 </div>
-                
+
                 <div class="p-6">
                     <div class="mb-6">
                         <h4 class="font-bold text-gray-700 mb-3">Informações do Item</h4>
@@ -1760,15 +1774,15 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 Quantidade Contratada *
                             </label>
-                            <input type="number" 
-                                id="quantidade_edit" 
-                                min="0.01" 
+                            <input type="number"
+                                id="quantidade_edit"
+                                min="0.01"
                                 max="${maxQuantidade}"
                                 step="0.01"
                                 value="${parseFloat(contratacao.quantidade_contratada)}"
@@ -1778,17 +1792,17 @@
                                 Máximo disponível: ${parseFloat(maxQuantidade).toLocaleString('pt-BR', {minimumFractionDigits: 2})}
                             </p>
                         </div>
-                        
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 Observação (Opcional)
                             </label>
-                            <textarea id="observacao_edit" 
+                            <textarea id="observacao_edit"
                                 rows="3"
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                                 placeholder="Adicione uma observação sobre esta contratação...">${contratacao.observacao || ''}</textarea>
                         </div>
-                        
+
                         <div class="p-4 bg-blue-50 rounded-lg">
                             <h5 class="font-bold text-blue-800 mb-2">Resumo Financeiro</h5>
                             <div class="grid grid-cols-2 gap-4">
@@ -1814,18 +1828,18 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="px-6 py-4 border-t bg-gray-50 flex justify-between">
-                    <button onclick="fecharModalEdicao()" 
+                    <button onclick="fecharModalEdicao()"
                         class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
                         Cancelar
                     </button>
                     <div class="space-x-3">
-                        <button onclick="excluirContratacaoConfirmar(${contratacao.id})" 
+                        <button onclick="excluirContratacaoConfirmar(${contratacao.id})"
                             class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg">
                             Excluir
                         </button>
-                        <button onclick="salvarEdicaoContratacao(${contratacao.id})" 
+                        <button onclick="salvarEdicaoContratacao(${contratacao.id})"
                             class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
                             Salvar Alterações
                         </button>
@@ -1912,8 +1926,8 @@
         // Função para excluir contratação
         async function excluirContratacao(contratacaoId) {
             if (!confirm(
-                    'Tem certeza que deseja excluir esta contratação?\n\nEsta ação liberará o estoque e não poderá ser desfeita.'
-                )) {
+                'Tem certeza que deseja excluir esta contratação?\n\nEsta ação liberará o estoque e não poderá ser desfeita.'
+            )) {
                 return;
             }
 
@@ -1960,8 +1974,8 @@
         // Função para excluir todas as contratações pendentes
         async function excluirTodasContratacoes() {
             if (!confirm(
-                    '⚠️ ATENÇÃO!\n\nTem certeza que deseja excluir TODAS as contratações pendentes?\n\nEsta ação:\n• Excluirá todas as contratações com status PENDENTE\n• Liberará todo o estoque reservado\n• Não poderá ser desfeita\n\nConfirma a exclusão total?'
-                    )) {
+                '⚠️ ATENÇÃO!\n\nTem certeza que deseja excluir TODAS as contratações pendentes?\n\nEsta ação:\n• Excluirá todas as contratações com status PENDENTE\n• Liberará todo o estoque reservado\n• Não poderá ser desfeita\n\nConfirma a exclusão total?'
+            )) {
                 return;
             }
 
@@ -2007,6 +2021,46 @@
             const modal = document.getElementById('modal-edicao-contratacao');
             if (modal) {
                 modal.remove();
+            }
+        }
+
+        /**
+         * Função para desfazer/cancelar contrato
+         */
+        async function desfazerContrato(documentoId) {
+            if (!confirm(
+                '⚠️ ATENÇÃO!\n\nTem certeza que deseja cancelar este contrato?\n\nEsta ação:\n• Excluirá o contrato\n• Alterará o status das contratações para PENDENTE\n• Liberará o estoque reservado\n• Não poderá ser desfeita\n\nConfirma o cancelamento?'
+            )) {
+                return;
+            }
+
+            try {
+                mostrarMensagem('Cancelando contrato...', 'info');
+
+                const response = await fetch(`/admin/atas/${processoId}/desfazer-contrato/${documentoId}`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    mostrarMensagem(data.message, 'success');
+
+                    // Recarregar a página após 2 segundos
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000);
+                } else {
+                    mostrarMensagem('Erro: ' + data.message, 'error');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                mostrarMensagem('Erro ao cancelar contrato', 'error');
             }
         }
 
@@ -2075,9 +2129,9 @@
         function validarGeracaoContrato() {
             // Campos obrigatórios
             const obrigatorios = [{
-                    id: 'numero_contrato',
-                    nome: 'Número do Contrato'
-                },
+                id: 'numero_contrato',
+                nome: 'Número do Contrato'
+            },
                 {
                     id: 'data_assinatura_contrato',
                     nome: 'Data de Assinatura'
@@ -2160,8 +2214,8 @@
             }
 
             if (!confirm(
-                    'Tem certeza que deseja gerar o contrato? Esta ação marcará as contratações selecionadas como CONTRATADO.'
-                )) {
+                'Tem certeza que deseja gerar o contrato? Esta ação marcará as contratações selecionadas como CONTRATADO.'
+            )) {
                 return;
             }
 

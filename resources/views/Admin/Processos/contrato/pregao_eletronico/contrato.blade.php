@@ -228,18 +228,29 @@
 
         <table style="width:100%; border-collapse:collapse; font-size:8pt;">
             <thead>
-                <tr>
-                    <th style="border:2px solid #000; padding:8px; text-align:left; font-weight:700; width:6%;">ITEM</th>
-                    <th style="border:2px solid #000; padding:8px; text-align:left; font-weight:700; width:46%;">ESPECIFICAÇÃO</th>
-                    <th style="border:2px solid #000; padding:8px; text-align:center; font-weight:700; width:16%;">UNIDADE<br>DE MEDIDA</th>
-                    <th style="border:2px solid #000; padding:8px; text-align:center; font-weight:700; width:10%;">QUANTIDADE</th>
-                    <th style="border:2px solid #000; padding:8px; text-align:center; font-weight:700; width:11%;">VALOR<br>UNITÁRIO</th>
-                    <th style="border:2px solid #000; padding:8px; text-align:center; font-weight:700; width:11%;">VALOR<br>TOTAL</th>
-                </tr>
+            <tr>
+                <th style="border:2px solid #000; padding:8px; text-align:left; font-weight:700; width:6%;">ITEM</th>
+                <th style="border:2px solid #000; padding:8px; text-align:left; font-weight:700; width:46%;">ESPECIFICAÇÃO</th>
+                <th style="border:2px solid #000; padding:8px; text-align:center; font-weight:700; width:16%;">UNIDADE<br>DE MEDIDA</th>
+                <th style="border:2px solid #000; padding:8px; text-align:center; font-weight:700; width:10%;">QUANTIDADE</th>
+                <th style="border:2px solid #000; padding:8px; text-align:center; font-weight:700; width:11%;">VALOR<br>UNITÁRIO</th>
+                <th style="border:2px solid #000; padding:8px; text-align:center; font-weight:700; width:11%;">VALOR<br>TOTAL</th>
+            </tr>
             </thead>
             <tbody>
-                @if(count($itensTabela) > 0)
-                    @foreach($itensTabela as $item)
+            @if(count($itensTabela) > 0)
+                @foreach($itensTabela as $item)
+                    @if(isset($item['is_lote_header']) && $item['is_lote_header'])
+                        <tr style="background-color:#f0f0f0;">
+                            <td colspan="6" style="border:1px solid #000; padding:10px; text-align:center; font-weight:bold;">
+                                {{ $item['especificacao'] }}
+                            </td>
+                        </tr>
+                    @elseif(isset($item['is_spacer']) && $item['is_spacer'])
+                        <tr style="height: 5px;">
+                            <td colspan="6" style="border:none; padding:0;"></td>
+                        </tr>
+                    @else
                         <tr>
                             <td style="border:1px solid #000; padding:14px; vertical-align:top; text-align:center;">{{ $item['item'] }}</td>
                             <td style="border:1px solid #000; padding:14px; vertical-align:top;">{{ $item['especificacao'] }}</td>
@@ -248,20 +259,21 @@
                             <td style="border:1px solid #000; padding:14px; vertical-align:top; text-align:right;">{{ $item['valor_unitario'] }}</td>
                             <td style="border:1px solid #000; padding:14px; vertical-align:top; text-align:right;">{{ $item['valor_total'] }}</td>
                         </tr>
-                    @endforeach
-                    
-                    <!-- Linha de totalização -->
-                    <tr>
-                        <td colspan="3" style="border:1px solid #000; padding:14px; vertical-align:top; text-align:right; font-weight:bold;">TOTAL GERAL</td>
-                        <td colspan="3" style="border:1px solid #000; padding:14px; vertical-align:top; text-align:right; font-weight:bold;">R$ {{ number_format($valorTotalContrato, 2, ',', '.') }}</td>
-                    </tr>
-                @else
-                    <tr>
-                        <td colspan="6" style="border:1px solid #000; padding:14px; text-align:center; color:red;">
-                            Nenhum item contratado encontrado.
-                        </td>
-                    </tr>
-                @endif
+                    @endif
+                @endforeach
+
+                <!-- Linha de totalização -->
+                <tr>
+                    <td colspan="3" style="border:1px solid #000; padding:14px; vertical-align:top; text-align:right; font-weight:bold;">TOTAL GERAL</td>
+                    <td colspan="3" style="border:1px solid #000; padding:14px; vertical-align:top; text-align:right; font-weight:bold;">R$ {{ number_format($valorTotalContrato, 2, ',', '.') }}</td>
+                </tr>
+            @else
+                <tr>
+                    <td colspan="6" style="border:1px solid #000; padding:14px; text-align:center; color:red;">
+                        Nenhum item contratado encontrado.
+                    </td>
+                </tr>
+            @endif
             </tbody>
         </table>
 
@@ -308,7 +320,7 @@
             }
         @endphp
         <p style="text-align: justify;">
-            2.1. 9O prazo de vigência da contratação é de <span style="font-weight:bold; text-decoration:underline;"> {{ $textoVigencia }} </span>, 
+            2.1. 9O prazo de vigência da contratação é de <span style="font-weight:bold; text-decoration:underline;"> {{ $textoVigencia }} </span>,
             contados contados da ordem de Serviços, prorrogável na forma dos artigos 106 e 107 da Lei n° 14.133, de 2021. <br><br>
             2.2. A prorrogação de que trata este item é condicionada ao ateste, pela autoridade
             competente, de que as condições e os preços permanecem vantajosos para a
@@ -459,15 +471,15 @@
             8.3. Receber o objeto no prazo e condições estabelecidas no Termo de Referência;
             <br><br>
             @if ($processo->tipo_procedimento === 'SERVIÇOS')
-                8.4. Notificar o Contratado, por escrito, sobre vícios, defeitos ou incorreções verificadas 
-                nos serviços prestados, para que seja por ele substituído, reparado ou corrigido, no total 
+                8.4. Notificar o Contratado, por escrito, sobre vícios, defeitos ou incorreções verificadas
+                nos serviços prestados, para que seja por ele substituído, reparado ou corrigido, no total
                 ou em parte, às suas expensas;
             @else
                 8.4. Notificar o Contratado, por escrito, sobre vícios, defeitos ou incorreções verificadas
                 no objeto fornecido, para que seja por ele substituído, reparado ou corrigido, no total ou
                 em parte, às suas expensas;
             @endif
-            
+
             <br><br>
             8.5. Acompanhar e fiscalizar a execução do contrato e o cumprimento das obrigações
             pelo Contratado;
@@ -478,7 +490,7 @@
             quantidade, conforme o art. 143 da Lei nº 14.133, de 2021;
             <br><br>
             @if ($processo->tipo_procedimento === 'SERVIÇOS')
-                8.7. Efetuar o pagamento ao Contratado do valor correspondente a prestação do serviço, 
+                8.7. Efetuar o pagamento ao Contratado do valor correspondente a prestação do serviço,
                 no prazo, forma e condições estabelecidos no presente Contrato;
             @else
                 8.7. Efetuar o pagamento ao Contratado do valor correspondente ao fornecimento do
@@ -1090,7 +1102,7 @@
     {{-- Bloco de data e assinatura --}}
     <div class="footer-signature">
         {{ $processo->prefeitura->cidade }},
-        {{ \Carbon\Carbon::parse($dataSelecionada)->translatedFormat('d \d\e F \d\e Y') }}
+        {{ \Carbon\Carbon::parse($processo->contrato->data_assinatura_contrato)->translatedFormat('d \d\e F \d\e Y') }}
     </div>
 
     @if ($hasSelectedAssinantes)

@@ -104,7 +104,7 @@
     @elseif($campo === 'tratamento_diferenciado_MEs_eEPPs')
     <x-form-field name="tratamento_diferenciado_MEs_eEPPs" label="TRATAMENTO DIFERENCIA A MEs e EPPs" type="textarea" rows="5" />
 
-    @elseif($campo === 'intervalo_lances' && 
+    @elseif($campo === 'intervalo_lances' &&
         $processo->modalidade !== \App\Enums\ModalidadeEnum::DISPENSA)
     <x-form-field name="intervalo_lances" label="INTERVALO ENTRE OS LANCES" />
 
@@ -206,23 +206,23 @@
     {{-- ATUALIZADO: Agora inclui DISPENSA também --}}
     @elseif($campo === 'encaminhamento_pesquisa_preco')
         {{-- 🔧 MODIFICAÇÃO: Condição única para ambos os modos --}}
-        @if($processo->modalidade === \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO || 
+        @if($processo->modalidade === \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO ||
             $processo->modalidade === \App\Enums\ModalidadeEnum::DISPENSA)
-            <x-form-field name="encaminhamento_pesquisa_preco" 
-                            label="Encaminhamento para pesquisa de Preços" 
-                            type="select" 
-                            :options="$processo->prefeitura->unidades->pluck('nome', 'nome')->toArray()" 
+            <x-form-field name="encaminhamento_pesquisa_preco"
+                            label="Encaminhamento para pesquisa de Preços"
+                            type="select"
+                            :options="$processo->prefeitura->unidades->pluck('nome', 'nome')->toArray()"
                             placeholder="Selecione uma unidade" />
         @endif
-        
+
     @elseif($campo === 'encaminhamento_doacao_orcamentaria')
         {{-- 🔧 MODIFICAÇÃO: Condição única para ambos os modos --}}
-        @if($processo->modalidade === \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO || 
+        @if($processo->modalidade === \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO ||
             $processo->modalidade === \App\Enums\ModalidadeEnum::DISPENSA)
-            <x-form-field name="encaminhamento_doacao_orcamentaria" 
-                            label="Encaminhamento para doação orçamentária" 
-                            type="select" 
-                            :options="$processo->prefeitura->unidades->pluck('nome', 'nome')->toArray()" 
+            <x-form-field name="encaminhamento_doacao_orcamentaria"
+                            label="Encaminhamento para doação orçamentária"
+                            type="select"
+                            :options="$processo->prefeitura->unidades->pluck('nome', 'nome')->toArray()"
                             placeholder="Selecione uma unidade" />
         @endif
 
@@ -230,8 +230,11 @@
     @elseif($campo === 'encaminhamento_elaborar_editais')
     <x-form-field name="encaminhamento_elaborar_editais" label="Encaminhamento para ELABORAÇÃO DE EDITAL E MINUTA DE CONTRATO" type="select" :options="$processo->prefeitura->unidades->pluck('nome', 'nome')->toArray()" placeholder="Selecione uma unidade" />
 
+    @elseif($campo === 'encaminhamento_elaborar_termo_referencia')
+        <x-form-field name="encaminhamento_termo_referencia" label="Encaminhamento para ELABORAÇÃO DO TERMO DE REFERÊNCIA" type="select" :options="$processo->prefeitura->unidades->pluck('nome', 'nome')->toArray()" placeholder="Selecione uma unidade" />
+
     @elseif($campo === 'encaminhamento_elaborar_projeto_basico')
-        @if ($processo->modalidade === \App\Enums\ModalidadeEnum::CONCORRENCIA || $processo->modalidade === \App\Enums\ModalidadeEnum::DISPENSA)   
+        @if ($processo->modalidade === \App\Enums\ModalidadeEnum::CONCORRENCIA || $processo->modalidade === \App\Enums\ModalidadeEnum::DISPENSA)
             <x-form-field name="encaminhamento_elaborar_projeto_basico" label="Encaminhamento para ELABORAÇÀO DE PROJETO BÁSICO" type="select" :options="$processo->prefeitura->unidades->pluck('nome', 'nome')->toArray()" placeholder="Selecione uma unidade" />
         @endif
 
@@ -262,7 +265,7 @@
         type="datetime"
     />
 
-    @elseif($campo === 'data_hora_fase_edital' && 
+    @elseif($campo === 'data_hora_fase_edital' &&
         $processo->modalidade !== \App\Enums\ModalidadeEnum::DISPENSA)
     <x-form-field
         name="data_hora_fase_edital"
