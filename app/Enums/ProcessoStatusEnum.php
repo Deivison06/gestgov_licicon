@@ -4,50 +4,38 @@ namespace App\Enums;
 
 enum ProcessoStatusEnum: string
 {
-    case RASCUNHO = 'RASCUNHO';
-    case EM_INICIO = 'EM_INICIO';
-    case EM_FINALIZACAO = 'EM_FINALIZACAO';
-    case EM_CONTRATO = 'EM_CONTRATO';
+    case EM_ANDAMENTO = 'EM_ANDAMENTO';
     case FINALIZADO = 'FINALIZADO';
     case CANCELADO = 'CANCELADO';
-    case ADIADO = 'ADIADO';
     case REPUBLICADO = 'REPUBLICADO';
+    case ADIADO = 'ADIADO';
 
     public function label(): string
     {
         return match ($this) {
-            self::RASCUNHO => 'Rascunho',
-            self::EM_INICIO => 'Em início',
-            self::EM_FINALIZACAO => 'Em finalização',
-            self::EM_CONTRATO => 'Em contrato',
+            self::EM_ANDAMENTO => 'Em andamento',
             self::FINALIZADO => 'Finalizado',
             self::CANCELADO => 'Cancelado',
-            self::ADIADO => 'Adiado',
             self::REPUBLICADO => 'Republicado',
+            self::ADIADO => 'Adiado',
         };
     }
 
     public function color(): string
     {
         return match ($this) {
-            self::RASCUNHO => 'gray',
-            self::EM_INICIO => 'blue',
-            self::EM_FINALIZACAO => 'cyan',
-            self::EM_CONTRATO => 'indigo',
+            self::EM_ANDAMENTO => 'blue',
             self::FINALIZADO => 'green',
             self::CANCELADO => 'red',
-            self::ADIADO => 'orange',
             self::REPUBLICADO => 'purple',
+            self::ADIADO => 'orange',
         };
     }
 
     public function isAtivo(): bool
     {
         return match ($this) {
-            self::RASCUNHO,
-            self::EM_INICIO,
-            self::EM_FINALIZACAO,
-            self::EM_CONTRATO,
+            self::EM_ANDAMENTO,
             self::REPUBLICADO => true,
             self::FINALIZADO,
             self::CANCELADO,
@@ -58,10 +46,7 @@ enum ProcessoStatusEnum: string
     public function podeEditar(): bool
     {
         return match ($this) {
-            self::RASCUNHO,
-            self::EM_INICIO,
-            self::EM_FINALIZACAO,
-            self::EM_CONTRATO => true,
+            self::EM_ANDAMENTO => true,
             default => false,
         };
     }
@@ -69,16 +54,12 @@ enum ProcessoStatusEnum: string
     public function podeCancelar(): bool
     {
         return match ($this) {
-            self::RASCUNHO,
-            self::EM_INICIO,
-            self::EM_FINALIZACAO,
-            self::EM_CONTRATO,
+            self::EM_ANDAMENTO,
             self::REPUBLICADO => true,
             default => false,
         };
     }
 
-    // Método para verificar se pode ser republicado
     public function podeRepublicar(): bool
     {
         return match ($this) {
@@ -89,25 +70,11 @@ enum ProcessoStatusEnum: string
         };
     }
 
-    // Método para verificar se pode ser adiado
     public function podeAdiar(): bool
     {
         return match ($this) {
-            self::EM_INICIO,
-            self::EM_FINALIZACAO,
-            self::EM_CONTRATO,
+            self::EM_ANDAMENTO,
             self::REPUBLICADO => true,
-            default => false,
-        };
-    }
-
-    // Método para verificar se está em andamento
-    public function isEmAndamento(): bool
-    {
-        return match ($this) {
-            self::EM_INICIO,
-            self::EM_FINALIZACAO,
-            self::EM_CONTRATO => true,
             default => false,
         };
     }
@@ -126,13 +93,11 @@ enum ProcessoStatusEnum: string
         return $array;
     }
 
-    // Método para obter status que são considerados "ativos" para exibição
     public static function ativos(): array
     {
         return array_filter(self::cases(), fn($case) => $case->isAtivo());
     }
 
-    // Método para obter status que são considerados "finalizados"
     public static function finalizados(): array
     {
         return [

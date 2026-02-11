@@ -239,23 +239,14 @@ class Processo extends Model
             ProcessoStatusEnum::FINALIZADO,
             ProcessoStatusEnum::CANCELADO,
             ProcessoStatusEnum::ADIADO,
+            ProcessoStatusEnum::REPUBLICADO,
         ])) {
             return $this->status;
         }
 
-        if ($this->contrato()->exists()) {
-            return ProcessoStatusEnum::EM_CONTRATO;
-        }
-
-        if ($this->finalizacao()->exists()) {
-            return ProcessoStatusEnum::EM_FINALIZACAO;
-        }
-
-        if ($this->detalhe()->exists()) {
-            return ProcessoStatusEnum::EM_INICIO;
-        }
-
-        return ProcessoStatusEnum::RASCUNHO;
+        // Qualquer processo que não seja final/cancelado/adiado/republicado
+        // é considerado "Em andamento"
+        return ProcessoStatusEnum::EM_ANDAMENTO;
     }
 
     public function atualizarStatusAutomatico(): bool

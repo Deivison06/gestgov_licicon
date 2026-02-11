@@ -281,30 +281,6 @@
             </tr>
         </table>
 
-        <table class="form-table">
-            <tr>
-                <td colspan="1" class="section-header">1 – IDENTIFICAÇÃO DO ÓRGÃO REQUISITANTE</td>
-            </tr>
-            <tr>
-                <td>
-                    <span class="field-label">Secretaria:
-                        {{ $detalhe->secretaria ?? 'SECRETARIA DE EDUCACAO' }}</span>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <span class="field-label">Unidade/Setor/Departamento:
-                        {{ $detalhe->unidade_setor ?? 'Unidade 1' }}</span>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <span class="field-label">Servidor responsável pela demanda:
-                        {{ $detalhe->servidor_responsavel ?? 'Deivison' }}</span>
-                </td>
-            </tr>
-        </table>
-
         <table class="form-table" style="font-size: 10pt">
             <tr>
                 <td class="section-header">2 – IDENTIFICAÇÃO DO OBJETO</td>
