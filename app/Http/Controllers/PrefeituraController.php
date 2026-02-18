@@ -8,7 +8,8 @@ use App\Models\Processo;
 use App\Models\Prefeitura;
 use Illuminate\Http\Request;
 use App\Models\ContratoManual;
-use Illuminate\Support\Carbon;
+use App\Enums\ModalidadeEnum;
+use App\Enums\ProcessoStatusEnum;
 use Illuminate\Support\Facades\DB;
 
 class PrefeituraController extends Controller
@@ -49,31 +50,24 @@ class PrefeituraController extends Controller
             'autoridade_competente'
         ]);
 
-        // Upload da capa
-        if ($request->hasFile('capa')) {
-            $capaName = time() . '_capa.' . $request->file('capa')->getClientOriginalExtension();
-            $request->file('capa')->move(public_path('uploads/prefeituras'), $capaName);
-            $data['capa'] = 'uploads/prefeituras/' . $capaName;
-        }
-
-        // Upload do timbre
-        if ($request->hasFile('timbre')) {
-            $timbreName = time() . '_timbre.' . $request->file('timbre')->getClientOriginalExtension();
-            $request->file('timbre')->move(public_path('uploads/prefeituras'), $timbreName);
-            $data['timbre'] = 'uploads/prefeituras/' . $timbreName;
-        }
-        // Upload do capa_edital
-        if ($request->hasFile('capa_edital')) {
-            $capa_editalName = time() . '_capa_edital.' . $request->file('capa_edital')->getClientOriginalExtension();
-            $request->file('capa_edital')->move(public_path('uploads/prefeituras'), $capa_editalName);
-            $data['capa_edital'] = 'uploads/prefeituras/' . $capa_editalName;
+        // Upload de arquivos
+        $files = ['capa', 'timbre', 'capa_edital'];
+        foreach ($files as $file) {
+            if ($request->hasFile($file)) {
+                $fileName = time() . '_' . $file . '.' . $request->file($file)->getClientOriginalExtension();
+                $request->file($file)->move(public_path('uploads/prefeituras'), $fileName);
+                $data[$file] = 'uploads/prefeituras/' . $fileName;
+            }
         }
 
         try {
             Prefeitura::create($data);
-            return redirect()->route('admin.prefeituras.index')->with('success', 'Prefeitura cadastrada com sucesso!');
+            return redirect()->route('admin.prefeituras.index')
+                ->with('success', 'Prefeitura cadastrada com sucesso!');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Erro ao cadastrar prefeitura: ' . $e->getMessage())->withInput();
+            return redirect()->back()
+                ->with('error', 'Erro ao cadastrar prefeitura: ' . $e->getMessage())
+                ->withInput();
         }
     }
 
@@ -105,7 +99,6 @@ class PrefeituraController extends Controller
         ]);
 
         $prefeitura = Prefeitura::findOrFail($id);
-
         $data = $request->only([
             'nome',
             'cnpj',
@@ -116,31 +109,24 @@ class PrefeituraController extends Controller
             'autoridade_competente'
         ]);
 
-        // Upload da capa (se houver)
-        if ($request->hasFile('capa')) {
-            $capaName = time() . '_capa.' . $request->file('capa')->getClientOriginalExtension();
-            $request->file('capa')->move(public_path('uploads/prefeituras'), $capaName);
-            $data['capa'] = 'uploads/prefeituras/' . $capaName;
-        }
-
-        // Upload do timbre (se houver)
-        if ($request->hasFile('timbre')) {
-            $timbreName = time() . '_timbre.' . $request->file('timbre')->getClientOriginalExtension();
-            $request->file('timbre')->move(public_path('uploads/prefeituras'), $timbreName);
-            $data['timbre'] = 'uploads/prefeituras/' . $timbreName;
-        }
-        // Upload do capa_edital (se houver)
-        if ($request->hasFile('capa_edital')) {
-            $capa_editalName = time() . '_capa_edital.' . $request->file('capa_edital')->getClientOriginalExtension();
-            $request->file('capa_edital')->move(public_path('uploads/prefeituras'), $capa_editalName);
-            $data['capa_edital'] = 'uploads/prefeituras/' . $capa_editalName;
+        // Upload de arquivos
+        $files = ['capa', 'timbre', 'capa_edital'];
+        foreach ($files as $file) {
+            if ($request->hasFile($file)) {
+                $fileName = time() . '_' . $file . '.' . $request->file($file)->getClientOriginalExtension();
+                $request->file($file)->move(public_path('uploads/prefeituras'), $fileName);
+                $data[$file] = 'uploads/prefeituras/' . $fileName;
+            }
         }
 
         try {
             $prefeitura->update($data);
-            return redirect()->route('admin.prefeituras.index')->with('success', 'Prefeitura atualizada com sucesso!');
+            return redirect()->route('admin.prefeituras.index')
+                ->with('success', 'Prefeitura atualizada com sucesso!');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Erro ao atualizar prefeitura: ' . $e->getMessage())->withInput();
+            return redirect()->back()
+                ->with('error', 'Erro ao atualizar prefeitura: ' . $e->getMessage())
+                ->withInput();
         }
     }
 
@@ -150,95 +136,96 @@ class PrefeituraController extends Controller
             DB::beginTransaction();
 
             $prefeitura = Prefeitura::findOrFail($id);
-
-            // Remove unidades
             $prefeitura->unidades()->delete();
-
-            // Remove prefeitura
             $prefeitura->delete();
 
             DB::commit();
 
-            return redirect()->route('admin.prefeituras.index')->with('success', 'Prefeitura excluída com sucesso!');
+            return redirect()->route('admin.prefeituras.index')
+                ->with('success', 'Prefeitura excluída com sucesso!');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Erro ao excluir prefeitura: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('error', 'Erro ao excluir prefeitura: ' . $e->getMessage());
         }
     }
 
     public function dashboard(Request $request)
     {
-        // Dashboard geral ou por cidade específica
         $cidadeId = $request->query('cidade');
 
-        if ($cidadeId) {
-            // Dashboard específico da cidade
-            $prefeitura = Prefeitura::findOrFail($cidadeId);
-            $processos = Processo::where('prefeitura_id', $cidadeId)
-                ->with(['prefeitura', 'vencedores'])
-                ->get();
-        } else {
-            // Dashboard geral
-            $prefeitura = null;
-            $processos = Processo::with(['prefeitura', 'vencedores'])->get();
-        }
-
-        // Contar por modalidade
-        $pregioes = $processos->where('modalidade.value', 4)->count(); // PREGAO_ELETRONICO
-        $dispensas = $processos->where('modalidade.value', 2)->count(); // DISPENSA
-        $inexigibilidades = $processos->where('modalidade.value', 3)->count(); // INEXIGIBILIDADE
-        $concorrencia = $processos->where('modalidade.value', 1)->count(); // CONCORRENCIA
-
-        // Contar por status
-        $emAndamento = $processos->where('status.value', 'analise')->count();
-        $concluido = $processos->where('status.value', 'aprovado')->count();
-        $cancelados = $processos->where('status.value', 'aprovado')->count();
-
-        // Listar prefeituras para o filtro
+        // Carregar prefeituras para filtro
         $prefeituras = Prefeitura::all();
 
-        return view('dashboard', compact(
-            'prefeitura',
-            'processos',
-            'prefeituras',
-            'pregioes',
-            'dispensas',
-            'inexigibilidades',
-            'concorrencia',
-            'emAndamento',
-            'concluido'
+        // Base query para processos
+        $processosQuery = Processo::with(['prefeitura', 'vencedores']);
+
+        if ($cidadeId) {
+            $prefeitura = Prefeitura::findOrFail($cidadeId);
+            $processosQuery->where('prefeitura_id', $cidadeId);
+        } else {
+            $prefeitura = null;
+        }
+
+        $processos = $processosQuery->get();
+
+        // Estatísticas otimizadas
+        $modalidades = [
+            'pregoes' => ModalidadeEnum::PREGAO_ELETRONICO->value,
+            'dispensas' => ModalidadeEnum::DISPENSA->value,
+            'inexigibilidades' => ModalidadeEnum::INEXIGIBILIDADE->value,
+            'concorrencia' => ModalidadeEnum::CONCORRENCIA->value,
+        ];
+
+        $contadoresModalidade = [];
+        foreach ($modalidades as $key => $value) {
+            $contadoresModalidade[$key] = $processos->filter(function($processo) use ($value) {
+                $modalidade = $processo->modalidade instanceof ModalidadeEnum
+                    ? $processo->modalidade->value
+                    : $processo->modalidade;
+                return $modalidade == $value;
+            })->count();
+        }
+
+        // Estatísticas de status
+        $statusAtivos = [
+            ProcessoStatusEnum::EM_ANDAMENTO,
+            ProcessoStatusEnum::REPUBLICADO,
+        ];
+
+        $statusFinalizados = [
+            ProcessoStatusEnum::FINALIZADO,
+        ];
+
+        
+
+        $emAndamento = $processos->filter(function($processo) use ($statusAtivos) {
+            if ($processo->status instanceof ProcessoStatusEnum) {
+                return in_array($processo->status, $statusAtivos);
+            }
+            return in_array($processo->status, array_column($statusAtivos, 'value'));
+        })->count();
+
+        $finalizadosTotal = $processos->filter(function($processo) use ($statusFinalizados) {
+            if ($processo->status instanceof ProcessoStatusEnum) {
+                return in_array($processo->status, $statusFinalizados);
+            }
+            return in_array($processo->status, array_column($statusFinalizados, 'value'));
+        })->count();
+
+        $totalProcessos = $processos->count();
+
+        return view('dashboard', array_merge(
+            [
+                'prefeitura' => $prefeitura,
+                'processos' => $processos,
+                'prefeituras' => $prefeituras,
+                'emAndamento' => $emAndamento,
+                'finalizadosTotal' => $finalizadosTotal,
+                'totalProcessos' => $totalProcessos,
+                'ativos' => $emAndamento, // Ativos são os em andamento
+            ],
+            $contadoresModalidade
         ));
-    }
-
-    private function getAtividadesRecentes($processos, $contratosManuais)
-    {
-        $atividades = [];
-
-        // Processos recentes
-        $processosRecentes = $processos->sortByDesc('created_at')->take(3);
-        foreach ($processosRecentes as $processo) {
-            $atividades[] = [
-                'type' => 'processo',
-                'description' => "Processo #{$processo->numero_processo} criado",
-                'time' => $processo->created_at->diffForHumans()
-            ];
-        }
-
-        // Contratos manuais recentes
-        $contratosRecentes = $contratosManuais->sortByDesc('created_at')->take(2);
-        foreach ($contratosRecentes as $contrato) {
-            $atividades[] = [
-                'type' => 'contrato',
-                'description' => "Contrato #{$contrato->numero_contrato} criado",
-                'time' => $contrato->created_at->diffForHumans()
-            ];
-        }
-
-        // Ordenar por data mais recente
-        usort($atividades, function ($a, $b) {
-            return strtotime($b['time']) - strtotime($a['time']);
-        });
-
-        return array_slice($atividades, 0, 5); // Limitar a 5 atividades
     }
 }

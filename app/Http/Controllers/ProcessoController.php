@@ -31,61 +31,90 @@ class ProcessoController extends Controller
         $this->documentoService = $documentoService;
     }
 
-    // No controlador
     public function index(Request $request)
     {
         $prefeituras = Prefeitura::withCount('processos')->get();
         $query = Processo::with(['prefeitura', 'detalhe', 'user']);
 
-        // Filtro por prefeitura
-        if ($request->prefeitura_id) {
-            $query->where('prefeitura_id', $request->prefeitura_id);
+        // Filtro por prefeitura (obrigatório para mostrar a tabela)
+        $prefeituraId = $request->prefeitura_id;
+        if ($prefeituraId) {
+            $query->where('prefeitura_id', $prefeituraId);
         }
 
-        // Filtro por pesquisa livre
+        // Filtro avançado por pesquisa
         if ($request->filled('search')) {
-            $search = $request->search;
+            $search = $this->prepararTermoBusca($request->search);
+
             $query->where(function($q) use ($search) {
+                // Busca no objeto (com destaque para correspondências)
                 $q->where('objeto', 'like', "%{$search}%")
+
+                    // Busca em números (processo e procedimento)
                     ->orWhere('numero_processo', 'like', "%{$search}%")
                     ->orWhere('numero_procedimento', 'like', "%{$search}%")
+
+                    // Busca na prefeitura (nome e cidade)
                     ->orWhereHas('prefeitura', function($q2) use ($search) {
                         $q2->where('nome', 'like', "%{$search}%")
                             ->orWhere('cidade', 'like', "%{$search}%");
                     })
+
+                    // Busca no responsável
                     ->orWhereHas('user', function($q3) use ($search) {
                         $q3->where('name', 'like', "%{$search}%");
                     });
             });
         }
 
-        // Filtro por modalidade (opcional)
+        // Filtro por modalidade
         if ($request->filled('modalidade')) {
             $query->where('modalidade', $request->modalidade);
         }
 
-        // Filtro por status (opcional) - Se não especificar, mostra apenas não finalizados
+        // Filtro por status
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         } else {
-            // Por padrão, mostrar apenas processos que NÃO estão finalizados
-            $query->where('status', '!=', ProcessoStatusEnum::FINALIZADO->value);
+            // Por padrão, mostrar apenas processos ativos
+            // MAS se houver pesquisa ativa, mostrar tudo para facilitar a busca
+            $hasActiveFilters = $request->filled('search') || $request->filled('modalidade');
+
+            if (!$hasActiveFilters) {
+                $query->whereNotIn('status', [
+                    ProcessoStatusEnum::FINALIZADO->value,
+                    ProcessoStatusEnum::CANCELADO->value,
+                    ProcessoStatusEnum::ADIADO->value
+                ]);
+            }
         }
 
-        // Ordenar do mais recente para o mais antigo
+        // Ordenação
         $query->orderBy('created_at', 'desc');
 
         $processos = $query->paginate(10)->withQueryString();
 
-        // Debug: verifique os status dos processos
+        // Preparar dados para a view
         foreach ($processos as $processo) {
             if (!$processo->status instanceof ProcessoStatusEnum) {
-                $processo->status = ProcessoStatusEnum::tryFrom($processo->status) ?? ProcessoStatusEnum::RASCUNHO;
+                $processo->status = ProcessoStatusEnum::tryFrom($processo->status) ?? ProcessoStatusEnum::EM_ANDAMENTO;
             }
         }
 
-        return view('Admin.Processos.index', compact('processos', 'prefeituras'));
+        return view('Admin.Processos.index', compact('processos', 'prefeituras', 'prefeituraId'));
     }
+
+    private function prepararTermoBusca(string $term): string
+    {
+        // Remove espaços extras
+        $term = trim($term);
+
+        // Remove caracteres que podem causar problemas em LIKE
+        $term = str_replace(['%', '_', '\\'], '', $term);
+
+        return $term;
+    }
+
     public function create()
     {
         $prefeituras = Prefeitura::with('unidades')->get();
@@ -96,7 +125,7 @@ class ProcessoController extends Controller
     {
         $dados = $request->validated();
         $dados['user_id'] = auth()->id();
-        $dados['status'] = ProcessoStatusEnum::RASCUNHO;
+        $dados['status'] = ProcessoStatusEnum::EM_ANDAMENTO;
 
         $processo = $this->processoService->create($dados);
 

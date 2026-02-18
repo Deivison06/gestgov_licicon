@@ -46,7 +46,7 @@
                     </div>
                 </div>
                 <div class="text-center">
-                    <p class="text-3xl font-bold text-gray-800 mb-1">{{ $pregioes }}</p>
+                    <p class="text-3xl font-bold text-gray-800 mb-1">{{ $pregoes }}</p>
                     <p class="text-sm text-gray-500">Total de pregões</p>
                 </div>
             </div>
@@ -78,47 +78,76 @@
                     <p class="text-sm text-gray-500">Total de inexigibilidades</p>
                 </div>
             </div>
-            <!-- Cartão CONCORRENCIA -->
+
+            <!-- Cartão Concorrências -->
             <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-medium text-gray-700">CONCORRENCIAS</h3>
-                    <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
-                        <i class="fas fa-ban text-purple-600"></i>
+                    <h3 class="text-lg font-medium text-gray-700">Concorrências</h3>
+                    <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                        <i class="fas fa-balance-scale text-orange-600"></i>
                     </div>
                 </div>
                 <div class="text-center">
                     <p class="text-3xl font-bold text-gray-800 mb-1">{{ $concorrencia }}</p>
-                    <p class="text-sm text-gray-500">Total de concorrencias</p>
+                    <p class="text-sm text-gray-500">Total de concorrências</p>
                 </div>
             </div>
 
             <!-- Cartão Em Andamento -->
-{{--            <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">--}}
-{{--                <div class="flex items-center justify-between mb-4">--}}
-{{--                    <h3 class="text-lg font-medium text-gray-700">Em Andamento</h3>--}}
-{{--                    <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center">--}}
-{{--                        <i class="fas fa-spinner text-yellow-600"></i>--}}
-{{--                    </div>--}}
-{{--                </div>--}}
-{{--                <div class="text-center">--}}
-{{--                    <p class="text-3xl font-bold text-gray-800 mb-1">{{ $emAndamento }}</p>--}}
-{{--                    <p class="text-sm text-gray-500">Processos em análise</p>--}}
-{{--                </div>--}}
-{{--            </div>--}}
+            <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-medium text-gray-700">Em Andamento</h3>
+                    <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center">
+                        <i class="fas fa-spinner text-yellow-600"></i>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <p class="text-3xl font-bold text-gray-800 mb-1">{{ $emAndamento }}</p>
+                    <p class="text-sm text-gray-500">Processos em análise</p>
+                </div>
+            </div>
 
-{{--            <!-- Cartão Concluídos -->--}}
-{{--            <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">--}}
-{{--                <div class="flex items-center justify-between mb-4">--}}
-{{--                    <h3 class="text-lg font-medium text-gray-700">Concluídos</h3>--}}
-{{--                    <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">--}}
-{{--                        <i class="fas fa-check-circle text-green-600"></i>--}}
-{{--                    </div>--}}
-{{--                </div>--}}
-{{--                <div class="text-center">--}}
-{{--                    <p class="text-3xl font-bold text-gray-800 mb-1">{{ $concluido }}</p>--}}
-{{--                    <p class="text-sm text-gray-500">Processos aprovados</p>--}}
-{{--                </div>--}}
-{{--            </div>--}}
+            <!-- Cartão Concluídos -->
+            <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-medium text-gray-700">Concluídos</h3>
+                    <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                        <i class="fas fa-check-circle text-green-600"></i>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <p class="text-3xl font-bold text-gray-800 mb-1">{{ $finalizadosTotal }}</p>
+                    <p class="text-sm text-gray-500">Processos finalizados</p>
+                </div>
+            </div>
+
+           {{-- <!-- Cartão Concluídos -->
+            <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-medium text-gray-700">Concluídos</h3>
+                    <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                        <i class="fas fa-check-circle text-green-600"></i>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <p class="text-3xl font-bold text-gray-800 mb-1">{{ $cancelado }}</p>
+                    <p class="text-sm text-gray-500">Processos finalizados</p>
+                </div>
+            </div> --}}
+
+            <!-- Cartão Total de Processos -->
+            <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-medium text-gray-700">Total Processos</h3>
+                    <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                        <i class="fas fa-clipboard-list text-gray-600"></i>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <p class="text-3xl font-bold text-gray-800 mb-1">{{ $totalProcessos }}</p>
+                    <p class="text-sm text-gray-500">Todos os processos</p>
+                </div>
+            </div>
         </div>
 
         <!-- Lista de Processos -->
@@ -152,19 +181,33 @@
                                     </p>
 
                                     <!-- Badge da Modalidade -->
-                                    <span class="px-2 py-1 text-xs font-medium rounded-full
-                                {{ $processo->modalidade->value == 4 ? 'bg-blue-100 text-blue-800' : '' }}
-                                {{ $processo->modalidade->value == 2 ? 'bg-green-100 text-green-800' : '' }}
-                                {{ $processo->modalidade->value == 3 ? 'bg-purple-100 text-purple-800' : '' }}">
-                                {{ $processo->modalidade->getDisplayName() }}
-                            </span>
+                                    @php
+                                        $modalidadeClasses = match($processo->modalidade->value ?? $processo->modalidade) {
+                                            1 => 'bg-orange-100 text-orange-800',
+                                            2 => 'bg-green-100 text-green-800',
+                                            3 => 'bg-purple-100 text-purple-800',
+                                            4 => 'bg-blue-100 text-blue-800',
+                                            default => 'bg-gray-100 text-gray-800'
+                                        };
+                                    @endphp
+                                    <span class="px-2 py-1 text-xs font-medium rounded-full {{ $modalidadeClasses }}">
+                                        {{ $processo->modalidade->getDisplayName() ?? 'Modalidade' }}
+                                    </span>
 
                                     <!-- Badge do Status -->
-                                    <span class="px-2 py-1 text-xs font-medium rounded-full
-                                {{ $processo->status->value == 'analise' ? 'bg-yellow-100 text-yellow-800' : '' }}
-                                {{ $processo->status->value == 'aprovado' ? 'bg-green-100 text-green-800' : '' }}">
-                                {{ $processo->status->label() }}
-                            </span>
+                                    @php
+                                        $statusClasses = match($processo->status->value ?? $processo->status) {
+                                            'EM_ANDAMENTO' => 'bg-yellow-100 text-yellow-800',
+                                            'FINALIZADO' => 'bg-green-100 text-green-800',
+                                            'CANCELADO' => 'bg-red-100 text-red-800',
+                                            'REPUBLICADO' => 'bg-purple-100 text-purple-800',
+                                            'ADIADO' => 'bg-orange-100 text-orange-800',
+                                            default => 'bg-gray-100 text-gray-800'
+                                        };
+                                    @endphp
+                                    <span class="px-2 py-1 text-xs font-medium rounded-full {{ $statusClasses }}">
+                                        {{ $processo->status->label() ?? $processo->status }}
+                                    </span>
                                 </div>
                                 <div class="text-sm text-gray-600 space-y-1">
                                     <p>
@@ -176,10 +219,10 @@
                                         Objeto: {!! strip_tags($processo->objeto) !!}
                                     </p>
                                     <div class="flex items-center gap-4 mt-2">
-                                <span class="flex items-center text-xs text-gray-500">
-                                    <i class="far fa-clock mr-1"></i>
-                                    Criado: {{ $processo->created_at->format('d/m/Y') }}
-                                </span>
+                                        <span class="flex items-center text-xs text-gray-500">
+                                            <i class="far fa-clock mr-1"></i>
+                                            Criado: {{ $processo->created_at->format('d/m/Y') }}
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -217,7 +260,6 @@
         </div>
     </div>
 
-    <!-- Estilo simples para animação dos cards -->
     <style>
         .bg-white {
             animation: fadeInUp 0.5s ease-out;

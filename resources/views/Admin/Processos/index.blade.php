@@ -82,44 +82,63 @@
 
         <!-- Tabela de Processos (mostrada apenas quando há filtro de prefeitura) -->
         @if(request('prefeitura_id'))
-            <!-- ADICIONE ESTA PARTE: Campo de Pesquisa Avançada -->
-            <div class="px-6 py-4 bg-white border-b border-gray-200">
-                <form action="{{ route('admin.processos.index') }}" method="GET"
-                      class="flex flex-col gap-4 p-4 bg-gray-50 rounded-lg">
+            <!-- FILTRO AVANÇADO MELHORADO -->
+            <div class="mb-6 bg-white border border-gray-200 rounded-2xl shadow-sm">
+                <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                    <h4 class="text-lg font-semibold text-gray-800">Filtros Avançados</h4>
+                    <p class="text-sm text-gray-500">Encontre processos específicos usando múltiplos critérios</p>
+                </div>
+
+                <form action="{{ route('admin.processos.index') }}" method="GET" class="p-6">
                     <input type="hidden" name="prefeitura_id" value="{{ request('prefeitura_id') }}">
 
-                    <div class="flex flex-col gap-4 lg:flex-row lg:items-end">
-                        <!-- Campo de pesquisa principal -->
-                        <div class="flex-1">
-                            <label for="search" class="block mb-2 text-sm font-medium text-gray-700">
-                                Pesquisa Livre
+                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+                        <!-- Campo de pesquisa principal POR OBJETO -->
+                        <div>
+                            <label for="search_objeto" class="block mb-2 text-sm font-medium text-gray-700">
+                                <i class="fas fa-search mr-1"></i> Pesquisar por Objeto
                             </label>
                             <div class="relative">
-                                <svg class="absolute w-5 h-5 text-gray-400 transform -translate-y-1/2 left-3 top-1/2"
-                                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                </svg>
+                                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                    <i class="text-gray-400 fas fa-file-alt"></i>
+                                </div>
                                 <input type="text"
-                                       name="search"
-                                       id="search"
-                                       value="{{ request('search') }}"
-                                       placeholder="Pesquisar por objeto, número, prefeitura ou responsável..."
+                                       name="search_objeto"
+                                       id="search_objeto"
+                                       value="{{ request('search_objeto') }}"
+                                       placeholder="Digite parte do objeto do processo..."
                                        class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg
-                                  focus:ring-2 focus:ring-[#009496] focus:border-transparent
-                                  placeholder-gray-500 text-sm">
+                                              focus:ring-2 focus:ring-[#009496] focus:border-transparent
+                                              placeholder-gray-500 text-sm transition-all duration-200">
                             </div>
+                            <p class="mt-1 text-xs text-gray-500">Busca por palavras no objeto do processo</p>
                         </div>
 
-                        <!-- Filtro por modalidade (opcional) -->
-                        <div class="w-full lg:w-48">
+                        <!-- Campo de pesquisa por Número -->
+                        <div>
+                            <label for="search_numero" class="block mb-2 text-sm font-medium text-gray-700">
+                                <i class="fas fa-hashtag mr-1"></i> Número do Processo
+                            </label>
+                            <input type="text"
+                                   name="search_numero"
+                                   id="search_numero"
+                                   value="{{ request('search_numero') }}"
+                                   placeholder="Ex: 001/2024"
+                                   class="block w-full px-3 py-2.5 border border-gray-300 rounded-lg
+                                          focus:ring-2 focus:ring-[#009496] focus:border-transparent
+                                          placeholder-gray-500 text-sm">
+                        </div>
+
+                        <!-- Filtro por modalidade -->
+                        <div>
                             <label for="modalidade" class="block mb-2 text-sm font-medium text-gray-700">
-                                Modalidade
+                                <i class="fas fa-filter mr-1"></i> Modalidade
                             </label>
                             <select name="modalidade" id="modalidade"
                                     class="w-full px-3 py-2.5 border border-gray-300 rounded-lg
-                               focus:ring-2 focus:ring-[#009496] focus:border-transparent text-sm">
-                                <option value="">Todas</option>
+                                           focus:ring-2 focus:ring-[#009496] focus:border-transparent text-sm
+                                           transition-all duration-200">
+                                <option value="">Todas as Modalidades</option>
                                 @foreach(\App\Enums\ModalidadeEnum::cases() as $modalidade)
                                     <option value="{{ $modalidade->value }}"
                                         {{ request('modalidade') == $modalidade->value ? 'selected' : '' }}>
@@ -129,15 +148,16 @@
                             </select>
                         </div>
 
-                        <!-- Filtro por status (opcional) -->
-                        <div class="w-full lg:w-48">
+                        <!-- Filtro por status -->
+                        <div>
                             <label for="status" class="block mb-2 text-sm font-medium text-gray-700">
-                                Status
+                                <i class="fas fa-tasks mr-1"></i> Status
                             </label>
                             <select name="status" id="status"
                                     class="w-full px-3 py-2.5 border border-gray-300 rounded-lg
-                               focus:ring-2 focus:ring-[#009496] focus:border-transparent text-sm">
-                                <option value="">Todos</option>
+                                           focus:ring-2 focus:ring-[#009496] focus:border-transparent text-sm
+                                           transition-all duration-200">
+                                <option value="">Todos os Status</option>
                                 @foreach(\App\Enums\ProcessoStatusEnum::cases() as $status)
                                     <option value="{{ $status->value }}"
                                         {{ request('status') == $status->value ? 'selected' : '' }}>
@@ -146,94 +166,214 @@
                                 @endforeach
                             </select>
                         </div>
+                    </div>
 
-                        <!-- Botões -->
-                        <div class="flex gap-2">
+                    <!-- Segunda linha de filtros -->
+                    <div class="grid grid-cols-1 gap-6 mt-4 md:grid-cols-3">
+                        <!-- Filtro por data (criação) -->
+                        <div>
+                            <label for="data_inicio" class="block mb-2 text-sm font-medium text-gray-700">
+                                <i class="far fa-calendar mr-1"></i> Data de Criação
+                            </label>
+                            <div class="flex space-x-2">
+                                <input type="date"
+                                       name="data_inicio"
+                                       id="data_inicio"
+                                       value="{{ request('data_inicio') }}"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg
+                                              focus:ring-2 focus:ring-[#009496] focus:border-transparent text-sm">
+                                <span class="flex items-center text-gray-400">a</span>
+                                <input type="date"
+                                       name="data_fim"
+                                       id="data_fim"
+                                       value="{{ request('data_fim') }}"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg
+                                              focus:ring-2 focus:ring-[#009496] focus:border-transparent text-sm">
+                            </div>
+                        </div>
+
+                        <!-- Filtro por responsável -->
+                        <div>
+                            <label for="responsavel" class="block mb-2 text-sm font-medium text-gray-700">
+                                <i class="fas fa-user mr-1"></i> Responsável
+                            </label>
+                            <input type="text"
+                                   name="responsavel"
+                                   id="responsavel"
+                                   value="{{ request('responsavel') }}"
+                                   placeholder="Nome do responsável..."
+                                   class="block w-full px-3 py-2.5 border border-gray-300 rounded-lg
+                                          focus:ring-2 focus:ring-[#009496] focus:border-transparent
+                                          placeholder-gray-500 text-sm">
+                        </div>
+
+                        <!-- Botões de ação -->
+                        <div class="flex items-end space-x-3">
                             <button type="submit"
-                                    class="px-4 py-2.5 text-sm font-medium text-white bg-[#009496] rounded-lg
-                               hover:bg-[#007a7a] transition-colors duration-200
-                               focus:outline-none focus:ring-2 focus:ring-[#009496] focus:ring-offset-2">
-                                <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                </svg>
-                                Pesquisar
+                                    class="flex-1 px-6 py-2.5 text-sm font-medium text-white bg-[#009496] rounded-lg
+                                           hover:bg-[#007a7a] transition-all duration-200
+                                           focus:outline-none focus:ring-2 focus:ring-[#009496] focus:ring-offset-2
+                                           flex items-center justify-center">
+                                <i class="mr-2 fas fa-search"></i>
+                                Aplicar Filtros
                             </button>
 
-                            @if(request('search') || request('modalidade') || request('status'))
+                            @if(request()->hasAny(['search_objeto', 'search_numero', 'modalidade', 'status', 'data_inicio', 'data_fim', 'responsavel']))
                                 <a href="{{ route('admin.processos.index', ['prefeitura_id' => request('prefeitura_id')]) }}"
                                    class="px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg
-                          hover:bg-gray-200 transition-colors duration-200
-                          focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2">
-                                    Limpar filtros
+                                          hover:bg-gray-200 transition-all duration-200
+                                          focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2
+                                          flex items-center">
+                                    <i class="mr-2 fas fa-times"></i>
+                                    Limpar
                                 </a>
                             @endif
                         </div>
                     </div>
 
-                    @if(request('search') || request('modalidade') || request('status'))
-                        <div class="pt-4 mt-2 border-t border-gray-200">
+                    <!-- Mostrar filtros ativos -->
+                    @if(request()->hasAny(['search_objeto', 'search_numero', 'modalidade', 'status', 'data_inicio', 'data_fim', 'responsavel']))
+                        <div class="mt-4 pt-4 border-t border-gray-200">
                             <div class="flex flex-wrap items-center gap-2">
-                                <span class="text-sm text-gray-600">Filtros aplicados:</span>
-                                @if(request('search'))
-                                    <span class="px-3 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
-                    Pesquisa: "{{ request('search') }}"
-                </span>
+                                <span class="text-sm font-medium text-gray-700">Filtros ativos:</span>
+
+                                @if(request('search_objeto'))
+                                    <span class="px-3 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full flex items-center">
+                                        <i class="mr-1 fas fa-file-alt"></i>
+                                        Objeto: "{{ request('search_objeto') }}"
+                                    </span>
                                 @endif
+
+                                @if(request('search_numero'))
+                                    <span class="px-3 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full flex items-center">
+                                        <i class="mr-1 fas fa-hashtag"></i>
+                                        Nº: {{ request('search_numero') }}
+                                    </span>
+                                @endif
+
                                 @if(request('modalidade'))
                                     @php
                                         $modalidade = \App\Enums\ModalidadeEnum::tryFrom(request('modalidade'));
                                     @endphp
                                     @if($modalidade)
-                                        <span class="px-3 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
-                    Modalidade: {{ $modalidade->getDisplayName() }}
-                </span>
+                                        <span class="px-3 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded-full flex items-center">
+                                            <i class="mr-1 fas fa-filter"></i>
+                                            {{ $modalidade->getDisplayName() }}
+                                        </span>
                                     @endif
                                 @endif
+
                                 @if(request('status'))
                                     @php
                                         $status = \App\Enums\ProcessoStatusEnum::tryFrom(request('status'));
                                     @endphp
                                     @if($status)
-                                        <span class="px-3 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded-full">
-                    Status: {{ $status->label() }}
-                </span>
+                                        <span class="px-3 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full flex items-center">
+                                            <i class="mr-1 fas fa-tasks"></i>
+                                            {{ $status->label() }}
+                                        </span>
                                     @endif
+                                @endif
+
+                                @if(request('data_inicio') || request('data_fim'))
+                                    <span class="px-3 py-1 text-xs font-medium bg-indigo-100 text-indigo-800 rounded-full flex items-center">
+                                        <i class="mr-1 far fa-calendar"></i>
+                                        {{ request('data_inicio') ? Carbon\Carbon::parse(request('data_inicio'))->format('d/m/Y') : 'Início' }}
+                                        @if(request('data_inicio') && request('data_fim')) a @endif
+                                        {{ request('data_fim') ? Carbon\Carbon::parse(request('data_fim'))->format('d/m/Y') : 'Fim' }}
+                                    </span>
+                                @endif
+
+                                @if(request('responsavel'))
+                                    <span class="px-3 py-1 text-xs font-medium bg-pink-100 text-pink-800 rounded-full flex items-center">
+                                        <i class="mr-1 fas fa-user"></i>
+                                        Responsável: {{ request('responsavel') }}
+                                    </span>
                                 @endif
                             </div>
                         </div>
                     @endif
                 </form>
             </div>
+
+            <!-- Tabela de Processos -->
             <div class="overflow-hidden transition-all duration-300 bg-white border border-gray-100 shadow-sm rounded-2xl">
                 <div class="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
                     <div class="flex flex-col items-start justify-between lg:flex-row lg:items-center">
-                        <h3 class="text-xl font-semibold text-gray-800">
-                            Processos da Prefeitura: {{ $prefeituras->find(request('prefeitura_id'))->nome ?? 'Selecionada' }}
-                        </h3>
-                        <span class="mt-2 text-sm text-gray-500 lg:mt-0">
-                    Total: {{ $processos->total() }} processos
-                </span>
+                        <div>
+                            <h3 class="text-xl font-semibold text-gray-800">
+                                Processos da Prefeitura: {{ $prefeituras->find(request('prefeitura_id'))->nome ?? 'Selecionada' }}
+                            </h3>
+                            @if($processos->total() > 0)
+                                <p class="mt-1 text-sm text-gray-600">
+                                    Mostrando <span class="font-semibold">{{ $processos->firstItem() }}</span>
+                                    a <span class="font-semibold">{{ $processos->lastItem() }}</span>
+                                    de <span class="font-semibold">{{ $processos->total() }}</span> processos
+                                </p>
+                            @endif
+                        </div>
+                        <div class="flex items-center mt-2 space-x-3 lg:mt-0">
+                            <div class="text-sm text-gray-500">
+                                @if($processos->total() > 0)
+                                    <i class="mr-1 fas fa-clipboard-list"></i>
+                                    {{ $processos->total() }} processo(s) encontrado(s)
+                                @endif
+                            </div>
+{{--                            @if($processos->total() > 0)--}}
+{{--                                <button type="button"--}}
+{{--                                        onclick="exportarResultados()"--}}
+{{--                                        class="inline-flex items-center px-4 py-2 text-sm font-medium text-[#009496] bg-white border border-[#009496] rounded-lg hover:bg-[#009496] hover:text-white transition-all duration-200">--}}
+{{--                                    <i class="mr-2 fas fa-file-export"></i>--}}
+{{--                                    Exportar--}}
+{{--                                </button>--}}
+{{--                            @endif--}}
+                        </div>
                     </div>
                 </div>
+
+                <!-- Mensagem de busca por objeto -->
+                @if(request('search_objeto') && $processos->total() > 0)
+                    <div class="px-6 py-3 bg-blue-50 border-b border-blue-100">
+                        <div class="flex items-center">
+                            <i class="mr-2 text-blue-500 fas fa-info-circle"></i>
+                            <p class="text-sm text-blue-700">
+                                Buscando processos com objeto contendo: "<span class="font-semibold">{{ request('search_objeto') }}</span>"
+                            </p>
+                        </div>
+                    </div>
+                @endif
 
                 <div class="overflow-x-auto">
                     <table class="w-full overflow-hidden divide-y divide-gray-200 rounded-lg shadow-sm">
                         <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">Status</th>
-                            <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">Nº Processo</th>
-                            <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">Nº Procedimento</th>
-                            <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">Tipo Contratação</th>
-                            <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">Tipo Procedimento</th>
-                            <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">Modalidade</th>
-                            <th class="px-4 py-3 text-xs font-semibold tracking-wider text-center text-gray-600 uppercase">Ações</th>
+                            <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">
+                                <i class="mr-1 fas fa-tasks"></i> Status
+                            </th>
+                            <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">
+                                <i class="mr-1 fas fa-hashtag"></i> Nº Processo
+                            </th>
+                            <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">
+                                <i class="mr-1 fas fa-list-ol"></i> Nº Procedimento
+                            </th>
+                            <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">
+                                <i class="mr-1 fas fa-file-contract"></i> Tipo Contratação
+                            </th>
+                            <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">
+                                <i class="mr-1 fas fa-cogs"></i> Tipo Procedimento
+                            </th>
+                            <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">
+                                <i class="mr-1 fas fa-filter"></i> Modalidade
+                            </th>
+                            <th class="px-4 py-3 text-xs font-semibold tracking-wider text-center text-gray-600 uppercase">
+                                <i class="mr-1 fas fa-cog"></i> Ações
+                            </th>
                         </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($processos as $processo)
                             <tr class="transition-colors duration-200 hover:bg-gray-50/80">
-                                <!-- Na seção onde mostra o status, atualize para: -->
+                                <!-- Status -->
                                 <td class="px-4 py-3 whitespace-nowrap">
                                     @php
                                         $status = $processo->status instanceof \App\Enums\ProcessoStatusEnum
@@ -243,7 +383,7 @@
 
                                     <button type="button"
                                             onclick="abrirModalStatusProcesso({{ $processo->id }}, '{{ $processo->numero_processo }}', '{{ $status->value }}')"
-                                            class="inline-flex px-2.5 py-0.5 text-xs font-semibold rounded-full cursor-pointer transition-all duration-200 hover:opacity-90 hover:scale-105
+                                            class="inline-flex items-center px-2.5 py-0.5 text-xs font-semibold rounded-full cursor-pointer transition-all duration-200 hover:opacity-90 hover:scale-105
                                                 @if($status->value === 'EM_ANDAMENTO') bg-blue-100 text-blue-800 hover:bg-blue-200
                                                 @elseif($status->value === 'FINALIZADO') bg-green-100 text-green-800 hover:bg-green-200
                                                 @elseif($status->value === 'CANCELADO') bg-red-100 text-red-800 hover:bg-red-200
@@ -251,162 +391,240 @@
                                                 @elseif($status->value === 'ADIADO') bg-orange-100 text-orange-800 hover:bg-orange-200
                                                 @endif"
                                             title="Clique para alterar o status">
+                                        <i class="mr-1 fas
+                                            @if($status->value === 'EM_ANDAMENTO') fa-spinner
+                                            @elseif($status->value === 'FINALIZADO') fa-check-circle
+                                            @elseif($status->value === 'CANCELADO') fa-times-circle
+                                            @elseif($status->value === 'REPUBLICADO') fa-redo
+                                            @elseif($status->value === 'ADIADO') fa-clock
+                                            @endif"></i>
                                         {{ $status->label() }}
                                     </button>
                                 </td>
-                                <td class="px-4 py-3 font-mono text-sm text-gray-900 whitespace-nowrap">{{ $processo->numero_processo }}</td>
-                                <td class="px-4 py-3 font-mono text-sm text-gray-900 whitespace-nowrap">{{ $processo->numero_procedimento }}</td>
-                                <td class="px-4 py-3 text-sm text-gray-900">{{ $processo->tipo_contratacao_nome }}</td>
-                                <td class="px-4 py-3 text-sm text-gray-900">{{ $processo->tipo_procedimento_nome }}</td>
+
+                                <td class="px-4 py-3 font-mono text-sm text-gray-900 whitespace-nowrap">
+                                    <span class="font-semibold">{{ $processo->numero_processo }}</span>
+                                </td>
+
+                                <td class="px-4 py-3 font-mono text-sm text-gray-900 whitespace-nowrap">
+                                    {{ $processo->numero_procedimento }}
+                                </td>
+
+                                <td class="px-4 py-3 text-sm text-gray-900">
+                                    {{ $processo->tipo_contratacao_nome }}
+                                </td>
+
+                                <td class="px-4 py-3 text-sm text-gray-900">
+                                    {{ $processo->tipo_procedimento_nome }}
+                                </td>
+
                                 <td class="px-4 py-3">
-                                    <span class="inline-flex px-2.5 py-0.5 text-xs font-semibold rounded-full
-                                        @if ($processo->modalidade->value === 'dispensa') bg-purple-100 text-purple-800 border border-purple-200
-                                        @elseif($processo->modalidade->value === 'inexigibilidade') bg-pink-100 text-pink-800 border border-pink-200
-                                        @elseif($processo->modalidade->value === 'pregão') bg-blue-100 text-blue-800 border border-blue-200
-                                        @elseif($processo->modalidade->value === 'concorrência') bg-green-100 text-green-800 border border-green-200
-                                        @else bg-gray-100 text-gray-800 border border-gray-200 @endif">
-                                        {{ $processo->modalidade->getDisplayName() }}
+                                    @php
+                                        $modalidade = $processo->modalidade instanceof \App\Enums\ModalidadeEnum
+                                            ? $processo->modalidade
+                                            : \App\Enums\ModalidadeEnum::tryFrom($processo->modalidade);
+                                        $modalidadeValue = $modalidade instanceof \App\Enums\ModalidadeEnum
+                                            ? $modalidade->value
+                                            : $processo->modalidade;
+                                    @endphp
+
+                                    <span class="inline-flex items-center px-2.5 py-0.5 text-xs font-semibold rounded-full
+                                        @if($modalidadeValue == \App\Enums\ModalidadeEnum::DISPENSA->value)
+                                            bg-purple-100 text-purple-800 border border-purple-200
+                                        @elseif($modalidadeValue == \App\Enums\ModalidadeEnum::INEXIGIBILIDADE->value)
+                                            bg-pink-100 text-pink-800 border border-pink-200
+                                        @elseif($modalidadeValue == \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO->value)
+                                            bg-blue-100 text-blue-800 border border-blue-200
+                                        @elseif($modalidadeValue == \App\Enums\ModalidadeEnum::CONCORRENCIA->value)
+                                            bg-green-100 text-green-800 border border-green-200
+                                        @else
+                                            bg-gray-100 text-gray-800 border border-gray-200
+                                        @endif">
+                                        <i class="mr-1 fas
+                                            @if($modalidadeValue == \App\Enums\ModalidadeEnum::DISPENSA->value) fa-file-signature
+                                            @elseif($modalidadeValue == \App\Enums\ModalidadeEnum::INEXIGIBILIDADE->value) fa-ban
+                                            @elseif($modalidadeValue == \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO->value) fa-gavel
+                                            @elseif($modalidadeValue == \App\Enums\ModalidadeEnum::CONCORRENCIA->value) fa-balance-scale
+                                            @else fa-question-circle @endif"></i>
+                                        {{ $modalidade?->getDisplayName() ?? 'Não definido' }}
                                     </span>
                                 </td>
+
                                 <td class="px-4 py-3">
                                     <div class="flex flex-wrap justify-center gap-1.5">
+                                        <!-- Botão Iniciar -->
                                         <a href="{{ route('admin.processos.iniciar', $processo->id) }}"
                                            class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white transition-colors duration-200 bg-[#062F43] rounded-md hover:bg-[#065f8b] focus:outline-none focus:ring-2 focus:ring-[#062F43] focus:ring-offset-1"
                                            title="Iniciar processo">
-{{--                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">--}}
-{{--                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>--}}
-{{--                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>--}}
-{{--                                            </svg>--}}
+                                            <i class="mr-1 fas fa-play-circle"></i>
                                             Iniciar
                                         </a>
 
+                                        <!-- Botão Finalizar -->
                                         <a href="{{ route('admin.processos.finalizacao.finalizar', $processo->id) }}"
                                            class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white transition-colors duration-200 bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-1"
                                            title="Finalizar processo">
-{{--                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">--}}
-{{--                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>--}}
-{{--                                            </svg>--}}
+                                            <i class="mr-1 fas fa-check-circle"></i>
                                             Finalizar
                                         </a>
 
+                                        <!-- Botão Contrato -->
                                         @if (!($processo->modalidade == 4 && optional($processo->detalhe)->tipo_srp === 'nao'))
                                             <a href="{{ route('admin.processos.contrato.index', $processo->id) }}"
                                                class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-1"
                                                title="Emitir Contrato">
-{{--                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">--}}
-{{--                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>--}}
-{{--                                                </svg>--}}
+                                                <i class="mr-1 fas fa-file-contract"></i>
                                                 Contrato
                                             </a>
                                         @endif
 
-                                        <!-- Botões de ações especiais -->
-                                        @if($processo->status && method_exists($processo->status, 'isAtivo') && $processo->status->isAtivo())
+                                        <!-- Ações especiais para processos ativos -->
+                                        @if($status->isAtivo())
+                                            <!-- Republicar -->
                                             <button type="button"
                                                     onclick="abrirModalRepublicarProcesso({{ $processo->id }})"
                                                     class="inline-flex items-center justify-center w-8 h-8 text-white bg-purple-600 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-1"
                                                     title="Republicar Processo">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                                                </svg>
+                                                <i class="fas fa-redo"></i>
                                             </button>
 
+                                            <!-- Cancelar -->
                                             <button type="button"
                                                     onclick="abrirModalCancelarLicitacao({{ $processo->id }})"
                                                     class="inline-flex items-center justify-center w-8 h-8 text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1"
                                                     title="Cancelar Licitação">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
-                                                </svg>
+                                                <i class="fas fa-times-circle"></i>
                                             </button>
 
+                                            <!-- Adiar -->
                                             <button type="button"
                                                     onclick="abrirModalAdiarLicitacao({{ $processo->id }})"
                                                     class="inline-flex items-center justify-center w-8 h-8 text-white bg-yellow-600 rounded-md hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-1"
                                                     title="Adiar Licitação">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                                </svg>
+                                                <i class="fas fa-clock"></i>
                                             </button>
                                         @endif
 
-                                        <!-- Botão Reverter Cancelamento - Mostrar apenas para processos cancelados -->
-                                        @if($processo->status->value === 'CANCELADO')
+                                        <!-- Reverter Cancelamento -->
+                                        @if($status->value === 'CANCELADO')
                                             <button type="button"
                                                     onclick="reverterCancelamento({{ $processo->id }}, '{{ $processo->numero_processo }}')"
                                                     class="inline-flex items-center justify-center w-8 h-8 text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1"
                                                     title="Reverter Cancelamento">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
-                                                </svg>
+                                                <i class="fas fa-undo"></i>
                                             </button>
                                         @endif
 
+                                        <!-- Editar -->
                                         <a href="{{ route('admin.processos.edit', $processo->id) }}"
                                            class="inline-flex items-center justify-center w-8 h-8 text-gray-600 transition-colors duration-200 rounded-md hover:bg-gray-100 hover:text-[#009496] focus:outline-none focus:ring-2 focus:ring-[#009496] focus:ring-offset-1"
                                            title="Editar processo">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                            </svg>
+                                            <i class="fas fa-edit"></i>
                                         </a>
 
+                                        <!-- Excluir -->
                                         <form action="{{ route('admin.processos.destroy', $processo->id) }}" method="POST"
                                               class="inline" id="delete-form-{{ $processo->id }}">
                                             @csrf
                                             @method('DELETE')
-                                            <button
-                                                type="button"
-                                                onclick="confirmDelete({{ $processo->id }}, '{{ $processo->numero_processo }}')"
-                                                class="inline-flex items-center justify-center w-8 h-8 text-gray-600 transition-colors duration-200 rounded-md hover:bg-red-100 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-1"
-                                                title="Excluir processo">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                                </svg>
+                                            <button type="button"
+                                                    onclick="confirmDelete({{ $processo->id }}, '{{ $processo->numero_processo }}')"
+                                                    class="inline-flex items-center justify-center w-8 h-8 text-gray-600 transition-colors duration-200 rounded-md hover:bg-red-100 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-1"
+                                                    title="Excluir processo">
+                                                <i class="fas fa-trash"></i>
                                             </button>
                                         </form>
                                     </div>
                                 </td>
                             </tr>
+
+                            <!-- Linha expandida com detalhes -->
                             <tr class="bg-gray-50/50">
                                 <td colspan="7" class="px-4 py-3 text-sm text-gray-700">
-                                    <div class="space-y-1">
-                                        <div><strong class="text-gray-900">Objeto:</strong> {!! strip_tags($processo->objeto) !!}</div>
-                                        <div class="text-xs text-gray-500">Criado Por: {{ $processo->user->name ?? 'N/A' }}</div>
-                                        @if($processo->status->value === 'CANCELADO')
-                                            <div class="text-xs text-red-600">
-                                                <strong>Cancelado em:</strong> {{ $processo->data_cancelamento ? \Carbon\Carbon::parse($processo->data_cancelamento)->format('d/m/Y') : 'N/A' }}
-                                                @if($processo->motivo_cancelamento)
-                                                    - {{ $processo->motivo_cancelamento }}
-                                                @endif
+                                    <div class="space-y-2">
+                                        <!-- Objeto com destaque da busca -->
+                                        <div>
+                                            <strong class="text-gray-900"><i class="mr-1 fas fa-file-alt"></i> Objeto:</strong>
+                                            @if(request('search_objeto') && $processo->objeto)
+                                                @php
+                                                    $objeto = strip_tags($processo->objeto);
+                                                    $termo = request('search_objeto');
+                                                    $highlighted = preg_replace("/($termo)/i", '<span class="bg-yellow-200 px-1 rounded">$1</span>', htmlspecialchars($objeto));
+                                                @endphp
+                                                <span>{!! $highlighted !!}</span>
+                                            @else
+                                                <span>{!! strip_tags($processo->objeto) !!}</span>
+                                            @endif
+                                        </div>
+
+                                        <div class="grid grid-cols-1 gap-2 text-xs md:grid-cols-3">
+                                            <!-- Responsável -->
+                                            <div class="text-gray-500">
+                                                <i class="mr-1 fas fa-user"></i>
+                                                <strong>Criado por:</strong> {{ $processo->user->name ?? 'N/A' }}
                                             </div>
-                                        @endif
-                                        @if($processo->status->value === 'ADIADO')
-                                            <div class="text-xs text-orange-600">
-                                                <strong>Adiado para:</strong> {{ $processo->data_adiamento ? \Carbon\Carbon::parse($processo->data_adiamento)->format('d/m/Y') : 'N/A' }}
-                                                @if($processo->justificativa_adiamento)
-                                                    - {{ $processo->justificativa_adiamento }}
-                                                @endif
+
+                                            <!-- Data de criação -->
+                                            <div class="text-gray-500">
+                                                <i class="mr-1 far fa-calendar"></i>
+                                                <strong>Criado em:</strong> {{ $processo->created_at->format('d/m/Y H:i') }}
                                             </div>
-                                        @endif
-                                        @if($processo->status->value === 'REPUBLICADO')
-                                            <div class="text-xs text-purple-600">
-                                                <strong>Republicado</strong>
-                                                @if($processo->processo_original_id)
-                                                    - Original: {{ $processo->processoOriginal->numero_processo ?? 'N/A' }}
-                                                @endif
-                                            </div>
-                                        @endif
+
+                                            <!-- Informações específicas do status -->
+                                            @if($status->value === 'CANCELADO')
+                                                <div class="text-red-600">
+                                                    <i class="mr-1 fas fa-times-circle"></i>
+                                                    <strong>Cancelado em:</strong> {{ $processo->data_cancelamento ? \Carbon\Carbon::parse($processo->data_cancelamento)->format('d/m/Y') : 'N/A' }}
+                                                    @if($processo->motivo_cancelamento)
+                                                        - {{ $processo->motivo_cancelamento }}
+                                                    @endif
+                                                </div>
+                                            @endif
+
+                                            @if($status->value === 'ADIADO')
+                                                <div class="text-orange-600">
+                                                    <i class="mr-1 fas fa-clock"></i>
+                                                    <strong>Adiado para:</strong> {{ $processo->data_adiamento ? \Carbon\Carbon::parse($processo->data_adiamento)->format('d/m/Y') : 'N/A' }}
+                                                    @if($processo->justificativa_adiamento)
+                                                        - {{ $processo->justificativa_adiamento }}
+                                                    @endif
+                                                </div>
+                                            @endif
+
+                                            @if($status->value === 'REPUBLICADO')
+                                                <div class="text-purple-600">
+                                                    <i class="mr-1 fas fa-redo"></i>
+                                                    <strong>Republicado</strong>
+                                                    @if($processo->processo_original_id)
+                                                        - Original: {{ $processo->processoOriginal->numero_processo ?? 'N/A' }}
+                                                    @endif
+                                                </div>
+                                            @endif
+                                        </div>
                                     </div>
                                 </td>
                             </tr>
                         @empty
                             <tr>
                                 <td colspan="7" class="px-6 py-16 text-center text-gray-500">
-                                    <div class="flex flex-col items-center justify-center space-y-2">
-                                        <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                        </svg>
-                                        <span class="text-sm font-medium">Nenhum processo encontrado para esta prefeitura</span>
+                                    <div class="flex flex-col items-center justify-center space-y-3">
+                                        <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
+                                            <i class="text-gray-400 text-2xl fas fa-clipboard-list"></i>
+                                        </div>
+                                        @if(request()->hasAny(['search_objeto', 'search_numero', 'modalidade', 'status']))
+                                            <div>
+                                                <p class="text-sm font-medium text-gray-700">Nenhum processo encontrado com os filtros aplicados.</p>
+                                                <p class="mt-1 text-sm text-gray-500">Tente ajustar os critérios de busca.</p>
+                                            </div>
+                                            <a href="{{ route('admin.processos.index', ['prefeitura_id' => request('prefeitura_id')]) }}"
+                                               class="inline-flex items-center px-4 py-2 text-sm font-medium text-[#009496] bg-[#009496]/10 rounded-lg hover:bg-[#009496]/20 transition-colors">
+                                                <i class="mr-2 fas fa-times"></i>
+                                                Limpar filtros
+                                            </a>
+                                        @else
+                                            <p class="text-sm font-medium text-gray-700">Nenhum processo encontrado para esta prefeitura</p>
+                                            <p class="text-sm text-gray-500">Crie um novo processo para começar</p>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>
@@ -415,9 +633,17 @@
                     </table>
                 </div>
 
+                <!-- Paginação -->
                 @if ($processos->hasPages())
                     <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
-                        {{ $processos->withQueryString()->links() }}
+                        <div class="flex flex-col items-center justify-between md:flex-row">
+                            <div class="text-sm text-gray-500">
+                                Mostrando {{ $processos->firstItem() }} a {{ $processos->lastItem() }} de {{ $processos->total() }} resultados
+                            </div>
+                            <div class="mt-2 md:mt-0">
+                                {{ $processos->withQueryString()->links() }}
+                            </div>
+                        </div>
                     </div>
                 @endif
             </div>
@@ -761,545 +987,579 @@
         </div>
     </div>
 
-    <script>
-        function confirmDelete(processoId, numeroProcesso) {
-            Swal.fire({
-                title: 'Tem certeza?',
-                html: `Você está prestes a excluir o processo <strong>${numeroProcesso}</strong>. <br>Esta ação não pode ser desfeita!`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Sim, excluir!',
-                cancelButtonText: 'Cancelar',
-                reverseButtons: true,
-                customClass: {
-                    confirmButton: 'px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500',
-                    cancelButton: 'px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 mr-3'
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    document.getElementById(`delete-form-${processoId}`).submit();
-                }
-            });
-        }
-
-        // Funções para abrir/fechar modais
-        function abrirModalRepublicarProcesso(processoId) {
-            document.getElementById('processo_id_republicar').value = processoId;
-            document.getElementById('modalRepublicarProcesso').classList.remove('hidden');
-        }
-
-        function abrirModalCancelarLicitacao(processoId) {
-            document.getElementById('processo_id_cancelar').value = processoId;
-            document.getElementById('data_cancelamento').value = new Date().toISOString().split('T')[0];
-            document.getElementById('modalCancelarLicitacao').classList.remove('hidden');
-        }
-
-        function abrirModalAdiarLicitacao(processoId) {
-            document.getElementById('processo_id_adiar').value = processoId;
-            document.getElementById('nova_data').value = new Date().toISOString().split('T')[0];
-            document.getElementById('novo_horario').value = '09:00';
-            document.getElementById('modalAdiarLicitacao').classList.remove('hidden');
-        }
-
-        function abrirModalRepublicarEdital(processoId) {
-            document.getElementById('processo_id_republicar_edital').value = processoId;
-            document.getElementById('data_republicacao').value = new Date().toISOString().split('T')[0];
-            document.getElementById('justificativa_republicacao').value = '';
-            document.getElementById('modalRepublicarEdital').classList.remove('hidden');
-        }
-
-        // Função para abrir o modal de status
-        function abrirModalStatusProcesso(processoId, numeroProcesso, statusAtual) {
-            document.getElementById('processo_id_status').value = processoId;
-            document.getElementById('processo_numero').value = numeroProcesso;
-
-            // Marcar o status atual como selecionado
-            const radios = document.querySelectorAll('input[name="status"]');
-            radios.forEach(radio => {
-                if (radio.value === statusAtual) {
-                    radio.checked = true;
-                } else {
-                    radio.checked = false;
-                }
-            });
-
-            // Esconder campos condicionais
-            document.getElementById('cancelamento_fields').classList.add('hidden');
-            document.getElementById('adiamento_fields').classList.add('hidden');
-
-            // Mostrar campos condicionais se o status atual for CANCELADO ou ADIADO
-            if (statusAtual === 'CANCELADO') {
-                document.getElementById('cancelamento_fields').classList.remove('hidden');
-            } else if (statusAtual === 'ADIADO') {
-                document.getElementById('adiamento_fields').classList.remove('hidden');
-            }
-
-            // Adicionar listeners para mostrar/ocultar campos condicionais
-            radios.forEach(radio => {
-                radio.addEventListener('change', function() {
-                    if (this.value === 'CANCELADO') {
-                        document.getElementById('cancelamento_fields').classList.remove('hidden');
-                        document.getElementById('adiamento_fields').classList.add('hidden');
-                    } else if (this.value === 'ADIADO') {
-                        document.getElementById('adiamento_fields').classList.remove('hidden');
-                        document.getElementById('cancelamento_fields').classList.add('hidden');
-                    } else {
-                        document.getElementById('cancelamento_fields').classList.add('hidden');
-                        document.getElementById('adiamento_fields').classList.add('hidden');
+    <!-- Scripts JavaScript -->
+    @push('scripts')
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+            function confirmDelete(processoId, numeroProcesso) {
+                Swal.fire({
+                    title: 'Tem certeza?',
+                    html: `Você está prestes a excluir o processo <strong>${numeroProcesso}</strong>. <br>Esta ação não pode ser desfeita!`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Sim, excluir!',
+                    cancelButtonText: 'Cancelar',
+                    reverseButtons: true,
+                    customClass: {
+                        confirmButton: 'px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500',
+                        cancelButton: 'px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 mr-3'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        document.getElementById(`delete-form-${processoId}`).submit();
                     }
                 });
-            });
+            }
 
-            document.getElementById('modalStatusProcesso').classList.remove('hidden');
-        }
+            // Funções para abrir/fechar modais
+            function abrirModalRepublicarProcesso(processoId) {
+                document.getElementById('processo_id_republicar').value = processoId;
+                document.getElementById('modalRepublicarProcesso').classList.remove('hidden');
+            }
 
-        // Adicionar esta função ao event listener do DOM
-        document.addEventListener('DOMContentLoaded', function() {
-            // Status do Processo
-            const formStatusProcesso = document.getElementById('formStatusProcesso');
-            if (formStatusProcesso) {
-                formStatusProcesso.addEventListener('submit', async function(e) {
-                    e.preventDefault();
+            function abrirModalCancelarLicitacao(processoId) {
+                document.getElementById('processo_id_cancelar').value = processoId;
+                document.getElementById('data_cancelamento').value = new Date().toISOString().split('T')[0];
+                document.getElementById('modalCancelarLicitacao').classList.remove('hidden');
+            }
 
-                    const processoId = document.getElementById('processo_id_status').value;
-                    const formData = new FormData(this);
-                    const selectedStatus = document.querySelector('input[name="status"]:checked')?.value;
+            function abrirModalAdiarLicitacao(processoId) {
+                document.getElementById('processo_id_adiar').value = processoId;
+                document.getElementById('nova_data').value = new Date().toISOString().split('T')[0];
+                document.getElementById('novo_horario').value = '09:00';
+                document.getElementById('modalAdiarLicitacao').classList.remove('hidden');
+            }
 
-                    if (!selectedStatus) {
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Atenção',
-                            text: 'Selecione um status para continuar.'
-                        });
-                        return;
+            function abrirModalRepublicarEdital(processoId) {
+                document.getElementById('processo_id_republicar_edital').value = processoId;
+                document.getElementById('data_republicacao').value = new Date().toISOString().split('T')[0];
+                document.getElementById('justificativa_republicacao').value = '';
+                document.getElementById('modalRepublicarEdital').classList.remove('hidden');
+            }
+
+            // Função para abrir o modal de status
+            function abrirModalStatusProcesso(processoId, numeroProcesso, statusAtual) {
+                document.getElementById('processo_id_status').value = processoId;
+                document.getElementById('processo_numero').value = numeroProcesso;
+
+                // Marcar o status atual como selecionado
+                const radios = document.querySelectorAll('input[name="status"]');
+                radios.forEach(radio => {
+                    if (radio.value === statusAtual) {
+                        radio.checked = true;
+                    } else {
+                        radio.checked = false;
                     }
+                });
 
-                    try {
-                        const response = await fetch(`/admin/processos/${processoId}/status`, {
-                            method: 'PUT',
-                            headers: {
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                                'Accept': 'application/json',
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                status: selectedStatus,
-                                data_cancelamento: formData.get('data_cancelamento_status'),
-                                motivo_cancelamento: formData.get('motivo_cancelamento_status'),
-                                data_adiamento: formData.get('data_adiamento_status'),
-                                justificativa_adiamento: formData.get('justificativa_adiamento_status')
-                            })
-                        });
+                // Esconder campos condicionais
+                document.getElementById('cancelamento_fields').classList.add('hidden');
+                document.getElementById('adiamento_fields').classList.add('hidden');
 
-                        const data = await response.json();
+                // Mostrar campos condicionais se o status atual for CANCELADO ou ADIADO
+                if (statusAtual === 'CANCELADO') {
+                    document.getElementById('cancelamento_fields').classList.remove('hidden');
+                } else if (statusAtual === 'ADIADO') {
+                    document.getElementById('adiamento_fields').classList.remove('hidden');
+                }
 
-                        if (data.success) {
+                // Adicionar listeners para mostrar/ocultar campos condicionais
+                radios.forEach(radio => {
+                    radio.addEventListener('change', function() {
+                        if (this.value === 'CANCELADO') {
+                            document.getElementById('cancelamento_fields').classList.remove('hidden');
+                            document.getElementById('adiamento_fields').classList.add('hidden');
+                        } else if (this.value === 'ADIADO') {
+                            document.getElementById('adiamento_fields').classList.remove('hidden');
+                            document.getElementById('cancelamento_fields').classList.add('hidden');
+                        } else {
+                            document.getElementById('cancelamento_fields').classList.add('hidden');
+                            document.getElementById('adiamento_fields').classList.add('hidden');
+                        }
+                    });
+                });
+
+                document.getElementById('modalStatusProcesso').classList.remove('hidden');
+            }
+
+            // Adicionar esta função ao event listener do DOM
+            document.addEventListener('DOMContentLoaded', function() {
+                // Status do Processo
+                const formStatusProcesso = document.getElementById('formStatusProcesso');
+                if (formStatusProcesso) {
+                    formStatusProcesso.addEventListener('submit', async function(e) {
+                        e.preventDefault();
+
+                        const processoId = document.getElementById('processo_id_status').value;
+                        const formData = new FormData(this);
+                        const selectedStatus = document.querySelector('input[name="status"]:checked')?.value;
+
+                        if (!selectedStatus) {
                             Swal.fire({
-                                icon: 'success',
-                                title: 'Sucesso!',
-                                text: data.message,
-                                showConfirmButton: false,
-                                timer: 1500
+                                icon: 'warning',
+                                title: 'Atenção',
+                                text: 'Selecione um status para continuar.'
+                            });
+                            return;
+                        }
+
+                        try {
+                            const response = await fetch(`/admin/processos/${processoId}/status`, {
+                                method: 'PUT',
+                                headers: {
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                    'Accept': 'application/json',
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    status: selectedStatus,
+                                    data_cancelamento: formData.get('data_cancelamento_status'),
+                                    motivo_cancelamento: formData.get('motivo_cancelamento_status'),
+                                    data_adiamento: formData.get('data_adiamento_status'),
+                                    justificativa_adiamento: formData.get('justificativa_adiamento_status')
+                                })
                             });
 
-                            // Atualizar o badge de status na página
-                            const statusButton = document.querySelector(`[onclick*="abrirModalStatusProcesso(${processoId}"]`);
-                            if (statusButton) {
-                                statusButton.className = `inline-flex px-2.5 py-0.5 text-xs font-semibold rounded-full cursor-pointer transition-all duration-200 hover:opacity-90 hover:scale-105
+                            const data = await response.json();
+
+                            if (data.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Sucesso!',
+                                    text: data.message,
+                                    showConfirmButton: false,
+                                    timer: 1500
+                                });
+
+                                // Atualizar o badge de status na página
+                                const statusButton = document.querySelector(`[onclick*="abrirModalStatusProcesso(${processoId}"]`);
+                                if (statusButton) {
+                                    statusButton.className = `inline-flex px-2.5 py-0.5 text-xs font-semibold rounded-full cursor-pointer transition-all duration-200 hover:opacity-90 hover:scale-105
                             ${getStatusClasses(data.data.status)}`;
-                                statusButton.textContent = data.data.status_label;
+                                    statusButton.textContent = data.data.status_label;
 
-                                // Atualizar o onclick para refletir o novo status
-                                const onclickValue = `abrirModalStatusProcesso(${processoId}, '${document.getElementById('processo_numero').value}', '${data.data.status}')`;
-                                statusButton.setAttribute('onclick', onclickValue);
+                                    // Atualizar o onclick para refletir o novo status
+                                    const onclickValue = `abrirModalStatusProcesso(${processoId}, '${document.getElementById('processo_numero').value}', '${data.data.status}')`;
+                                    statusButton.setAttribute('onclick', onclickValue);
+                                }
+
+                                // Fechar modal e recarregar após 1.5 segundos
+                                setTimeout(() => {
+                                    fecharModal('modalStatusProcesso');
+                                    window.location.reload();
+                                }, 1500);
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Erro',
+                                    text: data.message || 'Erro ao atualizar status'
+                                });
                             }
-
-                            // Fechar modal e recarregar após 1.5 segundos
-                            setTimeout(() => {
-                                fecharModal('modalStatusProcesso');
-                                window.location.reload();
-                            }, 1500);
-                        } else {
+                        } catch (error) {
+                            console.error('Erro:', error);
                             Swal.fire({
                                 icon: 'error',
                                 title: 'Erro',
-                                text: data.message || 'Erro ao atualizar status'
+                                text: 'Ocorreu um erro ao atualizar o status. Tente novamente.'
                             });
                         }
-                    } catch (error) {
-                        console.error('Erro:', error);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Erro',
-                            text: 'Ocorreu um erro ao atualizar o status. Tente novamente.'
-                        });
-                    }
+                    });
+                }
+            });
+
+            // Função auxiliar para obter classes CSS do status
+            function getStatusClasses(statusValue) {
+                switch(statusValue) {
+                    case 'RASCUNHO':
+                        return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
+                    case 'EM_INICIO':
+                        return 'bg-blue-100 text-blue-800 hover:bg-blue-200';
+                    case 'EM_FINALIZACAO':
+                        return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200';
+                    case 'EM_CONTRATO':
+                        return 'bg-indigo-100 text-indigo-800 hover:bg-indigo-200';
+                    case 'FINALIZADO':
+                        return 'bg-green-100 text-green-800 hover:bg-green-200';
+                    case 'CANCELADO':
+                        return 'bg-red-100 text-red-800 hover:bg-red-200';
+                    case 'ADIADO':
+                        return 'bg-orange-100 text-orange-800 hover:bg-orange-200';
+                    case 'REPUBLICADO':
+                        return 'bg-purple-100 text-purple-800 hover:bg-purple-200';
+                    default:
+                        return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
+                }
+            }
+
+            function fecharModal(modalId) {
+                document.getElementById(modalId).classList.add('hidden');
+            }
+
+            // Helper function para mostrar mensagens
+            function showMessage(message, type = 'success') {
+                Swal.fire({
+                    icon: type,
+                    title: message,
+                    showConfirmButton: false,
+                    timer: 3000
                 });
             }
-        });
 
-        // Função auxiliar para obter classes CSS do status
-        function getStatusClasses(statusValue) {
-            switch(statusValue) {
-                case 'RASCUNHO':
-                    return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
-                case 'EM_INICIO':
-                    return 'bg-blue-100 text-blue-800 hover:bg-blue-200';
-                case 'EM_FINALIZACAO':
-                    return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200';
-                case 'EM_CONTRATO':
-                    return 'bg-indigo-100 text-indigo-800 hover:bg-indigo-200';
-                case 'FINALIZADO':
-                    return 'bg-green-100 text-green-800 hover:bg-green-200';
-                case 'CANCELADO':
-                    return 'bg-red-100 text-red-800 hover:bg-red-200';
-                case 'ADIADO':
-                    return 'bg-orange-100 text-orange-800 hover:bg-orange-200';
-                case 'REPUBLICADO':
-                    return 'bg-purple-100 text-purple-800 hover:bg-purple-200';
-                default:
-                    return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
+            // Helper function para processar erros de fetch
+            function handleFetchError(error) {
+                console.error('Erro na requisição:', error);
+                return {
+                    success: false,
+                    message: 'Erro de conexão. Verifique sua internet e tente novamente.'
+                };
             }
-        }
 
-        function fecharModal(modalId) {
-            document.getElementById(modalId).classList.add('hidden');
-        }
+            // Event listeners para os formulários
+            document.addEventListener('DOMContentLoaded', function() {
+                // Republicar Processo
+                const formRepublicarProcesso = document.getElementById('formRepublicarProcesso');
+                if (formRepublicarProcesso) {
+                    formRepublicarProcesso.addEventListener('submit', async function(e) {
+                        e.preventDefault();
 
-        // Helper function para mostrar mensagens
-        function showMessage(message, type = 'success') {
-            Swal.fire({
-                icon: type,
-                title: message,
-                showConfirmButton: false,
-                timer: 3000
-            });
-        }
+                        const processoId = document.getElementById('processo_id_republicar').value;
+                        const formData = new FormData(this);
 
-        // Helper function para processar erros de fetch
-        function handleFetchError(error) {
-            console.error('Erro na requisição:', error);
-            return {
-                success: false,
-                message: 'Erro de conexão. Verifique sua internet e tente novamente.'
-            };
-        }
-
-        // Event listeners para os formulários
-        document.addEventListener('DOMContentLoaded', function() {
-            // Republicar Processo
-            const formRepublicarProcesso = document.getElementById('formRepublicarProcesso');
-            if (formRepublicarProcesso) {
-                formRepublicarProcesso.addEventListener('submit', async function(e) {
-                    e.preventDefault();
-
-                    const processoId = document.getElementById('processo_id_republicar').value;
-                    const formData = new FormData(this);
-
-                    try {
-                        const response = await fetch(`/admin/processos/${processoId}/republicar-processo`, {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                                'Accept': 'application/json'
-                            },
-                            body: formData
-                        });
-
-                        const data = await response.json();
-
-                        if (data.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Sucesso!',
-                                text: data.message,
-                                showConfirmButton: false,
-                                timer: 2000
+                        try {
+                            const response = await fetch(`/admin/processos/${processoId}/republicar-processo`, {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                    'Accept': 'application/json'
+                                },
+                                body: formData
                             });
-                            fecharModal('modalRepublicarProcesso');
 
-                            if (data.redirect_url) {
-                                setTimeout(() => {
-                                    window.location.href = data.redirect_url;
-                                }, 2000);
+                            const data = await response.json();
+
+                            if (data.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Sucesso!',
+                                    text: data.message,
+                                    showConfirmButton: false,
+                                    timer: 2000
+                                });
+                                fecharModal('modalRepublicarProcesso');
+
+                                if (data.redirect_url) {
+                                    setTimeout(() => {
+                                        window.location.href = data.redirect_url;
+                                    }, 2000);
+                                } else {
+                                    setTimeout(() => {
+                                        window.location.reload();
+                                    }, 2000);
+                                }
                             } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Erro',
+                                    text: data.message || 'Erro ao republicar processo'
+                                });
+                            }
+                        } catch (error) {
+                            console.error('Erro:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Erro',
+                                text: 'Ocorreu um erro ao republicar o processo. Tente novamente.'
+                            });
+                        }
+                    });
+                }
+
+                // Cancelar Licitação
+                const formCancelarLicitacao = document.getElementById('formCancelarLicitacao');
+                if (formCancelarLicitacao) {
+                    formCancelarLicitacao.addEventListener('submit', async function(e) {
+                        e.preventDefault();
+
+                        const processoId = document.getElementById('processo_id_cancelar').value;
+                        const formData = new FormData(this);
+
+                        try {
+                            const response = await fetch(`/admin/processos/${processoId}/cancelar-licitacao`, {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                    'Accept': 'application/json'
+                                },
+                                body: formData
+                            });
+
+                            const data = await response.json();
+
+                            if (data.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Sucesso!',
+                                    text: data.message,
+                                    showConfirmButton: false,
+                                    timer: 2000
+                                });
+                                fecharModal('modalCancelarLicitacao');
                                 setTimeout(() => {
                                     window.location.reload();
                                 }, 2000);
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Erro',
+                                    text: data.message || 'Erro ao cancelar licitação'
+                                });
                             }
-                        } else {
+                        } catch (error) {
+                            console.error('Erro:', error);
                             Swal.fire({
                                 icon: 'error',
                                 title: 'Erro',
-                                text: data.message || 'Erro ao republicar processo'
+                                text: 'Ocorreu um erro ao cancelar a licitação. Tente novamente.'
                             });
                         }
-                    } catch (error) {
-                        console.error('Erro:', error);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Erro',
-                            text: 'Ocorreu um erro ao republicar o processo. Tente novamente.'
-                        });
-                    }
-                });
-            }
-
-            // Cancelar Licitação
-            const formCancelarLicitacao = document.getElementById('formCancelarLicitacao');
-            if (formCancelarLicitacao) {
-                formCancelarLicitacao.addEventListener('submit', async function(e) {
-                    e.preventDefault();
-
-                    const processoId = document.getElementById('processo_id_cancelar').value;
-                    const formData = new FormData(this);
-
-                    try {
-                        const response = await fetch(`/admin/processos/${processoId}/cancelar-licitacao`, {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                                'Accept': 'application/json'
-                            },
-                            body: formData
-                        });
-
-                        const data = await response.json();
-
-                        if (data.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Sucesso!',
-                                text: data.message,
-                                showConfirmButton: false,
-                                timer: 2000
-                            });
-                            fecharModal('modalCancelarLicitacao');
-                            setTimeout(() => {
-                                window.location.reload();
-                            }, 2000);
-                        } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Erro',
-                                text: data.message || 'Erro ao cancelar licitação'
-                            });
-                        }
-                    } catch (error) {
-                        console.error('Erro:', error);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Erro',
-                            text: 'Ocorreu um erro ao cancelar a licitação. Tente novamente.'
-                        });
-                    }
-                });
-            }
-
-            // Adiar Licitação
-            const formAdiarLicitacao = document.getElementById('formAdiarLicitacao');
-            if (formAdiarLicitacao) {
-                formAdiarLicitacao.addEventListener('submit', async function(e) {
-                    e.preventDefault();
-
-                    const processoId = document.getElementById('processo_id_adiar').value;
-                    const formData = new FormData(this);
-
-                    try {
-                        const response = await fetch(`/admin/processos/${processoId}/adiar-licitacao`, {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                                'Accept': 'application/json'
-                            },
-                            body: formData
-                        });
-
-                        const data = await response.json();
-
-                        if (data.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Sucesso!',
-                                text: data.message,
-                                showConfirmButton: false,
-                                timer: 2000
-                            });
-                            fecharModal('modalAdiarLicitacao');
-                            setTimeout(() => {
-                                window.location.reload();
-                            }, 2000);
-                        } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Erro',
-                                text: data.message || 'Erro ao adiar licitação'
-                            });
-                        }
-                    } catch (error) {
-                        console.error('Erro:', error);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Erro',
-                            text: 'Ocorreu um erro ao adiar a licitação. Tente novamente.'
-                        });
-                    }
-                });
-            }
-
-            // Republicar Edital
-            const formRepublicarEdital = document.getElementById('formRepublicarEdital');
-            if (formRepublicarEdital) {
-                formRepublicarEdital.addEventListener('submit', async function(e) {
-                    e.preventDefault();
-
-                    const processoId = document.getElementById('processo_id_republicar_edital').value;
-                    const formData = new FormData(this);
-
-                    try {
-                        const response = await fetch(`/admin/processos/${processoId}/republicar-edital`, {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                                'Accept': 'application/json'
-                            },
-                            body: formData
-                        });
-
-                        const data = await response.json();
-
-                        if (data.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Sucesso!',
-                                text: data.message,
-                                showConfirmButton: false,
-                                timer: 2000
-                            });
-                            fecharModal('modalRepublicarEdital');
-                            setTimeout(() => {
-                                window.location.reload();
-                            }, 2000);
-                        } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Erro',
-                                text: data.message || 'Erro ao republicar edital'
-                            });
-                        }
-                    } catch (error) {
-                        console.error('Erro:', error);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Erro',
-                            text: 'Ocorreu um erro ao republicar o edital. Tente novamente.'
-                        });
-                    }
-                });
-            }
-        });
-
-        document.addEventListener('DOMContentLoaded', function() {
-            // Foco automático no campo de pesquisa
-            const searchInput = document.getElementById('search');
-            if (searchInput && !searchInput.value) {
-                searchInput.focus();
-            }
-
-            // Pesquisa em tempo real (opcional)
-            let searchTimeout;
-            if (searchInput) {
-                searchInput.addEventListener('input', function() {
-                    clearTimeout(searchTimeout);
-                    searchTimeout = setTimeout(() => {
-                        // Se quiser fazer pesquisa em tempo real, pode implementar aqui
-                        // this.form.submit(); // Descomente para submit automático
-                    }, 500);
-                });
-            }
-        });
-
-        // Adicione esta função no seu script JavaScript
-        function reverterCancelamento(processoId, numeroProcesso) {
-            Swal.fire({
-                title: 'Reverter Cancelamento',
-                html: `Tem certeza que deseja reverter o cancelamento do processo <strong>${numeroProcesso}</strong>?`,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#10b981',
-                cancelButtonColor: '#6b7280',
-                confirmButtonText: 'Sim, reverter!',
-                cancelButtonText: 'Cancelar',
-                reverseButtons: true,
-                customClass: {
-                    confirmButton: 'px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500',
-                    cancelButton: 'px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 mr-3'
+                    });
                 }
-            }).then(async (result) => {
-                if (result.isConfirmed) {
-                    try {
-                        // Mostrar loading
-                        Swal.fire({
-                            title: 'Processando...',
-                            text: 'Revertendo cancelamento...',
-                            allowOutsideClick: false,
-                            didOpen: () => {
-                                Swal.showLoading();
-                            }
-                        });
 
-                        // Fazer a requisição
-                        const response = await fetch(`/admin/processos/${processoId}/reverter-cancelamento`, {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                                'Accept': 'application/json',
-                                'Content-Type': 'application/json'
-                            }
-                        });
+                // Adiar Licitação
+                const formAdiarLicitacao = document.getElementById('formAdiarLicitacao');
+                if (formAdiarLicitacao) {
+                    formAdiarLicitacao.addEventListener('submit', async function(e) {
+                        e.preventDefault();
 
-                        const data = await response.json();
+                        const processoId = document.getElementById('processo_id_adiar').value;
+                        const formData = new FormData(this);
 
-                        if (data.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Sucesso!',
-                                text: data.message,
-                                showConfirmButton: false,
-                                timer: 2000
+                        try {
+                            const response = await fetch(`/admin/processos/${processoId}/adiar-licitacao`, {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                    'Accept': 'application/json'
+                                },
+                                body: formData
                             });
 
-                            // Recarregar a página após 2 segundos
-                            setTimeout(() => {
-                                window.location.reload();
-                            }, 2000);
-                        } else {
+                            const data = await response.json();
+
+                            if (data.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Sucesso!',
+                                    text: data.message,
+                                    showConfirmButton: false,
+                                    timer: 2000
+                                });
+                                fecharModal('modalAdiarLicitacao');
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 2000);
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Erro',
+                                    text: data.message || 'Erro ao adiar licitação'
+                                });
+                            }
+                        } catch (error) {
+                            console.error('Erro:', error);
                             Swal.fire({
                                 icon: 'error',
                                 title: 'Erro',
-                                text: data.message || 'Erro ao reverter cancelamento'
+                                text: 'Ocorreu um erro ao adiar a licitação. Tente novamente.'
                             });
                         }
-                    } catch (error) {
-                        console.error('Erro:', error);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Erro',
-                            text: 'Ocorreu um erro ao reverter o cancelamento. Tente novamente.'
-                        });
-                    }
+                    });
+                }
+
+                // Republicar Edital
+                const formRepublicarEdital = document.getElementById('formRepublicarEdital');
+                if (formRepublicarEdital) {
+                    formRepublicarEdital.addEventListener('submit', async function(e) {
+                        e.preventDefault();
+
+                        const processoId = document.getElementById('processo_id_republicar_edital').value;
+                        const formData = new FormData(this);
+
+                        try {
+                            const response = await fetch(`/admin/processos/${processoId}/republicar-edital`, {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                    'Accept': 'application/json'
+                                },
+                                body: formData
+                            });
+
+                            const data = await response.json();
+
+                            if (data.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Sucesso!',
+                                    text: data.message,
+                                    showConfirmButton: false,
+                                    timer: 2000
+                                });
+                                fecharModal('modalRepublicarEdital');
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 2000);
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Erro',
+                                    text: data.message || 'Erro ao republicar edital'
+                                });
+                            }
+                        } catch (error) {
+                            console.error('Erro:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Erro',
+                                text: 'Ocorreu um erro ao republicar o edital. Tente novamente.'
+                            });
+                        }
+                    });
                 }
             });
-        }
-    </script>
 
-    <!-- Incluir SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Foco automático no campo de pesquisa
+                const searchInput = document.getElementById('search');
+                if (searchInput && !searchInput.value) {
+                    searchInput.focus();
+                }
+
+                // Pesquisa em tempo real (opcional)
+                let searchTimeout;
+                if (searchInput) {
+                    searchInput.addEventListener('input', function() {
+                        clearTimeout(searchTimeout);
+                        searchTimeout = setTimeout(() => {
+                            // Se quiser fazer pesquisa em tempo real, pode implementar aqui
+                            // this.form.submit(); // Descomente para submit automático
+                        }, 500);
+                    });
+                }
+            });
+
+            // Adicione esta função no seu script JavaScript
+            function reverterCancelamento(processoId, numeroProcesso) {
+                Swal.fire({
+                    title: 'Reverter Cancelamento',
+                    html: `Tem certeza que deseja reverter o cancelamento do processo <strong>${numeroProcesso}</strong>?`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#10b981',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'Sim, reverter!',
+                    cancelButtonText: 'Cancelar',
+                    reverseButtons: true,
+                    customClass: {
+                        confirmButton: 'px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500',
+                        cancelButton: 'px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 mr-3'
+                    }
+                }).then(async (result) => {
+                    if (result.isConfirmed) {
+                        try {
+                            // Mostrar loading
+                            Swal.fire({
+                                title: 'Processando...',
+                                text: 'Revertendo cancelamento...',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+
+                            // Fazer a requisição
+                            const response = await fetch(`/admin/processos/${processoId}/reverter-cancelamento`, {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                    'Accept': 'application/json',
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+
+                            const data = await response.json();
+
+                            if (data.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Sucesso!',
+                                    text: data.message,
+                                    showConfirmButton: false,
+                                    timer: 2000
+                                });
+
+                                // Recarregar a página após 2 segundos
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 2000);
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Erro',
+                                    text: data.message || 'Erro ao reverter cancelamento'
+                                });
+                            }
+                        } catch (error) {
+                            console.error('Erro:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Erro',
+                                text: 'Ocorreu um erro ao reverter o cancelamento. Tente novamente.'
+                            });
+                        }
+                    }
+                });
+            }
+        </script>
+    @endpush
+
     <style>
         .swal2-popup {
             border-radius: 16px !important;
+        }
+
+        /* Destaque para o campo de pesquisa por objeto */
+        #search_objeto:focus {
+            box-shadow: 0 0 0 3px rgba(0, 148, 150, 0.1);
+            border-color: #009496;
+        }
+
+        /* Animação para os cards de prefeitura */
+        .prefeitura-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .prefeitura-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        /* Estilo para badges de filtro ativo */
+        .filter-badge {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 @endsection

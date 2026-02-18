@@ -212,12 +212,7 @@ class ProcessoDocumentoService
             'data_id' => 'data_parecer_controle_interno',
             'campos' => [''],
         ],
-        'ato_autorizacao_inexigibilidade' => [
-            'titulo' => 'ATO DE AUTORIZAÇÃO DA INEXIGIBILIDADE',
-            'cor' => '#CA8A04', // amarelo escuro
-            'data_id' => 'data_ato_autorizacao_inexigibilidade',
-            'campos' => [''],
-        ],
+
         'contrato' => [
             'titulo' => 'CONTRATO',
             'cor' => '#EA580C', // laranja
@@ -413,7 +408,6 @@ class ProcessoDocumentoService
             'parecer_tecnico',
             'parecer_juridico',
             'parecer_controle_interno',
-            'ato_autorizacao_inexigibilidade',
             'contrato',
             'publicacoes'
         ];
@@ -433,7 +427,6 @@ class ProcessoDocumentoService
             'parecer_tecnico',
             'parecer_juridico',
             'parecer_controle_interno',
-            'ato_autorizacao_inexigibilidade',
             'contrato',
             'extrato_contrato',
         ];
@@ -454,7 +447,6 @@ class ProcessoDocumentoService
             'parecer_tecnico',
             'parecer_juridico',
             'parecer_controle_interno',
-            'ato_autorizacao_inexigibilidade',
             'contrato',
             'extrato_contrato',
         ];
@@ -474,7 +466,6 @@ class ProcessoDocumentoService
             'parecer_tecnico',
             'parecer_juridico',
             'parecer_controle_interno',
-            'ato_autorizacao_inexigibilidade',
             'contrato',
             'extrato_contrato',
         ];

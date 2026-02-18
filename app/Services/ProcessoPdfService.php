@@ -319,8 +319,13 @@ class ProcessoPdfService
         } elseif ($processo->modalidade === \App\Enums\ModalidadeEnum::CONCORRENCIA) {
             $view = "{$viewBase}.concorrencia.{$documento}";
         } else {
-            $modalidade = $this->formatarNomeArquivo($processo->modalidade?->name ?? '');
-            $view = "{$viewBase}.{$modalidade}.{$documento}";
+            if ($documento === 'contrato') {
+                // Ex: Admin.Processos.pdf.inexigibilidade.tecnico
+                $view = "Admin.Processos.contrato.inexigibilidade.{$contratacao}";
+            } else {
+                // Caso existam outros documentos para inexigibilidade que não seguem a regra do tipo
+                $view = "{$viewBase}.inexigibilidade.{$documento}";
+            }
         }
 
         if (!view()->exists($view)) {
