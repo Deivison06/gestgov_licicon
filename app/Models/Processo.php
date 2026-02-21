@@ -220,7 +220,7 @@ class Processo extends Model
             return $value;
         }
 
-        return ProcessoStatusEnum::tryFrom($value) ?? ProcessoStatusEnum::RASCUNHO;
+        return ProcessoStatusEnum::tryFrom($value) ?? ProcessoStatusEnum::EM_ANDAMENTO;
     }
 
     public function setStatusAttribute($value)

@@ -211,7 +211,7 @@ class ProcessoController extends Controller
 
         // Garantir que o status seja uma instância do Enum
         if (!$processo->status instanceof ProcessoStatusEnum) {
-            $processo->status = ProcessoStatusEnum::tryFrom($processo->status) ?? ProcessoStatusEnum::RASCUNHO;
+            $processo->status = ProcessoStatusEnum::tryFrom($processo->status) ?? ProcessoStatusEnum::EM_ANDAMENTO;
         }
 
         $documentos = $this->documentoService->getDocumentosPorModalidade($processo);
@@ -528,7 +528,7 @@ class ProcessoController extends Controller
                 'numero_processo' => $request->novo_numero_processo,
                 'numero_procedimento' => $request->novo_numero_procedimento,
                 'user_id' => auth()->id(),
-                'status' => ProcessoStatusEnum::RASCUNHO,
+                'status' => ProcessoStatusEnum::EM_ANDAMENTO,
             ]);
 
             // Marcar como republicado e referenciar original

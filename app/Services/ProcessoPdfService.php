@@ -324,7 +324,7 @@ class ProcessoPdfService
                 $view = "Admin.Processos.contrato.inexigibilidade.{$contratacao}";
             } else {
                 // Caso existam outros documentos para inexigibilidade que não seguem a regra do tipo
-                $view = "{$viewBase}.inexigibilidade.{$documento}";
+                $view = "{$viewBase}.inexigibilidade.{$contratacao}.{$documento}";
             }
         }
 
@@ -414,6 +414,11 @@ class ProcessoPdfService
             $procedimento = $this->formatarNomeArquivo($processo->tipo_procedimento?->name ?? '');
             $contratacao = $this->formatarNomeArquivo($processo->tipo_contratacao?->name ?? '');
             return "concorrencia/{$procedimento}_{$contratacao}/{$documento}";
+        }
+        if ($processo->modalidade === \App\Enums\ModalidadeEnum::INEXIGIBILIDADE) {
+            $procedimento = $this->formatarNomeArquivo($processo->tipo_procedimento?->name ?? '');
+            $contratacao = $this->formatarNomeArquivo($processo->tipo_contratacao?->name ?? '');
+            return "inexigibilidade/{$procedimento}_{$contratacao}/{$documento}";
         }
 
         $modalidade = $this->formatarNomeArquivo($processo->modalidade?->name ?? 'sem_modalidade');

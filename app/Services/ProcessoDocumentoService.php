@@ -212,7 +212,6 @@ class ProcessoDocumentoService
             'data_id' => 'data_parecer_controle_interno',
             'campos' => [''],
         ],
-
         'contrato' => [
             'titulo' => 'CONTRATO',
             'cor' => '#EA580C', // laranja
@@ -428,7 +427,7 @@ class ProcessoDocumentoService
             'parecer_juridico',
             'parecer_controle_interno',
             'contrato',
-            'extrato_contrato',
+            'publicacoes_avisos_licitacao'
         ];
     }
 
@@ -437,7 +436,6 @@ class ProcessoDocumentoService
         return [
             'capa',
             'formalizacao',
-            'declaracao_indisponibilidade_imovel',
             'estudo_tecnico',
             'disponibilidade_orçamento',
             'termo_referencia',
@@ -448,7 +446,7 @@ class ProcessoDocumentoService
             'parecer_juridico',
             'parecer_controle_interno',
             'contrato',
-            'extrato_contrato',
+            'publicacoes_avisos_licitacao'
         ];
     }
 
@@ -467,7 +465,7 @@ class ProcessoDocumentoService
             'parecer_juridico',
             'parecer_controle_interno',
             'contrato',
-            'extrato_contrato',
+            'publicacoes_avisos_licitacao'
         ];
     }
 

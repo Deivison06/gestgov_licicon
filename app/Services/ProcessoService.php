@@ -292,7 +292,7 @@ class ProcessoService
             $novoProcesso = $processoOriginal->replicate();
             $novoProcesso->numero_processo = $novosDados['numero_processo'];
             $novoProcesso->numero_procedimento = $novosDados['numero_procedimento'];
-            $novoProcesso->status = $novosDados['status'] ?? 'RASCUNHO';
+            $novoProcesso->status = $novosDados['status'] ?? 'EM_ANDAMENTO';
             $novoProcesso->user_id = $novosDados['user_id'] ?? auth()->id();
             $novoProcesso->created_at = now();
             $novoProcesso->updated_at = now();
