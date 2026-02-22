@@ -264,23 +264,7 @@
         </p>
     </div>
     @endif
-    {{-- QUEBRA DE PÁGINA --}}
-    <div class="page-break"></div>
-
-    <div>
-        <hr>
-        <h4 style="text-align: center;">TERMO DE JUNTADA</h4>
-        <hr>
-
-        Aos XXX (xxxxxx) dias do mês de XXXX de 202X, procedi a juntada aos autos
-        do processo administrativo XXX/202X, as propostas de preço referente a
-        XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-        XXXXXXXXXXXXXXXXXXX (OBJETO), e a documentação das empresas. Com
-        este fim e para constar, eu, XXXXXXXXXXXXXXXXXX, lavrei o presente termo
-        que vai por mim assinado.
-
-    </div>
-
+    
 </body>
 
 </html>

@@ -345,8 +345,7 @@
             <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 5. DA ESPECIFICAÇÃO DOS SERVIÇOS
         </p>
         <p style="text-align: justify;">
-            XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-            XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.
+            {{ $processo->detalhe->especificacao_servicos_imovel }}
         </p>
 
         <p style="display: flex; align-items: center; font-weight: bold; ">
@@ -407,7 +406,7 @@
             <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 8. DA VIGÊNCIA
         </p>
         <p style="text-align: justify;">
-            8.1. O período de vigência do instrumento contratual será de XXXXXXXXXXXXXX,
+            8.1. O período de vigência do instrumento contratual será de {{ $vigencia_formatada }},
             contados da data de sua assinatura, podendo este ser rescindido ou ter seu prazo
             prorrogado na forma da Lei.
         </p>
@@ -445,6 +444,7 @@
                 <br>
             </span>
             b) Quando a contratação for realizada diretamente com o artista (pessoa física):
+                <br>
             <span style="margin-left: 20px;">
                 o Cópia do documento de identificação e CPF do contratado;<br>
                 o Comprovante de endereço;<br>
@@ -544,8 +544,7 @@
             <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 14. DA RAZÃO E ESCOLHA DO CONTRATADO
         </p>
         <p style="text-align: justify;">
-            14.1. XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-            (JUSTIFICATIVA);
+            14.1. {{ $processo->detalhe->razao_escolha_contratado }}
         </p>
 
         <p style="display: flex; align-items: center; font-weight: bold; ">
@@ -565,8 +564,7 @@
         </p>
 
         <p style="display: flex; align-items: center; font-weight: bold; ">
-            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 16. OBRIGAÇÕES DO(A) CONTRATADO(A) (ADICIONAR CAIXA DE TEXTO PARA QUE
-            POSSA SER INSERIDO OUTRAS OBRIGAÇÕES EXTRAS)
+            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 16. OBRIGAÇÕES DO(A) CONTRATADO(A) 
         </p>
         <p style="text-align: justify;">
             16.1. O(A) CONTRATADO(A) obriga-se a: <br>
@@ -606,6 +604,7 @@
             Referência;<br>
             16.6. Os termos indicados na proposta vinculam a referida contratação;
         </p>
+        {!! $processo->detalhe->obrigacoes_contratado_extras !!}
 
         <p style="display: flex; align-items: center; font-weight: bold; ">
             <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 17. OBRIGAÇÕES DA CONTRATANTE (ADICIONAR CAIXA DE TEXTO PARA QUE POSSA
@@ -639,6 +638,7 @@
             17.4. Adotar as medidas cabíveis, inclusive judiciais, em caso de inadimplemento
             injustificado por parte da CONTRATADA, nos termos da legislação vigente.
         </p>
+        {!! $processo->detalhe->obrigacoes_contratante_extras !!}
 
         <p style="display: flex; align-items: center; font-weight: bold; ">
             <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 18. SUBCONTRATAÇÃO

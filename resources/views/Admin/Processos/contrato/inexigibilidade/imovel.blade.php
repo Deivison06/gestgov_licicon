@@ -406,6 +406,10 @@
             {{ $processo->prefeitura->cidade }},
             {{ \Carbon\Carbon::parse($dataSelecionada)->translatedFormat('d \d\e F \d\e Y') }}
         </div>
+        @php
+            // Verifica se a variável $assinantes existe e tem itens
+            $hasSelectedAssinantes = isset($assinantes) && count($assinantes) > 0;
+        @endphp
 
         @if ($hasSelectedAssinantes)
             {{-- Renderiza APENAS O PRIMEIRO assinante da lista --}}
@@ -591,7 +595,7 @@
                         DATA DA ASSINATURA:
                     </td>
                     <td style="padding:6px;">
-                        {{ $dataAssinaturaFormatada }}
+                        {{ \Carbon\Carbon::parse($dataSelecionada)->translatedFormat('d \d\e F \d\e Y') }}
                     </td>
                 </tr>
 

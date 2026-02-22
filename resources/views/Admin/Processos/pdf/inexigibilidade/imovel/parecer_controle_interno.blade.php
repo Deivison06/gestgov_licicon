@@ -183,18 +183,18 @@
 <div>
     <h4>
         PARECER CONTROLE INTERNO <br>
-        PROCESSO ADM. Nº. XXX/202X <br>
-        INEXIGIBILIDADE Nº. XXXX/202X <br>
-        INTERESSADO: PREFEITO MUNICIPAL DE XXXXXXXXXX - PI
+        PROCESSO ADM. Nº. {{ $processo->numero_processo }} <br>
+        INEXIGIBILIDADE Nº. {{ $processo->numero_inexigibilidade }} <br>
+        INTERESSADO: PREFEITO MUNICIPAL DE {{ $processo->prefeitura->cidade }}
     </h4>
 
     <p style="text-align: justify">
         Tratam os autos do processo de
-        XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+        {!! strip_tags($processo->objeto) !!}
         (OBJETO) mediante Inexigibilidade de licitação em favor da
-        empresa/profissional XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX,
-        inscrita no CNPJ/CPF sob o nº XXXXXXXXXXXXXX, no valor de R$
-        XXXXXXXXXXXXXXXXXXXXX. Ressalta-se que o Procedimento ocorreu
+        empresa/profissional {{ $processo->detalhe->razao_social }},
+        inscrita no CNPJ/CPF sob o nº {{ $processo->detalhe->cnpj_empresa_vencedora }}, no valor de R$
+        {{ number_format($processo->detalhe->valor_total, 2, ',', '.') }}. Ressalta-se que o Procedimento ocorreu
         dentro das formalidades legais, conforme detalhado no processo, baseado
         na Lei 14.133/21
     </p>
@@ -322,8 +322,8 @@
 <div>
     <h4 style="text-align: center">
         ATO DE AUTORIZAÇÃO DE INEXIGIBILIDADE DE LICITAÇÃO <br>
-        PROCESSO ADMINISTRATIVO N° XXX/202X<br>
-        INEXIGIBILIDADE DE LICITAÇÃO N° XXX/202X
+        PROCESSO ADMINISTRATIVO N° {{ $processo->numero_processo }}<br>
+        INEXIGIBILIDADE DE LICITAÇÃO N° {{ $processo->numero_inexigibilidade }}
     </h4>
 
     <p style="text-align: justify">
@@ -339,7 +339,7 @@
         CONSIDERANDO que o PARECER JURÍDICO atesta que foram cumpridas as exigências legais e
         os requisitos mínimos para a contratação;<br>
         No uso das atribuições que me foram conferidas, em especial ao disposto no artigo 72, VIII da Lei
-        Federal 14.133/2021, AUTORIZO A INEXIGIBILIDADE DE LICITAÇÃO XXX/202X, nos termos
+        Federal 14.133/2021, AUTORIZO A INEXIGIBILIDADE DE LICITAÇÃO {{ $processo->numero_inexigibilidade }}, nos termos
         descritos abaixo:
     </p>
 
@@ -357,7 +357,7 @@
                 CONTRATADO
             </td>
             <td style="border:1px solid #000; padding:6px;">
-                xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                {{ $processo->detalhe->razao_social }}
             </td>
         </tr>
         <tr>
@@ -393,7 +393,7 @@
                 VALOR TOTAL
             </td>
             <td style="border:1px solid #000; padding:6px;">
-                R$ xxxxxxxx
+                R$ {{ number_format($processo->detalhe->valor_total, 2, ',', '.') }}
             </td>
         </tr>
         <tr>

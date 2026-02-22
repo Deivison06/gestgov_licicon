@@ -301,7 +301,7 @@
         </p>
 
         <p style="text-align: justify; color: red;">
-            2.1 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+            2.1 {{ $processo->detalhe->justificativa }}
         </p>
     </div>
     <div>
@@ -402,7 +402,7 @@
         </p>
 
         <p style="text-align: justify; color: red;">
-            XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.
+            {{ $processo->detalhe->especificacao_servicos_imovel }}
         </p>
         
     </div>
@@ -611,8 +611,8 @@
             objeto descrito neste Termo de Referência. 
             <br>
             13.2. O critério de seleção pauta-se na singularidade e exclusividade do objeto. A
-            escolha do contratado(a) XXXXXXXXXXXXXXXXX, inscrito(a) sob o CPF/CNPJ de n°
-            XXXXXXXXXXXX justifica-se pelos seguintes fatores:
+            escolha do contratado(a) {{ $processo->detalhe->razao_social }}, inscrito(a) sob o CPF/CNPJ de n°
+            {{ $processo->detalhe->cnpj_empresa_vencedora }} justifica-se pelos seguintes fatores:
             <br>
             <span style="margin-left: 20px;">
                 a) Exclusividade Técnica/Comercial: A referida empresa é a única detentora do direito de
@@ -646,8 +646,7 @@
         </p>
 
         <p style="text-align: justify; color: red;">
-            14.1. XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-            (JUSTIFICATIVA);
+            14.1. {{ $processo->detalhe->razao_escolha_contratado }}
         </p>
     </div>
     <div>
@@ -666,8 +665,7 @@
         </p>
 
         <p style="display: flex; align-items: center; font-weight: bold; ">
-            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 16. OBRIGAÇÕES DO(A) CONTRATADO(A) (ADICIONAR CAIXA DE TEXTO PARA QUE
-            POSSA SER INSERIDO OUTRAS OBRIGAÇÕES EXTRAS)
+            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 16. OBRIGAÇÕES DO(A) CONTRATADO(A)
         </p>
         <p style="text-align: justify;">
            16.1. O(A) CONTRATADO(A) vincula-se à proposta apresentada e obriga-se a executar
@@ -696,10 +694,10 @@
             16.1.8. Arcar com todos os encargos trabalhistas, previdenciários, fiscais, comerciais e
             de transporte (frete, carga e descarga) decorrentes da execução do contrato.
         </p>
+        {{ $processo->detalhe->obrigacoes_contratado_extras }}
 
         <p style="display: flex; align-items: center; font-weight: bold; ">
-            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 17. OBRIGAÇÕES DA CONTRATANTE (ADICIONAR CAIXA DE TEXTO PARA QUE POSSA
-            SER INSERIDO OUTRAS OBRIGAÇÕES EXTRAS)
+            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 17. OBRIGAÇÕES DA CONTRATANTE
         </p>
         <p style="text-align: justify;">
             17.1. A CONTRATANTE obriga-se a: <br>
@@ -778,6 +776,7 @@
             17.10. Verificar, no ato do recebimento, se o objeto entregue corresponde exatamente à
             marca/modelo/serviço contratado.
         </p>
+        {{ $processo->detalhe->obrigacoes_contratante_extras }}
 
         <p style="display: flex; align-items: center; font-weight: bold; ">
             <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 18. SUBCONTRATAÇÃO

@@ -60,6 +60,18 @@
     @elseif($campo === 'justificativa_solucao_escolhida')
     <x-form-field name="justificativa_solucao_escolhida" label="JUSTIFICATIVA DA SOLUÇÃO ESCOLHIDA" type="textarea" rows="5" />
 
+    @elseif($campo === 'especificacao_servicos_imovel')
+    <x-form-field name="especificacao_servicos_imovel" label="ESPECIFICAÇÃO DOS SERVIÇOS DO IMÓVEL" type="textarea" rows="5" />
+
+    @elseif($campo === 'razao_escolha_contratado')
+    <x-form-field name="razao_escolha_contratado" label="RAZÃO DA ESCOLHA DO CONTRATADO" type="textarea" rows="5" />
+
+    @elseif($campo === 'obrigacoes_contratado_extras')
+    <x-form-field name="obrigacoes_contratado_extras" label="OBRIGAÇÕES DO CONTRATADO EXTRAS" type="textarea" rows="5" />
+
+    @elseif($campo === 'obrigacoes_contratante_extras')
+    <x-form-field name="obrigacoes_contratante_extras" label="OBRIGAÇÕES DO CONTRATANTE EXTRAS" type="textarea" rows="5" />
+
     @elseif($campo === 'resultado_pretendidos')
     <x-form-field name="resultado_pretendidos" label="RESULTADOS PRETENDIDOS" type="textarea" rows="5" />
 
@@ -122,6 +134,24 @@
 
     @elseif($campo === 'numero_items')
     <x-form-field name="numero_items" label="Numero Items" />
+
+    @elseif($campo === 'razao_social')
+    <x-form-field name="razao_social" label="Razão Social" />
+
+    @elseif($campo === 'cnpj_empresa_vencedora')
+    <x-form-field name="cnpj_empresa_vencedora" label="CNPJ Empresa Vencedora" />
+
+    @elseif($campo === 'endereco_empresa_vencedora')
+    <x-form-field name="endereco_empresa_vencedora" label="Endereço Empresa Vencedora" />
+
+    @elseif($campo === 'representante_legal_empresa')
+    <x-form-field name="representante_legal_empresa" label="Representante Legal Empresa" />
+
+    @elseif($campo === 'cpf_representante')
+    <x-form-field name="cpf_representante" label="CPF Representante" />
+
+    @elseif($campo === 'valor_total')
+    <x-form-field name="valor_total" label="Valor Total" />
 
     {{-- Campos Radio --}}
     @elseif($campo === 'tipo_srp')

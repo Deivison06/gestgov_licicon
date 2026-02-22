@@ -87,7 +87,11 @@ class ProcessoDocumentoService
                 'encaminhamento_parecer_juridico',
                 'encaminhamento_autorizacao_abertura',
                 'itens_especificaca_quantitativos_xml',
-                'info_extras'
+                'info_extras',
+                'especificacao_servicos_imovel',
+                'razao_escolha_contratado',
+                'obrigacoes_contratado_extras',
+                'obrigacoes_contratante_extras'
             ],
         ],
         'minutas' => [
@@ -193,6 +197,19 @@ class ProcessoDocumentoService
             'cor' => '#0284C7', // azul céu
             'data_id' => 'data_termo_autuacao',
             'campos' => [''],
+        ],
+        'termo_juntada' => [
+            'titulo' => 'TERMO DE JUNTADA',
+            'cor' => '#0284C7', // azul céu
+            'data_id' => 'data_termo_juntada',
+            'campos' => [
+                'razao_social',
+                'cnpj_empresa_vencedora',
+                'endereco_empresa_vencedora',
+                'representante_legal_empresa',
+                'cpf_representante',
+                'valor_total',
+            ],
         ],
         'demonstracao_servico_tecnico_singular' => [
             'titulo' => 'DEMONSTRAÇÃO DE SERVIÇO TÉCNICO SINGULAR',
@@ -403,6 +420,8 @@ class ProcessoDocumentoService
             'disponibilidade_orçamento',
             'termo_referencia',
             'autorizacao_abertura_procedimento',
+            'termo_recebimento',
+            'termo_juntada',
             'demonstracao_servico_tecnico_singular',
             'parecer_tecnico',
             'parecer_juridico',
@@ -422,7 +441,7 @@ class ProcessoDocumentoService
             'termo_referencia',
             'autorizacao_abertura_procedimento',
             'termo_recebimento',
-            'termo_autuacao',
+            'termo_juntada',
             'parecer_tecnico',
             'parecer_juridico',
             'parecer_controle_interno',
@@ -440,6 +459,8 @@ class ProcessoDocumentoService
             'disponibilidade_orçamento',
             'termo_referencia',
             'autorizacao_abertura_procedimento',
+            'termo_recebimento',
+            'termo_juntada',
             'termo_recebimento',
             'termo_autuacao',
             'parecer_tecnico',
@@ -482,6 +503,8 @@ class ProcessoDocumentoService
             'minutas',
             'parecer_juridico',
             'autorizacao_abertura_procedimento',
+            'termo_recebimento',
+            'termo_juntada',
             'abertura_fase_externa',
             'avisos_licitacao',
             'publicacoes_avisos_licitacao',

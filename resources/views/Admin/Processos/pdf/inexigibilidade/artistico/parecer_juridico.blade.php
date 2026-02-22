@@ -131,8 +131,8 @@
    <div>
        <h4 style="text-align: center">
            PARECER JURÍDICO <br>
-           PROCESSO ADMINISTRATIVO N° XXXX/202X <br>
-           INEXIGIBILIDADE N° XXX/202X
+           PROCESSO ADMINISTRATIVO N° {{ $processo->numero_processo }} <br>
+           INEXIGIBILIDADE N° {{ $processo->numero_procedimento }}
        </h4>
 
        <p>EMENTA: INEXIGIBILIDADE DE LICITAÇÃO - LEGALIDADE</p>
@@ -141,7 +141,7 @@
        <p style="text-align: justify">
            Trata-se de solicitação de Parecer Jurídico acerca da legalidade da
             contratação da Empresa/Pessoa Física conforme documentação anexa
-            referente a XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX (OBJETO). <br>
+            referente a {!! strip_tags($processo->objeto) !!} <br>
             Deve ser ressaltado que a análise da Procuradoria repercute estritamente
             sobre a apreciação jurídica da contratação, não havendo qualquer opinião
             sobre o mento administrativo.
@@ -310,10 +310,8 @@
 
         <p style="text-align: justify; text-indent: 30px;">
             Encaminho ao Exm. Senhor(a) o Processo de Inexigibilidade de
-            Licitação nº XXX/202X, objeto
-            XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-            XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-            XXXXXX, para emissão de parecer do Contrato Interno acerca da
+            Licitação nº {{ $processo->numero_procedimento }}, {!! strip_tags($processo->objeto) !!},
+            para emissão de parecer do Contrato Interno acerca da
             contratação.
         </p>
 

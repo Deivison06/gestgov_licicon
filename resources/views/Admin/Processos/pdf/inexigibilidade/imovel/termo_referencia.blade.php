@@ -334,27 +334,18 @@
         </p>
 
         <p style="display: flex; align-items: center; font-weight: bold; ">
-            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 5. DA ESPECIFICAÇÃO DOS SERVIÇOS
+            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 5. DA ESPECIFICAÇÃO DO IMÓVEL
         </p>
         <p style="text-align: justify;">
-            XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-            XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.
+                {{ $processo->detalhe->especificacao_servicos_imovel }}
         </p>
 
         <p style="display: flex; align-items: center; font-weight: bold; ">
-            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 6. DA ESPECIFICAÇÃO DO IMÓVEL
+            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 6. DO REGIME DE EXECUÇÃO
         </p>
         <p style="text-align: justify;">
-            XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-            XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.
-        </p>
-
-        <p style="display: flex; align-items: center; font-weight: bold; ">
-            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 7. DO REGIME DE EXECUÇÃO
-        </p>
-        <p style="text-align: justify;">
-            7.1. A execução do objeto será realizada de forma indireta. <br>
-            7.2. A execução do contrato terá início imediato após a assinatura do instrumento
+            6.1. A execução do objeto será realizada de forma indireta. <br>
+            6.2. A execução do contrato terá início imediato após a assinatura do instrumento
             contratual, formalizando-se através dos seguintes atos:
             <br>
             <span style="margin-left: 20px;">
@@ -367,44 +358,44 @@
                 imóvel passa à posse direta da Administração.
                 <br>
             </span>
-            7.3. Considera-se executado o objeto mensalmente mediante a disponibilização contínua
+            6.3. Considera-se executado o objeto mensalmente mediante a disponibilização contínua
             e ininterrupta do imóvel ao Órgão Locatário, em condições plenas de uso, habitabilidade
             e segurança, conforme as especificações descritas neste Termo.
         </p>
 
         <p style="display: flex; align-items: center; font-weight: bold; ">
-            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 8. DA DESCRIÇÃO DA SOLUÇÃO
+            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 7. DA DESCRIÇÃO DA SOLUÇÃO
         </p>
         <p style="text-align: justify;">
-            8.1. A solução identificada como a mais vantajosa e adequada para a Administração,
+            7.1. A solução identificada como a mais vantajosa e adequada para a Administração,
             consiste na {!! strip_tags($processo->objeto) !!} <br>
-            8.2. A opção pela locação, em detrimento da aquisição ou construção de imóvel próprio,
+            7.2. A opção pela locação, em detrimento da aquisição ou construção de imóvel próprio,
             fundamenta-se na inexistência de imóveis públicos vagos adequados e o alto custo inicial
             para aquisição de um imóvel novo no mercado. <br>
-            8.3. A solução de locação recai especificamente sobre este imóvel pois, conforme
+            7.3. A solução de locação recai especificamente sobre este imóvel pois, conforme
             demonstrado, é o único que atende cumulativamente aos requisitos de localização
             estratégica, infraestrutura física com layout compatível com as necessidades do órgão,
             dispensando reformas estruturais onerosas e demoradas, além de atender aos requisitos
             de instalações elétricas, lógicas e hidráulicas demandadas para o funcionamento. <br>
-            8.4. A solução abrange não apenas a disponibilização do espaço físico, mas a
+            7.4. A solução abrange não apenas a disponibilização do espaço físico, mas a
             manutenção da habitabilidade do imóvel pelo LOCADOR durante toda a vigência
             contratual, garantindo a sustentabilidade da operação administrativa sem interrupções.
         </p>
 
         <p style="display: flex; align-items: center; font-weight: bold; ">
-            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 9. DA VIGÊNCIA
+            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 8. DA VIGÊNCIA
         </p>
         <p style="text-align: justify;">
-            9.1. O período de vigência do instrumento contratual será de {{ $vigencia_formatada }},
+            8.1. O período de vigência do instrumento contratual será de {{ $vigencia_formatada }},
             contados da data de sua assinatura, podendo este ser rescindido ou ter seu prazo
             prorrogado na forma da Lei.
         </p>
 
         <p style="display: flex; align-items: center; font-weight: bold; ">
-            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 10. REQUISITOS DA CONTRATAÇÃO
+            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 9. REQUISITOS DA CONTRATAÇÃO
         </p>
         <p style="text-align: justify;">
-            10.1. Deverão serem apresentados os seguintes documentos:
+            9.1. Deverão serem apresentados os seguintes documentos:
             <br>
             <span style="margin-left: 20px;">
                 a) Se Pessoa Física:
@@ -442,14 +433,14 @@
         </p>
 
         <p style="display: flex; align-items: center; font-weight: bold; ">
-            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 11. MODELO DE GESTÃO DO CONTRATO
+            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 10. MODELO DE GESTÃO DO CONTRATO
         </p>
         <p style="text-align: justify;">
-            11.1. A fiscalização da contratação, decorrente desta inexigibilidade de licitação, será
+            10.1. A fiscalização da contratação, decorrente desta inexigibilidade de licitação, será
             acompanhada e fiscalizada por servidor da Administração, especialmente designados,
             nos termos do artigo 117 da Lei Federal 14.133/2021.
             <br>
-            11.2. A contratante deverá indiciar um responsável legal, através de documento
+            10.2. A contratante deverá indiciar um responsável legal, através de documento
             encaminhado para o e-mail da prefeitura Municipal ou protocolado pessoalmente no
             setor de licitações e contratos deste município, indicando os respectivos contatos (e-mail,
             celular e Whatsapp), com poderes para representá-lo perante essa municipalidade na
@@ -458,10 +449,10 @@
         </p>
 
         <p style="display: flex; align-items: center; font-weight: bold; ">
-            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 12. DO RECEBIMENTO DO OBJETO E DOS CRITÉRIOS PARA MEDIÇÃO E PAGAMENTO
+            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 11. DO RECEBIMENTO DO OBJETO E DOS CRITÉRIOS PARA MEDIÇÃO E PAGAMENTO
         </p>
         <p style="text-align: justify;">
-            12.1. O recebimento do objeto do contrato, decorrente da referida inexigibilidade de
+            11.1. O recebimento do objeto do contrato, decorrente da referida inexigibilidade de
             licitação, se dará:
             <br>
             <span style="margin-left: 20px;">
@@ -479,13 +470,13 @@
                 LOCADOR providencie as adequações necessárias.
             </span>
             <br>
-            12.2. A medição dos serviços será realizada mensalmente, considerando-se executado o
+            11.2. A medição dos serviços será realizada mensalmente, considerando-se executado o
             objeto pela disponibilização do imóvel à Administração durante o período de 30 (trinta)
             dias. <br>
-            12.2.1. A medição será formalizada mediante atesto na Nota Fiscal ou Recibo pelo
+            11.2.1. A medição será formalizada mediante atesto na Nota Fiscal ou Recibo pelo
             responsável designado, confirmando que o imóvel esteve disponível e em condições de
             uso durante o período faturado. <br>
-            12.3. O pagamento será realizado no prazo máximo de até 30 (trinta) dias, contados a
+            11.3. O pagamento será realizado no prazo máximo de até 30 (trinta) dias, contados a
             partir do recebimento da Nota Fiscal/Fatura ou Recibo devidamente atestado, através de
             ordem bancária, para crédito em banco, agência e conta corrente indicados pelo
             contratado, respeitada a ordem cronológica. <br>
@@ -495,10 +486,10 @@
         </p>
 
        <p style="display: flex; align-items: center; font-weight: bold; ">
-            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 13. DOTAÇÃO ORÇAMENTÁRIA
+            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 12. DOTAÇÃO ORÇAMENTÁRIA
         </p>
         <p style="text-align: justify;">
-            13.1. Os custos com a presente contratação correrão por conta da seguinte dotação orçamentária:
+            12.1. Os custos com a presente contratação correrão por conta da seguinte dotação orçamentária:
         </p>
         <table style="border-collapse: collapse; width: 100%; border: 1px solid black;">
             <tr>
@@ -510,13 +501,13 @@
         </table>
 
         <p style="display: flex; align-items: center; font-weight: bold; ">
-            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 14. FORMA E CRITÉRIO DE SELEÇÃO DO FORNECEDOR/PRESTADOR
+            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 13. FORMA E CRITÉRIO DE SELEÇÃO DO FORNECEDOR/PRESTADOR
         </p>
         <p style="text-align: justify;">
-            14.1. A presente contratação fundamenta-se no Art. 74, inciso V, da Lei nº 14.133/2021,
+            13.1. A presente contratação fundamenta-se no Art. 74, inciso V, da Lei nº 14.133/2021,
             que autoriza a inexigibilidade de licitação para a aquisição ou locação de imóvel cujas
             características de instalações e de localização tornem necessária sua escolha. <br>
-            14.2. A escolha do imóvel especificado pauta-se nos seguintes critérios técnicos e
+            13.2. A escolha do imóvel especificado pauta-se nos seguintes critérios técnicos e
             logísticos:
             <span style="margin-left: 20px;">
                 a) O imóvel situa-se em área que garante o fácil acesso ao público-alvo. <br>
@@ -529,93 +520,93 @@
         </p>
 
         <p style="display: flex; align-items: center; font-weight: bold; ">
-            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 15. DA RAZÃO E ESCOLHA DO CONTRATADO
+            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 14. DA RAZÃO E ESCOLHA DO CONTRATADO
         </p>
         <p style="text-align: justify;">
-            15.1. XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-            (JUSTIFICATIVA);
+            14.1. {{ $processo->detalhe->razao_escolha_contratado }}
         </p>
 
         <p style="display: flex; align-items: center; font-weight: bold; ">
-            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 16. DA JUSTIFICATIVA DOS PREÇOS:
+            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 15. DA JUSTIFICATIVA DOS PREÇOS:
         </p>
         <p style="text-align: justify;">
-            16.1. No que diz respeito a JUSTIFICATIVA DE PREÇOS, em atendimento ao que
+            15.1. No que diz respeito a JUSTIFICATIVA DE PREÇOS, em atendimento ao que
             preconiza o artigo 72, da Lei 14.133/2021 para elaboração do custo, deverá ser
             apresentado valores praticados nos mercados, através de contratações com objetos
             similares. <br>
-            16.2. O contratado(a) apresentou notas fiscais e extratos de contratos de outros entes
+            15.2. O contratado(a) apresentou notas fiscais e extratos de contratos de outros entes
             públicos, onde notadamente é similar ao valor proposto. <br>
-            16.3. Sendo assim, declara-se que o preço praticado para a presente contratação é
+            15.3. Sendo assim, declara-se que o preço praticado para a presente contratação é
             compatível com o mercado sendo considerado justo para esta Administração.
         </p>
 
         <p style="display: flex; align-items: center; font-weight: bold; ">
-            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 17. OBRIGAÇÕES DO(A) CONTRATADO(A) (ADICIONAR CAIXA DE TEXTO PARA QUE
-            POSSA SER INSERIDO OUTRAS OBRIGAÇÕES EXTRAS)
+            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 16. OBRIGAÇÕES DO(A) CONTRATADO(A) 
         </p>
         <p style="text-align: justify;">
-            17.1. O(A) CONTRATADO(A) obriga-se a: <br>
-            17.1.1. Entregar o imóvel em perfeitas condições de uso; <br>
-            17.1.2. Arcar com impostos, taxas e tributos incidentes sobre a propriedade (IPTU, taxas
+            16.1. O(A) CONTRATADO(A) obriga-se a: <br>
+            16.1.1. Entregar o imóvel em perfeitas condições de uso; <br>
+            16.1.2. Arcar com impostos, taxas e tributos incidentes sobre a propriedade (IPTU, taxas
             municipais etc.); <br>
-            17.1.3. Manter a titularidade e regularidade jurídica do imóvel durante toda a vigência
+            16.1.3. Manter a titularidade e regularidade jurídica do imóvel durante toda a vigência
             contratual; <br>
-            17.1.4. Garantir a posse pacífica do imóvel à Administração.
+            16.1.4. Garantir a posse pacífica do imóvel à Administração.
         </p>
+        {{ $processo->detalhe->obrigacoes_contratado_extras }}
 
         <p style="display: flex; align-items: center; font-weight: bold; ">
-            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 18. OBRIGAÇÕES DA CONTRATANTE (ADICIONAR CAIXA DE TEXTO PARA QUE POSSA
-            SER INSERIDO OUTRAS OBRIGAÇÕES EXTRAS)
+            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 17. OBRIGAÇÕES DA CONTRATANTE 
         </p>
         <p style="text-align: justify;">
-            18.1. A CONTRATANTE obriga-se a: <br>
-            18.1.1. Utilizar o imóvel exclusivamente para a finalidade contratada; <br>
-            18.1.2. Efetuar o pagamento dos aluguéis no prazo ajustado; <br>
-            18.1.3. Realizar pequenas adaptações internas que não comprometam a estrutura do
+            17.1. A CONTRATANTE obriga-se a: <br>
+            17.1.1. Utilizar o imóvel exclusivamente para a finalidade contratada; <br>
+            17.1.2. Efetuar o pagamento dos aluguéis no prazo ajustado; <br>
+            17.1.3. Realizar pequenas adaptações internas que não comprometam a estrutura do
             imóvel, se necessárias à atividade.
         </p>
 
+        {{ $processo->detalhe->obrigacoes_contratante_extras }}
+
         <p style="display: flex; align-items: center; font-weight: bold; ">
-            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 19. SUBCONTRATAÇÃO
+            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 18. SUBCONTRATAÇÃO
         </p>
         <p style="text-align: justify;">
-            19.1. Não será admitida a subcontratação total do objeto licitatório;
+            18.1. Não será admitida a subcontratação total do objeto licitatório;
         </p>
 
         <p style="display: flex; align-items: center; font-weight: bold; ">
-            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 20. REAJUSTE
+            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 19. REAJUSTE
         </p>
         <p style="text-align: justify;">
-            20.1 Os preços são fixos e irreajustáveis no prazo de um ano contado da data limite para
+            19.1 Os preços são fixos e irreajustáveis no prazo de um ano contado da data limite para
             a apresentação das propostas; <br>
-            20.1.1 Dentro do prazo de vigência do contrato e mediante solicitação da contratada, os
+            19.1.1 Dentro do prazo de vigência do contrato e mediante solicitação da contratada, os
             preços contratados poderão sofrer reajuste após o interregno de um ano, aplicando-se o
             índice IGPM exclusiva mente para as obrigações iniciadas e concluídas após a
             ocorrência da anualidade;<br>
-            20.2. Nos reajustes subsequentes ao primeiro, o interregno mínimo de um ano será
+            19.2. Nos reajustes subsequentes ao primeiro, o interregno mínimo de um ano será
             contado a partir dos efeitos financeiros do último reajuste;<br>
-            20.3. No caso de atraso ou não divulgação do índice de reajustamento, o
+            19.3. No caso de atraso ou não divulgação do índice de reajustamento, o
             CONTRATANTE pagará à CONTRATADA a importância calculada pela última variação
             conhecida, liquidando a diferença correspondente, tão logo seja divulgado o índice
             definitivo. Fica a CONTRATADA obrigada a apresentar memória de cálculo referente ao
             reajustamento de preços do valor remanescente, sempre que este ocorrer;<br>
-            20.4. Nas aferições finais, o índice utilizado para reajuste será, obrigatoriamente, o
+            19.4. Nas aferições finais, o índice utilizado para reajuste será, obrigatoriamente, o
             definitivo;<br>
-            20.5. Caso o índice estabelecido para reajustamento venha a ser extinto ou de qualquer
+            19.5. Caso o índice estabelecido para reajustamento venha a ser extinto ou de qualquer
             forma não possa mais ser utilizado, será adotado, em substituição, o que vier a ser
             determinado pela legislação então em vigor;<br>
-            20.6. Na ausência dê previsão legal quanto ao índice substituto, as partes elegerão novo
+            19.6. Na ausência dê previsão legal quanto ao índice substituto, as partes elegerão novo
             índice oficial, para reajustamento do preço do valor remanescente, por meio de termo
             aditivo;<br>
-            20.7. O reajuste será realizado por apostilamento;
+            19.7. O reajuste será realizado por apostilamento;
         </p>
 
         <p style="display: flex; align-items: center; font-weight: bold; ">
-            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 21. DAS SANÇÕES:
+            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 20. DAS SANÇÕES:
         </p>
         <p style="text-align: justify;">
-            21.1. Pela inexecução total ou parcial do objeto deste contrato, a Administração pode
+            20.1. Pela inexecução total ou parcial do objeto deste contrato, a Administração pode
             aplicar à CONTRATADA, sanções previstas em lei, sempre respeitando com contraditório
             e ampla defesa.
         </p>

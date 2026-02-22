@@ -985,6 +985,17 @@
                 projeto_basico_pdf: existing?.projeto_basico_pdf ?? '',
                 agente_contratacao: existing?.agente_contratacao ?? '',
                 info_extras: existing?.info_extras ?? '',
+                especificacao_servicos_imovel: existing?.especificacao_servicos_imovel ?? '',
+                razao_escolha_contratado: existing?.razao_escolha_contratado ?? '',
+                obrigacoes_contratado_extras: existing?.obrigacoes_contratado_extras ?? '',
+                obrigacoes_contratante_extras: existing?.obrigacoes_contratante_extras ?? '',
+                razao_social: existing?.razao_social ?? '',
+                cnpj_empresa_vencedora: existing?.cnpj_empresa_vencedora ?? '',
+                endereco_empresa_vencedora: existing?.endereco_empresa_vencedora ?? '',
+                representante_legal_empresa: existing?.representante_legal_empresa ?? '',
+                cpf_representante: existing?.cpf_representante ?? '',
+                valor_total: existing?.valor_total ?? '',
+
 
                 ...initialData,
                 data_hora: existing?.data_hora ?? '',
@@ -1057,6 +1068,17 @@
                     projeto_basico_pdf: !!existing?.projeto_basico_pdf,
                     agente_contratacao: !!existing?.agente_contratacao,
                     info_extras: !!existing?.info_extras,
+                    especificacao_servicos_imovel: !!existing?.especificacao_servicos_imovel,
+                    razao_escolha_contratado: !!existing?.razao_escolha_contratado,
+                    obrigacoes_contratado_extras: !!existing?.obrigacoes_contratado_extras,
+                    obrigacoes_contratante_extras: !!existing?.obrigacoes_contratante_extras,
+                    razao_social: !!existing?.razao_social, 
+                    cnpj_empresa_vencedora: !!existing?.cnpj_empresa_vencedora,
+                    endereco_empresa_vencedora: !!existing?.endereco_empresa_vencedora,
+                    representante_legal_empresa: !!existing?.representante_legal_empresa,
+                    cpf_representante: !!existing?.cpf_representante,
+                    valor_total: !!existing?.valor_total,
+
                 },
 
                 init() {
@@ -1110,7 +1132,9 @@
                         'solucoes_disponivel_mercado', 'incluir_requisito_cada_caso_concreto',
                         'justificativa_solucao_escolhida', 'impacto_ambiental', 'resultado_pretendidos',
                         'dotacao_orcamentaria', 'tratamento_diferenciado_MEs_eEPPs', 'riscos_extra',
-                        'exigencias_tecnicas', 'qualificacao_economica', 'regularidade_fisica', 'info_extras'
+                        'exigencias_tecnicas', 'qualificacao_economica', 'regularidade_fisica', 'info_extras',
+                        'especificacao_servicos_imovel', 'razao_escolha_contratado', 'obrigacoes_contratado_extras',
+                        'obrigacoes_contratante_extras',
                     ];
 
                     if (tinyMceFields.includes(field)) {

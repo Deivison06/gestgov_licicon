@@ -137,8 +137,8 @@
     </h4>
 
     <h4>
-        PROCESSO ADMINISTRATIVO: XXX/202X <br>
-        INEXIGIBILIDADE DE LICITAÇÃO No XXX/202X – CPL <br>
+        PROCESSO ADMINISTRATIVO: {{ $processo->numero_processo }} <br>
+        INEXIGIBILIDADE DE LICITAÇÃO No {{ $processo->numero_procedimento }} – CPL <br>
         DA JUSTIFICATIVA DA INEXIGIBILIDADE:
     </h4>
 
@@ -238,7 +238,7 @@
         Ao(À) Exmo(a). Sr(a). <br>
         XXXXXXXXXXXXXXXXXXXXX <br>
         Procurador Geral do Município<br>
-        XXXXXXXXXXXXXX - PI
+        {{ $processo->prefeitura->cidade }}
     </p>
 
     <p style="text-align: justify">Assunto: Emissão de Parecer Jurídicoo</p>
@@ -246,11 +246,9 @@
     <p style="text-align: justify; text-indent: 30px;">Prezado(a) Senhor(a),</p>
 
     <p style="text-align: justify; text-indent: 30px;">
-        Solicitamos parecer jurídico referente à
-        XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-        XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX (OBJETO), através do
-        Processo Administrativo nº XXX/202X, Modalidade: Inexigibilidade de
-        Licitação nº XXX/202X, informamos que as despesas correrão por conta
+        Solicitamos parecer jurídico referente à {!! strip_tags($processo->objeto) !!} através do
+        Processo Administrativo nº {{ $processo->numero_processo }}, Modalidade: Inexigibilidade de
+        Licitação nº {{ $processo->numero_procedimento }}, informamos que as despesas correrão por conta
         dos recursos do
         XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
         XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX

@@ -475,13 +475,10 @@
         <div style=" text-align: center; font-weight:bold; margin-bottom:20px;">DECLARAÇÃO DE INDISPONIBILIDADE DE IMÓVEL PRÓPRIO</div>
 
         <p style="text-align: justify;">
-            Assunto: XXXXXXXXXXXXXXXXXXXXXXXXXXXXX (OBJETO)
+            Assunto: {!! strip_tags($processo->objeto) !!}
         </p>
         <p style="text-indent: 30px; text-align: justify;">
-            Assunto: XXXXXXXXXXXXXXXXXXXXXXXXXXXXX (OBJETO)
-        </p>
-        <p style="text-indent: 30px; text-align: justify;">
-            A Administração Pública do Município de XXXXXXXXXXXXX, por meio da
+            A Administração Pública do Município de {{ $processo->prefeitura->cidade }}, por meio da
             [Secretaria/Setor Demandante], após consultas internas e análise da
             estrutura patrimonial municipal, DECLARA para os devidos fins que NÃO
             dispõe de imóvel público próprio, adequado e disponível, que atenda às

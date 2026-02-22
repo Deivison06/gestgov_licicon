@@ -166,12 +166,12 @@
                     <td class="content">
                         <div style=" font-weight: bold; margin-bottom: 3px;">Contratante</div>
                         <div style="">
-                            {{ $processo->finalizacao->orgao_responsavel }}, com sede no(a)
-                            {{ $processo->prefeitura->endereco }}, na cidade de {{ $processo->prefeitura->cidade }}
+                            XXXXXXXXXXXXX, com sede no(a)
+                            XXXXXXXXXXXXX, na cidade de XXXXXXXXXXXXX
                             inscrito(a) no CNPJ
-                            sob o nº {{ $processo->finalizacao->cnpj }}, neste ato representado(a) pelo(a)
-                            {{ $processo->finalizacao->responsavel }} inscrito no CPF sob n°
-                            {{ $processo->finalizacao->cpf_responsavel }}.
+                            sob o nº XXXXXXXXXXXXX, neste ato representado(a) pelo(a)
+                            XXXXXXXXXXXXX inscrito no CPF sob n°
+                            XXXXXXXXXXXXX.
                         </div>
                     </td>
                 </tr>
@@ -186,11 +186,11 @@
                     <td class="content">
                         <div style=" font-weight: bold; margin-bottom: 3px;">Contratado</div>
                         <div style="">
-                            {{ $processo->finalizacao->razao_social }}, inscrito(a) no CNPJ/MF sob o nº
-                            {{ $processo->finalizacao->cnpj_empresa_vencedora }}, sediado(a) na
-                            {{ $processo->finalizacao->endereco_empresa_vencedora }} neste
-                            ato representado(a) por {{ $processo->finalizacao->representante_legal_empresa }}, inscrito
-                            no CPF sob n° {{ $processo->finalizacao->cpf_representante }}.
+                           XXXXXXXXXXXXX, inscrito(a) no CNPJ/MF sob o nº
+                            XXXXXXXXXXXXX, sediado(a) na
+                            XXXXXXXXXXXXX neste
+                            ato representado(a) por XXXXXXXXXXXXX, inscrito
+                            no CPF sob n° XXXXXXXXXXXXX.
                         </div>
                     </td>
                 </tr>
@@ -480,6 +480,10 @@
             {{ $processo->prefeitura->cidade }},
             {{ \Carbon\Carbon::parse($dataSelecionada)->translatedFormat('d \d\e F \d\e Y') }}
         </div>
+        @php
+            // Verifica se a variável $assinantes existe e tem itens
+            $hasSelectedAssinantes = isset($assinantes) && count($assinantes) > 0;
+        @endphp
 
         @if ($hasSelectedAssinantes)
             {{-- Renderiza APENAS O PRIMEIRO assinante da lista --}}
@@ -563,7 +567,7 @@
                         CONTRATADO:
                     </td>
                     <td style="padding:6px;">
-                        {{ $processo->finalizacao->razao_social }}
+                        XXXXXXXXXXXXX
                     </td>
                 </tr>
 
@@ -573,7 +577,7 @@
                         CNPJ (CONTRATADO):
                     </td>
                     <td style="padding:6px;">
-                        {{ $processo->finalizacao->cnpj_empresa_vencedora }}
+                        XXXXXXXXXXXXX
                     </td>
                 </tr>
 
@@ -583,7 +587,7 @@
                         VALOR:
                     </td>
                     <td style="padding:6px;">
-                        {{ $processo->finalizacao->valor_total }}
+                        XXXXXXXXXXXXX
                     </td>
                 </tr>
 
@@ -645,7 +649,7 @@
                         ASSINATURA (CONTRATANTE):
                     </td>
                     <td style="padding:6px;">
-                        {{ $primeiroAssinante['responsavel'] }}
+                        XXXXXXXXXXXXX
                     </td>
                 </tr>
 
@@ -655,7 +659,7 @@
                         ASSINATURA (CONTRATADO):
                     </td>
                     <td style="padding:6px;">
-                        {{ $processo->finalizacao->representante_legal_empresa }}
+                        XXXXXXXXXXXXX
                     </td>
                 </tr>
 
@@ -665,7 +669,7 @@
                         DATA DA ASSINATURA:
                     </td>
                     <td style="padding:6px;">
-                        {{ $dataAssinaturaFormatada }}
+                        {{ \Carbon\Carbon::parse($dataSelecionada)->translatedFormat('d \d\e F \d\e Y') }}
                     </td>
                 </tr>
 

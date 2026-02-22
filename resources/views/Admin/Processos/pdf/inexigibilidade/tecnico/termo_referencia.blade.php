@@ -349,8 +349,7 @@
             <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 5. DA ESPECIFICAÇÃO DOS SERVIÇOS
         </p>
         <p style="text-align: justify;">
-            XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-            XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.
+            {{ $processo->detalhe->especificacao_servicos_imovel }}.
         </p>
 
         <p style="display: flex; align-items: center; font-weight: bold; ">
@@ -586,8 +585,8 @@
         <p style="text-align: justify;">
             13.1. A seleção do prestador de serviço foi realizada com base nos requisitos previstos
             neste termo de referência, atrelado a proposta vantajosa apresentada pelo(a)
-            contratado(a) XXXXXXXXXXXXXXXXX, inscrito(a) sob o CPF/CNPJ de n°
-            XXXXXXXXXXXX, conforme documentos acostados aos autos do processo.
+            contratado(a) {{ $processo->detalhe->razao_social }}, inscrito(a) sob o CPF/CNPJ de n°
+            {{ $processo->detalhe->cnpj_empresa_vencedora }}, conforme documentos acostados aos autos do processo.
             <br>
             13.2. O contratado(a) é notória em sua área de especialização, tendo cumprido todos os
             requisitos de habilitação exigidos, especialmente a habilitação jurídica, regularidade
@@ -598,8 +597,7 @@
             <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 14. DA RAZÃO E ESCOLHA DO CONTRATADO
         </p>
         <p style="text-align: justify;">
-            14.1. XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-            (JUSTIFICATIVA);
+            14.1. {{ $processo->detalhe->razao_escolha_contratado }}
         </p>
 
         <p style="display: flex; align-items: center; font-weight: bold; ">
@@ -618,8 +616,7 @@
         </p>
 
         <p style="display: flex; align-items: center; font-weight: bold; ">
-            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 16. OBRIGAÇÕES DO(A) CONTRATADO(A) (ADICIONAR CAIXA DE TEXTO PARA QUE
-            POSSA SER INSERIDO OUTRAS OBRIGAÇÕES EXTRAS)
+            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 16. OBRIGAÇÕES DO(A) CONTRATADO(A) 
         </p>
         <p style="text-align: justify;">
             Quando for contratação de assessorias ou consultorias técnicas e auditorias financeiras
@@ -732,9 +729,10 @@
             16.4. Os termos indicados na proposta vinculam a referida contratação;
         </p>
 
+        {!! $processo->detalhe->obrigacoes_contratado_extras !!}
+
         <p style="display: flex; align-items: center; font-weight: bold; ">
-            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 17. OBRIGAÇÕES DA CONTRATANTE (ADICIONAR CAIXA DE TEXTO PARA QUE POSSA
-            SER INSERIDO OUTRAS OBRIGAÇÕES EXTRAS)
+            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 17. OBRIGAÇÕES DA CONTRATANTE 
         </p>
         <p style="text-align: justify;">
             17.1. A CONTRATANTE obriga-se a:
@@ -814,6 +812,7 @@
             17.10. Verificar, no ato do recebimento, se o objeto entregue corresponde exatamente à
             marca/modelo/serviço contratado.
         </p>
+        {{ $processo->detalhe->obrigacoes_contratante_extras }}
 
         <p style="display: flex; align-items: center; font-weight: bold; ">
             <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 18. SUBCONTRATAÇÃO

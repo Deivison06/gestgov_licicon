@@ -153,7 +153,7 @@
 
     <div>
         <h4 style="text-align: center;">
-            CONTRATO Nº {{ $campos['numero_contrato'] }}
+            CONTRATO Nº xxxxxx
         </h4>
 
         <!-- Unidade Requisitante -->
@@ -166,12 +166,12 @@
                     <td class="content">
                         <div style=" font-weight: bold; margin-bottom: 3px;">Contratante</div>
                         <div style="">
-                            {{ $processo->finalizacao->orgao_responsavel }}, com sede no(a)
-                            {{ $processo->prefeitura->endereco }}, na cidade de {{ $processo->prefeitura->cidade }}
+                            XXXXXXXXXXXX, com sede no(a)
+                            XXXXXXXXXXXX, na cidade de XXXXXXXXXXXX
                             inscrito(a) no CNPJ
-                            sob o nº {{ $processo->finalizacao->cnpj }}, neste ato representado(a) pelo(a)
-                            {{ $processo->finalizacao->responsavel }} inscrito no CPF sob n°
-                            {{ $processo->finalizacao->cpf_responsavel }}.
+                            sob o nº XXXXXXXXXXXX, neste ato representado(a) pelo(a)
+                            XXXXXXXXXXXX inscrito no CPF sob n°
+                            XXXXXXXXXXXX.
                         </div>
                     </td>
                 </tr>
@@ -186,11 +186,11 @@
                     <td class="content">
                         <div style=" font-weight: bold; margin-bottom: 3px;">Contratado</div>
                         <div style="">
-                            {{ $processo->finalizacao->razao_social }}, inscrito(a) no CNPJ/MF sob o nº
-                            {{ $processo->finalizacao->cnpj_empresa_vencedora }}, sediado(a) na
-                            {{ $processo->finalizacao->endereco_empresa_vencedora }} neste
-                            ato representado(a) por {{ $processo->finalizacao->representante_legal_empresa }}, inscrito
-                            no CPF sob n° {{ $processo->finalizacao->cpf_representante }}.
+                            XXXXXXXXXXXX, inscrito(a) no CNPJ/MF sob o nº
+                            XXXXXXXXXXXX, sediado(a) na
+                            XXXXXXXXXXXX neste
+                            ato representado(a) por XXXXXXXXXXXX, inscrito
+                            no CPF sob n° XXXXXXXXXXXX.
                         </div>
                     </td>
                 </tr>
@@ -421,6 +421,10 @@
             {{ $processo->prefeitura->cidade }},
             {{ \Carbon\Carbon::parse($dataSelecionada)->translatedFormat('d \d\e F \d\e Y') }}
         </div>
+        @php
+            // Verifica se a variável $assinantes existe e tem itens
+            $hasSelectedAssinantes = isset($assinantes) && count($assinantes) > 0;
+        @endphp
 
         @if ($hasSelectedAssinantes)
             {{-- Renderiza APENAS O PRIMEIRO assinante da lista --}}
@@ -442,9 +446,9 @@
                 <div class="signature-block" style="display: inline-block; margin: 0 40px;">
                     ___________________________________<br>
                     <p style="line-height: 1.2;">
-                        {{ $processo->finalizacao->razao_social }} <br>
-                        {{ $processo->finalizacao->representante_legal_empresa }} <br>
-                        {{ $processo->finalizacao->cpf_representante }} <br>
+                        XXXXXXXXXXXXXXXXX <br>
+                        XXXXXXXXXXXXXXXXX <br>
+                        XXXXXXXXXXXXXXXXX <br>
                     </p>
                 </div>
             </div>
@@ -472,7 +476,7 @@
                 <!-- Cabeçalho -->
                 <tr>
                     <td colspan="2" style="padding:8px; text-align:center; font-weight:bold;">
-                        EXTRATO DO CONTRATO Nº {{ $campos['numero_extrato'] }}<br>
+                        EXTRATO DO CONTRATO Nº XXXXXXXX<br>
                         PROCESSO ADMINISTRATIVO Nº {{ $processo->numero_processo }}<br>
                         MODALIDADE: CONCORRÊNCIA ELETRÔNICA Nº {{ $processo->numero_procedimento }}
                     </td>
@@ -504,7 +508,7 @@
                         CONTRATADO:
                     </td>
                     <td style="padding:6px;">
-                        {{ $processo->finalizacao->razao_social }}
+                        XXXXXXXXXXXX
                     </td>
                 </tr>
 
@@ -514,7 +518,7 @@
                         CNPJ (CONTRATADO):
                     </td>
                     <td style="padding:6px;">
-                        {{ $processo->finalizacao->cnpj_empresa_vencedora }}
+                        XXXXXXXXXXXX
                     </td>
                 </tr>
 
@@ -524,7 +528,7 @@
                         VALOR:
                     </td>
                     <td style="padding:6px;">
-                        {{ $processo->finalizacao->valor_total }}
+                        XXXXXXXXXXXX
                     </td>
                 </tr>
 
@@ -596,7 +600,7 @@
                         ASSINATURA (CONTRATADO):
                     </td>
                     <td style="padding:6px;">
-                        {{ $processo->finalizacao->representante_legal_empresa }}
+                        XXXXXXXXXXXX
                     </td>
                 </tr>
 
@@ -606,7 +610,7 @@
                         DATA DA ASSINATURA:
                     </td>
                     <td style="padding:6px;">
-                        {{ $dataAssinaturaFormatada }}
+                        {{ \Carbon\Carbon::parse($dataSelecionada)->translatedFormat('d \d\e F \d\e Y') }}
                     </td>
                 </tr>
 

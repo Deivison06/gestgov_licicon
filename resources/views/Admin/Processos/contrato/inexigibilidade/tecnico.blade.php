@@ -186,11 +186,11 @@
                     <td class="content">
                         <div style=" font-weight: bold; margin-bottom: 3px;">Contratado</div>
                         <div style="">
-                            {{ $processo->finalizacao->razao_social }}, inscrito(a) no CNPJ/MF sob o nº
-                            {{ $processo->finalizacao->cnpj_empresa_vencedora }}, sediado(a) na
-                            {{ $processo->finalizacao->endereco_empresa_vencedora }} neste
-                            ato representado(a) por {{ $processo->finalizacao->representante_legal_empresa }}, inscrito
-                            no CPF sob n° {{ $processo->finalizacao->cpf_representante }}.
+                            XXXXXXXXXXXXXXXXX, inscrito(a) no CNPJ/MF sob o nº
+                            XXXXXXXXXXXXXXXXX, sediado(a) na
+                            XXXXXXXXXXXXXXXXX neste
+                            ato representado(a) por XXXXXXXXXXXXXXXXX, inscrito
+                            no CPF sob n° XXXXXXXXXXXXXXXXX.
                         </div>
                     </td>
                 </tr>
@@ -480,6 +480,10 @@
             {{ $processo->prefeitura->cidade }},
             {{ \Carbon\Carbon::parse($dataSelecionada)->translatedFormat('d \d\e F \d\e Y') }}
         </div>
+        @php
+            // Verifica se a variável $assinantes existe e tem itens
+            $hasSelectedAssinantes = isset($assinantes) && count($assinantes) > 0;
+        @endphp
 
         @if ($hasSelectedAssinantes)
             {{-- Renderiza APENAS O PRIMEIRO assinante da lista --}}
@@ -501,9 +505,9 @@
                 <div class="signature-block" style="display: inline-block; margin: 0 40px;">
                     ___________________________________<br>
                     <p style="line-height: 1.2;">
-                        {{ $processo->finalizacao->razao_social }} <br>
-                        {{ $processo->finalizacao->representante_legal_empresa }} <br>
-                        {{ $processo->finalizacao->cpf_representante }} <br>
+                        XXXXXXXXXXXXXXXXX <br>
+                        XXXXXXXXXXXXXXXXX <br>
+                        XXXXXXXXXXXXXXXXX <br>
                     </p>
                 </div>
             </div>
@@ -563,7 +567,7 @@
                         CONTRATADO:
                     </td>
                     <td style="padding:6px;">
-                        {{ $processo->finalizacao->razao_social }}
+                        XXXXXXXXXXXXXXXXX
                     </td>
                 </tr>
 
@@ -573,7 +577,7 @@
                         CNPJ (CONTRATADO):
                     </td>
                     <td style="padding:6px;">
-                        {{ $processo->finalizacao->cnpj_empresa_vencedora }}
+                        XXXXXXXXXXXXXXXXX
                     </td>
                 </tr>
 
@@ -583,7 +587,7 @@
                         VALOR:
                     </td>
                     <td style="padding:6px;">
-                        {{ $processo->finalizacao->valor_total }}
+                        XXXXXXXXXXXXXXXXX
                     </td>
                 </tr>
 
@@ -665,7 +669,7 @@
                         DATA DA ASSINATURA:
                     </td>
                     <td style="padding:6px;">
-                        {{ $dataAssinaturaFormatada }}
+                        {{ \Carbon\Carbon::parse($dataSelecionada)->translatedFormat('d \d\e F \d\e Y') }}
                     </td>
                 </tr>
 

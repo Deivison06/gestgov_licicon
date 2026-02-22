@@ -85,7 +85,18 @@ class ProcessoDetalhe extends Model
         'agente_contratacao',
         'encaminhamento_elaborar_projeto_basico',
         'info_extras',
-        'exige_atestado'
+        'exige_atestado',
+
+        'razao_social',
+        'cnpj_empresa_vencedora',
+        'endereco_empresa_vencedora',
+        'representante_legal_empresa',
+        'cpf_representante',
+        'valor_total',
+        'especificacao_servicos_imovel',
+        'razao_escolha_contratado',
+        'obrigacoes_contratado_extras',
+        'obrigacoes_contratante_extras'
     ];
 
     protected $casts = [

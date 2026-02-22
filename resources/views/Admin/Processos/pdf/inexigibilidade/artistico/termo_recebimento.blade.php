@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Minutas - Processo {{ $processo->numero_processo ?? $processo->id }}</title>
+    <title>TERMO DE RECEBIMENTO - Processo {{ $processo->numero_processo ?? $processo->id }}</title>
     <style type="text/css">
          @font-face {
             font-family: 'Aptos';
@@ -120,7 +120,7 @@
     <div id="cover-page">
         <img src="{{ public_path('icons/capa-documento.png') }}" alt="Martelo da Justiça" class="cover-image">
         <div class="cover-title">
-            ABERTURA DA FASE EXTERNA
+            TERMO DE RECEBIMENTO
         </div>
     </div>
 
