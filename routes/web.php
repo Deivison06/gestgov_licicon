@@ -12,6 +12,9 @@ use App\Http\Controllers\ContratoProcessoController;
 use App\Http\Controllers\FinalizacaoProcessoController;
 use App\Http\Controllers\AtaController;
 use App\Http\Controllers\ContratoManualController; // Adicionado
+use App\Http\Controllers\EtpController;
+use App\Http\Controllers\EtpItemController;
+use App\Http\Controllers\AdminEtpController;
 
 // Rotas de perfil (usuário logado)
 Route::middleware('auth')->group(function () {
@@ -24,6 +27,36 @@ Route::middleware('auth')->group(function () {
 Route::get('/', [PrefeituraController::class, 'dashboard'])
     ->middleware(['auth', 'verified'])
     ->name('admin.dashboard');
+
+// ================================================
+// ETP INTELIGENTE (Secretário e Admin)
+// ================================================
+Route::prefix('admin/etps')->name('admin.etps.')->middleware(['auth', 'verified'])->group(function () {
+    // Secretário
+    Route::get('/', [EtpController::class, 'index'])->name('index');
+    Route::get('/create', [EtpController::class, 'create'])->name('create');
+    Route::post('/', [EtpController::class, 'store'])->name('store');
+    Route::get('/{etp}', [EtpController::class, 'show'])->name('show');
+});
+
+// Admin ETPs Recebidos
+Route::prefix('admin/etps-recebidos')->name('admin.etps_recebidos.')->middleware(['auth', 'verified'])->group(function () {
+    Route::get('/', [AdminEtpController::class, 'index'])->name('index');
+    Route::get('/{etp}', [AdminEtpController::class, 'show'])->name('show');
+    Route::put('/{etp}/status', [AdminEtpController::class, 'alterarStatus'])->name('status');
+    Route::post('/{etp}/processo', [AdminEtpController::class, 'vincularProcesso'])->name('processo');
+});
+
+// Admin Itens ETP
+Route::prefix('admin/etp-itens')->name('admin.etp_itens.')->middleware(['auth', 'verified'])->group(function () {
+    Route::get('/', [EtpItemController::class, 'index'])->name('index');
+    Route::get('/create', [EtpItemController::class, 'create'])->name('create');
+    Route::post('/', [EtpItemController::class, 'store'])->name('store');
+    Route::post('/importar-excel', [EtpItemController::class, 'importarExcel'])->name('importar_excel');
+    Route::get('/{item}/edit', [EtpItemController::class, 'edit'])->name('edit');
+    Route::put('/{item}', [EtpItemController::class, 'update'])->name('update');
+    Route::delete('/{item}', [EtpItemController::class, 'destroy'])->name('destroy');
+});
 
 // ================================================
 // GRUPO ADMIN
