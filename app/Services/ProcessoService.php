@@ -24,7 +24,14 @@ class ProcessoService
         'anexo_pdf_publicacoes',
         'itens_especificaca_quantitativos_xml',
         'anexo_pdf_minuta_contrato',
-        'projeto_basico_pdf'
+        'projeto_basico_pdf',
+        // Campos de Contrato
+        'numero_contrato',
+        'data_assinatura_contrato',
+        'numero_extrato',
+        'comarca',
+        'fonte_recurso',
+        'subcontratacao'
     ];
 
     protected array $arquivosConfig = [
@@ -61,6 +68,33 @@ class ProcessoService
         $detalhe->processo_id = $processo->id;
 
         $this->processarArquivos($data, $detalhe);
+        
+        // Tratar dados do contrato caso seja Inexigibilidade
+        if ($processo->modalidade === \App\Enums\ModalidadeEnum::INEXIGIBILIDADE) {
+            $dadosContrato = [];
+            $camposContrato = [
+                'numero_contrato',
+                'data_assinatura_contrato',
+                'numero_extrato',
+                'comarca',
+                'fonte_recurso',
+                'subcontratacao'
+            ];
+
+            foreach ($camposContrato as $campo) {
+                if (isset($data[$campo])) {
+                    $dadosContrato[$campo] = $data[$campo];
+                }
+            }
+
+            if (!empty($dadosContrato)) {
+                $dadosContrato['processo_id'] = $processo->id;
+                \App\Models\Contrato::updateOrCreate(
+                    ['processo_id' => $processo->id],
+                    $dadosContrato
+                );
+            }
+        }
 
         foreach ($data as $field => $value) {
             if (!in_array($field, $this->excludedFields)) {

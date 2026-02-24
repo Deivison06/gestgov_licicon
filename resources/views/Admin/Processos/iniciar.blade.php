@@ -444,6 +444,126 @@
         </div>
     </div>
 
+    <!-- Seção de Dados do Contrato (Apenas Inexigibilidade) -->
+    @if($processo->modalidade === \App\Enums\ModalidadeEnum::INEXIGIBILIDADE)
+        <div class="mb-8">
+            <div class="overflow-hidden bg-white border border-gray-100 shadow-sm rounded-2xl">
+                <!-- Header -->
+                <div class="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
+                    <h3 class="text-lg font-semibold text-gray-800">Dados Gerais do Contrato</h3>
+                    <p class="mt-1 text-sm text-gray-500">Informações exclusivas que serão salvas e usadas na geração do contrato de inexigibilidade.</p>
+                </div>
+
+                <!-- Formulário de Contrato -->
+                <div class="p-6">
+                    <form action="{{ route('admin.processos.detalhes.store', $processo) }}"
+                          method="POST"
+                          x-data="formField({{ json_encode(array_merge($processo->detalhe ? $processo->detalhe->toArray() : [], $contrato_iniciar ? $contrato_iniciar->toArray() : [])) }})"
+                          @submit.prevent="submitForm">
+                        @csrf
+                        <input type="hidden" name="processo_id" value="{{ $processo->id }}">
+
+                        <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                            
+                            <!-- Número do Contrato -->
+                            <div>
+                                <label for="numero_contrato" class="flex items-center gap-2 mb-2 text-sm font-semibold text-gray-800">
+                                    Número do Contrato
+                                    <template x-if="confirmed.numero_contrato">
+                                        <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    </template>
+                                </label>
+                                <div class="relative">
+                                    <input type="text" id="numero_contrato" name="numero_contrato" x-model="numero_contrato" @blur="saveField('numero_contrato')"
+                                           class="w-full px-4 py-3 text-sm transition-colors border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50 hover:bg-white focus:bg-white"
+                                           placeholder="Ex: 001/2026">
+                                </div>
+                            </div>
+
+                            <!-- Data de Assinatura -->
+                            <div>
+                                <label for="data_assinatura_contrato" class="flex items-center gap-2 mb-2 text-sm font-semibold text-gray-800">
+                                    Data de Assinatura
+                                    <template x-if="confirmed.data_assinatura_contrato">
+                                        <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    </template>
+                                </label>
+                                <div class="relative">
+                                    <input type="date" id="data_assinatura_contrato" name="data_assinatura_contrato" x-model="data_assinatura_contrato" @blur="saveField('data_assinatura_contrato')"
+                                           class="w-full px-4 py-3 text-sm transition-colors border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50 hover:bg-white focus:bg-white">
+                                </div>
+                            </div>
+
+                            <!-- Número do Extrato -->
+                            <div>
+                                <label for="numero_extrato" class="flex items-center gap-2 mb-2 text-sm font-semibold text-gray-800">
+                                    Número do Extrato
+                                    <template x-if="confirmed.numero_extrato">
+                                        <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    </template>
+                                </label>
+                                <div class="relative">
+                                    <input type="text" id="numero_extrato" name="numero_extrato" x-model="numero_extrato" @blur="saveField('numero_extrato')"
+                                           class="w-full px-4 py-3 text-sm transition-colors border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50 hover:bg-white focus:bg-white"
+                                           placeholder="Ex: 12345/2026">
+                                </div>
+                            </div>
+
+                            <!-- Comarca -->
+                            <div>
+                                <label for="comarca" class="flex items-center gap-2 mb-2 text-sm font-semibold text-gray-800">
+                                    Comarca
+                                    <template x-if="confirmed.comarca">
+                                        <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    </template>
+                                </label>
+                                <div class="relative">
+                                    <input type="text" id="comarca" name="comarca" x-model="comarca" @blur="saveField('comarca')"
+                                           class="w-full px-4 py-3 text-sm transition-colors border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50 hover:bg-white focus:bg-white"
+                                           placeholder="Ex: Vara Cível">
+                                </div>
+                            </div>
+
+                            <!-- Fonte de Recurso -->
+                            <div>
+                                <label for="fonte_recurso" class="flex items-center gap-2 mb-2 text-sm font-semibold text-gray-800">
+                                    Fonte de Recurso
+                                    <template x-if="confirmed.fonte_recurso">
+                                        <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    </template>
+                                </label>
+                                <div class="relative">
+                                    <input type="text" id="fonte_recurso" name="fonte_recurso" x-model="fonte_recurso" @blur="saveField('fonte_recurso')"
+                                           class="w-full px-4 py-3 text-sm transition-colors border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50 hover:bg-white focus:bg-white"
+                                           placeholder="Ex: Recursos Próprios">
+                                </div>
+                            </div>
+
+                            <!-- Subcontratação -->
+                            <div>
+                                <label for="subcontratacao" class="flex items-center gap-2 mb-2 text-sm font-semibold text-gray-800">
+                                    Subcontratação
+                                    <template x-if="confirmed.subcontratacao">
+                                        <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    </template>
+                                </label>
+                                <div class="relative">
+                                    <select id="subcontratacao" name="subcontratacao" x-model="subcontratacao" @blur="saveField('subcontratacao')"
+                                            class="w-full px-4 py-3 text-sm transition-colors border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50 hover:bg-white focus:bg-white">
+                                        <option value="">Selecione...</option>
+                                        <option value="sim">Sim</option>
+                                        <option value="nao">Não</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    @endif
+
     @include('Admin.Processos.modais.republicar_edital')
 
     <script>
@@ -911,7 +1031,7 @@
                 }
             };
 
-            const datetimeFields = ['data_hora', 'data_hora_limite_edital', 'data_hora_fase_edital'];
+            const datetimeFields = ['data_hora', 'data_hora_limite_edital', 'data_hora_fase_edital', 'prazo_inicio_prestacao_servico', 'prazo_final_prestacao_servico'];
             const initialData = {};
 
             datetimeFields.forEach(field => {
@@ -1002,6 +1122,25 @@
                 data_hora_limite_edital: existing?.data_hora_limite_edital ?? '',
                 data_hora_fase_edital: existing?.data_hora_fase_edital ?? '',
 
+                // Campos de Contrato
+                numero_contrato: existing?.numero_contrato ?? '',
+                data_assinatura_contrato: existing?.data_assinatura_contrato ?? '',
+                numero_extrato: existing?.numero_extrato ?? '',
+                comarca: existing?.comarca ?? '',
+                fonte_recurso: existing?.fonte_recurso ?? '',
+                subcontratacao: existing?.subcontratacao ?? '',
+
+                // Campos de Imóvel
+                orgao_responsavel: existing?.orgao_responsavel ?? '',
+                cnpj: existing?.cnpj ?? '',
+                endereco: existing?.endereco ?? '',
+                responsavel: existing?.responsavel ?? '',
+                cpf_responsavel: existing?.cpf_responsavel ?? '',
+                endereco_imovel: existing?.endereco_imovel ?? '',
+                prazo_inicio_prestacao_servico: existing?.prazo_inicio_prestacao_servico ?? '',
+                prazo_final_prestacao_servico: existing?.prazo_final_prestacao_servico ?? '',
+                valor_mensal: existing?.valor_mensal ?? '',
+
                 confirmed: {
                     secretaria: !!existing?.secretaria,
                     unidade_setor: !!existing?.unidade_setor,
@@ -1078,7 +1217,25 @@
                     representante_legal_empresa: !!existing?.representante_legal_empresa,
                     cpf_representante: !!existing?.cpf_representante,
                     valor_total: !!existing?.valor_total,
+                    
+                    // Contrato confirmed state
+                    numero_contrato: !!existing?.numero_contrato,
+                    data_assinatura_contrato: !!existing?.data_assinatura_contrato,
+                    numero_extrato: !!existing?.numero_extrato,
+                    comarca: !!existing?.comarca,
+                    fonte_recurso: !!existing?.fonte_recurso,
+                    subcontratacao: !!existing?.subcontratacao,
 
+                    // Campos de Imóvel confirmed state
+                    orgao_responsavel: !!existing?.orgao_responsavel,
+                    cnpj: !!existing?.cnpj,
+                    endereco: !!existing?.endereco,
+                    responsavel: !!existing?.responsavel,
+                    cpf_responsavel: !!existing?.cpf_responsavel,
+                    endereco_imovel: !!existing?.endereco_imovel,
+                    prazo_inicio_prestacao_servico: !!existing?.prazo_inicio_prestacao_servico,
+                    prazo_final_prestacao_servico: !!existing?.prazo_final_prestacao_servico,
+                    valor_mensal: !!existing?.valor_mensal,
                 },
 
                 init() {

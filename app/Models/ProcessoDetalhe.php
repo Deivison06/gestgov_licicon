@@ -87,6 +87,16 @@ class ProcessoDetalhe extends Model
         'info_extras',
         'exige_atestado',
 
+        'orgao_responsavel',
+        'cnpj',
+        'endereco',
+        'responsavel',
+        'cpf_responsavel',
+        'endereco_imovel',
+        'prazo_inicio_prestacao_servico',
+        'prazo_final_prestacao_servico',
+        'valor_mensal',
+
         'razao_social',
         'cnpj_empresa_vencedora',
         'endereco_empresa_vencedora',

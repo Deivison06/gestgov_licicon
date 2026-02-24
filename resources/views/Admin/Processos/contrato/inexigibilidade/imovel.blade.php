@@ -157,20 +157,20 @@
         </h4>
 
         <p style="text-align: justify">
-            O Prefeitura Municipal de XXXXXXX, com sede no(a) XXXXXXXXXXXXXXXXXXX, inscrito(a) no CNPJ sob o nº XXXXXXXXXX, neste ato representado(a) pelo(a) XXXXXXXXXXXXXXXXXXX, inscrito no CPF nº XXXXXXXX, doravante designado simplesmente LOCATÁRIO, e do outro lado da avença, XXXXXXXXXXXXXX, inscrito no CPF nº XXXXXXXX, doravante denominada LOCADOR, celebram o presente CONTRATO DE LOCAÇÃO de Imóvel, mediante as seguintes cláusulas e condições que se seguem: 
+            O Prefeitura Municipal de {{ $processo->prefeitura->cidade }}, com sede no(a) {{ $processo->detalhe->endereco }}, inscrito(a) no CNPJ sob o nº {{ $processo->prefeitura->cnpj }}, neste ato representado(a) pelo(a) {{ $processo->detalhe->responsavel }} inscrito no CPF nº {{ $processo->detalhe->cpf_responsavel }}, doravante designado simplesmente LOCATÁRIO, e do outro lado da avença, {{ $processo->detalhe->razao_social }}, inscrito no CPF nº {{ $processo->detalhe->cpf_empresa_vencedora }}, doravante denominada LOCADOR, celebram o presente CONTRATO DE LOCAÇÃO de Imóvel, mediante as seguintes cláusulas e condições que se seguem: 
         </p>
         
         <h6>
              FUNDAMENTO DO CONTRATO:
         </h6>
         <p style="text-align: justify">
-            Este contrato decorre do Processo Inexigibilidade XXXXX/202X sendo autorizado pelo fundamentado em inexigibilidade de licitação, na forma do disposto no Artigo 74, V, da Lei Federal n° 14.133, de 1º de abril de 2021 e na Lei Federal n. 8.245/1991 e suas alterações posteriores, mediante as seguintes cláusulas e condições: 
+            Este contrato decorre do Processo Inexigibilidade {{ $processo->numero_procedimento }}sendo autorizado pelo fundamentado em inexigibilidade de licitação, na forma do disposto no Artigo 74, V, da Lei Federal n° 14.133, de 1º de abril de 2021 e na Lei Federal n. 8.245/1991 e suas alterações posteriores, mediante as seguintes cláusulas e condições: 
         </p>
         <h6>
              1. CLÁUSULA PRIMEIRA – DO OBJETO.
         </h6>
         <p style="text-align: justify">
-            1.1 Constitui objeto do presente contrato a XXXXXXXXXXXXXXXXXXXXX, de propriedade de XXXXXXXXXXXXXX.
+            1.1 Constitui objeto do presente contrato a {!! strip_tags($processo->objeto) !!}, de propriedade de {{ $processo->detalhe->orgao_responsavel }}.
         </p>
         <h6>
              2. CLÁUSULA SEGUNDA – DOS DEVERES E RESPONSABILIDADES DO LOCADOR. 
@@ -260,7 +260,7 @@
              5. CLÁUSULA QUINTA – DO PRAZO, PRORROGAÇÃO E RESTITUIÇÃO.
         </h6>
         <p style="text-align: justify">
-            <br>5.1 O prazo do presente Contrato será de XXXXXXXXX, nos termos do art. 3° da Lei n. 8.245/91 a contar da data de sua assinatura.
+            <br>5.1 O prazo do presente Contrato será de {{ $textoVigenciaTabela }}, nos termos do art. 3° da Lei n. 8.245/91 a contar da data de sua assinatura.
             <br>5.2 Os efeitos financeiros da contratação só terão início a partir da data da entrega das chaves, que deverá ser precedida da assinatura do Termo de Vistoria do imóvel por ambas as partes.
             <br>5.3 O prazo de vigência poderá ser prorrogado, enquanto houver necessidade pública, por consenso entre as partes e mediante Termo Aditivo.
             <br>5.4 A prorrogação do prazo de vigência dependerá da comprovação pelo LOCATÁRIO de que o imóvel satisfaz os interesses estatais, da compatibilidade do valor de mercado e da anuência expressa do LOCADOR, mediante assinatura do termo aditivo.
@@ -271,7 +271,7 @@
               6. CLÁUSULA SEXTA – DO PREÇO E DA FORMA DE PAGAMENTO.
         </h6>
         <p style="text-align: justify">
-            <br>6.1 O MUNICÍPIO pagará ao LOCADOR o aluguel mensal no valor de R$ XXXXXXXXXXXXXX, perfazendo o valor global de R$ XXXXXXXXXXXXX.
+            <br>6.1 O MUNICÍPIO pagará ao LOCADOR o aluguel mensal no valor de R$ {{ $processo->detalhes->valor_mensal }}, perfazendo o valor global de R$ {{ $processo->detalhes->valor_total }}.
             <br>6.2 O pagamento será efetuado, até o 10° (décimo) dia útil subsequente ao do vencimento, por meio de Ordem de Pagamento.
             <br>6.2.2 Sobre os valores das faturas não quitadas na data de seus respectivos vencimentos, incidirá juros de 0,5% (meio por cento) a.m., desde que solicitado pelo LOCADOR mediante comunicação escrita à Administração, constituindo-se por este ato a mora.
             <br>6.3 As despesas ordinárias do condomínio, bem como os encargos locatícios incidentes sobre o imóvel (água e esgoto, energia elétrica etc.), cujo pagamento tenha sido atribuído contratualmente ao LOCATÁRIO, serão suportadas proporcionalmente, em regime de rateio, a partir da data da efetiva ocupação do imóvel.
@@ -291,7 +291,7 @@
              8. CLÁUSULA OITAVA – DA DOTAÇÃO ORÇAMENTÁRIA.
         </h6>
         <p style="text-align: justify">
-            8. 1 A presente despesa correrá à conta da Dotação Orçamentária: XXXXXXXXXXXXXXXXXXXXXX.
+            8. 1 A presente despesa correrá à conta da Dotação Orçamentária: {!! strip_tags($processo->detalhe->dotacao_orcamentaria) !!}.
         </p>
         <h6>
              9. CLÁUSULA NONA – DA FISCALIZAÇÃO.
@@ -395,7 +395,7 @@
              16. CLÁUSULA DÉCIMA OITAVA – DO FORO.
         </h6>
         <p style="text-align: justify">
-            16.1 Fica eleito o foro do Município de XXXXXXXXX, com renúncia expressa a qualquer outro, por mais privilegiado que seja ou venha se tornar, para dirimir quaisquer questões que possam advir do presente Contrato.
+            16.1 Fica eleito o foro do Município de {{ $processo->prefeitura->cidade }}, com renúncia expressa a qualquer outro, por mais privilegiado que seja ou venha se tornar, para dirimir quaisquer questões que possam advir do presente Contrato.
             <br>
             E assim, por estarem assim justas e acordadas, após lido e achado conforme, as partes assinam o presente instrumento, em 03 (três) vias de igual teor e forma para um só efeito legal, na presença das testemunhas abaixo nominadas. 
         </p>
@@ -461,9 +461,9 @@
                 <!-- Cabeçalho -->
                 <tr>
                     <td colspan="2" style="padding:8px; text-align:center; font-weight:bold;">
-                        EXTRATO DO CONTRATO Nº {{ $campos['numero_extrato'] }}<br>
+                        EXTRATO DO CONTRATO Nº {{ $processo->contrato->numero_extrato }}<br>
                         PROCESSO ADMINISTRATIVO Nº {{ $processo->numero_processo }}<br>
-                        MODALIDADE: CONCORRÊNCIA ELETRÔNICA Nº {{ $processo->numero_procedimento }}
+                        MODALIDADE: INEXIGIBILIDADE DE LICITAÇÃO Nº {{ $processo->numero_procedimento }}
                     </td>
                 </tr>
 
@@ -513,7 +513,7 @@
                         VALOR:
                     </td>
                     <td style="padding:6px;">
-                        {{ $processo->finalizacao->valor_total }}
+                        {{ number_format($processo->detalhe->valor_total, 2, ',', '.') }}
                     </td>
                 </tr>
 

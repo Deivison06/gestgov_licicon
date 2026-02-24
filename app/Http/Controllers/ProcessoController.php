@@ -215,8 +215,13 @@ class ProcessoController extends Controller
         }
 
         $documentos = $this->documentoService->getDocumentosPorModalidade($processo);
+        
+        $contrato_iniciar = null;
+        if ($processo->modalidade === \App\Enums\ModalidadeEnum::INEXIGIBILIDADE) {
+            $contrato_iniciar = \App\Models\Contrato::where('processo_id', $processo->id)->first();
+        }
 
-        return view('Admin.Processos.iniciar', compact('processo', 'documentos'));
+        return view('Admin.Processos.iniciar', compact('processo', 'documentos', 'contrato_iniciar'));
     }
 
     public function storeDetalhe(Request $request, Processo $processo)

@@ -203,12 +203,22 @@ class ProcessoDocumentoService
             'cor' => '#0284C7', // azul céu
             'data_id' => 'data_termo_juntada',
             'campos' => [
+                'orgao_responsavel',
+                'cnpj',
+                'endereco',
+                'responsavel',
+                'cpf_responsavel',
                 'razao_social',
                 'cnpj_empresa_vencedora',
                 'endereco_empresa_vencedora',
                 'representante_legal_empresa',
                 'cpf_representante',
-                'valor_total',
+                'valor_total',        
+                'endereco_imovel',
+                'prazo_inicio_prestacao_servico',
+                'prazo_final_prestacao_servico',
+                'valor_mensal',
+
             ],
         ],
         'demonstracao_servico_tecnico_singular' => [

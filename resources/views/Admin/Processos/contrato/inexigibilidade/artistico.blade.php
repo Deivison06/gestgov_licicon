@@ -153,7 +153,7 @@
 
     <div>
         <h4 style="text-align: center;">
-            CONTRATO Nº xxxxxx
+            CONTRATO Nº {{ $processo->contrato->numero_contrato}}
         </h4>
 
         <!-- Unidade Requisitante -->
@@ -166,12 +166,12 @@
                     <td class="content">
                         <div style=" font-weight: bold; margin-bottom: 3px;">Contratante</div>
                         <div style="">
-                            XXXXXXXXXXXX, com sede no(a)
-                            XXXXXXXXXXXX, na cidade de XXXXXXXXXXXX
+                            {{ $processo->prefeitura->nome }}, com sede no(a)
+                            {{ $processo->prefeitura->endereco }}, na cidade de {{ $processo->prefeitura->cidade }}
                             inscrito(a) no CNPJ
-                            sob o nº XXXXXXXXXXXX, neste ato representado(a) pelo(a)
-                            XXXXXXXXXXXX inscrito no CPF sob n°
-                            XXXXXXXXXXXX.
+                            sob o nº {{ $processo->prefeitura->cnpj }}, neste ato representado(a) pelo(a)
+                            {{ $primeiroAssinante['responsavel'] }} inscrito no CPF sob n°
+                            {{ $primeiroAssinante['cpf'] }}.
                         </div>
                     </td>
                 </tr>
@@ -186,11 +186,11 @@
                     <td class="content">
                         <div style=" font-weight: bold; margin-bottom: 3px;">Contratado</div>
                         <div style="">
-                            XXXXXXXXXXXX, inscrito(a) no CNPJ/MF sob o nº
-                            XXXXXXXXXXXX, sediado(a) na
-                            XXXXXXXXXXXX neste
-                            ato representado(a) por XXXXXXXXXXXX, inscrito
-                            no CPF sob n° XXXXXXXXXXXX.
+                            {{ $processo->detalhe->razao_social}}, inscrito(a) no CNPJ/MF sob o nº
+                            {{ $processo->detalhe->cnpj_empresa_vencedora}}, sediado(a) na
+                            {{ $processo->detalhe->endereco_empresa_vencedora}} neste
+                            ato representado(a) por {{ $processo->detalhe->representante_legal_empresa}}, inscrito
+                            no CPF sob n° {{ $processo->detalhe->cpf_representante}}.
                         </div>
                     </td>
                 </tr>
@@ -198,9 +198,9 @@
         </div>
 
         <p style="text-align: justify;">
-            Tendo em vista o que consta no Processo administrativo n° XXX/202X e em observância às disposições da Lei
+            Tendo em vista o que consta no Processo administrativo n° {{ $processo->numero_processo }} e em observância às disposições da Lei
             n° 14.133, de 2021 e na Lei n° 8.078, de 1990 - Código de Defesa do Consumidor, resolvem celebrar o
-            presente Termo de Contrato, decorrente da Inexigibilidade de licitação n° XXX/2025, mediante as cláusulas e
+            presente Termo de Contrato, decorrente da Inexigibilidade de licitação n° {{ $processo->numero_procedimento }}, mediante as cláusulas e
             condições a seguir enunciadas.
         </p>
 
@@ -209,10 +209,18 @@
                  alt="DESCRIÇÃO DA NECESSIDADE">
             <h4 style="display: inline-block; margin: 0 0 0 10px; vertical-align: middle;">1. CLÁUSULA PRIMEIRA – DO OBJETO E REGIME DE EXECUÇÃO</h4>
         </div>
+        @php
+            $inicio = \Carbon\Carbon::parse($processo->detalhe->prazo_inicio_prestacao_servico);
+            $fim = \Carbon\Carbon::parse($processo->detalhe->prazo_final_prestacao_servico);
+
+            $duracaoMinutos = $inicio->diffInMinutes($fim);
+        @endphp
+
+         e terá duração de {{ $duracaoMinutos }} minutos.
         <p style="text-align: justify;">
             1.1. O objeto do presente Termo de contrato é a
-            XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX, com previsão do horário de início às
-            XXhXXmin e terá duração de XhXXmin. <br>
+            {!! strip_tags($processo->objeto) !!}, com previsão do horário de início às
+            {{ $inicio->format('H:i') }} e terá duração de {{ $duracaoMinutos }} minutos. <br>
             1.2. Todos os termos do Termo de Referência e da proposta da contratada integram o presente contrato em
             todas as suas condições.
         </p>
@@ -224,8 +232,8 @@
         </div>
         <p style="text-align: justify;">
             2.1. Os serviços serão executados em conformidade com a proposta apresentada pela CONTRATADA, vez
-            compõe, em todos os seus termos, o processo administrativo n° XXX/202X e inexigibilidade de licitação
-            XXX/202X.
+            compõe, em todos os seus termos, o processo administrativo n° {{ $processo->numero_processo }} e inexigibilidade de licitação
+            {{ $processo->numero_procedimento }}.
         </p>
 
         <div style="margin-bottom: 20px;">
@@ -234,8 +242,8 @@
             <h4 style="display: inline-block; margin: 0 0 0 10px; vertical-align: middle;">3. CLÁUSULA TERCEIRA - DO PRAZO</h4>
         </div>
         <p style="text-align: justify;">
-            3.1. O prazo de vigência deste Termo de Contrato tem início na data de XX/XX/202X e encerramento em
-            XX/XX/XXXX, sendo que em caso de eventual necessidade de prorrogação, decorrente de acordo entre as
+            3.1. O prazo de vigência deste Termo de Contrato tem início na data de {{ \Carbon\Carbon::parse($processo->detalhe->prazo_inicio_prestacao_servico)->format('d/m/Y') }} e encerramento em
+            {{ \Carbon\Carbon::parse($processo->detalhe->prazo_final_prestacao_servico)->format('d/m/Y') }}, sendo que em caso de eventual necessidade de prorrogação, decorrente de acordo entre as
             partes, será formalizado o respectivo Aditivo contratual.
         </p>
 
@@ -245,7 +253,7 @@
             <h4 style="display: inline-block; margin: 0 0 0 10px; vertical-align: middle;">4. CLÁUSULA QUARTA - DO PREÇO E FORMA DE PAGAMENTO</h4>
         </div>
         <p style="text-align: justify;">
-            4.1. O valor do presente Termo de Contrato é de R$ XXXXXXXXXXXX;
+            4.1. O valor do presente Termo de Contrato é de R$ {{ number_format($processo->detalhe->valor_total, 2, ',', '.') }};
             4.2. No valor acima estão incluídas todas as despesas ordinárias diretas e indiretas decorrentes da execução
             contratual, inclusive tributos e/ou impostos, encargos sociais, trabalhistas, previdenciários, fiscais e comerciais
             incidentes, taxa de administração, frete, seguro e outros necessários ao cumprimento integral do objeto da
@@ -261,7 +269,7 @@
             <h4 style="display: inline-block; margin: 0 0 0 10px; vertical-align: middle;">5. CLÁUSULA QUINTA - DA DOTAÇÃO ORÇAMENTÁRIA</h4>
         </div>
         <p style="text-align: justify;">
-            5.1. A Dotação orçamentária que correrá tal despesa é: XXXXXXXXXXXXXXX, conforme disposto na Lei de meios vigente.
+            5.1. A Dotação orçamentária que correrá tal despesa é: {!! strip_tags($processo->detalhe->dotacao_orcamentaria) !!}, conforme disposto na Lei de meios vigente.
         </p>
 
         <div style="margin-bottom: 20px;">
@@ -411,7 +419,7 @@
             14.2. As partes e as testemunhas envolvidas neste instrumento afirmam e declaram que o mesmo será assinado eletronicamente, com fundamento no Artigo 10, parágrafo 2º da MP 2200-2/2001, e do Artigo 6º do Decreto 10.278/2020, sendo as assinaturas consideradas válidas, vinculantes e executáveis, desde que firmadas pelos representantes legais das partes, conforme estabelecido no preâmbulo. Consigna-se, ainda, no presente instrumento, que a assinatura com Certificado Digital/eletrônica tem a mesma validade jurídica de um registro e autenticação feita em Cartório, seja mediante utilização de certificados e-CPF, e-CNPJ e/ou NF-e. Assim, as partes renunciam à possibilidade de exigir a troca, envio ou entrega das vias originais (não-eletrônicas) assinadas do instrumento, bem como renunciam ao direito de recusar ou contestar a validade das assinaturas eletrônicas, na medida máxima permitida pela legislação aplicável.
         </p>
         <p style="text-align: justify">
-            15.1. Fica eleito o foro da Comarca de XXXXXX - PI como único e competente para dirimir quaisquer demandas do presente contrato, por mais privilegiado que outro possa ser.
+            15.1. Fica eleito o foro da Comarca de {{ $processo->contrato->comarca}} como único e competente para dirimir quaisquer demandas do presente contrato, por mais privilegiado que outro possa ser.
             <br>
             15.2. E por estarem justos e contratados firmam o presente em 02 (duas) vias de igual teor e forma para que produzam os efeitos legais.
         </p>
@@ -446,9 +454,9 @@
                 <div class="signature-block" style="display: inline-block; margin: 0 40px;">
                     ___________________________________<br>
                     <p style="line-height: 1.2;">
-                        XXXXXXXXXXXXXXXXX <br>
-                        XXXXXXXXXXXXXXXXX <br>
-                        XXXXXXXXXXXXXXXXX <br>
+                        {{ $processo->detalhe->razao_social }} <br>
+                        {{ $processo->detalhe->representante_legal_empresa}} <br>
+                        {{ $processo->detalhe->cnpj_empresa_vencedora}} <br>
                     </p>
                 </div>
             </div>
@@ -476,9 +484,9 @@
                 <!-- Cabeçalho -->
                 <tr>
                     <td colspan="2" style="padding:8px; text-align:center; font-weight:bold;">
-                        EXTRATO DO CONTRATO Nº XXXXXXXX<br>
+                        EXTRATO DO CONTRATO Nº {{ $processo->contrato->numero_extrato }}<br>
                         PROCESSO ADMINISTRATIVO Nº {{ $processo->numero_processo }}<br>
-                        MODALIDADE: CONCORRÊNCIA ELETRÔNICA Nº {{ $processo->numero_procedimento }}
+                        MODALIDADE: INEXIGIBILIDADE DE LICITAÇÃO Nº {{ $processo->numero_procedimento }}
                     </td>
                 </tr>
 
@@ -508,7 +516,7 @@
                         CONTRATADO:
                     </td>
                     <td style="padding:6px;">
-                        XXXXXXXXXXXX
+                        {{ $processo->detalhe->razao_social }}
                     </td>
                 </tr>
 
@@ -518,7 +526,7 @@
                         CNPJ (CONTRATADO):
                     </td>
                     <td style="padding:6px;">
-                        XXXXXXXXXXXX
+                        {{ $processo->detalhe->cnpj_empresa_vencedora }}
                     </td>
                 </tr>
 
@@ -528,7 +536,7 @@
                         VALOR:
                     </td>
                     <td style="padding:6px;">
-                        XXXXXXXXXXXX
+                        R$ {{ number_format($processo->detalhe->valor_total, 2, ',', '.') }}
                     </td>
                 </tr>
 
@@ -600,7 +608,7 @@
                         ASSINATURA (CONTRATADO):
                     </td>
                     <td style="padding:6px;">
-                        XXXXXXXXXXXX
+                        {{ $processo->detalhe->razao_social }}
                     </td>
                 </tr>
 
@@ -610,7 +618,7 @@
                         DATA DA ASSINATURA:
                     </td>
                     <td style="padding:6px;">
-                        {{ \Carbon\Carbon::parse($dataSelecionada)->translatedFormat('d \d\e F \d\e Y') }}
+                        {{ \Carbon\Carbon::parse($processo->contrato->data_assinatura_contrato)->translatedFormat('d \d\e F \d\e Y') }}
                     </td>
                 </tr>
 

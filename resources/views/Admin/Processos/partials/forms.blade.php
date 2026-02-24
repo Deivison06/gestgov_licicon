@@ -135,6 +135,21 @@
     @elseif($campo === 'numero_items')
     <x-form-field name="numero_items" label="Numero Items" />
 
+    @elseif($campo === 'orgao_responsavel')
+    <x-form-field name="orgao_responsavel" label="Órgão Responsável" />
+
+    @elseif($campo === 'cnpj')
+    <x-form-field name="cnpj" label="CNPJ" />
+
+    @elseif($campo === 'endereco')
+    <x-form-field name="endereco" label="Endereço" />
+
+    @elseif($campo === 'responsavel')
+    <x-form-field name="responsavel" label="Responsável" />
+
+    @elseif($campo === 'cpf_responsavel')
+    <x-form-field name="cpf_responsavel" label="CPF Responsável" />
+
     @elseif($campo === 'razao_social')
     <x-form-field name="razao_social" label="Razão Social" />
 
@@ -149,6 +164,19 @@
 
     @elseif($campo === 'cpf_representante')
     <x-form-field name="cpf_representante" label="CPF Representante" />
+
+    @elseif(
+    $campo === 'endereco_imovel' && $processo->modalidade === \App\Enums\ModalidadeEnum::INEXIGIBILIDADE && $processo->tipo_contratacao === \App\Enums\TipoContratacaoEnum::IMOVEL)
+    <x-form-field name="endereco_imovel" label="Endereço do Imóvel" />
+    
+    @elseif($campo === 'prazo_inicio_prestacao_servico')
+    <x-form-field name="prazo_inicio_prestacao_servico" label="Prazo Início Prestação Serviço" type="datetime" />
+
+    @elseif($campo === 'prazo_final_prestacao_servico')
+    <x-form-field name="prazo_final_prestacao_servico" label="Prazo Final Prestação Serviço" type="datetime" />
+
+    @elseif($campo === 'valor_mensal' && $processo->modalidade === \App\Enums\ModalidadeEnum::INEXIGIBILIDADE && $processo->tipo_contratacao === \App\Enums\TipoContratacaoEnum::IMOVEL)
+    <x-form-field name="valor_mensal" label="Valor Mensal" />
 
     @elseif($campo === 'valor_total')
     <x-form-field name="valor_total" label="Valor Total" />
