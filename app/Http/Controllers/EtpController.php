@@ -33,22 +33,21 @@ class EtpController extends Controller
         $prefeituraId = auth()->user()->prefeitura_id;
         
         $secretarias = Unidade::where('prefeitura_id', $prefeituraId)->orderBy('nome', 'asc')->get();
-        $responsaveis = User::where('prefeitura_id', $prefeituraId)->orderBy('name', 'asc')->get();
         
         $itens = $this->etpItemService->getAllForSelect();
 
-        return view('Admin.Etps.create', compact('secretarias', 'responsaveis', 'itens'));
+        return view('Admin.Etps.create', compact('secretarias', 'itens'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'secretaria_id' => 'required|exists:unidades,id',
-            'responsavel_id' => 'required|exists:users,id',
+            'secretaria_id' => 'required',
+            'servidor_responsavel' => 'required|string|max:255',
             'objeto_licitacao' => 'required|string',
             'tipo_contratacao' => 'required|in:item,lote',
             'nome_lote' => 'required_if:tipo_contratacao,lote|nullable|string|max:255',
-            'prazo_entrega' => 'required_if:tipo_contratacao,lote|nullable|string|max:255',
+            'prazo_entrega' => 'required|string|max:255',
             'itens_ids' => 'required_if:tipo_contratacao,lote|array',
             'itens_ids.*' => 'exists:etp_itens,id',
             'cotacao_path' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240'

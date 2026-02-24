@@ -16,7 +16,7 @@ class EtpRepository
     public function getByPrefeituraId($prefeituraId, $filters = [], $perPage = 15)
     {
          $query = $this->model->where('prefeitura_id', $prefeituraId)
-                             ->with(['secretaria', 'responsavel']);
+                             ->with(['secretaria']);
 
          if (isset($filters['status']) && $filters['status']) {
              $query->where('status', $filters['status']);
@@ -27,7 +27,7 @@ class EtpRepository
 
     public function getAllWithFilters($filters = [], $perPage = 15)
     {
-        $query = $this->model->with(['prefeitura', 'secretaria', 'responsavel']);
+        $query = $this->model->with(['prefeitura', 'secretaria']);
 
         if (isset($filters['prefeitura_id']) && $filters['prefeitura_id']) {
             $query->where('prefeitura_id', $filters['prefeitura_id']);
@@ -54,7 +54,7 @@ class EtpRepository
 
     public function findById($id)
     {
-        return $this->model->with(['prefeitura', 'secretaria', 'responsavel', 'itens'])->findOrFail($id);
+        return $this->model->with(['prefeitura', 'secretaria', 'itens'])->findOrFail($id);
     }
 
     public function create(array $data)

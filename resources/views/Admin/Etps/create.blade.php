@@ -62,21 +62,29 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Secretaria da Prefeitura *</label>
-                        <select name="secretaria_id" id="secretaria_id" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent" required>
-                            <option value="">Selecione a Secretaria...</option>
+                        <select name="secretaria_id"
+                            id="secretaria_id"
+                            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent" required>
+
+                            <option value="">Selecione...</option>
+
                             @foreach($secretarias as $sec)
-                                <option value="{{ $sec->id }}" {{ old('secretaria_id') == $sec->id ? 'selected' : '' }}>{{ $sec->nome }}</option>
+                                <option value="{{ $sec->id }}"
+                                    data-servidor="{{ $sec->servidor_responsavel }}">
+                                    {{ $sec->nome }}
+                                </option>
                             @endforeach
                         </select>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Responsável pela Solicitação *</label>
-                        <select name="responsavel_id" id="responsavel_id" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent" required>
-                            <option value="">Selecione o Responsável...</option>
-                            @foreach($responsaveis as $resp)
-                                <option value="{{ $resp->id }}" {{ old('responsavel_id') == $resp->id ? 'selected' : '' }}>{{ $resp->name }}</option>
-                            @endforeach
-                        </select>
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Servidor Responsável
+                        </label>
+
+                        <input type="text"
+                            name="servidor_responsavel"
+                            id="servidor_responsavel"
+                            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent" readonly>
                     </div>
                 </div>
                 <div class="mt-8 flex justify-end">
@@ -100,84 +108,159 @@
 
             <!-- PASSO 3 -->
             <div id="step-3" class="step-content hidden">
-                <h4 class="text-lg font-semibold text-gray-800 mb-6 border-b pb-2">Passo 3: Tipo de Contratação</h4>
-                
+                <h4 class="text-lg font-semibold text-gray-800 mb-6 border-b pb-2">
+                    Passo 3: Tipo de Contratação
+                </h4>
+
+                {{-- TIPO --}}
                 <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-3">Tipo de contratação *</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">
+                        Tipo de contratação *
+                    </label>
+
                     <div class="flex items-center space-x-6">
                         <label class="inline-flex items-center cursor-pointer">
-                            <input type="radio" class="form-radio text-[#009496] focus:ring-[#009496] w-5 h-5 border-gray-300" name="tipo_contratacao" value="item" {{ old('tipo_contratacao') == 'item' ? 'checked' : '' }} onchange="toggleLoteFields()" required>
-                            <span class="ml-2 text-gray-700">Por Item</span>
+                            <input type="radio"
+                                name="tipo_contratacao"
+                                value="item"
+                                class="form-radio text-[#009496] w-5 h-5"
+                                {{ old('tipo_contratacao') == 'item' ? 'checked' : '' }}
+                                onchange="toggleLoteFields()"
+                                required>
+                            <span class="ml-2">Por Item</span>
                         </label>
+
                         <label class="inline-flex items-center cursor-pointer border-l pl-6 border-gray-200">
-                            <input type="radio" class="form-radio text-[#009496] focus:ring-[#009496] w-5 h-5 border-gray-300" name="tipo_contratacao" value="lote" {{ old('tipo_contratacao') == 'lote' ? 'checked' : '' }} onchange="toggleLoteFields()">
-                            <span class="ml-2 text-gray-700">Por Lote</span>
+                            <input type="radio"
+                                name="tipo_contratacao"
+                                value="lote"
+                                class="form-radio text-[#009496] w-5 h-5"
+                                {{ old('tipo_contratacao') == 'lote' ? 'checked' : '' }}
+                                onchange="toggleLoteFields()">
+                            <span class="ml-2">Por Lote</span>
                         </label>
                     </div>
                 </div>
 
-                <div id="campos-lote" class="{{ old('tipo_contratacao') == 'lote' ? 'block' : 'hidden' }} p-6 bg-gray-50 border border-gray-200 rounded-xl mb-6">
-                    <h5 class="font-medium text-gray-800 mb-4"><i class="fas fa-boxes mr-2 text-[#009496]"></i> Detalhes do Lote</h5>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Nome do lote *</label>
-                            <input type="text" name="nome_lote" id="nome_lote" value="{{ old('nome_lote') }}" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Prazo de entrega *</label>
-                            <input type="text" name="prazo_entrega" id="prazo_entrega" value="{{ old('prazo_entrega') }}" placeholder="Ex: 30 dias após emissão da nota" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent">
-                        </div>
-                    </div>
-                    
+                {{-- BLOCO LOTE --}}
+                <div id="campos-lote"
+                    class="{{ old('tipo_contratacao') == 'lote' ? 'block' : 'hidden' }}
+                    p-6 bg-gray-50 border border-gray-200 rounded-xl mb-6">
+
+                    {{-- Nome do Lote --}}
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Selecione os Produtos (Itens) *</label>
-                        <select name="itens_ids[]" id="itens_ids" multiple class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent" style="height: 120px;">
-                            @foreach($itens as $item)
-                                <option value="{{ $item->id }}" {{ (collect(old('itens_ids'))->contains($item->id)) ? 'selected':'' }}>{{ $item->descricao_item }}</option>
-                            @endforeach
-                        </select>
-                        <p class="mt-1 text-xs text-gray-500">Pressione e segure CTRL (ou CMD) para selecionar múltiplos itens.</p>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Nome do Lote *
+                        </label>
+                        <input type="text"
+                            name="nome_lote"
+                            id="nome_lote"
+                            value="{{ old('nome_lote') }}"
+                            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496]">
                     </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Upload da cotação do fornecedor local</label>
-                        <input type="file" name="cotacao_path" id="cotacao_path" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#009496]/10 file:text-[#009496] hover:file:bg-[#009496]/20">
-                        <p class="mt-1 text-xs text-gray-500">Formatos aceitos: PDF, Imagens e Documentos Word. Máx: 10MB.</p>
-                    </div>
+                </div>
+
+                {{-- Selecionar Itens --}}
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Selecionar Itens *
+                    </label>
+
+                    <select name="itens_ids[]"
+                        id="itens_ids"
+                        multiple
+                        required
+                        class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496]"
+                        style="height:120px;">
+
+                        @foreach($itens as $item)
+                            <option value="{{ $item->id }}"
+                                {{ collect(old('itens_ids'))->contains($item->id) ? 'selected' : '' }}>
+                                {{ $item->descricao_item }}
+                            </option>
+                        @endforeach
+                    </select>
+
+                    <p class="mt-1 text-xs text-gray-500">
+                        Segure CTRL (ou CMD) para selecionar múltiplos.
+                    </p>
+                </div>
+
+                {{-- Prazo --}}
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Prazo de Entrega *
+                    </label>
+                    <input type="text"
+                        name="prazo_entrega"
+                        id="prazo_entrega"
+                        value="{{ old('prazo_entrega') }}"
+                        placeholder="Ex: 30 dias após emissão da nota"
+                        class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496]"
+                        required>
+                </div>
+
+                {{-- Cotação --}}
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Anexar Cotação do Fornecedor Local
+                    </label>
+                    <input type="file"
+                        name="cotacao_path"
+                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                        class="block w-full text-sm text-gray-500
+                        file:mr-4 file:py-2 file:px-4
+                        file:rounded-full file:border-0
+                        file:text-sm file:font-semibold
+                        file:bg-[#009496]/10 file:text-[#009496]
+                        hover:file:bg-[#009496]/20">
+                    <p class="mt-1 text-xs text-gray-500">
+                        Máximo 10MB.
+                    </p>
                 </div>
 
                 <div class="mt-8 flex justify-between">
-                    <button type="button" class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all" onclick="prevStep(2)"><i class="fas fa-arrow-left mr-2"></i> Voltar</button>
-                    <button type="submit" class="px-8 py-3 text-sm font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition-all shadow-md"><i class="fas fa-check-circle mr-2"></i> Concluir ETP</button>
+                    <button type="button"
+                        class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+                        onclick="prevStep(2)">
+                        <i class="fas fa-arrow-left mr-2"></i> Voltar
+                    </button>
+
+                    <button type="submit"
+                        class="px-8 py-3 text-sm font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 shadow-md">
+                        <i class="fas fa-check-circle mr-2"></i> Concluir ETP
+                    </button>
                 </div>
             </div>
+
         </form>
     </div>
 </div>
 
 <script>
     function toggleLoteFields() {
-        const isLote = document.querySelector('input[name="tipo_contratacao"]:checked').value === 'lote';
+        const selected = document.querySelector('input[name="tipo_contratacao"]:checked');
+        if (!selected) return;
+
+        const isLote = selected.value === 'lote';
         const camposLote = document.getElementById('campos-lote');
-        const requiredFields = ['nome_lote', 'prazo_entrega'];
-        
+        const nomeLote = document.getElementById('nome_lote');
+
         if (isLote) {
             camposLote.classList.remove('hidden');
-            requiredFields.forEach(id => document.getElementById(id).setAttribute('required', 'required'));
+            nomeLote.setAttribute('required', 'required');
         } else {
             camposLote.classList.add('hidden');
-            requiredFields.forEach(id => {
-                document.getElementById(id).removeAttribute('required');
-                document.getElementById(id).value = ''; // clear when hidden
-            });
-            document.getElementById('itens_ids').selectedIndex = -1; // clear selection
+            nomeLote.removeAttribute('required');
+            nomeLote.value = '';
         }
     }
 
     function nextStep(step) {
         if (step === 2) {
-            if(!document.getElementById('secretaria_id').value || !document.getElementById('responsavel_id').value) {
-                alert('Preencha os campos obrigatórios primeiro.');
+            // CORREÇÃO: Removida a verificação do responsavel_id que não existe
+            if(!document.getElementById('secretaria_id').value) {
+                alert('Selecione uma secretaria primeiro.');
                 return;
             }
         }
@@ -227,6 +310,21 @@
         if(document.querySelector('input[name="tipo_contratacao"]:checked')) {
             toggleLoteFields();
         }
+
+        // Inicializa o campo servidor_responsavel se já houver uma secretaria selecionada
+        const secretariaSelect = document.getElementById('secretaria_id');
+        if (secretariaSelect.value) {
+            const selected = secretariaSelect.options[secretariaSelect.selectedIndex];
+            const servidor = selected.getAttribute('data-servidor');
+            document.getElementById('servidor_responsavel').value = servidor ?? '';
+        }
     });
+
+    document.getElementById('secretaria_id').addEventListener('change', function() {
+        const selected = this.options[this.selectedIndex];
+        const servidor = selected.getAttribute('data-servidor');
+        document.getElementById('servidor_responsavel').value = servidor ?? '';
+    });
+
 </script>
 @endsection

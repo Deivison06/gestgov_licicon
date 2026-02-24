@@ -60,7 +60,7 @@
                     <tr class="transition-colors duration-200 hover:bg-gray-50/80">
                         <td class="px-4 py-3 font-mono text-sm text-gray-900 whitespace-nowrap">ETP-{{ str_pad($etp->id, 4, '0', STR_PAD_LEFT) }}/{{ $etp->created_at->format('Y') }}</td>
                         <td class="px-4 py-3 text-sm text-gray-900">{{ $etp->secretaria->nome ?? 'N/A' }}</td>
-                        <td class="px-4 py-3 text-sm text-gray-900">{{ $etp->responsavel->name ?? 'N/A' }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-900">{{ $etp->servidor_responsavel ?? 'N/A' }}</td>
                         <td class="px-4 py-3 text-sm text-gray-900 cursor-help" title="{{ $etp->objeto_licitacao }}">{{ str()->limit($etp->objeto_licitacao, 40) }}</td>
                         <td class="px-4 py-3 text-sm text-gray-900 uppercase">{{ $etp->tipo_contratacao }}</td>
                         <td class="px-4 py-3 text-sm text-gray-900">

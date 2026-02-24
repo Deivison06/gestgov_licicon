@@ -164,6 +164,105 @@
             transition: var(--transition);
         }
 
+        /* ===== ESTILOS DO SUBMENU ===== */
+        .nav-item.has-submenu {
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 0;
+            background: transparent;
+            cursor: pointer;
+            height: auto;
+            overflow: visible;
+        }
+
+        .nav-link.submenu-toggle {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 0.85rem 1rem;
+            color: rgba(255, 255, 255, 0.85);
+            transition: var(--transition);
+            position: relative;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .nav-link.submenu-toggle:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(3px);
+            color: white;
+        }
+
+        .nav-item.has-submenu.open .submenu-toggle {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .submenu-arrow {
+            margin-left: auto;
+            font-size: 0.8rem;
+            transition: transform 0.3s ease;
+        }
+
+        .nav-item.has-submenu.open .submenu-arrow {
+            transform: rotate(180deg);
+        }
+
+        .submenu {
+            width: 100%;
+            padding-left: 2.5rem;
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+
+        .nav-item.has-submenu.open .submenu {
+            display: block;
+        }
+
+        .nav-subitem {
+            display: flex;
+            align-items: center;
+            padding: 0.65rem 1rem;
+            margin: 0.25rem 0;
+            border-radius: var(--border-radius);
+            color: rgba(255, 255, 255, 0.75);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+
+        .nav-subitem i {
+            width: 1.35rem;
+            margin-right: 0.85rem;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        .nav-subitem:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            transform: translateX(3px);
+        }
+
+        .nav-subitem.active {
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+            font-weight: 500;
+        }
+
+        /* Animações */
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         /* Sidebar Footer */
         .sidebar-footer {
             padding-top: 2rem;
@@ -385,6 +484,15 @@
             .page-content {
                 padding: 1.5rem 0;
             }
+
+            .submenu {
+                padding-left: 2rem;
+            }
+            
+            .nav-subitem {
+                padding: 0.6rem 0.8rem;
+                font-size: 0.85rem;
+            }
         }
 
         @media (max-width: 768px) {
@@ -457,7 +565,6 @@
                 opacity: 0;
                 transform: translateY(10px);
             }
-
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -469,7 +576,6 @@
                 transform: translateX(-20px);
                 opacity: 0;
             }
-
             to {
                 transform: translateX(0);
                 opacity: 1;
@@ -594,7 +700,7 @@
 
                 <!-- Navegação -->
                 <nav>
-                    {{-- Dashboard visível apenas para admin/diretor --}}
+                    {{-- Dashboard visível para admin/diretor/gerente/colaborador --}}
                     @if(auth()->user()->hasAnyRole(['diretor_licicon', 'gerente_licicon', 'colaborador_licicon']))
                     <a href="{{ route('admin.dashboard') }}"
                         class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
@@ -619,6 +725,58 @@
                     </a>
                     @endif
 
+                    {{-- ========================================= --}}
+                    {{-- ETP INTELIGENTE --}}
+                    {{-- ========================================= --}}
+
+                    @if(auth()->user()->hasAnyRole([
+                        'diretor_licicon',
+                        'gerente_licicon',
+                        'colaborador_licicon',
+                        'prefeitura'
+                    ]))
+
+                    @php
+                        $etpMenuActive = request()->routeIs('admin.etps.*') 
+                            || request()->routeIs('admin.etps_recebidos.*') 
+                            || request()->routeIs('admin.etp_itens.*');
+                    @endphp
+
+                    <div class="nav-item has-submenu {{ $etpMenuActive ? 'open' : '' }}" id="etpSubmenu">
+                        {{-- MENU PRINCIPAL - REMOVIDO O ONCLICK --}}
+                        <div class="nav-link submenu-toggle" id="etpToggle">
+                            <i class="nav-icon fas fa-brain"></i>
+                            <span>ETP INTELIGENTE</span>
+                            <i class="fas fa-chevron-down submenu-arrow"></i>
+                        </div>
+
+                        {{-- SUBMENUS --}}
+                        <div class="submenu">
+                            {{-- ✅ Solicitar ETP (TODOS os roles) --}}
+                            <a href="{{ route('admin.etps.index') }}"
+                                class="nav-subitem {{ request()->routeIs('admin.etps.*') && !request()->routeIs('admin.etps_recebidos.*') && !request()->routeIs('admin.etp_itens.*') ? 'active' : '' }}">
+                                <i class="fas fa-file-alt"></i>
+                                <span>Solicitar ETP</span>
+                            </a>
+
+                            {{-- 🔒 Apenas Diretor e Gerente --}}
+                            @if(auth()->user()->hasAnyRole(['diretor_licicon', 'gerente_licicon']))
+                                <a href="{{ route('admin.etps_recebidos.index') }}"
+                                    class="nav-subitem {{ request()->routeIs('admin.etps_recebidos.*') ? 'active' : '' }}">
+                                    <i class="fas fa-inbox"></i>
+                                    <span>ETPs Recebidos</span>
+                                </a>
+
+                                <a href="{{ route('admin.etp_itens.index') }}"
+                                    class="nav-subitem {{ request()->routeIs('admin.etp_itens.*') ? 'active' : '' }}">
+                                    <i class="fas fa-list"></i>
+                                    <span>Itens ETP</span>
+                                </a>
+                            @endif
+                        </div>
+                    </div>
+                    @endif
+
                     {{-- Contratos visível para todos --}}
                     <a href="{{ route('admin.contratos.index') }}"
                         class="nav-item {{ request()->routeIs('admin.contratos.*') ? 'active' : '' }}">
@@ -626,7 +784,7 @@
                         <span>Contratos</span>
                     </a>
 
-                    {{-- Apenas admin/diretor --}}
+                    {{-- Apenas admin/diretor/gerente --}}
                     @if(auth()->user()->hasAnyRole(['diretor_licicon', 'gerente_licicon']))
                     <a href="{{ route('admin.prefeituras.index') }}"
                         class="nav-item {{ request()->routeIs('admin.prefeituras.*') ? 'active' : '' }}">
@@ -671,8 +829,7 @@
                     </button>
                     <div class="welcome-text">
                         <h2>Área da Prefeitura</h2>
-                        <p>Bem-vindo, {{ auth()->user()->name }}! Aqui você pode gerenciar os contratos da sua prefeitura.
-                        </p>
+                        <p>Bem-vindo, {{ auth()->user()->name }}! Aqui você pode gerenciar os contratos da sua prefeitura.</p>
                     </div>
                     <div class="welcome-icon">
                         <i class="fas fa-building-shield"></i>
@@ -700,14 +857,16 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elementos do menu mobile
             const mobileMenuBtn = document.getElementById('mobileMenuBtn');
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('overlay');
 
             // Toggle sidebar no mobile
             if (mobileMenuBtn && sidebar) {
-                mobileMenuBtn.addEventListener('click', () => {
+                mobileMenuBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
                     sidebar.classList.toggle('open');
                     overlay.classList.toggle('active');
                     document.body.style.overflow = sidebar.classList.contains('open') ? 'hidden' : '';
@@ -716,7 +875,7 @@
 
             // Fechar sidebar ao clicar no overlay
             if (overlay) {
-                overlay.addEventListener('click', () => {
+                overlay.addEventListener('click', function() {
                     sidebar.classList.remove('open');
                     overlay.classList.remove('active');
                     document.body.style.overflow = '';
@@ -724,7 +883,7 @@
             }
 
             // Fechar sidebar ao redimensionar para desktop
-            window.addEventListener('resize', () => {
+            window.addEventListener('resize', function() {
                 if (window.innerWidth > 1024) {
                     if (sidebar) sidebar.classList.remove('open');
                     if (overlay) overlay.classList.remove('active');
@@ -733,11 +892,58 @@
             });
 
             // Fechar sidebar ao pressionar ESC
-            document.addEventListener('keydown', (event) => {
+            document.addEventListener('keydown', function(event) {
                 if (event.key === 'Escape') {
                     if (sidebar) sidebar.classList.remove('open');
                     if (overlay) overlay.classList.remove('active');
                     document.body.style.overflow = '';
+                }
+            });
+
+            // FUNÇÃO CORRIGIDA PARA O SUBMENU
+            const etpToggle = document.getElementById('etpToggle');
+            if (etpToggle) {
+                etpToggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const parentItem = this.closest('.has-submenu');
+                    if (parentItem) {
+                        parentItem.classList.toggle('open');
+                        
+                        // Fecha outros submenus abertos
+                        document.querySelectorAll('.has-submenu.open').forEach(menu => {
+                            if (menu !== parentItem) {
+                                menu.classList.remove('open');
+                            }
+                        });
+                    }
+                });
+            }
+
+            // Previne que o clique no submenu feche o menu
+            const submenuItems = document.querySelectorAll('.submenu');
+            submenuItems.forEach(submenu => {
+                submenu.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+
+            // Abre automaticamente o submenu se uma rota filha estiver ativa
+            const activeSubitem = document.querySelector('.nav-subitem.active');
+            if (activeSubitem) {
+                const parentSubmenu = activeSubitem.closest('.has-submenu');
+                if (parentSubmenu) {
+                    parentSubmenu.classList.add('open');
+                }
+            }
+
+            // Fecha submenus ao clicar fora (opcional)
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.has-submenu')) {
+                    document.querySelectorAll('.has-submenu.open').forEach(menu => {
+                        menu.classList.remove('open');
+                    });
                 }
             });
         });
