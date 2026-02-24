@@ -13,6 +13,8 @@ class Etp extends Model
         'secretaria_id',
         'servidor_responsavel',
         'objeto_licitacao',
+        'modalidade',
+        'dotacao_orcamentaria',
         'tipo_contratacao',
         'nome_lote',
         'prazo_entrega',

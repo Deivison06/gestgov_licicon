@@ -117,7 +117,7 @@
                             <div class="font-semibold">{{ $etp->prefeitura->nome ?? 'N/A' }}</div>
                             <div class="text-xs text-gray-500">{{ $etp->secretaria->nome ?? 'N/A' }}</div>
                         </td>
-                        <td class="px-4 py-3 text-sm text-gray-900">{{ $etp->responsavel->name ?? 'N/A' }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-900">{{ $etp->servidor_responsavel ?? 'N/A' }}</td>
                         <td class="px-4 py-3 text-sm text-gray-900 cursor-help" title="{{ $etp->objeto_licitacao }}">{{ str()->limit($etp->objeto_licitacao, 30) }}</td>
                         <td class="px-4 py-3 text-sm text-gray-900 uppercase">
                             <span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded border border-gray-300">

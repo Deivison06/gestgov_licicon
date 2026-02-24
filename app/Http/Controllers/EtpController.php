@@ -31,9 +31,9 @@ class EtpController extends Controller
     public function create()
     {
         $prefeituraId = auth()->user()->prefeitura_id;
-        
+
         $secretarias = Unidade::where('prefeitura_id', $prefeituraId)->orderBy('nome', 'asc')->get();
-        
+
         $itens = $this->etpItemService->getAllForSelect();
 
         return view('Admin.Etps.create', compact('secretarias', 'itens'));
@@ -45,16 +45,24 @@ class EtpController extends Controller
             'secretaria_id' => 'required',
             'servidor_responsavel' => 'required|string|max:255',
             'objeto_licitacao' => 'required|string',
-            'tipo_contratacao' => 'required|in:item,lote',
+            'modalidade' => 'required|in:pregao,concorrencia,dispensa,inexigibilidade',
+            'dotacao_orcamentaria' => 'required|string|max:255',
+            'tipo_contratacao' => 'required_if:modalidade,pregao,dispensa|in:item,lote',
             'nome_lote' => 'required_if:tipo_contratacao,lote|nullable|string|max:255',
             'prazo_entrega' => 'required|string|max:255',
-            'itens_ids' => 'required_if:tipo_contratacao,lote|array',
+            'itens_ids' => 'required_if:modalidade,pregao,dispensa|array',
             'itens_ids.*' => 'exists:etp_itens,id',
             'cotacao_path' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240'
         ]);
 
         $data = $request->all();
         $data['prefeitura_id'] = auth()->user()->prefeitura_id;
+
+        // Se for concorrência ou inexigibilidade, não precisa de tipo de contratação nem itens
+        if (in_array($data['modalidade'], ['concorrencia', 'inexigibilidade'])) {
+            $data['tipo_contratacao'] = 'item'; // Valor default para o banco
+            $data['itens_ids'] = []; // Garante que não tenha itens caso enviado
+        }
 
         try {
             $this->etpService->store($data, $request->file('cotacao_path'));

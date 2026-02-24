@@ -87,6 +87,18 @@
                             class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent" readonly>
                     </div>
                 </div>
+                
+                <div class="mt-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Modalidade da Licitação *</label>
+                    <select name="modalidade" id="modalidade" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent" required onchange="toggleModalidadeFields()">
+                        <option value="">Selecione...</option>
+                        <option value="pregao" {{ old('modalidade') == 'pregao' ? 'selected' : '' }}>Pregão</option>
+                        <option value="concorrencia" {{ old('modalidade') == 'concorrencia' ? 'selected' : '' }}>Concorrência</option>
+                        <option value="dispensa" {{ old('modalidade') == 'dispensa' ? 'selected' : '' }}>Dispensa</option>
+                        <option value="inexigibilidade" {{ old('modalidade') == 'inexigibilidade' ? 'selected' : '' }}>Inexigibilidade</option>
+                    </select>
+                </div>
+                
                 <div class="mt-8 flex justify-end">
                     <button type="button" class="btn-next px-6 py-2.5 text-sm font-medium text-white bg-[#009496] rounded-lg hover:bg-[#007a7a] transition-all" onclick="nextStep(2)">Próximo Passo <i class="fas fa-arrow-right ml-2"></i></button>
                 </div>
@@ -109,9 +121,10 @@
             <!-- PASSO 3 -->
             <div id="step-3" class="step-content hidden">
                 <h4 class="text-lg font-semibold text-gray-800 mb-6 border-b pb-2">
-                    Passo 3: Tipo de Contratação
+                    Passo 3: Tipo de Contratação e Anexos
                 </h4>
 
+                <div id="campos-itens-contratacao">
                 {{-- TIPO --}}
                 <div class="mb-6">
                     <label class="block text-sm font-medium text-gray-700 mb-3">
@@ -186,6 +199,8 @@
                     </p>
                 </div>
 
+                </div>
+
                 {{-- Prazo --}}
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -200,13 +215,28 @@
                         required>
                 </div>
 
-                {{-- Cotação --}}
-                <div class="mb-6">
+                {{-- Dotação Orçamentaria --}}
+                <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Dotação Orçamentária *
+                    </label>
+                    <textarea
+                        name="dotacao_orcamentaria"
+                        id="dotacao_orcamentaria"
+                        placeholder="Digite a dotação orçamentária"
+                        rows="3"
+                        class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent resize-y"
+                        required>{{ old('dotacao_orcamentaria') }}</textarea>
+                </div>
+
+                {{-- Cotação ou Projeto Básico --}}
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2" id="label_pdf_anexo">
                         Anexar Cotação do Fornecedor Local
                     </label>
                     <input type="file"
                         name="cotacao_path"
+                        id="cotacao_path"
                         accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                         class="block w-full text-sm text-gray-500
                         file:mr-4 file:py-2 file:px-4
@@ -215,7 +245,7 @@
                         file:bg-[#009496]/10 file:text-[#009496]
                         hover:file:bg-[#009496]/20">
                     <p class="mt-1 text-xs text-gray-500">
-                        Máximo 10MB.
+                        Máximo 10MB. Para concorrência ou inexigibilidade, anexe o Projeto Básico.
                     </p>
                 </div>
 
@@ -256,11 +286,43 @@
         }
     }
 
+    function toggleModalidadeFields() {
+        const modalidade = document.getElementById('modalidade').value;
+        const camposItens = document.getElementById('campos-itens-contratacao');
+        const labelPdf = document.getElementById('label_pdf_anexo');
+        
+        // Sepearação da seleção de itens
+        const itensIds = document.getElementById('itens_ids');
+        const labelsTipoContratacao = document.querySelectorAll('input[name="tipo_contratacao"]');
+
+        if (modalidade === 'concorrencia' || modalidade === 'inexigibilidade') {
+            camposItens.classList.add('hidden');
+            labelPdf.innerText = 'Anexar Projeto Básico *';
+            document.getElementById('cotacao_path').setAttribute('required', 'required');
+            
+            // Remove required dos itens
+            if (itensIds) itensIds.removeAttribute('required');
+            labelsTipoContratacao.forEach(el => el.removeAttribute('required'));
+        } else {
+            camposItens.classList.remove('hidden');
+            labelPdf.innerText = 'Anexar Cotação do Fornecedor Local';
+            document.getElementById('cotacao_path').removeAttribute('required');
+            
+            // Retorna required dos itens
+            if (itensIds) itensIds.setAttribute('required', 'required');
+            labelsTipoContratacao.forEach(el => el.setAttribute('required', 'required'));
+        }
+    }
+
     function nextStep(step) {
         if (step === 2) {
             // CORREÇÃO: Removida a verificação do responsavel_id que não existe
             if(!document.getElementById('secretaria_id').value) {
                 alert('Selecione uma secretaria primeiro.');
+                return;
+            }
+            if(!document.getElementById('modalidade').value) {
+                alert('Selecione uma modalidade primeiro.');
                 return;
             }
         }
@@ -310,6 +372,8 @@
         if(document.querySelector('input[name="tipo_contratacao"]:checked')) {
             toggleLoteFields();
         }
+        
+        toggleModalidadeFields();
 
         // Inicializa o campo servidor_responsavel se já houver uma secretaria selecionada
         const secretariaSelect = document.getElementById('secretaria_id');
