@@ -229,7 +229,7 @@
                 @foreach($lotesAgrupados as $numeroLote => $itensLote)
                     {{-- Só exibir se o lote não estiver vazio --}}
                     @if($itensLote->count() > 0)
-                        <table style="width:100%; border-collapse:collapse; font-size:12px; margin-bottom:20px;" border="1">
+                        <table style="width:100%; border-collapse:collapse; font-size:10px; margin-bottom:20px;" border="1">
 
                             <!-- Cabeçalho do Lote -->
                             <tr>
@@ -330,7 +330,7 @@
         @else
             {{-- Se não for tipo LOTE, exibir na estrutura normal de itens --}}
             @foreach ($vencedores as $vencedor)
-                <table style="width:100%; border-collapse:collapse; font-size:12px; margin-bottom:20px;" border="1">
+                <table style="width:100%; border-collapse:collapse; font-size:10px; margin-bottom:20px;" border="1">
 
                     <!-- Informações do Vencedor -->
                     <tr>
