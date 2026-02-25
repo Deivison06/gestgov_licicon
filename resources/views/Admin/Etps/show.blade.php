@@ -41,35 +41,32 @@
                     <div class="bg-gray-50 p-6 rounded-xl border border-gray-100">
                         <h4 class="text-lg font-medium text-gray-800 mb-4 border-b pb-2">Dados Gerais</h4>
                         <ul class="space-y-3">
-                            <li><span
-                                    class="text-gray-500 font-medium block text-xs uppercase tracking-wider">Secretaria</span>
+                            <li>
+                                <span class="text-gray-500 font-medium block text-xs uppercase tracking-wider">Secretaria</span>
                                 <span class="text-gray-900 font-semibold">{{ $etp->secretaria->nome ?? 'N/A' }}</span>
                             </li>
-                            <li><span
-                                    class="text-gray-500 font-medium block text-xs uppercase tracking-wider">Responsável</span>
+                            <li>
+                                <span class="text-gray-500 font-medium block text-xs uppercase tracking-wider">Responsável</span>
                                 <span class="text-gray-900 font-semibold">{{ $etp->servidor_responsavel ?? 'N/A' }}</span>
                             </li>
-                            <li><span
-                                    class="text-gray-500 font-medium block text-xs uppercase tracking-wider">Modalidade</span>
-                                <span
-                                    class="text-gray-900 font-semibold uppercase">{{ $etp->modalidade ?? 'Não informada' }}</span>
+                            <li>
+                                <span class="text-gray-500 font-medium block text-xs uppercase tracking-wider">Modalidade</span>
+                                <span class="text-gray-900 font-semibold uppercase">{{ $etp->modalidade ?? 'Não informada' }}</span>
                             </li>
-                            <li><span class="text-gray-500 font-medium block text-xs uppercase tracking-wider">Dotação
-                                    Orçamentária</span> <span
-                                    class="text-gray-900 font-semibold">{{ $etp->dotacao_orcamentaria ?? 'Não informada' }}</span>
+                            <li>
+                                <span class="text-gray-500 font-medium block text-xs uppercase tracking-wider">Dotação Orçamentária</span> 
+                                <span class="text-gray-900 font-semibold">{{ $etp->dotacao_orcamentaria ?? 'Não informada' }}</span>
                             </li>
 
                             @if(!in_array($etp->modalidade, ['concorrencia', 'inexigibilidade']))
-                                <li><span class="text-gray-500 font-medium block text-xs uppercase tracking-wider">Tipo de
-                                        Contratação</span> <span
-                                        class="text-[#009496] font-bold uppercase">{{ $etp->tipo_contratacao }}</span></li>
-                                @if($etp->tipo_contratacao === 'lote')
-                                    <li><span class="text-gray-500 font-medium block text-xs uppercase tracking-wider">Nome do
-                                            Lote</span> <span class="text-gray-900 font-semibold">{{ $etp->nome_lote }}</span></li>
-                                    <li><span class="text-gray-500 font-medium block text-xs uppercase tracking-wider">Prazo de
-                                            Entrega</span> <span
-                                            class="text-gray-900 font-semibold">{{ $etp->prazo_entrega }}</span></li>
-                                @endif
+                                <li>
+                                    <span class="text-gray-500 font-medium block text-xs uppercase tracking-wider">Tipo de Contratação</span> 
+                                    <span class="text-[#009496] font-bold uppercase">{{ $etp->tipo_contratacao }}</span>
+                                </li>
+                                <li>
+                                    <span class="text-gray-500 font-medium block text-xs uppercase tracking-wider">Prazo de Entrega</span> 
+                                    <span class="text-gray-900 font-semibold">{{ $etp->prazo_entrega }}</span>
+                                </li>
                             @endif
                         </ul>
                     </div>
@@ -77,78 +74,171 @@
                     <!-- Objeto -->
                     <div class="bg-gray-50 p-6 rounded-xl border border-gray-100">
                         <h4 class="text-lg font-medium text-gray-800 mb-4 border-b pb-2">Objeto da Licitação</h4>
-                        <p class="text-gray-700 whitespace-pre-wrap text-sm leading-relaxed">{{ $etp->objeto_licitacao }}
-                        </p>
+                        <p class="text-gray-700 whitespace-pre-wrap text-sm leading-relaxed">{{ $etp->objeto_licitacao }}</p>
                     </div>
                 </div>
 
                 @if(!in_array($etp->modalidade, ['concorrencia', 'inexigibilidade']))
-                    <div class="mb-8">
-                        <h4 class="text-lg font-medium text-gray-800 mb-4 border-b pb-2"><i
-                                class="fas fa-boxes mr-2 text-[#009496]"></i> Itens Solicitados</h4>
-                        @if($etp->itens->count() > 0)
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-sm text-left text-gray-500 border border-gray-200 rounded-lg">
-                                    <thead class="text-xs text-gray-700 uppercase bg-gray-50">
-                                        <tr>
-                                            <th scope="col" class="px-6 py-3 rounded-tl-lg">ID</th>
-                                            <th scope="col" class="px-6 py-3 rounded-tr-lg">Descrição do Item</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach($etp->itens as $item)
-                                            <tr class="bg-white border-b hover:bg-gray-50">
-                                                <td class="px-6 py-4 font-medium text-gray-900">{{ $item->id }}</td>
-                                                <td class="px-6 py-4">{{ $item->descricao_item }}</td>
+                    @if($etp->tipo_contratacao === 'item')
+                        <!-- ITENS (SEM LOTE) -->
+                        <div class="mb-8">
+                            <h4 class="text-lg font-medium text-gray-800 mb-4 border-b pb-2">
+                                <i class="fas fa-boxes mr-2 text-[#009496]"></i> Itens Solicitados
+                            </h4>
+                            @if($etp->itens->count() > 0)
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-sm text-left text-gray-500 border border-gray-200 rounded-lg">
+                                        <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                                            <tr>
+                                                <th scope="col" class="px-6 py-3 rounded-tl-lg">ID</th>
+                                                <th scope="col" class="px-6 py-3">Descrição do Item</th>
+                                                <th scope="col" class="px-6 py-3">Unidade</th>
+                                                <th scope="col" class="px-6 py-3 rounded-tr-lg">Quantidade</th>
                                             </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($etp->itens as $item)
+                                                <tr class="bg-white border-b hover:bg-gray-50">
+                                                    <td class="px-6 py-4 font-medium text-gray-900">{{ $item->id }}</td>
+                                                    <td class="px-6 py-4">{{ $item->descricao_item }}</td>
+                                                    <td class="px-6 py-4">{{ $item->pivot->unidade }}</td>
+                                                    <td class="px-6 py-4">{{ $item->pivot->quantidade }}</td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @else
+                                <p class="text-gray-500 text-sm">Nenhum item vinculado a este ETP.</p>
+                            @endif
+                        </div>
+                    @elseif($etp->tipo_contratacao === 'lote' && $etp->lotes->count() > 0)
+                        <!-- LOTES -->
+                        <div class="mb-8">
+                            <h4 class="text-lg font-medium text-gray-800 mb-4 border-b pb-2">
+                                <i class="fas fa-layer-group mr-2 text-[#009496]"></i> Lotes da Contratação
+                            </h4>
+                            
+                            <div class="space-y-6">
+                                @foreach($etp->lotes as $loteIndex => $lote)
+                                    <div class="border border-gray-200 rounded-xl overflow-hidden">
+                                        <div class="bg-gray-100 px-6 py-4 border-b border-gray-200">
+                                            <h5 class="text-md font-semibold text-gray-800">
+                                                <i class="fas fa-tag mr-2 text-[#009496]"></i> 
+                                                {{ $lote->nome }}
+                                            </h5>
+                                        </div>
+                                        
+                                        <div class="p-6">
+                                            @if($lote->itens->count() > 0)
+                                                <div class="overflow-x-auto">
+                                                    <table class="w-full text-sm text-left text-gray-500">
+                                                        <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                                                            <tr>
+                                                                <th scope="col" class="px-6 py-3">ID</th>
+                                                                <th scope="col" class="px-6 py-3">Descrição do Item</th>
+                                                                <th scope="col" class="px-6 py-3">Unidade</th>
+                                                                <th scope="col" class="px-6 py-3">Quantidade</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @foreach($lote->itens as $item)
+                                                                <tr class="bg-white border-b hover:bg-gray-50">
+                                                                    <td class="px-6 py-4 font-medium text-gray-900">{{ $item->id }}</td>
+                                                                    <td class="px-6 py-4">{{ $item->descricao_item }}</td>
+                                                                    <td class="px-6 py-4">{{ $item->pivot->unidade }}</td>
+                                                                    <td class="px-6 py-4">{{ $item->pivot->quantidade }}</td>
+                                                                </tr>
+                                                            @endforeach
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            @else
+                                                <p class="text-gray-500 text-sm">Nenhum item vinculado a este lote.</p>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endforeach
                             </div>
-                        @else
-                            <p class="text-gray-500 text-sm">Nenhum item vinculado a este ETP.</p>
-                        @endif
-                    </div>
+                        </div>
+                    @endif
                 @endif
 
+                <!-- ANEXOS -->
                 @if($etp->cotacao_path)
                     @php
                         $extension = pathinfo($etp->cotacao_path, PATHINFO_EXTENSION);
+                        $isPdf = strtolower($extension) === 'pdf';
+                        $isImage = in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif']);
                     @endphp
-                    <!-- <div>
-                        <h4 class="text-lg font-medium text-gray-800 mb-4 border-b pb-2"><i
-                                class="fas fa-paperclip mr-2 text-[#009496]"></i> Anexos</h4>
+                    
+                    <div class="mb-8">
+                        <h4 class="text-lg font-medium text-gray-800 mb-4 border-b pb-2">
+                            <i class="fas fa-paperclip mr-2 text-[#009496]"></i> Anexos
+                        </h4>
 
-                        @if(strtolower($extension) === 'pdf')
-                            <div class="w-full h-screen max-h-[800px] border border-gray-300 rounded-xl overflow-hidden shadow-sm">
-                                <iframe src="{{ Storage::url($etp->cotacao_path) }}" class="w-full h-full" frameborder="0"></iframe>
-                            </div>
-                        @else
-                            <a href="{{ Storage::url($etp->cotacao_path) }}" target="_blank"
-                                class="inline-flex items-center px-4 py-3 bg-white border border-gray-300 rounded-lg hover:shadow-md transition-all">
-                                <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mr-3">
-                                    <i class="fas fa-download"></i>
+                        <div class="bg-gray-50 p-6 rounded-xl border border-gray-200">
+                            @if($isPdf)
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mr-4">
+                                            <i class="fas fa-file-pdf text-xl"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-900">
+                                                {{ $etp->modalidade === 'concorrencia' || $etp->modalidade === 'inexigibilidade' ? 'Projeto Básico' : 'Cotação do Fornecedor' }}
+                                            </p>
+                                            <p class="text-xs text-gray-500">Clique no botão para visualizar o PDF</p>
+                                        </div>
+                                    </div>
+                                    <a href="{{ Storage::url($etp->cotacao_path) }}" target="_blank"
+                                        class="inline-flex items-center px-4 py-2 bg-[#009496] text-white rounded-lg hover:bg-[#007a7a] transition-all">
+                                        <i class="fas fa-eye mr-2"></i>
+                                        Visualizar PDF
+                                    </a>
                                 </div>
+                            @elseif($isImage)
                                 <div>
-                                    <p class="text-sm font-bold text-gray-800">Cotação do Fornecedor / Projeto Básico</p>
-                                    <p class="text-xs text-gray-500">Clique para abrir o arquivo anexado</p>
+                                    <p class="text-sm font-medium text-gray-900 mb-3">
+                                        {{ $etp->modalidade === 'concorrencia' || $etp->modalidade === 'inexigibilidade' ? 'Projeto Básico' : 'Cotação do Fornecedor' }}
+                                    </p>
+                                    <img src="{{ Storage::url($etp->cotacao_path) }}" alt="Anexo" class="max-w-full h-auto rounded-lg border border-gray-300">
                                 </div>
-                            </a>
-                        @endif
-                    </div> -->
+                            @else
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mr-4">
+                                            <i class="fas fa-file-alt text-xl"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-900">
+                                                {{ $etp->modalidade === 'concorrencia' || $etp->modalidade === 'inexigibilidade' ? 'Projeto Básico' : 'Cotação do Fornecedor' }}
+                                            </p>
+                                            <p class="text-xs text-gray-500">Clique para baixar o arquivo</p>
+                                        </div>
+                                    </div>
+                                    <a href="{{ Storage::url($etp->cotacao_path) }}" download
+                                        class="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-all">
+                                        <i class="fas fa-download mr-2"></i>
+                                        Baixar Arquivo
+                                    </a>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
                 @endif
 
                 @if($etp->processo_id)
                     <div class="mt-8 bg-purple-50 p-6 rounded-xl border border-purple-200">
                         <div class="flex items-center">
-                            <div
-                                class="w-12 h-12 rounded-full bg-purple-200 text-purple-700 flex items-center justify-center mr-4">
+                            <div class="w-12 h-12 rounded-full bg-purple-200 text-purple-700 flex items-center justify-center mr-4">
                                 <i class="fas fa-link text-xl"></i>
                             </div>
                             <div>
                                 <h4 class="text-lg font-bold text-purple-900">Vinculado a Processo de Licitação</h4>
-                                <p class="text-sm text-purple-800">Este ETP foi aprovado e agora faz parte do Processo Nº <span
-                                        class="font-bold">{{ $etp->processo->numero_processo ?? $etp->processo_id }}</span></p>
+                                <p class="text-sm text-purple-800">Este ETP foi aprovado e agora faz parte do Processo Nº 
+                                    <span class="font-bold">{{ $etp->processo->numero_processo ?? $etp->processo_id }}</span>
+                                </p>
                             </div>
                         </div>
                     </div>

@@ -38,17 +38,17 @@
                 <div class="absolute w-full h-1 bg-gray-200 rounded-full top-5"></div>
                 <div id="progress-bar" class="absolute w-1/3 h-1 bg-[#009496] rounded-full top-5 transition-all duration-300"></div>
                 <div class="flex justify-between mx-auto items-center relative z-10">
-                    <!-- Step 1 Drop -->
+                    <!-- Step 1 -->
                     <div class="text-center w-1/3">
                         <div class="w-10 h-10 mx-auto bg-[#009496] rounded-full text-white flex items-center justify-center font-bold border-4 border-white shadow-sm" id="indicator-1">1</div>
                         <p class="mt-2 text-sm font-medium text-[#009496]" id="label-1">Dados Iniciais</p>
                     </div>
-                    <!-- Step 2 Drop -->
+                    <!-- Step 2 -->
                     <div class="text-center w-1/3">
                         <div class="w-10 h-10 mx-auto bg-gray-200 rounded-full text-gray-500 flex items-center justify-center font-bold border-4 border-white shadow-sm transition-colors duration-300" id="indicator-2">2</div>
                         <p class="mt-2 text-sm font-medium text-gray-400 transition-colors duration-300" id="label-2">Objeto</p>
                     </div>
-                    <!-- Step 3 Drop -->
+                    <!-- Step 3 -->
                     <div class="text-center w-1/3">
                         <div class="w-10 h-10 mx-auto bg-gray-200 rounded-full text-gray-500 flex items-center justify-center font-bold border-4 border-white shadow-sm transition-colors duration-300" id="indicator-3">3</div>
                         <p class="mt-2 text-sm font-medium text-gray-400 transition-colors duration-300" id="label-3">Contratação</p>
@@ -65,9 +65,7 @@
                         <select name="secretaria_id"
                             id="secretaria_id"
                             class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent" required>
-
                             <option value="">Selecione...</option>
-
                             @foreach($secretarias as $sec)
                                 <option value="{{ $sec->id }}"
                                     data-servidor="{{ $sec->servidor_responsavel }}">
@@ -76,15 +74,14 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="mt-4">
+                    <div class="">
                         <label class="block text-sm font-medium text-gray-700 mb-2">
                             Servidor Responsável
                         </label>
-
                         <input type="text"
                             name="servidor_responsavel"
                             id="servidor_responsavel"
-                            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent" readonly>
+                            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent" required>
                     </div>
                 </div>
                 
@@ -125,84 +122,71 @@
                 </h4>
 
                 <div id="campos-itens-contratacao">
-                {{-- TIPO --}}
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-3">
-                        Tipo de contratação *
-                    </label>
-
-                    <div class="flex items-center space-x-6">
-                        <label class="inline-flex items-center cursor-pointer">
-                            <input type="radio"
-                                name="tipo_contratacao"
-                                value="item"
-                                class="form-radio text-[#009496] w-5 h-5"
-                                {{ old('tipo_contratacao') == 'item' ? 'checked' : '' }}
-                                onchange="toggleLoteFields()"
-                                required>
-                            <span class="ml-2">Por Item</span>
+                    {{-- TIPO --}}
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-3">
+                            Tipo de contratação *
                         </label>
 
-                        <label class="inline-flex items-center cursor-pointer border-l pl-6 border-gray-200">
-                            <input type="radio"
-                                name="tipo_contratacao"
-                                value="lote"
-                                class="form-radio text-[#009496] w-5 h-5"
-                                {{ old('tipo_contratacao') == 'lote' ? 'checked' : '' }}
-                                onchange="toggleLoteFields()">
-                            <span class="ml-2">Por Lote</span>
-                        </label>
+                        <div class="flex items-center space-x-6">
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="radio"
+                                    name="tipo_contratacao"
+                                    value="item"
+                                    class="form-radio text-[#009496] w-5 h-5"
+                                    {{ old('tipo_contratacao') == 'item' ? 'checked' : '' }}
+                                    onchange="toggleContratacaoTipo()"
+                                    required>
+                                <span class="ml-2">Por Item</span>
+                            </label>
+
+                            <label class="inline-flex items-center cursor-pointer border-l pl-6 border-gray-200">
+                                <input type="radio"
+                                    name="tipo_contratacao"
+                                    value="lote"
+                                    class="form-radio text-[#009496] w-5 h-5"
+                                    {{ old('tipo_contratacao') == 'lote' ? 'checked' : '' }}
+                                    onchange="toggleContratacaoTipo()">
+                                <span class="ml-2">Por Lote</span>
+                            </label>
+                        </div>
                     </div>
-                </div>
 
-                {{-- BLOCO LOTE --}}
-                <div id="campos-lote"
-                    class="{{ old('tipo_contratacao') == 'lote' ? 'block' : 'hidden' }}
-                    p-6 bg-gray-50 border border-gray-200 rounded-xl mb-6">
-
-                    {{-- Nome do Lote --}}
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Nome do Lote *
-                        </label>
-                        <input type="text"
-                            name="nome_lote"
-                            id="nome_lote"
-                            value="{{ old('nome_lote') }}"
-                            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496]">
+                    {{-- ÁREA DE ITENS (SEM LOTE) --}}
+                    <div id="area-itens-sem-lote" class="{{ old('tipo_contratacao') == 'lote' ? 'hidden' : 'block' }}">
+                        @include('Admin.Etps.partials.itens-selector', ['loteIndex' => null])
                     </div>
-                </div>
 
-                {{-- Selecionar Itens --}}
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Selecionar Itens *
-                    </label>
+                    {{-- ÁREA DE LOTES --}}
+                    <div id="area-lotes" class="{{ old('tipo_contratacao') == 'lote' ? 'block' : 'hidden' }}">
+                        <div class="mb-4 flex justify-between items-center">
+                            <h5 class="text-md font-semibold text-gray-700">Lotes da Contratação</h5>
+                            <button type="button" 
+                                    onclick="adicionarLote()"
+                                    class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-[#009496] rounded-lg hover:bg-[#007a7a] transition-all">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                </svg>
+                                Novo Lote
+                            </button>
+                        </div>
 
-                    <select name="itens_ids[]"
-                        id="itens_ids"
-                        multiple
-                        required
-                        class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496]"
-                        style="height:120px;">
-
-                        @foreach($itens as $item)
-                            <option value="{{ $item->id }}"
-                                {{ collect(old('itens_ids'))->contains($item->id) ? 'selected' : '' }}>
-                                {{ $item->descricao_item }}
-                            </option>
-                        @endforeach
-                    </select>
-
-                    <p class="mt-1 text-xs text-gray-500">
-                        Segure CTRL (ou CMD) para selecionar múltiplos.
-                    </p>
-                </div>
-
+                        <div id="lotes-container" class="space-y-6">
+                            @if(old('lotes'))
+                                @foreach(old('lotes') as $index => $lote)
+                                    @include('Admin.Etps.partials.lote-card', [
+                                        'loteIndex' => $index, 
+                                        'loteData' => $lote,
+                                        'itens' => $itens
+                                    ])
+                                @endforeach
+                            @endif
+                        </div>
+                    </div>
                 </div>
 
                 {{-- Prazo --}}
-                <div class="mb-4">
+                <div class="mb-4 mt-6">
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                         Prazo de Entrega *
                     </label>
@@ -268,67 +252,340 @@
 </div>
 
 <script>
-    function toggleLoteFields() {
+document.addEventListener("DOMContentLoaded", function () {
+    let loteCounter = {{ old('lotes') ? count(old('lotes')) : 0 }};
+
+    /* =====================================================
+        ELEMENTOS
+    ====================================================== */
+
+    const secretariaSelect = document.getElementById('secretaria_id');
+    const servidorInput = document.getElementById('servidor_responsavel');
+    const modalidadeSelect = document.getElementById('modalidade');
+    const cotacaoInput = document.getElementById('cotacao_path');
+    const camposItens = document.getElementById('campos-itens-contratacao');
+    const labelPdf = document.getElementById('label_pdf_anexo');
+
+    /* =====================================================
+        SECRETARIA → SERVIDOR AUTO
+    ====================================================== */
+
+    function preencherServidor() {
+        const selected = secretariaSelect.options[secretariaSelect.selectedIndex];
+        const servidor = selected?.getAttribute('data-servidor');
+
+        if (!servidorInput.value) {
+            servidorInput.value = servidor ?? '';
+        }
+    }
+
+    preencherServidor();
+
+    secretariaSelect.addEventListener('change', function () {
+        preencherServidor();
+    });
+
+    /* =====================================================
+        TIPO CONTRATAÇÃO
+    ====================================================== */
+
+    window.toggleContratacaoTipo = function () {
         const selected = document.querySelector('input[name="tipo_contratacao"]:checked');
         if (!selected) return;
 
         const isLote = selected.value === 'lote';
-        const camposLote = document.getElementById('campos-lote');
-        const nomeLote = document.getElementById('nome_lote');
+        const areaSemLote = document.getElementById('area-itens-sem-lote');
+        const areaLotes = document.getElementById('area-lotes');
 
         if (isLote) {
-            camposLote.classList.remove('hidden');
-            nomeLote.setAttribute('required', 'required');
+            areaSemLote.classList.add('hidden');
+            areaLotes.classList.remove('hidden');
+            
+            // Se não houver lotes, adiciona um automaticamente
+            if (document.querySelectorAll('.lote-card').length === 0) {
+                adicionarLote();
+            }
         } else {
-            camposLote.classList.add('hidden');
-            nomeLote.removeAttribute('required');
-            nomeLote.value = '';
+            areaSemLote.classList.remove('hidden');
+            areaLotes.classList.add('hidden');
         }
-    }
+    };
 
-    function toggleModalidadeFields() {
-        const modalidade = document.getElementById('modalidade').value;
-        const camposItens = document.getElementById('campos-itens-contratacao');
-        const labelPdf = document.getElementById('label_pdf_anexo');
-        
-        // Sepearação da seleção de itens
-        const itensIds = document.getElementById('itens_ids');
-        const labelsTipoContratacao = document.querySelectorAll('input[name="tipo_contratacao"]');
+    /* =====================================================
+        MODALIDADE
+    ====================================================== */
+
+    window.toggleModalidadeFields = function () {
+        const modalidade = modalidadeSelect.value;
+        const radiosTipo = document.querySelectorAll('input[name="tipo_contratacao"]');
 
         if (modalidade === 'concorrencia' || modalidade === 'inexigibilidade') {
             camposItens.classList.add('hidden');
             labelPdf.innerText = 'Anexar Projeto Básico *';
-            document.getElementById('cotacao_path').setAttribute('required', 'required');
-            
-            // Remove required dos itens
-            if (itensIds) itensIds.removeAttribute('required');
-            labelsTipoContratacao.forEach(el => el.removeAttribute('required'));
+            cotacaoInput.setAttribute('required', 'required');
+
+            radiosTipo.forEach(el => {
+                el.checked = false;
+                el.removeAttribute('required');
+            });
         } else {
             camposItens.classList.remove('hidden');
             labelPdf.innerText = 'Anexar Cotação do Fornecedor Local';
-            document.getElementById('cotacao_path').removeAttribute('required');
-            
-            // Retorna required dos itens
-            if (itensIds) itensIds.setAttribute('required', 'required');
-            labelsTipoContratacao.forEach(el => el.setAttribute('required', 'required'));
+            cotacaoInput.removeAttribute('required');
+
+            radiosTipo.forEach(el => {
+                el.setAttribute('required', 'required');
+            });
         }
+    };
+
+    /* =====================================================
+        GERENCIAMENTO DE LOTES - VERSÃO CORRIGIDA
+    ====================================================== */
+
+    window.adicionarLote = function () {
+        const container = document.getElementById('lotes-container');
+        
+        // Criar o elemento div para o novo lote
+        const loteDiv = document.createElement('div');
+        loteDiv.className = 'lote-card border border-gray-200 rounded-xl p-6 bg-gray-50 relative';
+        loteDiv.id = `lote-${loteCounter}`;
+        
+        // HTML do botão remover
+        const removeButtonHTML = `
+            <button type="button"
+                    onclick="removerLote(this)"
+                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        `;
+        
+        // HTML do input nome do lote
+        const nomeLoteHTML = `
+            <div class="mb-4 pr-8">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Nome do Lote *
+                </label>
+                <input type="text"
+                    name="lotes[${loteCounter}][nome]"
+                    placeholder="Ex: Lote ${loteCounter + 1} - Materiais de Escritório"
+                    class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496]"
+                    required>
+            </div>
+        `;
+        
+        // HTML do seletor de itens
+        const itensSelectorHTML = gerarItensSelector(loteCounter);
+        
+        // Montar o lote completo
+        loteDiv.innerHTML = removeButtonHTML + nomeLoteHTML + itensSelectorHTML;
+        
+        // Adicionar ao container
+        container.appendChild(loteDiv);
+        
+        // Inicializar a busca para este lote
+        inicializarBuscaLote(loteCounter);
+        
+        loteCounter++;
+    };
+
+    // Função auxiliar para gerar o HTML do seletor de itens
+    function gerarItensSelector(loteIndex) {
+        const buscaId = `buscar_item_lote_${loteIndex}`;
+        const listaId = `lista_itens_lote_${loteIndex}`;
+        const containerId = `itens-selecionados-lote-${loteIndex}`;
+        
+        // Gerar opções de itens
+        let itensOptions = '';
+        @foreach($itens as $item)
+            itensOptions += `
+                <label class="flex items-center space-x-3 item-option"
+                    data-descricao="{{ strtolower($item->descricao_item) }}">
+                    <input type="checkbox"
+                        value="{{ $item->id }}"
+                        data-descricao="{{ $item->descricao_item }}"
+                        data-lote-index="${loteIndex}"
+                        class="item-checkbox w-4 h-4 text-[#009496]"
+                        onchange="toggleItemSelecionado(this, ${loteIndex})">
+                    <span class="text-sm text-gray-700">
+                        {{ $item->descricao_item }}
+                    </span>
+                </label>
+            `;
+        @endforeach
+        
+        return `
+            <div class="mb-4 itens-selector" data-lote-index="${loteIndex}">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Selecionar Itens *
+                </label>
+
+                {{-- BUSCA --}}
+                <div class="mb-3">
+                    <input type="text"
+                        id="${buscaId}"
+                        placeholder="Buscar item..."
+                        class="buscar-item w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496]"
+                        data-lista="${listaId}">
+                </div>
+
+                {{-- LISTA DE ITENS --}}
+                <div id="${listaId}"
+                    class="hidden border border-gray-200 rounded-lg p-4 max-h-60 overflow-y-auto space-y-2 bg-gray-50">
+                    ${itensOptions}
+                </div>
+
+                {{-- SELECIONADOS --}}
+                <div class="mt-6">
+                    <h5 class="text-sm font-semibold mb-2 text-gray-700">
+                        Itens Selecionados - Lote ${loteIndex + 1}
+                    </h5>
+
+                    <div id="${containerId}" class="space-y-3"></div>
+                </div>
+            </div>
+        `;
     }
 
-    function nextStep(step) {
+    window.removerLote = function (button) {
+        const loteCard = button.closest('.lote-card');
+        if (document.querySelectorAll('.lote-card').length > 1) {
+            loteCard.remove();
+        } else {
+            alert('É necessário ter pelo menos um lote.');
+        }
+    };
+
+    /* =====================================================
+        BUSCA DE ITENS
+    ====================================================== */
+
+    function inicializarBuscaLote(loteIndex) {
+        const buscaId = loteIndex !== undefined ? `buscar_item_lote_${loteIndex}` : 'buscar_item_global';
+        const listaId = loteIndex !== undefined ? `lista_itens_lote_${loteIndex}` : 'lista_itens_global';
+        
+        const buscaInput = document.getElementById(buscaId);
+        if (!buscaInput) return;
+
+        buscaInput.addEventListener('keyup', function () {
+            const termo = this.value.toLowerCase().trim();
+            const lista = document.getElementById(listaId);
+            if (!lista) return;
+            
+            const itens = lista.querySelectorAll('.item-option');
+
+            if (termo.length < 2) {
+                lista.classList.add('hidden');
+                itens.forEach(el => el.style.display = 'flex');
+                return;
+            }
+
+            lista.classList.remove('hidden');
+
+            itens.forEach(function (el) {
+                const descricao = el.dataset.descricao;
+                el.style.display = descricao.includes(termo) ? 'flex' : 'none';
+            });
+        });
+    }
+
+    // Inicializar buscas existentes
+    inicializarBuscaLote();
+    document.querySelectorAll('.lote-card').forEach((card, index) => {
+        inicializarBuscaLote(index);
+    });
+
+    /* =====================================================
+        SELEÇÃO DE ITENS
+    ====================================================== */
+
+    window.toggleItemSelecionado = function (checkbox, loteIndex) {
+        const id = checkbox.value;
+        const descricao = checkbox.dataset.descricao;
+        
+        const containerId = loteIndex !== null ? `itens-selecionados-lote-${loteIndex}` : 'itens-selecionados-sem-lote';
+        const container = document.getElementById(containerId);
+        
+        if (checkbox.checked) {
+            const namePrefix = loteIndex !== null ? `lotes[${loteIndex}][itens]` : 'itens';
+            
+            const itemHTML = `
+                <div class="flex items-center justify-between bg-white border rounded-lg p-3 shadow-sm" id="item-${containerId}-${id}">
+                    <div class="flex-1">
+                        <p class="text-sm font-medium text-gray-800 mb-2">${descricao}</p>
+
+                        <div class="flex gap-3">
+                            <input type="hidden" name="${namePrefix}[${id}][item_id]" value="${id}">
+
+                            <select name="${namePrefix}[${id}][unidade]"
+                                class="px-2 py-1 border border-gray-300 rounded text-sm"
+                                required>
+                                <option value="unidade">Unidade</option>
+                                <option value="pacote">Pacote</option>
+                                <option value="caixa">Caixa</option>
+                                <option value="metro">Metro</option>
+                                <option value="quilograma">Quilograma</option>
+                                <option value="litro">Litro</option>
+                            </select>
+
+                            <input type="number"
+                                name="${namePrefix}[${id}][quantidade]"
+                                placeholder="Qtd"
+                                min="1"
+                                required
+                                class="px-2 py-1 border border-gray-300 rounded text-sm w-20">
+                        </div>
+                    </div>
+
+                    <button type="button"
+                        class="ml-4 text-red-500 hover:text-red-700 font-bold"
+                        onclick="removerItemSelecionado(${id}, ${loteIndex})">
+                        ✕
+                    </button>
+                </div>
+            `;
+            
+            container.insertAdjacentHTML('beforeend', itemHTML);
+        } else {
+            removerItemSelecionado(id, loteIndex);
+        }
+    };
+
+    window.removerItemSelecionado = function (id, loteIndex) {
+        const containerId = loteIndex !== null ? `itens-selecionados-lote-${loteIndex}` : 'itens-selecionados-sem-lote';
+        const itemDiv = document.getElementById(`item-${containerId}-${id}`);
+        if (itemDiv) itemDiv.remove();
+
+        // Desmarcar checkbox correspondente
+        const checkboxSelector = loteIndex !== null 
+            ? `.item-checkbox[value="${id}"][data-lote-index="${loteIndex}"]`
+            : `.item-checkbox[value="${id}"]:not([data-lote-index])`;
+        
+        const checkbox = document.querySelector(checkboxSelector);
+        if (checkbox) checkbox.checked = false;
+    };
+
+    /* =====================================================
+        STEPS
+    ====================================================== */
+
+    window.nextStep = function (step) {
         if (step === 2) {
-            // CORREÇÃO: Removida a verificação do responsavel_id que não existe
-            if(!document.getElementById('secretaria_id').value) {
+            if (!secretariaSelect.value) {
                 alert('Selecione uma secretaria primeiro.');
                 return;
             }
-            if(!document.getElementById('modalidade').value) {
+            if (!modalidadeSelect.value) {
                 alert('Selecione uma modalidade primeiro.');
                 return;
             }
         }
+
         if (step === 3) {
-            if(!document.getElementById('objeto_licitacao').value.trim()) {
-                alert('Preencha o objeto detalhadamente primeiro.');
+            if (!document.getElementById('objeto_licitacao').value.trim()) {
+                alert('Preencha o objeto primeiro.');
                 return;
             }
         }
@@ -336,16 +593,17 @@
         document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
         document.getElementById('step-' + step).classList.remove('hidden');
         updateProgress(step);
-    }
+    };
 
-    function prevStep(step) {
+    window.prevStep = function (step) {
         document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
         document.getElementById('step-' + step).classList.remove('hidden');
         updateProgress(step);
-    }
+    };
 
-    function updateProgress(step) {
+    window.updateProgress = function (step) {
         const progressBar = document.getElementById('progress-bar');
+
         if (step === 1) progressBar.style.width = '33%';
         if (step === 2) progressBar.style.width = '66%';
         if (step === 3) progressBar.style.width = '100%';
@@ -353,7 +611,7 @@
         for (let i = 1; i <= 3; i++) {
             let indicator = document.getElementById('indicator-' + i);
             let label = document.getElementById('label-' + i);
-            
+
             if (i <= step) {
                 indicator.classList.remove('bg-gray-200', 'text-gray-500');
                 indicator.classList.add('bg-[#009496]', 'text-white');
@@ -366,29 +624,19 @@
                 label.classList.remove('text-[#009496]');
             }
         }
-    }
+    };
+
+    // Inicialização
+    toggleModalidadeFields();
+    toggleContratacaoTipo();
     
-    document.addEventListener("DOMContentLoaded", function() {
-        if(document.querySelector('input[name="tipo_contratacao"]:checked')) {
-            toggleLoteFields();
+    // Se for lote e não houver lotes, adiciona um
+    if (document.querySelector('input[name="tipo_contratacao"]:checked')?.value === 'lote') {
+        if (document.querySelectorAll('.lote-card').length === 0) {
+            adicionarLote();
         }
-        
-        toggleModalidadeFields();
-
-        // Inicializa o campo servidor_responsavel se já houver uma secretaria selecionada
-        const secretariaSelect = document.getElementById('secretaria_id');
-        if (secretariaSelect.value) {
-            const selected = secretariaSelect.options[secretariaSelect.selectedIndex];
-            const servidor = selected.getAttribute('data-servidor');
-            document.getElementById('servidor_responsavel').value = servidor ?? '';
-        }
-    });
-
-    document.getElementById('secretaria_id').addEventListener('change', function() {
-        const selected = this.options[this.selectedIndex];
-        const servidor = selected.getAttribute('data-servidor');
-        document.getElementById('servidor_responsavel').value = servidor ?? '';
-    });
-
+    }
+});
 </script>
+
 @endsection

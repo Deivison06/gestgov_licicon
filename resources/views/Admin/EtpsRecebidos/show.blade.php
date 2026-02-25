@@ -116,25 +116,22 @@
                                 </span>
                             </li>
                             <li class="pt-3 border-t border-gray-200">
+                                <span class="text-gray-500 font-medium block text-xs uppercase tracking-wider mb-1">Modalidade</span>
+                                <span class="inline-block bg-purple-100 text-purple-800 px-3 py-1 rounded-md font-bold uppercase text-sm">{{ $etp->modalidade }}</span>
+                            </li>
+                            <li class="pt-3 border-t border-gray-200">
                                 <span class="text-gray-500 font-medium block text-xs uppercase tracking-wider mb-1">Tipo de
                                     Contratação</span>
                                 <span
                                     class="inline-block bg-[#009496]/10 text-[#009496] px-3 py-1 rounded-md font-bold uppercase text-sm border border-[#009496]/20">{{ $etp->tipo_contratacao }}</span>
                             </li>
-                            @if($etp->tipo_contratacao === 'lote')
-                                <li>
-                                    <span class="text-gray-500 font-medium block text-xs uppercase tracking-wider mb-1">Nome do
-                                        Lote</span>
-                                    <span class="text-gray-900 font-semibold">{{ $etp->nome_lote }}</span>
-                                </li>
-                                <li>
-                                    <span class="text-gray-500 font-medium block text-xs uppercase tracking-wider mb-1">Prazo de
-                                        Entrega Estimado</span>
-                                    <span
-                                        class="text-gray-900 font-semibold bg-white px-2 py-1 rounded border border-gray-200 text-sm"><i
+                            <li>
+                                <span class="text-gray-500 font-medium block text-xs uppercase tracking-wider mb-1">Prazo de
+                                    Entrega Estimado</span>
+                                <span
+                                    class="text-gray-900 font-semibold bg-white px-2 py-1 rounded border border-gray-200 text-sm"><i
                                             class="far fa-calendar-alt mr-1 text-gray-400"></i> {{ $etp->prazo_entrega }}</span>
-                                </li>
-                            @endif
+                            </li>
                         </ul>
                     </div>
 
@@ -149,63 +146,147 @@
                     </div>
                 </div>
 
-                @if($etp->tipo_contratacao === 'lote')
-                    <div class="mb-8 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                        <h4 class="text-lg font-bold text-gray-800 mb-4 border-b border-gray-200 pb-2"><i
-                                class="fas fa-boxes mr-2 text-[#009496]"></i> Composição do Lote</h4>
-                        @if($etp->itens->count() > 0)
-                            <div class="overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
-                                <table class="w-full text-sm text-left text-gray-500">
-                                    <thead class="text-xs text-gray-700 uppercase bg-gray-100 border-b border-gray-200">
-                                        <tr>
-                                            <th scope="col" class="px-6 py-4 font-bold text-gray-800 w-24">ID do Item</th>
-                                            <th scope="col" class="px-6 py-4 font-bold text-gray-800">Descrição Detalhada do Item
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="divide-y divide-gray-200">
-                                        @foreach($etp->itens as $item)
-                                            <tr class="bg-white hover:bg-gray-50 transition-colors">
-                                                <td class="px-6 py-4 font-mono font-medium text-gray-900 bg-gray-50">
-                                                    {{ str_pad($item->id, 5, '0', STR_PAD_LEFT) }}</td>
-                                                <td class="px-6 py-4 text-gray-800 font-medium">{{ $item->descricao_item }}</td>
+                <!-- ITENS OU LOTES -->
+                @if(!in_array($etp->modalidade, ['concorrencia', 'inexigibilidade']))
+                    @if($etp->tipo_contratacao === 'item')
+                        <!-- ITENS (SEM LOTE) -->
+                        <div class="mb-8 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                            <h4 class="text-lg font-bold text-gray-800 mb-4 border-b border-gray-200 pb-2"><i
+                                    class="fas fa-boxes mr-2 text-[#009496]"></i> Itens Solicitados</h4>
+                            @if($etp->itens->count() > 0)
+                                <div class="overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
+                                    <table class="w-full text-sm text-left text-gray-500">
+                                        <thead class="text-xs text-gray-700 uppercase bg-gray-100 border-b border-gray-200">
+                                            <tr>
+                                                <th scope="col" class="px-6 py-4 font-bold text-gray-800">Descrição do Item</th>
+                                                <th scope="col" class="px-6 py-4 font-bold text-gray-800">Unidade</th>
+                                                <th scope="col" class="px-6 py-4 font-bold text-gray-800">Quantidade</th>
                                             </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                        @else
-                            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-md">
-                                <div class="flex">
-                                    <div class="flex-shrink-0">
-                                        <i class="fas fa-exclamation-triangle text-yellow-400"></i>
-                                    </div>
-                                    <div class="ml-3">
-                                        <p class="text-sm text-yellow-700 font-medium">Nenhum item vinculado a este ETP de lote.</p>
+                                        </thead>
+                                        <tbody class="divide-y divide-gray-200">
+                                            @foreach($etp->itens as $item)
+                                                <tr class="bg-white hover:bg-gray-50 transition-colors">
+                                                    <td class="px-6 py-4 text-gray-800 font-medium">{{ $item->descricao_item }}</td>
+                                                    <td class="px-6 py-4 text-gray-600">{{ $item->pivot->unidade }}</td>
+                                                    <td class="px-6 py-4 text-gray-600">{{ $item->pivot->quantidade }}</td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @else
+                                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-md">
+                                    <div class="flex">
+                                        <div class="flex-shrink-0">
+                                            <i class="fas fa-exclamation-triangle text-yellow-400"></i>
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="text-sm text-yellow-700 font-medium">Nenhum item vinculado a este ETP.</p>
+                                        </div>
                                     </div>
                                 </div>
+                            @endif
+                        </div>
+                    @elseif($etp->tipo_contratacao === 'lote' && $etp->lotes->count() > 0)
+                        <!-- LOTES -->
+                        <div class="mb-8">
+                            <h4 class="text-lg font-bold text-gray-800 mb-4 border-b border-gray-200 pb-2">
+                                <i class="fas fa-layer-group mr-2 text-[#009496]"></i> Lotes da Contratação
+                            </h4>
+                            
+                            <div class="space-y-6">
+                                @foreach($etp->lotes as $loteIndex => $lote)
+                                    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                                        <div class="bg-gray-100 px-6 py-4 border-b border-gray-200">
+                                            <h5 class="text-md font-bold text-gray-800 flex items-center">
+                                                <i class="fas fa-tag mr-2 text-[#009496]"></i> 
+                                                {{ $lote->nome }}
+                                            </h5>
+                                        </div>
+                                        
+                                        <div class="p-6">
+                                            @if($lote->itens->count() > 0)
+                                                <div class="overflow-x-auto">
+                                                    <table class="w-full text-sm text-left text-gray-500">
+                                                        <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                                                            <tr>
+                                                                <th scope="col" class="px-6 py-3 font-bold text-gray-800">Descrição do Item</th>
+                                                                <th scope="col" class="px-6 py-3 font-bold text-gray-800">Unidade</th>
+                                                                <th scope="col" class="px-6 py-3 font-bold text-gray-800">Quantidade</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody class="divide-y divide-gray-200">
+                                                            @foreach($lote->itens as $item)
+                                                                <tr class="bg-white hover:bg-gray-50 transition-colors">
+                                                                    <td class="px-6 py-4 text-gray-800 font-medium">{{ $item->descricao_item }}</td>
+                                                                    <td class="px-6 py-4 text-gray-600">{{ $item->pivot->unidade }}</td>
+                                                                    <td class="px-6 py-4 text-gray-600">{{ $item->pivot->quantidade }}</td>
+                                                                </tr>
+                                                            @endforeach
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            @else
+                                                <p class="text-gray-500 text-sm">Nenhum item vinculado a este lote.</p>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endforeach
                             </div>
-                        @endif
-                    </div>
+                        </div>
+                    @endif
+                @endif
 
-                    @if($etp->cotacao_path)
-                        <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm mb-8">
-                            <h4 class="text-lg font-bold text-gray-800 mb-4 border-b border-gray-200 pb-2"><i
-                                    class="fas fa-paperclip mr-2 text-[#009496]"></i> Documentos Anexos</h4>
+                <!-- ANEXOS -->
+                @if($etp->cotacao_path)
+                    @php
+                        $extension = pathinfo($etp->cotacao_path, PATHINFO_EXTENSION);
+                        $isPdf = strtolower($extension) === 'pdf';
+                        $isImage = in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif']);
+                        $tituloAnexo = in_array($etp->modalidade, ['concorrencia', 'inexigibilidade']) ? 'Projeto Básico' : 'Cotação do Fornecedor';
+                    @endphp
+                    
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm mb-8">
+                        <h4 class="text-lg font-bold text-gray-800 mb-4 border-b border-gray-200 pb-2">
+                            <i class="fas fa-paperclip mr-2 text-[#009496]"></i> Documentos Anexos
+                        </h4>
+                        
+                        @if($isPdf)
+                            <div class="flex items-center justify-between bg-blue-50 p-4 rounded-lg border border-blue-200">
+                                <div class="flex items-center">
+                                    <div class="w-12 h-12 rounded-full bg-red-600 text-white flex items-center justify-center mr-4 shadow-sm">
+                                        <i class="fas fa-file-pdf text-lg"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-bold text-blue-900 mb-0.5">{{ $tituloAnexo }}</p>
+                                        <p class="text-xs text-blue-700">Clique no botão para visualizar o PDF</p>
+                                    </div>
+                                </div>
+                                <a href="{{ Storage::url($etp->cotacao_path) }}" target="_blank"
+                                    class="inline-flex items-center px-4 py-2 bg-[#009496] text-white rounded-lg hover:bg-[#007a7a] transition-all">
+                                    <i class="fas fa-eye mr-2"></i>
+                                    Visualizar PDF
+                                </a>
+                            </div>
+                        @elseif($isImage)
+                            <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                                <p class="text-sm font-bold text-blue-900 mb-3">{{ $tituloAnexo }}</p>
+                                <img src="{{ Storage::url($etp->cotacao_path) }}" alt="Anexo" class="max-w-full h-auto rounded-lg border border-gray-300 max-h-96 mx-auto">
+                            </div>
+                        @else
                             <a href="{{ Storage::url($etp->cotacao_path) }}" target="_blank"
-                                class="inline-flex items-center px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:shadow-md transition-all group">
+                                class="inline-flex items-center px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:shadow-md transition-all group w-full">
                                 <div
                                     class="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center mr-4 shadow-sm group-hover:scale-110 transition-transform">
                                     <i class="fas fa-download text-lg"></i>
                                 </div>
                                 <div>
-                                    <p class="text-sm font-bold text-blue-900 mb-0.5">Cotação do Fornecedor Local</p>
-                                    <p class="text-xs text-blue-700 font-medium">Visualizar arquivo original submetido pela
-                                        Secretaria</p>
+                                    <p class="text-sm font-bold text-blue-900 mb-0.5">{{ $tituloAnexo }}</p>
+                                    <p class="text-xs text-blue-700 font-medium">Visualizar arquivo original submetido pela Secretaria</p>
                                 </div>
                             </a>
-                        </div>
-                    @endif
+                        @endif
+                    </div>
                 @endif
 
                 @if($etp->processo_id)
@@ -326,7 +407,6 @@
                 const content = document.getElementById('modal-link-content');
 
                 modal.classList.remove('hidden');
-                // Small delay to allow display:block to apply before animating opacity/transform
                 setTimeout(() => {
                     content.classList.remove('scale-95', 'opacity-0');
                     content.classList.add('scale-100', 'opacity-100');
@@ -342,19 +422,18 @@
 
                 setTimeout(() => {
                     modal.classList.add('hidden');
-                }, 300); // Wait for transition to finish
+                }, 300);
             }
 
             function submitLinkProcessForm() {
-                // Redireciona para o `ProcessoController@create` passando os atributos do ETP na URL
                 const etpId = '{{ $etp->id }}';
                 const prefId = '{{ $etp->prefeitura_id }}';
                 const obj = encodeURIComponent('{{ addslashes($etp->objeto_licitacao) }}');
+                const modalidade = '{{ $etp->modalidade }}';
+                const tipoContratacao = '{{ $etp->tipo_contratacao }}';
 
-                // Vamos marcar no form
-                document.getElementById('linkProcessForm').action = "{{ route('admin.processos.create') }}?etp_id=" + etpId + "&prefeitura_id=" + prefId + "&objeto=" + obj;
+                document.getElementById('linkProcessForm').action = "{{ route('admin.processos.create') }}?etp_id=" + etpId + "&prefeitura_id=" + prefId + "&objeto=" + obj + "&modalidade=" + modalidade + "&tipo_contratacao=" + tipoContratacao;
 
-                // Submete normalmente via GET
                 window.location.href = document.getElementById('linkProcessForm').action;
             }
         </script>

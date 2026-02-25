@@ -18,6 +18,7 @@
                     <p class="mt-1 text-sm text-gray-500">Visão geral dos processos - {{ now()->format('d/m/Y') }}</p>
                 </div>
 
+                @if(auth()->user()->hasAnyRole(['diretor_licicon', 'gerente_licicon', 'colaborador_licicon']))
                 <!-- Filtro de Cidade -->
                 <div class="w-full md:w-64">
                     <form action="{{ route('admin.dashboard') }}" method="GET">
@@ -32,6 +33,7 @@
                         </select>
                     </form>
                 </div>
+                @endif
             </div>
         </div>
 

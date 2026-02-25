@@ -144,7 +144,8 @@ document.addEventListener('DOMContentLoaded', function() {
     function togglePrefeituraRequired() {
         const selectedRole = Array.from(roleInputs).find(input => input.checked);
         if (selectedRole) {
-            const roleName = selectedRole.closest('label').textContent.trim();
+            const label = document.querySelector(`label[for="${selectedRole.id}"]`);
+            const roleName = label ? label.textContent.trim() : '';
             if (roleName === 'prefeitura') {
                 prefeituraSelect.setAttribute('required', 'required');
                 prefeituraSelect.closest('div').querySelector('p').style.display = 'block';

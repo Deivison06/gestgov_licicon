@@ -759,19 +759,19 @@
                                 <span>Solicitar ETP</span>
                             </a>
 
+                            <a href="{{ route('admin.etp_itens.index') }}"
+                                class="nav-subitem {{ request()->routeIs('admin.etp_itens.*') ? 'active' : '' }}">
+                                <i class="fas fa-list"></i>
+                                <span>Itens ETP</span>
+                            </a>
                             {{-- 🔒 Apenas Diretor e Gerente --}}
-                            @if(auth()->user()->hasAnyRole(['diretor_licicon', 'gerente_licicon']))
+                            @if(auth()->user()->hasAnyRole(['diretor_licicon', 'gerente_licicon', 'colaborador_licicon']))
                                 <a href="{{ route('admin.etps_recebidos.index') }}"
                                     class="nav-subitem {{ request()->routeIs('admin.etps_recebidos.*') ? 'active' : '' }}">
                                     <i class="fas fa-inbox"></i>
                                     <span>ETPs Recebidos</span>
                                 </a>
 
-                                <a href="{{ route('admin.etp_itens.index') }}"
-                                    class="nav-subitem {{ request()->routeIs('admin.etp_itens.*') ? 'active' : '' }}">
-                                    <i class="fas fa-list"></i>
-                                    <span>Itens ETP</span>
-                                </a>
                             @endif
                         </div>
                     </div>

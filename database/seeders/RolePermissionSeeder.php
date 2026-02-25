@@ -15,7 +15,8 @@ class RolePermissionSeeder extends Seeder
             'criar processos',
             'dar seguimento processos',
             'assinar processos',
-            'contratos'
+            'contratos',
+            'etp inteligente'
         ];
 
         foreach ($permissions as $permission) {
@@ -24,14 +25,16 @@ class RolePermissionSeeder extends Seeder
 
         $roles = [
             'diretor_licicon' => $permissions,
-            'gerente_licicon' => ['criar processos', 'dar seguimento processos', 'assinar processos', 'contratos'], // tudo menos gerenciar usuários
+            'gerente_licicon' => ['criar processos', 'dar seguimento processos', 'assinar processos', 'contratos', 'etp inteligente'], // tudo menos gerenciar usuários
             'colaborador_licicon' => ['dar seguimento processos'], // só dar seguimento
-            'prefeitura' => ['assinar processos', 'contratos'], // só assinar e contratos
+            'prefeitura' => ['assinar processos', 'contratos', 'etp inteligente'], // só assinar e contratos
         ];
 
-        foreach ($roles as $roleName => $perms) {
-            $role = Role::firstOrCreate(['name' => $roleName]);
-            $role->syncPermissions($perms);
+        foreach ($permissions as $permission) {
+            Permission::firstOrCreate([
+                'name' => $permission,
+                'guard_name' => 'web' // 👈 IMPORTANTE
+            ]);
         }
 
         $this->command->info('Roles e permissões criadas com sucesso!');

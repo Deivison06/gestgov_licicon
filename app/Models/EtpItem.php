@@ -14,6 +14,14 @@ class EtpItem extends Model
 
     public function etps()
     {
-        return $this->belongsToMany(Etp::class, 'etp_etp_item', 'etp_item_id', 'etp_id')->withTimestamps();
+        return $this->belongsToMany(
+            Etp::class,
+            'etp_etp_item',
+            'etp_item_id',
+            'etp_id'
+        )
+        ->withPivot(['unidade', 'quantidade'])
+        ->withTimestamps();
     }
+
 }

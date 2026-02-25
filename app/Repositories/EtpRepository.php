@@ -3,7 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\Etp;
-
+use App\Models\EtpLote;
 class EtpRepository
 {
     protected $model;
@@ -53,9 +53,16 @@ class EtpRepository
     }
 
     public function findById($id)
-    {
-        return $this->model->with(['prefeitura', 'secretaria', 'itens'])->findOrFail($id);
-    }
+{
+    return $this->model
+        ->with([
+            'prefeitura',
+            'secretaria',
+            'lotes.itens'
+        ])
+        ->findOrFail($id);
+}
+
 
     public function create(array $data)
     {
@@ -73,4 +80,15 @@ class EtpRepository
     {
         $etp->itens()->sync($itens);
     }
+
+    public function createLote(Etp $etp, array $data)
+{
+    return $etp->lotes()->create($data);
+}
+
+public function syncItensLote(EtpLote $lote, array $itens)
+{
+    $lote->itens()->sync($itens);
+}
+
 }

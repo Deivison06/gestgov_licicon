@@ -40,37 +40,51 @@ class EtpController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $request->validate([
-            'secretaria_id' => 'required',
-            'servidor_responsavel' => 'required|string|max:255',
-            'objeto_licitacao' => 'required|string',
-            'modalidade' => 'required|in:pregao,concorrencia,dispensa,inexigibilidade',
-            'dotacao_orcamentaria' => 'required|string|max:255',
-            'tipo_contratacao' => 'required_if:modalidade,pregao,dispensa|in:item,lote',
-            'nome_lote' => 'required_if:tipo_contratacao,lote|nullable|string|max:255',
-            'prazo_entrega' => 'required|string|max:255',
-            'itens_ids' => 'required_if:modalidade,pregao,dispensa|array',
-            'itens_ids.*' => 'exists:etp_itens,id',
-            'cotacao_path' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240'
-        ]);
+{
+    // Validação base
+    $rules = [
+        'secretaria_id' => 'required|exists:unidades,id',
+        'servidor_responsavel' => 'required|string|max:255',
+        'objeto_licitacao' => 'required|string',
+        'modalidade' => 'required|in:pregao,concorrencia,dispensa,inexigibilidade',
+        'tipo_contratacao' => 'required_if:modalidade,pregao,dispensa|in:item,lote',
+        'dotacao_orcamentaria' => 'required|string|max:255',
+        'prazo_entrega' => 'required|string|max:255',
+        'cotacao_path' => 'nullable|file|max:10240'
+    ];
 
-        $data = $request->all();
-        $data['prefeitura_id'] = auth()->user()->prefeitura_id;
+    // Validação para itens (sem lote)
+    $rules['itens'] = 'required_if:tipo_contratacao,item|array';
+    $rules['itens.*.item_id'] = 'required_if:tipo_contratacao,item|exists:etp_itens,id';
+    $rules['itens.*.unidade'] = 'required_if:tipo_contratacao,item|string|max:100';
+    $rules['itens.*.quantidade'] = 'required_if:tipo_contratacao,item|integer|min:1';
 
-        // Se for concorrência ou inexigibilidade, não precisa de tipo de contratação nem itens
-        if (in_array($data['modalidade'], ['concorrencia', 'inexigibilidade'])) {
-            $data['tipo_contratacao'] = 'item'; // Valor default para o banco
-            $data['itens_ids'] = []; // Garante que não tenha itens caso enviado
-        }
+    // Validação para lotes
+    $rules['lotes'] = 'required_if:tipo_contratacao,lote|array';
+    $rules['lotes.*.nome'] = 'required_if:tipo_contratacao,lote|string|max:255';
+    $rules['lotes.*.itens'] = 'required_if:tipo_contratacao,lote|array';
+    $rules['lotes.*.itens.*.item_id'] = 'required_if:tipo_contratacao,lote|exists:etp_itens,id';
+    $rules['lotes.*.itens.*.unidade'] = 'required_if:tipo_contratacao,lote|string|max:100';
+    $rules['lotes.*.itens.*.quantidade'] = 'required_if:tipo_contratacao,lote|integer|min:1';
 
-        try {
-            $this->etpService->store($data, $request->file('cotacao_path'));
-            return redirect()->route('admin.etps.index')->with('success', 'ETP Solicitado com sucesso. Aguardando análise.');
-        } catch (\Exception $e) {
-            return redirect()->back()->withInput()->with('error', $e->getMessage());
-        }
+    $request->validate($rules);
+
+    $data = $request->all();
+    $data['prefeitura_id'] = auth()->user()->prefeitura_id;
+
+    try {
+        $this->etpService->store($data, $request->file('cotacao_path'));
+
+        return redirect()
+            ->route('admin.etps.index')
+            ->with('success', 'ETP criado com sucesso.');
+
+    } catch (\Exception $e) {
+        return back()
+            ->withInput()
+            ->with('error', 'Erro ao criar ETP: ' . $e->getMessage());
     }
+}
 
     public function show($id)
     {

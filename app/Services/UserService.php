@@ -60,9 +60,11 @@ class UserService
             $user = $this->userRepository->create($data);
 
             // Sincronizar roles
-            if (!empty($data['roles'])) {
-                $roles = Role::whereIn('id', $data['roles'])->pluck('name')->toArray();
-                $user->syncRoles($roles);
+            if (!empty($data['role'])) {
+                $role = Role::find($data['role']);
+                if ($role) {
+                    $user->syncRoles([$role->name]);
+                }
             }
 
             // Sincronizar permissions
@@ -92,9 +94,27 @@ class UserService
 
             $this->userRepository->update($user, $data);
 
-            if (isset($data['roles'])) {
-                $this->userRepository->syncRoles($user, $data['roles']);
+            // Sincronizar role
+            if (!empty($data['role'])) {
+                $role = Role::find($data['role']);
+                if ($role) {
+                    $user->syncRoles([$role->name]);
+                }
+            } else {
+                $user->syncRoles([]);
             }
+
+            // Sincronizar permissões
+            if (isset($data['permissions'])) {
+                $permissions = Permission::whereIn('id', $data['permissions'])
+                    ->pluck('name')
+                    ->toArray();
+
+                $user->syncPermissions($permissions);
+            } else {
+                $user->syncPermissions([]);
+            }
+
 
             DB::commit();
             return $user->refresh();

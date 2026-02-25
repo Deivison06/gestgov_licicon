@@ -25,25 +25,60 @@ class EtpService
     {
          return $this->repository->getAllWithFilters($filters, $perPage);
     }
+public function store(array $data, ?UploadedFile $cotacaoFile = null)
+{
+    try {
+        if ($cotacaoFile) {
+            $data['cotacao_path'] = $cotacaoFile->store('etps/cotacoes', 'public');
+        }
 
-    public function store(array $data, ?UploadedFile $cotacaoFile = null)
-    {
-         try {
-             if ($cotacaoFile) {
-                 $data['cotacao_path'] = $cotacaoFile->store('etps/cotacoes', 'public');
-             }
+        // Extrair dados relacionados
+        $itens = $data['itens'] ?? [];
+        $lotes = $data['lotes'] ?? [];
+        
+        unset($data['itens'], $data['lotes']);
 
-             $etp = $this->repository->create($data);
+        // Criar ETP
+        $etp = $this->repository->create($data);
 
-             if (isset($data['itens_ids']) && is_array($data['itens_ids']) && $data['tipo_contratacao'] === 'lote') {
-                 $this->repository->syncItens($etp, $data['itens_ids']);
-             }
+        // Processar itens (se for contratação por item)
+        if ($data['tipo_contratacao'] === 'item' && !empty($itens)) {
+            $itensFormatados = [];
+            foreach ($itens as $itemId => $itemData) {
+                $itensFormatados[$itemId] = [
+                    'unidade' => $itemData['unidade'],
+                    'quantidade' => $itemData['quantidade'],
+                ];
+            }
+            $this->repository->syncItens($etp, $itensFormatados);
+        }
 
-             return $etp;
-         } catch (Exception $e) {
-             throw new Exception("Erro ao criar o ETP: " . $e->getMessage());
-         }
+        // Processar lotes (se for contratação por lote)
+        if ($data['tipo_contratacao'] === 'lote' && !empty($lotes)) {
+            foreach ($lotes as $loteData) {
+                $itensLote = $loteData['itens'] ?? [];
+                unset($loteData['itens']);
+
+                $lote = $this->repository->createLote($etp, $loteData);
+
+                $itensFormatados = [];
+                foreach ($itensLote as $itemId => $itemData) {
+                    $itensFormatados[$itemData['item_id']] = [
+                        'unidade' => $itemData['unidade'],
+                        'quantidade' => $itemData['quantidade'],
+                    ];
+                }
+
+                $this->repository->syncItensLote($lote, $itensFormatados);
+            }
+        }
+
+        return $etp;
+
+    } catch (Exception $e) {
+        throw new Exception("Erro ao criar ETP: " . $e->getMessage());
     }
+}
 
     public function findById($id)
     {

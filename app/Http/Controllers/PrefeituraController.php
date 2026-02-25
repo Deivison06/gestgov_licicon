@@ -152,19 +152,34 @@ class PrefeituraController extends Controller
 
     public function dashboard(Request $request)
     {
-        $cidadeId = $request->query('cidade');
+        $user = auth()->user();
 
-        // Carregar prefeituras para filtro
         $prefeituras = Prefeitura::all();
 
-        // Base query para processos
+        // Base query
         $processosQuery = Processo::with(['prefeitura', 'vencedores']);
 
-        if ($cidadeId) {
-            $prefeitura = Prefeitura::findOrFail($cidadeId);
-            $processosQuery->where('prefeitura_id', $cidadeId);
+        /*
+        |--------------------------------------------------------------------------
+        | REGRA DE VISIBILIDADE POR PERFIL
+        |--------------------------------------------------------------------------
+        */
+
+        // Se for prefeitura → só vê os dela
+        if ($user->hasRole('prefeitura')) {
+
+            $prefeitura = $user->prefeitura; // relacionamento do user
+            $processosQuery->where('prefeitura_id', $user->prefeitura_id);
+
         } else {
+            // Admin, gerente e colaborador veem tudo
             $prefeitura = null;
+
+            // Se quiser manter filtro manual por cidade apenas para admin
+            if ($request->filled('cidade')) {
+                $prefeitura = Prefeitura::findOrFail($request->cidade);
+                $processosQuery->where('prefeitura_id', $request->cidade);
+            }
         }
 
         $processos = $processosQuery->get();

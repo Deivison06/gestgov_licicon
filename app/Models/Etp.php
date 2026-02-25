@@ -46,11 +46,19 @@ class Etp extends Model
             'etp_etp_item',
             'etp_id',
             'etp_item_id'
-        )->withTimestamps();
+        )
+        ->withPivot(['unidade', 'quantidade'])
+        ->withTimestamps();
     }
+
 
     public function processo()
     {
         return $this->belongsTo(Processo::class);
     }
+    public function lotes()
+    {
+        return $this->hasMany(EtpLote::class);
+    }
+
 }

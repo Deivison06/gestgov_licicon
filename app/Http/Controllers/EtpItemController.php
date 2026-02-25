@@ -20,15 +20,10 @@ class EtpItemController extends Controller
         return view('Admin.EtpItens.index', compact('itens'));
     }
 
-    public function create()
-    {
-        return view('Admin.EtpItens.create');
-    }
-
     public function store(Request $request)
     {
         $request->validate([
-            'descricao_item' => 'required|string|max:255'
+            'descricao_item' => 'required|string'
         ]);
 
         try {
@@ -39,16 +34,10 @@ class EtpItemController extends Controller
         }
     }
 
-    public function edit($id)
-    {
-        $item = $this->etpItemService->findById($id);
-        return view('Admin.EtpItens.edit', compact('item'));
-    }
-
     public function update(Request $request, $id)
     {
         $request->validate([
-             'descricao_item' => 'required|string|max:255'
+             'descricao_item' => 'required|string'
         ]);
 
         try {
