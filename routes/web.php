@@ -37,6 +37,10 @@ Route::prefix('admin/etps')->name('admin.etps.')->middleware(['auth', 'verified'
     Route::get('/create', [EtpController::class, 'create'])->name('create');
     Route::post('/', [EtpController::class, 'store'])->name('store');
     Route::get('/{etp}', [EtpController::class, 'show'])->name('show');
+    Route::get('/edit/{id}', [EtpController::class, 'edit'])->name('edit');
+    Route::put('/{id}', [EtpController::class, 'update'])->name('update');
+    Route::delete('/{id}', [EtpController::class, 'destroy'])->name('destroy');
+    Route::post('/importar-itens', [EtpController::class, 'importarItensEtp'])->name('importar-itens');
 });
 
 // Admin ETPs Recebidos

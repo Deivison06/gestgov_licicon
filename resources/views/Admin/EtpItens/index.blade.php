@@ -47,6 +47,32 @@
         </div>
     @endif
 
+    <div class="w-full mb-6">
+        <form method="GET" action="{{ route('admin.etp_itens.index') }}" class="flex items-center gap-3">
+            <input 
+                type="text" 
+                name="descricao" 
+                value="{{ $descricao ?? '' }}"
+                placeholder="Buscar por descrição..."
+                class="w-full rounded-xl border-gray-300 shadow-sm focus:border-[#009496] focus:ring-[#009496]"
+            >
+
+            <button 
+                type="submit"
+                class="px-5 py-2 bg-[#009496] text-white rounded-xl font-semibold hover:bg-[#007f7c] transition"
+            >
+                Buscar
+            </button>
+
+            @if(!empty($descricao))
+                <a href="{{ route('admin.etp_itens.index') }}" 
+                class="px-4 py-2 bg-gray-200 rounded-xl text-sm hover:bg-gray-300">
+                    Limpar
+                </a>
+            @endif
+        </form>
+    </div>
+
     <div class="overflow-hidden transition-all duration-300 bg-white border border-gray-100 shadow-sm rounded-2xl flex flex-col items-start justify-between">
         <div class="w-full px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
             <h3 class="text-xl font-semibold text-gray-800">Catálogo de Itens</h3>

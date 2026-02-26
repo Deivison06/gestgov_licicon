@@ -13,10 +13,18 @@ class EtpItemRepository
         $this->model = $model;
     }
 
-    public function getAll($perPage = 15)
+    public function getAll($perPage = 15, $descricao = null)
     {
-        return $this->model->orderBy('descricao_item', 'asc')->paginate($perPage);
+        $query = $this->model->orderBy('descricao_item', 'asc');
+
+        if (!empty($descricao)) {
+            $query->where('descricao_item', 'like', '%' . $descricao . '%');
+        }
+
+        return $query->paginate($perPage)
+                    ->appends(['descricao' => $descricao]);
     }
+
 
     public function findById($id)
     {

@@ -90,7 +90,6 @@
                                     <table class="w-full text-sm text-left text-gray-500 border border-gray-200 rounded-lg">
                                         <thead class="text-xs text-gray-700 uppercase bg-gray-50">
                                             <tr>
-                                                <th scope="col" class="px-6 py-3 rounded-tl-lg">ID</th>
                                                 <th scope="col" class="px-6 py-3">Descrição do Item</th>
                                                 <th scope="col" class="px-6 py-3">Unidade</th>
                                                 <th scope="col" class="px-6 py-3 rounded-tr-lg">Quantidade</th>
@@ -99,7 +98,6 @@
                                         <tbody>
                                             @foreach($etp->itens as $item)
                                                 <tr class="bg-white border-b hover:bg-gray-50">
-                                                    <td class="px-6 py-4 font-medium text-gray-900">{{ $item->id }}</td>
                                                     <td class="px-6 py-4">{{ $item->descricao_item }}</td>
                                                     <td class="px-6 py-4">{{ $item->pivot->unidade }}</td>
                                                     <td class="px-6 py-4">{{ $item->pivot->quantidade }}</td>
@@ -135,7 +133,6 @@
                                                     <table class="w-full text-sm text-left text-gray-500">
                                                         <thead class="text-xs text-gray-700 uppercase bg-gray-50">
                                                             <tr>
-                                                                <th scope="col" class="px-6 py-3">ID</th>
                                                                 <th scope="col" class="px-6 py-3">Descrição do Item</th>
                                                                 <th scope="col" class="px-6 py-3">Unidade</th>
                                                                 <th scope="col" class="px-6 py-3">Quantidade</th>
@@ -144,7 +141,6 @@
                                                         <tbody>
                                                             @foreach($lote->itens as $item)
                                                                 <tr class="bg-white border-b hover:bg-gray-50">
-                                                                    <td class="px-6 py-4 font-medium text-gray-900">{{ $item->id }}</td>
                                                                     <td class="px-6 py-4">{{ $item->descricao_item }}</td>
                                                                     <td class="px-6 py-4">{{ $item->pivot->unidade }}</td>
                                                                     <td class="px-6 py-4">{{ $item->pivot->quantidade }}</td>

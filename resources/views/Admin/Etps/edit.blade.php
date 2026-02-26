@@ -1,16 +1,29 @@
 @extends('layouts.app')
-@section('page-title', 'Solicitar ETP')
-@section('page-subtitle', 'Siga os passos para criar um novo Estudo Técnico Preliminar')
+@section('page-title', 'Editar ETP')
+@section('page-subtitle', 'Edite o Estudo Técnico Preliminar')
 
 @section('content')
 <div class="py-8">
-    <div class="mb-4">
-        <a href="{{ route('admin.etps.index') }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#009496] rounded-lg hover:bg-[#007a7a] transition-all duration-200">
+    <div class="mb-4 flex justify-between items-center">
+        <a href="{{ route('admin.etps.show', $etp->id) }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#009496] rounded-lg hover:bg-[#007a7a] transition-all duration-200">
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
             </svg>
-            Voltar
+            Voltar para Visualização
         </a>
+        
+        <div class="flex items-center space-x-2">
+            <span class="text-sm text-gray-600">Status:</span>
+            <span class="inline-flex items-center px-2.5 py-0.5 text-xs font-semibold rounded-full
+                @if($etp->status === 'pendente') bg-yellow-100 text-yellow-800
+                @elseif($etp->status === 'em_analise') bg-blue-100 text-blue-800
+                @elseif($etp->status === 'aprovado') bg-green-100 text-green-800
+                @elseif($etp->status === 'em_processo') bg-purple-100 text-purple-800
+                @elseif($etp->status === 'recusado') bg-red-100 text-red-800
+                @endif">
+                {{ ucfirst(str_replace('_', ' ', $etp->status)) }}
+            </span>
+        </div>
     </div>
 
     @if ($errors->any())
@@ -30,13 +43,14 @@
     @endif
 
     <div class="bg-white border border-gray-100 shadow-sm rounded-2xl overflow-hidden px-8 py-8 relative">
-        <form action="{{ route('admin.etps.store') }}" method="POST" enctype="multipart/form-data" id="etpForm">
+        <form action="{{ route('admin.etps.update', $etp->id) }}" method="POST" enctype="multipart/form-data" id="etpForm">
             @csrf
+            @method('PUT')
             
             <!-- PROGRESS BAR STEPS -->
             <div class="w-full mb-8 relative">
                 <div class="absolute w-full h-1 bg-gray-200 rounded-full top-5"></div>
-                <div id="progress-bar" class="absolute w-1/3 h-1 bg-[#009496] rounded-full top-5 transition-all duration-300"></div>
+                <div id="progress-bar" class="absolute w-1/3 h-1 bg-[#009496] rounded-full top-5 transition-all duration-300" style="width: 33%"></div>
                 <div class="flex justify-between mx-auto items-center relative z-10">
                     <!-- Step 1 -->
                     <div class="text-center w-1/3">
@@ -68,7 +82,8 @@
                             <option value="">Selecione...</option>
                             @foreach($secretarias as $sec)
                                 <option value="{{ $sec->id }}"
-                                    data-servidor="{{ $sec->servidor_responsavel }}">
+                                    data-servidor="{{ $sec->servidor_responsavel }}"
+                                    {{ old('secretaria_id', $etp->secretaria_id) == $sec->id ? 'selected' : '' }}>
                                     {{ $sec->nome }}
                                 </option>
                             @endforeach
@@ -81,6 +96,7 @@
                         <input type="text"
                             name="servidor_responsavel"
                             id="servidor_responsavel"
+                            value="{{ old('servidor_responsavel', $etp->servidor_responsavel) }}"
                             class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent" required>
                     </div>
                 </div>
@@ -89,10 +105,10 @@
                     <label class="block text-sm font-medium text-gray-700 mb-2">Modalidade da Licitação *</label>
                     <select name="modalidade" id="modalidade" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent" required onchange="toggleModalidadeFields()">
                         <option value="">Selecione...</option>
-                        <option value="pregao" {{ old('modalidade') == 'pregao' ? 'selected' : '' }}>Pregão</option>
-                        <option value="concorrencia" {{ old('modalidade') == 'concorrencia' ? 'selected' : '' }}>Concorrência</option>
-                        <option value="dispensa" {{ old('modalidade') == 'dispensa' ? 'selected' : '' }}>Dispensa</option>
-                        <option value="inexigibilidade" {{ old('modalidade') == 'inexigibilidade' ? 'selected' : '' }}>Inexigibilidade</option>
+                        <option value="pregao" {{ old('modalidade', $etp->modalidade) == 'pregao' ? 'selected' : '' }}>Pregão</option>
+                        <option value="concorrencia" {{ old('modalidade', $etp->modalidade) == 'concorrencia' ? 'selected' : '' }}>Concorrência</option>
+                        <option value="dispensa" {{ old('modalidade', $etp->modalidade) == 'dispensa' ? 'selected' : '' }}>Dispensa</option>
+                        <option value="inexigibilidade" {{ old('modalidade', $etp->modalidade) == 'inexigibilidade' ? 'selected' : '' }}>Inexigibilidade</option>
                     </select>
                 </div>
                 
@@ -106,7 +122,7 @@
                 <h4 class="text-lg font-semibold text-gray-800 mb-6 border-b pb-2">Passo 2: Objeto da Licitação</h4>
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Especificar o objeto da licitação *</label>
-                    <textarea name="objeto_licitacao" id="objeto_licitacao" rows="5" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent resize-y" required>{{ old('objeto_licitacao') }}</textarea>
+                    <textarea name="objeto_licitacao" id="objeto_licitacao" rows="5" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent resize-y" required>{{ old('objeto_licitacao', $etp->objeto_licitacao) }}</textarea>
                     <p class="mt-1 text-xs text-gray-500">Descreva detalhadamente o que será adquirido ou contratado.</p>
                 </div>
                 <div class="mt-8 flex justify-between">
@@ -134,7 +150,7 @@
                                     name="tipo_contratacao"
                                     value="item"
                                     class="form-radio text-[#009496] w-5 h-5"
-                                    {{ old('tipo_contratacao') == 'item' ? 'checked' : '' }}
+                                    {{ old('tipo_contratacao', $etp->tipo_contratacao) == 'item' ? 'checked' : '' }}
                                     onchange="toggleContratacaoTipo()"
                                     required>
                                 <span class="ml-2">Por Item</span>
@@ -145,7 +161,7 @@
                                     name="tipo_contratacao"
                                     value="lote"
                                     class="form-radio text-[#009496] w-5 h-5"
-                                    {{ old('tipo_contratacao') == 'lote' ? 'checked' : '' }}
+                                    {{ old('tipo_contratacao', $etp->tipo_contratacao) == 'lote' ? 'checked' : '' }}
                                     onchange="toggleContratacaoTipo()">
                                 <span class="ml-2">Por Lote</span>
                             </label>
@@ -166,13 +182,17 @@
                             Importar Itens via Excel
                         </button>
                     </div>
+
                     {{-- ÁREA DE ITENS (SEM LOTE) --}}
-                    <div id="area-itens-sem-lote" class="{{ old('tipo_contratacao') == 'lote' ? 'hidden' : 'block' }}">
-                        @include('Admin.Etps.partials.itens-selector', ['loteIndex' => null])
+                    <div id="area-itens-sem-lote" class="{{ $etp->tipo_contratacao == 'lote' ? 'hidden' : 'block' }}">
+                        @include('Admin.Etps.partials.itens-selector-edit', [
+                            'loteIndex' => null,
+                            'etp' => $etp
+                        ])
                     </div>
 
                     {{-- ÁREA DE LOTES --}}
-                    <div id="area-lotes" class="{{ old('tipo_contratacao') == 'lote' ? 'block' : 'hidden' }}">
+                    <div id="area-lotes" class="{{ $etp->tipo_contratacao == 'lote' ? 'block' : 'hidden' }}">
                         <div class="mb-4 flex justify-between items-center">
                             <h5 class="text-md font-semibold text-gray-700">Lotes da Contratação</h5>
                             <button type="button" 
@@ -186,11 +206,11 @@
                         </div>
 
                         <div id="lotes-container" class="space-y-6">
-                            @if(old('lotes'))
-                                @foreach(old('lotes') as $index => $lote)
-                                    @include('Admin.Etps.partials.lote-card', [
-                                        'loteIndex' => $index, 
-                                        'loteData' => $lote,
+                            @if($etp->tipo_contratacao == 'lote' && $etp->lotes->count() > 0)
+                                @foreach($etp->lotes as $index => $lote)
+                                    @include('Admin.Etps.partials.lote-card-edit', [
+                                        'loteIndex' => $index,
+                                        'lote' => $lote,
                                         'itens' => $itens
                                     ])
                                 @endforeach
@@ -207,7 +227,7 @@
                     <input type="text"
                         name="prazo_entrega"
                         id="prazo_entrega"
-                        value="{{ old('prazo_entrega') }}"
+                        value="{{ old('prazo_entrega', $etp->prazo_entrega) }}"
                         placeholder="Ex: 30 dias após emissão da nota"
                         class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496]"
                         required>
@@ -224,7 +244,7 @@
                         placeholder="Digite a dotação orçamentária"
                         rows="3"
                         class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent resize-y"
-                        required>{{ old('dotacao_orcamentaria') }}</textarea>
+                        required>{{ old('dotacao_orcamentaria', $etp->dotacao_orcamentaria) }}</textarea>
                 </div>
 
                 {{-- Cotação ou Projeto Básico --}}
@@ -232,6 +252,17 @@
                     <label class="block text-sm font-medium text-gray-700 mb-2" id="label_pdf_anexo">
                         Anexar Cotação do Fornecedor Local
                     </label>
+                    
+                    @if($etp->cotacao_path)
+                    <div class="mb-2 p-2 bg-gray-50 rounded-lg flex items-center justify-between">
+                        <span class="text-sm text-gray-600">
+                            <i class="fas fa-file-pdf text-red-500 mr-2"></i>
+                            Arquivo atual: {{ basename($etp->cotacao_path) }}
+                        </span>
+                        <span class="text-xs text-gray-500">(Envie um novo arquivo para substituir)</span>
+                    </div>
+                    @endif
+                    
                     <input type="file"
                         name="cotacao_path"
                         id="cotacao_path"
@@ -254,20 +285,30 @@
                         <i class="fas fa-arrow-left mr-2"></i> Voltar
                     </button>
 
-                    <button type="submit"
-                        class="px-8 py-3 text-sm font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 shadow-md">
-                        <i class="fas fa-check-circle mr-2"></i> Concluir ETP
-                    </button>
+                    <div class="flex space-x-3">
+                        <button type="button"
+                            onclick="confirmarCancelamento()"
+                            class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300">
+                            Cancelar
+                        </button>
+                        
+                        <button type="submit"
+                            class="px-8 py-3 text-sm font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 shadow-md">
+                            <i class="fas fa-save mr-2"></i> Salvar Alterações
+                        </button>
+                    </div>
                 </div>
             </div>
 
         </form>
     </div>
 </div>
+
 @include('Admin.Etps.partials.modal-importar-itens')
+
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    let loteCounter = {{ old('lotes') ? count(old('lotes')) : 0 }};
+    let loteCounter = {{ $etp->lotes->count() }};
 
     /* =====================================================
         ELEMENTOS
@@ -288,7 +329,8 @@ document.addEventListener("DOMContentLoaded", function () {
         const selected = secretariaSelect.options[secretariaSelect.selectedIndex];
         const servidor = selected?.getAttribute('data-servidor');
 
-        if (!servidorInput.value) {
+        // Only auto-fill if empty
+        if (!servidorInput.value.trim()) {
             servidorInput.value = servidor ?? '';
         }
     }
@@ -354,7 +396,7 @@ document.addEventListener("DOMContentLoaded", function () {
     };
 
     /* =====================================================
-        GERENCIAMENTO DE LOTES - VERSÃO CORRIGIDA
+        GERENCIAMENTO DE LOTES
     ====================================================== */
 
     window.adicionarLote = function () {
@@ -640,6 +682,16 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     };
 
+    /* =====================================================
+        CONFIRMAR CANCELAMENTO
+    ====================================================== */
+
+    window.confirmarCancelamento = function () {
+        if (confirm('Tem certeza que deseja cancelar a edição? As alterações não salvas serão perdidas.')) {
+            window.location.href = '{{ route("admin.etps.show", $etp->id) }}';
+        }
+    };
+
     // Inicialização
     toggleModalidadeFields();
     toggleContratacaoTipo();
@@ -651,6 +703,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 });
+
 /* =====================================================
     IMPORTAÇÃO DE ITENS VIA EXCEL
 ====================================================== */
@@ -714,14 +767,12 @@ function resetarModal() {
 
 // Baixar modelo
 btnBaixarModelo.addEventListener('click', function() {
-    // Criar conteúdo da planilha
     const headers = ['Descricao', 'Unidade', 'Quantidade'];
     const exemplo = ['Caneta Azul', 'unidade', '50'];
     
     let csvContent = headers.join(',') + '\n' + exemplo.join(',');
     
-    // Criar blob e download
-    const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' }); // \uFEFF para BOM UTF-8
+    const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     
@@ -738,22 +789,18 @@ arquivoInput.addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
     
-    // Validar tamanho
     if (file.size > 10 * 1024 * 1024) {
         mostrarErro('Arquivo muito grande. Máximo 10MB.');
         return;
     }
     
-    // Mostrar nome do arquivo
     nomeArquivoSpan.textContent = `Arquivo selecionado: ${file.name}`;
     nomeArquivoSpan.classList.remove('hidden');
     
-    // Enviar arquivo
     enviarArquivo(file);
 });
 
 function enviarArquivo(file) {
-    // Mostrar progresso
     areaProgresso.classList.remove('hidden');
     barraProgresso.style.width = '30%';
     percentualProgresso.textContent = '30%';
@@ -833,11 +880,9 @@ function importarItensSemLote(itens) {
     const container = document.getElementById('itens-selecionados-sem-lote');
     
     itens.forEach(item => {
-        // Verificar se o item já está selecionado
         const itemExistente = document.getElementById(`item-itens-selecionados-sem-lote-${item.item_id}`);
         if (itemExistente) return;
         
-        // Criar elemento do item
         const itemDiv = document.createElement('div');
         itemDiv.className = 'flex items-center justify-between bg-white border rounded-lg p-3 shadow-sm';
         itemDiv.id = `item-itens-selecionados-sem-lote-${item.item_id}`;
@@ -863,7 +908,6 @@ function importarItensSemLote(itens) {
         
         container.appendChild(itemDiv);
         
-        // Marcar checkbox correspondente
         const checkbox = document.querySelector(`.item-checkbox[value="${item.item_id}"]:not([data-lote-index])`);
         if (checkbox) {
             checkbox.checked = true;
@@ -872,14 +916,12 @@ function importarItensSemLote(itens) {
 }
 
 function importarItensComLote(itens) {
-    // Verificar se há lotes
     const lotes = document.querySelectorAll('.lote-card');
     if (!lotes.length) {
         alert('Crie um lote antes de importar os itens.');
         return;
     }
     
-    // Perguntar em qual lote importar
     const loteIndex = prompt('Digite o número do lote (1 a ' + lotes.length + ') para importar os itens:');
     if (!loteIndex) return;
     
@@ -893,11 +935,9 @@ function importarItensComLote(itens) {
     if (!container) return;
     
     itens.forEach(item => {
-        // Verificar se o item já está selecionado neste lote
         const itemExistente = document.getElementById(`item-itens-selecionados-lote-${index}-${item.item_id}`);
         if (itemExistente) return;
         
-        // Criar elemento do item
         const itemDiv = document.createElement('div');
         itemDiv.className = 'flex items-center justify-between bg-white border rounded-lg p-3 shadow-sm';
         itemDiv.id = `item-itens-selecionados-lote-${index}-${item.item_id}`;
@@ -923,31 +963,11 @@ function importarItensComLote(itens) {
         
         container.appendChild(itemDiv);
         
-        // Marcar checkbox correspondente neste lote
         const checkbox = document.querySelector(`.item-checkbox[value="${item.item_id}"][data-lote-index="${index}"]`);
         if (checkbox) {
             checkbox.checked = true;
         }
     });
 }
-
-// Modificar a função removerItemSelecionado existente para lidar com índices de lote
-window.removerItemSelecionado = function(id, loteIndex) {
-    const containerId = loteIndex !== null && loteIndex !== undefined 
-        ? `itens-selecionados-lote-${loteIndex}` 
-        : 'itens-selecionados-sem-lote';
-    
-    const itemDiv = document.getElementById(`item-${containerId}-${id}`);
-    if (itemDiv) itemDiv.remove();
-
-    // Desmarcar checkbox correspondente
-    const checkboxSelector = loteIndex !== null && loteIndex !== undefined
-        ? `.item-checkbox[value="${id}"][data-lote-index="${loteIndex}"]`
-        : `.item-checkbox[value="${id}"]:not([data-lote-index])`;
-    
-    const checkbox = document.querySelector(checkboxSelector);
-    if (checkbox) checkbox.checked = false;
-};
 </script>
-
 @endsection

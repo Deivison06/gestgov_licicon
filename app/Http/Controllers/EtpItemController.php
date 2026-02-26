@@ -16,9 +16,13 @@ class EtpItemController extends Controller
 
     public function index(Request $request)
     {
-        $itens = $this->etpItemService->getAllPaged(15);
-        return view('Admin.EtpItens.index', compact('itens'));
+        $descricao = $request->get('descricao');
+
+        $itens = $this->etpItemService->getAllPaged(15, $descricao);
+
+        return view('Admin.EtpItens.index', compact('itens', 'descricao'));
     }
+
 
     public function store(Request $request)
     {

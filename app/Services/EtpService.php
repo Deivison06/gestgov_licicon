@@ -23,66 +23,158 @@ class EtpService
 
     public function getAllWithFilters($filters = [], $perPage = 15)
     {
-         return $this->repository->getAllWithFilters($filters, $perPage);
+        return $this->repository->getAllWithFilters($filters, $perPage);
     }
-public function store(array $data, ?UploadedFile $cotacaoFile = null)
-{
-    try {
-        if ($cotacaoFile) {
-            $data['cotacao_path'] = $cotacaoFile->store('etps/cotacoes', 'public');
-        }
 
-        // Extrair dados relacionados
-        $itens = $data['itens'] ?? [];
-        $lotes = $data['lotes'] ?? [];
-        
-        unset($data['itens'], $data['lotes']);
-
-        // Criar ETP
-        $etp = $this->repository->create($data);
-
-        // Processar itens (se for contratação por item)
-        if ($data['tipo_contratacao'] === 'item' && !empty($itens)) {
-            $itensFormatados = [];
-            foreach ($itens as $itemId => $itemData) {
-                $itensFormatados[$itemId] = [
-                    'unidade' => $itemData['unidade'],
-                    'quantidade' => $itemData['quantidade'],
-                ];
+    public function store(array $data, ?UploadedFile $cotacaoFile = null)
+    {
+        try {
+            if ($cotacaoFile) {
+                $data['cotacao_path'] = $cotacaoFile->store('etps/cotacoes', 'public');
             }
-            $this->repository->syncItens($etp, $itensFormatados);
-        }
 
-        // Processar lotes (se for contratação por lote)
-        if ($data['tipo_contratacao'] === 'lote' && !empty($lotes)) {
-            foreach ($lotes as $loteData) {
-                $itensLote = $loteData['itens'] ?? [];
-                unset($loteData['itens']);
+            $itens = $data['itens'] ?? [];
+            $lotes = $data['lotes'] ?? [];
+            
+            unset($data['itens'], $data['lotes']);
 
-                $lote = $this->repository->createLote($etp, $loteData);
+            $etp = $this->repository->create($data);
 
+            if ($data['tipo_contratacao'] === 'item' && !empty($itens)) {
                 $itensFormatados = [];
-                foreach ($itensLote as $itemId => $itemData) {
-                    $itensFormatados[$itemData['item_id']] = [
+                foreach ($itens as $itemId => $itemData) {
+                    $itensFormatados[$itemId] = [
                         'unidade' => $itemData['unidade'],
                         'quantidade' => $itemData['quantidade'],
                     ];
                 }
-
-                $this->repository->syncItensLote($lote, $itensFormatados);
+                $this->repository->syncItens($etp, $itensFormatados);
             }
+
+            if ($data['tipo_contratacao'] === 'lote' && !empty($lotes)) {
+                foreach ($lotes as $loteData) {
+                    $itensLote = $loteData['itens'] ?? [];
+                    unset($loteData['itens']);
+
+                    $lote = $this->repository->createLote($etp, $loteData);
+
+                    $itensFormatados = [];
+                    foreach ($itensLote as $itemId => $itemData) {
+                        $itensFormatados[$itemData['item_id']] = [
+                            'unidade' => $itemData['unidade'],
+                            'quantidade' => $itemData['quantidade'],
+                        ];
+                    }
+
+                    $this->repository->syncItensLote($lote, $itensFormatados);
+                }
+            }
+
+            return $etp;
+
+        } catch (Exception $e) {
+            throw new Exception("Erro ao criar ETP: " . $e->getMessage());
         }
-
-        return $etp;
-
-    } catch (Exception $e) {
-        throw new Exception("Erro ao criar ETP: " . $e->getMessage());
     }
-}
+
+    /**
+     * Update an existing ETP
+     */
+    public function update($id, array $data, ?UploadedFile $cotacaoFile = null)
+    {
+        try {
+            $etp = $this->findById($id);
+
+            if ($cotacaoFile) {
+                // Remove old file if exists
+                if ($etp->cotacao_path) {
+                    Storage::disk('public')->delete($etp->cotacao_path);
+                }
+                $data['cotacao_path'] = $cotacaoFile->store('etps/cotacoes', 'public');
+            }
+
+            $itens = $data['itens'] ?? [];
+            $lotes = $data['lotes'] ?? [];
+            
+            unset($data['itens'], $data['lotes']);
+
+            // Update ETP
+            $etp = $this->repository->update($id, $data);
+
+            // Clear existing relationships
+            if ($etp->tipo_contratacao === 'item') {
+                $etp->itens()->detach();
+                $etp->lotes()->delete();
+            } else {
+                $etp->lotes()->delete();
+            }
+
+            // Process new data
+            if ($data['tipo_contratacao'] === 'item' && !empty($itens)) {
+                $itensFormatados = [];
+                foreach ($itens as $itemId => $itemData) {
+                    $itensFormatados[$itemId] = [
+                        'unidade' => $itemData['unidade'],
+                        'quantidade' => $itemData['quantidade'],
+                    ];
+                }
+                $this->repository->syncItens($etp, $itensFormatados);
+            }
+
+            if ($data['tipo_contratacao'] === 'lote' && !empty($lotes)) {
+                foreach ($lotes as $loteData) {
+                    $itensLote = $loteData['itens'] ?? [];
+                    unset($loteData['itens']);
+
+                    $lote = $this->repository->createLote($etp, $loteData);
+
+                    $itensFormatados = [];
+                    foreach ($itensLote as $itemId => $itemData) {
+                        $itensFormatados[$itemData['item_id']] = [
+                            'unidade' => $itemData['unidade'],
+                            'quantidade' => $itemData['quantidade'],
+                        ];
+                    }
+
+                    $this->repository->syncItensLote($lote, $itensFormatados);
+                }
+            }
+
+            return $etp;
+
+        } catch (Exception $e) {
+            throw new Exception("Erro ao atualizar ETP: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Delete an ETP
+     */
+    public function delete($id)
+    {
+        try {
+            $etp = $this->findById($id);
+
+            // Delete associated file
+            if ($etp->cotacao_path) {
+                Storage::disk('public')->delete($etp->cotacao_path);
+            }
+
+            // Delete relationships
+            $etp->itens()->detach();
+            $etp->lotes()->delete();
+
+            // Delete ETP
+            return $etp->delete();
+
+        } catch (Exception $e) {
+            throw new Exception("Erro ao excluir ETP: " . $e->getMessage());
+        }
+    }
 
     public function findById($id)
     {
-         return $this->repository->findById($id);
+        return $this->repository->findById($id);
     }
 
     public function updateStatus($id, $status)
@@ -90,7 +182,7 @@ public function store(array $data, ?UploadedFile $cotacaoFile = null)
         $validStatuses = ['pendente', 'em_analise', 'aprovado', 'recusado', 'em_processo'];
         
         if (!in_array($status, $validStatuses)) {
-             throw new Exception("Status inválido.");
+            throw new Exception("Status inválido.");
         }
 
         $etp = $this->repository->update($id, ['status' => $status]);
@@ -100,15 +192,15 @@ public function store(array $data, ?UploadedFile $cotacaoFile = null)
 
     public function vincularProcesso($etpId, $processoId)
     {
-         $etp = $this->findById($etpId);
+        $etp = $this->findById($etpId);
 
-         if ($etp->status !== 'aprovado' && $etp->status !== 'em_processo') {
-              throw new Exception("Somente ETPs aprovados podem ser vinculados a um processo.");
-         }
+        if ($etp->status !== 'aprovado' && $etp->status !== 'em_processo') {
+            throw new Exception("Somente ETPs aprovados podem ser vinculados a um processo.");
+        }
 
-         return $this->repository->update($etpId, [
-             'processo_id' => $processoId,
-             'status' => 'em_processo'
-         ]);
+        return $this->repository->update($etpId, [
+            'processo_id' => $processoId,
+            'status' => 'em_processo'
+        ]);
     }
 }
