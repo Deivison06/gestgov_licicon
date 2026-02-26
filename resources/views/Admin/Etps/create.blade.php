@@ -3,370 +3,381 @@
 @section('page-subtitle', 'Siga os passos para criar um novo Estudo Técnico Preliminar')
 
 @section('content')
-<div class="py-8">
-    <div class="mb-4">
-        <a href="{{ route('admin.etps.index') }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#009496] rounded-lg hover:bg-[#007a7a] transition-all duration-200">
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-            </svg>
-            Voltar
-        </a>
-    </div>
-
-    @if ($errors->any())
-        <div class="p-4 mb-8 border border-red-200 shadow-sm rounded-2xl bg-gradient-to-r from-red-50 to-red-100">
-            <div class="flex items-center mb-2">
-                <svg class="w-5 h-5 mr-3 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+    <div class="py-8">
+        <div class="mb-4">
+            <a href="{{ route('admin.etps.index') }}"
+                class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#009496] rounded-lg hover:bg-[#007a7a] transition-all duration-200">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18">
+                    </path>
                 </svg>
-                <p class="text-sm font-medium text-red-800">Verifique os erros abaixo:</p>
-            </div>
-            <ul class="ml-8 list-disc text-sm text-red-700">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
+                Voltar
+            </a>
         </div>
-    @endif
 
-    <div class="bg-white border border-gray-100 shadow-sm rounded-2xl overflow-hidden px-8 py-8 relative">
-        <form action="{{ route('admin.etps.store') }}" method="POST" enctype="multipart/form-data" id="etpForm">
-            @csrf
-            
-            <!-- PROGRESS BAR STEPS -->
-            <div class="w-full mb-8 relative">
-                <div class="absolute w-full h-1 bg-gray-200 rounded-full top-5"></div>
-                <div id="progress-bar" class="absolute w-1/3 h-1 bg-[#009496] rounded-full top-5 transition-all duration-300"></div>
-                <div class="flex justify-between mx-auto items-center relative z-10">
-                    <!-- Step 1 -->
-                    <div class="text-center w-1/3">
-                        <div class="w-10 h-10 mx-auto bg-[#009496] rounded-full text-white flex items-center justify-center font-bold border-4 border-white shadow-sm" id="indicator-1">1</div>
-                        <p class="mt-2 text-sm font-medium text-[#009496]" id="label-1">Dados Iniciais</p>
-                    </div>
-                    <!-- Step 2 -->
-                    <div class="text-center w-1/3">
-                        <div class="w-10 h-10 mx-auto bg-gray-200 rounded-full text-gray-500 flex items-center justify-center font-bold border-4 border-white shadow-sm transition-colors duration-300" id="indicator-2">2</div>
-                        <p class="mt-2 text-sm font-medium text-gray-400 transition-colors duration-300" id="label-2">Objeto</p>
-                    </div>
-                    <!-- Step 3 -->
-                    <div class="text-center w-1/3">
-                        <div class="w-10 h-10 mx-auto bg-gray-200 rounded-full text-gray-500 flex items-center justify-center font-bold border-4 border-white shadow-sm transition-colors duration-300" id="indicator-3">3</div>
-                        <p class="mt-2 text-sm font-medium text-gray-400 transition-colors duration-300" id="label-3">Contratação</p>
+        @if ($errors->any())
+            <div class="p-4 mb-8 border border-red-200 shadow-sm rounded-2xl bg-gradient-to-r from-red-50 to-red-100">
+                <div class="flex items-center mb-2">
+                    <svg class="w-5 h-5 mr-3 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <p class="text-sm font-medium text-red-800">Verifique os erros abaixo:</p>
+                </div>
+                <ul class="ml-8 list-disc text-sm text-red-700">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        <div class="bg-white border border-gray-100 shadow-sm rounded-2xl overflow-hidden px-8 py-8 relative">
+            <form action="{{ route('admin.etps.store') }}" method="POST" enctype="multipart/form-data" id="etpForm">
+                @csrf
+
+                <!-- PROGRESS BAR STEPS -->
+                <div class="w-full mb-8 relative">
+                    <div class="absolute w-full h-1 bg-gray-200 rounded-full top-5"></div>
+                    <div id="progress-bar"
+                        class="absolute w-1/3 h-1 bg-[#009496] rounded-full top-5 transition-all duration-300"></div>
+                    <div class="flex justify-between mx-auto items-center relative z-10">
+                        <!-- Step 1 -->
+                        <div class="text-center w-1/3">
+                            <div class="w-10 h-10 mx-auto bg-[#009496] rounded-full text-white flex items-center justify-center font-bold border-4 border-white shadow-sm"
+                                id="indicator-1">1</div>
+                            <p class="mt-2 text-sm font-medium text-[#009496]" id="label-1">Dados Iniciais</p>
+                        </div>
+                        <!-- Step 2 -->
+                        <div class="text-center w-1/3">
+                            <div class="w-10 h-10 mx-auto bg-gray-200 rounded-full text-gray-500 flex items-center justify-center font-bold border-4 border-white shadow-sm transition-colors duration-300"
+                                id="indicator-2">2</div>
+                            <p class="mt-2 text-sm font-medium text-gray-400 transition-colors duration-300" id="label-2">
+                                Objeto</p>
+                        </div>
+                        <!-- Step 3 -->
+                        <div class="text-center w-1/3">
+                            <div class="w-10 h-10 mx-auto bg-gray-200 rounded-full text-gray-500 flex items-center justify-center font-bold border-4 border-white shadow-sm transition-colors duration-300"
+                                id="indicator-3">3</div>
+                            <p class="mt-2 text-sm font-medium text-gray-400 transition-colors duration-300" id="label-3">
+                                Contratação</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- PASSO 1 -->
-            <div id="step-1" class="step-content block">
-                <h4 class="text-lg font-semibold text-gray-800 mb-6 border-b pb-2">Passo 1: Selecione a Secretaria e Responsável</h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Secretaria da Prefeitura *</label>
-                        <select name="secretaria_id"
-                            id="secretaria_id"
-                            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent" required>
+                <!-- PASSO 1 -->
+                <div id="step-1" class="step-content block">
+                    <h4 class="text-lg font-semibold text-gray-800 mb-6 border-b pb-2">Passo 1: Selecione a Secretaria e
+                        Responsável</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Secretaria da Prefeitura *</label>
+                            <select name="secretaria_id" id="secretaria_id"
+                                class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent"
+                                required>
+                                <option value="">Selecione...</option>
+                                @foreach ($secretarias as $sec)
+                                    <option value="{{ $sec->id }}" data-servidor="{{ $sec->servidor_responsavel }}">
+                                        {{ $sec->nome }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Servidor Responsável
+                            </label>
+                            <input type="text" name="servidor_responsavel" id="servidor_responsavel"
+                                class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent"
+                                required>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Modalidade da Licitação *</label>
+                        <select name="modalidade" id="modalidade"
+                            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent"
+                            required onchange="toggleModalidadeFields()">
                             <option value="">Selecione...</option>
-                            @foreach($secretarias as $sec)
-                                <option value="{{ $sec->id }}"
-                                    data-servidor="{{ $sec->servidor_responsavel }}">
-                                    {{ $sec->nome }}
-                                </option>
-                            @endforeach
+                            <option value="pregao" {{ old('modalidade') == 'pregao' ? 'selected' : '' }}>Pregão</option>
+                            <option value="concorrencia" {{ old('modalidade') == 'concorrencia' ? 'selected' : '' }}>
+                                Concorrência</option>
+                            <option value="dispensa" {{ old('modalidade') == 'dispensa' ? 'selected' : '' }}>Dispensa
+                            </option>
+                            <option value="inexigibilidade" {{ old('modalidade') == 'inexigibilidade' ? 'selected' : '' }}>
+                                Inexigibilidade</option>
                         </select>
                     </div>
-                    <div class="">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Servidor Responsável
-                        </label>
-                        <input type="text"
-                            name="servidor_responsavel"
-                            id="servidor_responsavel"
-                            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent" required>
+
+                    <div class="mt-8 flex justify-end">
+                        <button type="button"
+                            class="btn-next px-6 py-2.5 text-sm font-medium text-white bg-[#009496] rounded-lg hover:bg-[#007a7a] transition-all"
+                            onclick="nextStep(2)">Próximo Passo <i class="fas fa-arrow-right ml-2"></i></button>
                     </div>
                 </div>
-                
-                <div class="mt-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Modalidade da Licitação *</label>
-                    <select name="modalidade" id="modalidade" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent" required onchange="toggleModalidadeFields()">
-                        <option value="">Selecione...</option>
-                        <option value="pregao" {{ old('modalidade') == 'pregao' ? 'selected' : '' }}>Pregão</option>
-                        <option value="concorrencia" {{ old('modalidade') == 'concorrencia' ? 'selected' : '' }}>Concorrência</option>
-                        <option value="dispensa" {{ old('modalidade') == 'dispensa' ? 'selected' : '' }}>Dispensa</option>
-                        <option value="inexigibilidade" {{ old('modalidade') == 'inexigibilidade' ? 'selected' : '' }}>Inexigibilidade</option>
-                    </select>
-                </div>
-                
-                <div class="mt-8 flex justify-end">
-                    <button type="button" class="btn-next px-6 py-2.5 text-sm font-medium text-white bg-[#009496] rounded-lg hover:bg-[#007a7a] transition-all" onclick="nextStep(2)">Próximo Passo <i class="fas fa-arrow-right ml-2"></i></button>
-                </div>
-            </div>
 
-            <!-- PASSO 2 -->
-            <div id="step-2" class="step-content hidden">
-                <h4 class="text-lg font-semibold text-gray-800 mb-6 border-b pb-2">Passo 2: Objeto da Licitação</h4>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Especificar o objeto da licitação *</label>
-                    <textarea name="objeto_licitacao" id="objeto_licitacao" rows="5" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent resize-y" required>{{ old('objeto_licitacao') }}</textarea>
-                    <p class="mt-1 text-xs text-gray-500">Descreva detalhadamente o que será adquirido ou contratado.</p>
+                <!-- PASSO 2 -->
+                <div id="step-2" class="step-content hidden">
+                    <h4 class="text-lg font-semibold text-gray-800 mb-6 border-b pb-2">Passo 2: Objeto da Licitação</h4>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Especificar o objeto da licitação
+                            *</label>
+                        <textarea name="objeto_licitacao" id="objeto_licitacao" rows="5"
+                            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent resize-y"
+                            required>{{ old('objeto_licitacao') }}</textarea>
+                        <p class="mt-1 text-xs text-gray-500">Descreva detalhadamente o que será adquirido ou contratado.
+                        </p>
+                    </div>
+                    <div class="mt-8 flex justify-between">
+                        <button type="button"
+                            class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all"
+                            onclick="prevStep(1)"><i class="fas fa-arrow-left mr-2"></i> Voltar</button>
+                        <button type="button"
+                            class="px-6 py-2.5 text-sm font-medium text-white bg-[#009496] rounded-lg hover:bg-[#007a7a] transition-all"
+                            onclick="nextStep(3)">Próximo Passo <i class="fas fa-arrow-right ml-2"></i></button>
+                    </div>
                 </div>
-                <div class="mt-8 flex justify-between">
-                    <button type="button" class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all" onclick="prevStep(1)"><i class="fas fa-arrow-left mr-2"></i> Voltar</button>
-                    <button type="button" class="px-6 py-2.5 text-sm font-medium text-white bg-[#009496] rounded-lg hover:bg-[#007a7a] transition-all" onclick="nextStep(3)">Próximo Passo <i class="fas fa-arrow-right ml-2"></i></button>
-                </div>
-            </div>
 
-            <!-- PASSO 3 -->
-            <div id="step-3" class="step-content hidden">
-                <h4 class="text-lg font-semibold text-gray-800 mb-6 border-b pb-2">
-                    Passo 3: Tipo de Contratação e Anexos
-                </h4>
+                <!-- PASSO 3 -->
+                <div id="step-3" class="step-content hidden">
+                    <h4 class="text-lg font-semibold text-gray-800 mb-6 border-b pb-2">
+                        Passo 3: Tipo de Contratação e Anexos
+                    </h4>
 
-                <div id="campos-itens-contratacao">
-                    {{-- TIPO --}}
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-700 mb-3">
-                            Tipo de contratação *
-                        </label>
-
-                        <div class="flex items-center space-x-6">
-                            <label class="inline-flex items-center cursor-pointer">
-                                <input type="radio"
-                                    name="tipo_contratacao"
-                                    value="item"
-                                    class="form-radio text-[#009496] w-5 h-5"
-                                    {{ old('tipo_contratacao') == 'item' ? 'checked' : '' }}
-                                    onchange="toggleContratacaoTipo()"
-                                    required>
-                                <span class="ml-2">Por Item</span>
+                    <div id="campos-itens-contratacao">
+                        {{-- TIPO --}}
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-3">
+                                Tipo de contratação *
                             </label>
 
-                            <label class="inline-flex items-center cursor-pointer border-l pl-6 border-gray-200">
-                                <input type="radio"
-                                    name="tipo_contratacao"
-                                    value="lote"
-                                    class="form-radio text-[#009496] w-5 h-5"
-                                    {{ old('tipo_contratacao') == 'lote' ? 'checked' : '' }}
-                                    onchange="toggleContratacaoTipo()">
-                                <span class="ml-2">Por Lote</span>
-                            </label>
+                            <div class="flex items-center space-x-6">
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="radio" name="tipo_contratacao" value="item"
+                                        class="form-radio text-[#009496] w-5 h-5"
+                                        {{ old('tipo_contratacao') == 'item' ? 'checked' : '' }}
+                                        onchange="toggleContratacaoTipo()" required>
+                                    <span class="ml-2">Por Item</span>
+                                </label>
+
+                                <label class="inline-flex items-center cursor-pointer border-l pl-6 border-gray-200">
+                                    <input type="radio" name="tipo_contratacao" value="lote"
+                                        class="form-radio text-[#009496] w-5 h-5"
+                                        {{ old('tipo_contratacao') == 'lote' ? 'checked' : '' }}
+                                        onchange="toggleContratacaoTipo()">
+                                    <span class="ml-2">Por Lote</span>
+                                </label>
+                            </div>
                         </div>
-                    </div>
 
-                    {{-- BOTÃO DE IMPORTAÇÃO --}}
-                    <div class="mb-4 flex justify-between items-center">
-                        <label class="block text-sm font-medium text-gray-700">
-                            Selecionar Itens *
-                        </label>
-                        <button type="button" 
-                                id="btnImportarItens"
-                                class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-all">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
-                            </svg>
-                            Importar Itens via Excel
-                        </button>
-                    </div>
-                    {{-- ÁREA DE ITENS (SEM LOTE) --}}
-                    <div id="area-itens-sem-lote" class="{{ old('tipo_contratacao') == 'lote' ? 'hidden' : 'block' }}">
-                        @include('Admin.Etps.partials.itens-selector', ['loteIndex' => null])
-                    </div>
-
-                    {{-- ÁREA DE LOTES --}}
-                    <div id="area-lotes" class="{{ old('tipo_contratacao') == 'lote' ? 'block' : 'hidden' }}">
+                        {{-- BOTÃO DE IMPORTAÇÃO --}}
                         <div class="mb-4 flex justify-between items-center">
-                            <h5 class="text-md font-semibold text-gray-700">Lotes da Contratação</h5>
-                            <button type="button" 
-                                    onclick="adicionarLote()"
-                                    class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-[#009496] rounded-lg hover:bg-[#007a7a] transition-all">
+                            <label class="block text-sm font-medium text-gray-700">
+                                Selecionar Itens *
+                            </label>
+                            <button type="button" id="btnImportarItens"
+                                class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-all">
                                 <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
                                 </svg>
-                                Novo Lote
+                                Importar Itens via Excel
                             </button>
                         </div>
+                        {{-- ÁREA DE ITENS (SEM LOTE) --}}
+                        <div id="area-itens-sem-lote"
+                            class="{{ old('tipo_contratacao') == 'lote' ? 'hidden' : 'block' }}">
+                            @include('Admin.Etps.partials.itens-selector', ['loteIndex' => null])
+                        </div>
 
-                        <div id="lotes-container" class="space-y-6">
-                            @if(old('lotes'))
-                                @foreach(old('lotes') as $index => $lote)
-                                    @include('Admin.Etps.partials.lote-card', [
-                                        'loteIndex' => $index, 
-                                        'loteData' => $lote,
-                                        'itens' => $itens
-                                    ])
-                                @endforeach
-                            @endif
+                        {{-- ÁREA DE LOTES --}}
+                        <div id="area-lotes" class="{{ old('tipo_contratacao') == 'lote' ? 'block' : 'hidden' }}">
+                            <div class="mb-4 flex justify-between items-center">
+                                <h5 class="text-md font-semibold text-gray-700">Lotes da Contratação</h5>
+                                <button type="button" onclick="adicionarLote()"
+                                    class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-[#009496] rounded-lg hover:bg-[#007a7a] transition-all">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 4v16m8-8H4"></path>
+                                    </svg>
+                                    Novo Lote
+                                </button>
+                            </div>
+
+                            <div id="lotes-container" class="space-y-6">
+                                @if (old('lotes'))
+                                    @foreach (old('lotes') as $index => $lote)
+                                        @include('Admin.Etps.partials.lote-card', [
+                                            'loteIndex' => $index,
+                                            'loteData' => $lote,
+                                            'itens' => $itens,
+                                        ])
+                                    @endforeach
+                                @endif
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                {{-- Prazo --}}
-                <div class="mb-4 mt-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Prazo de Entrega *
-                    </label>
-                    <input type="text"
-                        name="prazo_entrega"
-                        id="prazo_entrega"
-                        value="{{ old('prazo_entrega') }}"
-                        placeholder="Ex: 30 dias após emissão da nota"
-                        class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496]"
-                        required>
-                </div>
+                    {{-- Prazo --}}
+                    <div class="mb-4 mt-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Prazo de Entrega *
+                        </label>
+                        <input type="text" name="prazo_entrega" id="prazo_entrega"
+                            value="{{ old('prazo_entrega') }}" placeholder="Ex: 30 dias após emissão da nota"
+                            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496]"
+                            required>
+                    </div>
 
-                {{-- Dotação Orçamentaria --}}
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Dotação Orçamentária *
-                    </label>
-                    <textarea
-                        name="dotacao_orcamentaria"
-                        id="dotacao_orcamentaria"
-                        placeholder="Digite a dotação orçamentária"
-                        rows="3"
-                        class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent resize-y"
-                        required>{{ old('dotacao_orcamentaria') }}</textarea>
-                </div>
+                    {{-- Dotação Orçamentaria --}}
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Dotação Orçamentária *
+                        </label>
+                        <textarea name="dotacao_orcamentaria" id="dotacao_orcamentaria" placeholder="Digite a dotação orçamentária"
+                            rows="3"
+                            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent resize-y"
+                            required>{{ old('dotacao_orcamentaria') }}</textarea>
+                    </div>
 
-                {{-- Cotação ou Projeto Básico --}}
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2" id="label_pdf_anexo">
-                        Anexar Cotação do Fornecedor Local
-                    </label>
-                    <input type="file"
-                        name="cotacao_path"
-                        id="cotacao_path"
-                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                        class="block w-full text-sm text-gray-500
+                    {{-- Cotação ou Projeto Básico --}}
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2" id="label_pdf_anexo">
+                            Anexar Cotação do Fornecedor Local
+                        </label>
+                        <input type="file" name="cotacao_path" id="cotacao_path"
+                            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                            class="block w-full text-sm text-gray-500
                         file:mr-4 file:py-2 file:px-4
                         file:rounded-full file:border-0
                         file:text-sm file:font-semibold
                         file:bg-[#009496]/10 file:text-[#009496]
                         hover:file:bg-[#009496]/20">
-                    <p class="mt-1 text-xs text-gray-500">
-                        Máximo 10MB. Para concorrência ou inexigibilidade, anexe o Projeto Básico.
-                    </p>
+                        <p class="mt-1 text-xs text-gray-500">
+                            Máximo 10MB. Para concorrência ou inexigibilidade, anexe o Projeto Básico.
+                        </p>
+                    </div>
+
+                    <div class="mt-8 flex justify-between">
+                        <button type="button"
+                            class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+                            onclick="prevStep(2)">
+                            <i class="fas fa-arrow-left mr-2"></i> Voltar
+                        </button>
+
+                        <button type="submit"
+                            class="px-8 py-3 text-sm font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 shadow-md">
+                            <i class="fas fa-check-circle mr-2"></i> Concluir ETP
+                        </button>
+                    </div>
                 </div>
 
-                <div class="mt-8 flex justify-between">
-                    <button type="button"
-                        class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
-                        onclick="prevStep(2)">
-                        <i class="fas fa-arrow-left mr-2"></i> Voltar
-                    </button>
-
-                    <button type="submit"
-                        class="px-8 py-3 text-sm font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 shadow-md">
-                        <i class="fas fa-check-circle mr-2"></i> Concluir ETP
-                    </button>
-                </div>
-            </div>
-
-        </form>
+            </form>
+        </div>
     </div>
-</div>
-@include('Admin.Etps.partials.modal-importar-itens')
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    let loteCounter = {{ old('lotes') ? count(old('lotes')) : 0 }};
+    @include('Admin.Etps.partials.modal-importar-itens')
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            let loteCounter = {{ old('lotes') ? count(old('lotes')) : 0 }};
 
-    /* =====================================================
-        ELEMENTOS
-    ====================================================== */
+            /* =====================================================
+                ELEMENTOS
+            ====================================================== */
 
-    const secretariaSelect = document.getElementById('secretaria_id');
-    const servidorInput = document.getElementById('servidor_responsavel');
-    const modalidadeSelect = document.getElementById('modalidade');
-    const cotacaoInput = document.getElementById('cotacao_path');
-    const camposItens = document.getElementById('campos-itens-contratacao');
-    const labelPdf = document.getElementById('label_pdf_anexo');
+            const secretariaSelect = document.getElementById('secretaria_id');
+            const servidorInput = document.getElementById('servidor_responsavel');
+            const modalidadeSelect = document.getElementById('modalidade');
+            const cotacaoInput = document.getElementById('cotacao_path');
+            const camposItens = document.getElementById('campos-itens-contratacao');
+            const labelPdf = document.getElementById('label_pdf_anexo');
 
-    /* =====================================================
-        SECRETARIA → SERVIDOR AUTO
-    ====================================================== */
+            /* =====================================================
+                SECRETARIA → SERVIDOR AUTO
+            ====================================================== */
 
-    function preencherServidor() {
-        const selected = secretariaSelect.options[secretariaSelect.selectedIndex];
-        const servidor = selected?.getAttribute('data-servidor');
+            function preencherServidor() {
+                const selected = secretariaSelect.options[secretariaSelect.selectedIndex];
+                const servidor = selected?.getAttribute('data-servidor');
 
-        if (!servidorInput.value) {
-            servidorInput.value = servidor ?? '';
-        }
-    }
-
-    preencherServidor();
-
-    secretariaSelect.addEventListener('change', function () {
-        preencherServidor();
-    });
-
-    /* =====================================================
-        TIPO CONTRATAÇÃO
-    ====================================================== */
-
-    window.toggleContratacaoTipo = function () {
-        const selected = document.querySelector('input[name="tipo_contratacao"]:checked');
-        if (!selected) return;
-
-        const isLote = selected.value === 'lote';
-        const areaSemLote = document.getElementById('area-itens-sem-lote');
-        const areaLotes = document.getElementById('area-lotes');
-
-        if (isLote) {
-            areaSemLote.classList.add('hidden');
-            areaLotes.classList.remove('hidden');
-            
-            // Se não houver lotes, adiciona um automaticamente
-            if (document.querySelectorAll('.lote-card').length === 0) {
-                adicionarLote();
+                if (!servidorInput.value) {
+                    servidorInput.value = servidor ?? '';
+                }
             }
-        } else {
-            areaSemLote.classList.remove('hidden');
-            areaLotes.classList.add('hidden');
-        }
-    };
 
-    /* =====================================================
-        MODALIDADE
-    ====================================================== */
+            preencherServidor();
 
-    window.toggleModalidadeFields = function () {
-        const modalidade = modalidadeSelect.value;
-        const radiosTipo = document.querySelectorAll('input[name="tipo_contratacao"]');
-
-        if (modalidade === 'concorrencia' || modalidade === 'inexigibilidade') {
-            camposItens.classList.add('hidden');
-            labelPdf.innerText = 'Anexar Projeto Básico *';
-            cotacaoInput.setAttribute('required', 'required');
-
-            radiosTipo.forEach(el => {
-                el.checked = false;
-                el.removeAttribute('required');
+            secretariaSelect.addEventListener('change', function() {
+                preencherServidor();
             });
-        } else {
-            camposItens.classList.remove('hidden');
-            labelPdf.innerText = 'Anexar Cotação do Fornecedor Local';
-            cotacaoInput.removeAttribute('required');
 
-            radiosTipo.forEach(el => {
-                el.setAttribute('required', 'required');
-            });
-        }
-    };
+            /* =====================================================
+                TIPO CONTRATAÇÃO
+            ====================================================== */
 
-    /* =====================================================
-        GERENCIAMENTO DE LOTES - VERSÃO CORRIGIDA
-    ====================================================== */
+            window.toggleContratacaoTipo = function() {
+                const selected = document.querySelector('input[name="tipo_contratacao"]:checked');
+                if (!selected) return;
 
-    window.adicionarLote = function () {
-        const container = document.getElementById('lotes-container');
-        
-        // Criar o elemento div para o novo lote
-        const loteDiv = document.createElement('div');
-        loteDiv.className = 'lote-card border border-gray-200 rounded-xl p-6 bg-gray-50 relative';
-        loteDiv.id = `lote-${loteCounter}`;
-        
-        // HTML do botão remover
-        const removeButtonHTML = `
+                const isLote = selected.value === 'lote';
+                const areaSemLote = document.getElementById('area-itens-sem-lote');
+                const areaLotes = document.getElementById('area-lotes');
+
+                if (isLote) {
+                    areaSemLote.classList.add('hidden');
+                    areaLotes.classList.remove('hidden');
+
+                    // Se não houver lotes, adiciona um automaticamente
+                    if (document.querySelectorAll('.lote-card').length === 0) {
+                        adicionarLote();
+                    }
+                } else {
+                    areaSemLote.classList.remove('hidden');
+                    areaLotes.classList.add('hidden');
+                }
+            };
+
+            /* =====================================================
+                MODALIDADE
+            ====================================================== */
+
+            window.toggleModalidadeFields = function() {
+                const modalidade = modalidadeSelect.value;
+                const radiosTipo = document.querySelectorAll('input[name="tipo_contratacao"]');
+
+                if (modalidade === 'concorrencia' || modalidade === 'inexigibilidade') {
+                    camposItens.classList.add('hidden');
+                    labelPdf.innerText = 'Anexar Projeto Básico *';
+                    cotacaoInput.setAttribute('required', 'required');
+
+                    radiosTipo.forEach(el => {
+                        el.checked = false;
+                        el.removeAttribute('required');
+                    });
+                } else {
+                    camposItens.classList.remove('hidden');
+                    labelPdf.innerText = 'Anexar Cotação do Fornecedor Local';
+                    cotacaoInput.removeAttribute('required');
+
+                    radiosTipo.forEach(el => {
+                        el.setAttribute('required', 'required');
+                    });
+                }
+            };
+
+            /* =====================================================
+                GERENCIAMENTO DE LOTES - VERSÃO CORRIGIDA
+            ====================================================== */
+
+            window.adicionarLote = function() {
+                const container = document.getElementById('lotes-container');
+
+                // Criar o elemento div para o novo lote
+                const loteDiv = document.createElement('div');
+                loteDiv.className = 'lote-card border border-gray-200 rounded-xl p-6 bg-gray-50 relative';
+                loteDiv.id = `lote-${loteCounter}`;
+
+                // HTML do botão remover
+                const removeButtonHTML = `
             <button type="button"
                     onclick="removerLote(this)"
                     class="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors">
@@ -375,9 +386,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 </svg>
             </button>
         `;
-        
-        // HTML do input nome do lote
-        const nomeLoteHTML = `
+
+                // HTML do input nome do lote
+                const nomeLoteHTML = `
             <div class="mb-4 pr-8">
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                     Nome do Lote *
@@ -389,32 +400,32 @@ document.addEventListener("DOMContentLoaded", function () {
                     required>
             </div>
         `;
-        
-        // HTML do seletor de itens
-        const itensSelectorHTML = gerarItensSelector(loteCounter);
-        
-        // Montar o lote completo
-        loteDiv.innerHTML = removeButtonHTML + nomeLoteHTML + itensSelectorHTML;
-        
-        // Adicionar ao container
-        container.appendChild(loteDiv);
-        
-        // Inicializar a busca para este lote
-        inicializarBuscaLote(loteCounter);
-        
-        loteCounter++;
-    };
 
-    // Função auxiliar para gerar o HTML do seletor de itens
-    function gerarItensSelector(loteIndex) {
-        const buscaId = `buscar_item_lote_${loteIndex}`;
-        const listaId = `lista_itens_lote_${loteIndex}`;
-        const containerId = `itens-selecionados-lote-${loteIndex}`;
-        
-        // Gerar opções de itens
-        let itensOptions = '';
-        @foreach($itens as $item)
-            itensOptions += `
+                // HTML do seletor de itens
+                const itensSelectorHTML = gerarItensSelector(loteCounter);
+
+                // Montar o lote completo
+                loteDiv.innerHTML = removeButtonHTML + nomeLoteHTML + itensSelectorHTML;
+
+                // Adicionar ao container
+                container.appendChild(loteDiv);
+
+                // Inicializar a busca para este lote
+                inicializarBuscaLote(loteCounter);
+
+                loteCounter++;
+            };
+
+            // Função auxiliar para gerar o HTML do seletor de itens
+            function gerarItensSelector(loteIndex) {
+                const buscaId = `buscar_item_lote_${loteIndex}`;
+                const listaId = `lista_itens_lote_${loteIndex}`;
+                const containerId = `itens-selecionados-lote-${loteIndex}`;
+
+                // Gerar opções de itens
+                let itensOptions = '';
+                @foreach ($itens as $item)
+                    itensOptions += `
                 <label class="flex items-center space-x-3 item-option"
                     data-descricao="{{ strtolower($item->descricao_item) }}">
                     <input type="checkbox"
@@ -428,9 +439,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     </span>
                 </label>
             `;
-        @endforeach
-        
-        return `
+                @endforeach
+
+                return `
             <div class="mb-4 itens-selector" data-lote-index="${loteIndex}">
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                     Selecionar Itens *
@@ -461,81 +472,86 @@ document.addEventListener("DOMContentLoaded", function () {
                 </div>
             </div>
         `;
-    }
-
-    window.removerLote = function (button) {
-        const loteCard = button.closest('.lote-card');
-        if (document.querySelectorAll('.lote-card').length > 1) {
-            loteCard.remove();
-        } else {
-            alert('É necessário ter pelo menos um lote.');
-        }
-    };
-
-    /* =====================================================
-        BUSCA DE ITENS
-    ====================================================== */
-
-    function inicializarBuscaLote(loteIndex) {
-        const buscaId = loteIndex !== undefined ? `buscar_item_lote_${loteIndex}` : 'buscar_item_global';
-        const listaId = loteIndex !== undefined ? `lista_itens_lote_${loteIndex}` : 'lista_itens_global';
-        
-        const buscaInput = document.getElementById(buscaId);
-        if (!buscaInput) return;
-
-        buscaInput.addEventListener('keyup', function () {
-            const termo = this.value.toLowerCase().trim();
-            const lista = document.getElementById(listaId);
-            if (!lista) return;
-            
-            const itens = lista.querySelectorAll('.item-option');
-
-            if (termo.length < 2) {
-                lista.classList.add('hidden');
-                itens.forEach(el => el.style.display = 'flex');
-                return;
             }
 
-            lista.classList.remove('hidden');
+            window.removerLote = function(button) {
+                const loteCard = button.closest('.lote-card');
+                if (document.querySelectorAll('.lote-card').length > 1) {
+                    loteCard.remove();
+                } else {
+                    alert('É necessário ter pelo menos um lote.');
+                }
+            };
 
-            itens.forEach(function (el) {
-                const descricao = el.dataset.descricao;
-                el.style.display = descricao.includes(termo) ? 'flex' : 'none';
+            /* =====================================================
+                BUSCA DE ITENS
+            ====================================================== */
+
+            function inicializarBuscaLote(loteIndex) {
+                const buscaId = loteIndex !== undefined ? `buscar_item_lote_${loteIndex}` : 'buscar_item_global';
+                const listaId = loteIndex !== undefined ? `lista_itens_lote_${loteIndex}` : 'lista_itens_global';
+
+                const buscaInput = document.getElementById(buscaId);
+                if (!buscaInput) return;
+
+                buscaInput.addEventListener('keyup', function() {
+                    const termo = this.value.toLowerCase().trim();
+                    const lista = document.getElementById(listaId);
+                    if (!lista) return;
+
+                    const itens = lista.querySelectorAll('.item-option');
+
+                    if (termo.length < 2) {
+                        lista.classList.add('hidden');
+                        itens.forEach(el => el.style.display = 'flex');
+                        return;
+                    }
+
+                    lista.classList.remove('hidden');
+
+                    itens.forEach(function(el) {
+                        const descricao = el.dataset.descricao;
+                        el.style.display = descricao.includes(termo) ? 'flex' : 'none';
+                    });
+                });
+            }
+
+            // Inicializar buscas existentes
+            inicializarBuscaLote();
+            document.querySelectorAll('.lote-card').forEach((card, index) => {
+                inicializarBuscaLote(index);
             });
-        });
-    }
 
-    // Inicializar buscas existentes
-    inicializarBuscaLote();
-    document.querySelectorAll('.lote-card').forEach((card, index) => {
-        inicializarBuscaLote(index);
-    });
+            /* =====================================================
+                SELEÇÃO DE ITENS
+            ====================================================== */
 
-    /* =====================================================
-        SELEÇÃO DE ITENS
-    ====================================================== */
+            window.toggleItemSelecionado = function(checkbox, loteIndex) {
+                const id = checkbox.value;
+                const descricao = checkbox.dataset.descricao;
 
-    window.toggleItemSelecionado = function (checkbox, loteIndex) {
-        const id = checkbox.value;
-        const descricao = checkbox.dataset.descricao;
-        
-        const containerId = loteIndex !== null ? `itens-selecionados-lote-${loteIndex}` : 'itens-selecionados-sem-lote';
-        const container = document.getElementById(containerId);
-        
-        if (checkbox.checked) {
-            const namePrefix = loteIndex !== null ? `lotes[${loteIndex}][itens]` : 'itens';
-            
-            const itemHTML = `
-                <div class="flex items-center justify-between bg-white border rounded-lg p-3 shadow-sm" id="item-${containerId}-${id}">
+                const containerId = loteIndex !== null ? `itens-selecionados-lote-${loteIndex}` :
+                    'itens-selecionados-sem-lote';
+                const container = document.getElementById(containerId);
+
+                if (checkbox.checked) {
+                    const namePrefix = loteIndex !== null ? `lotes[${loteIndex}][itens]` : 'itens';
+
+                    const itemHTML = `
+            <div class="flex items-center justify-between bg-white border rounded-lg p-3 shadow-sm" id="item-${containerId}-${id}">
+                <div class="flex items-center gap-3 flex-1">
+
+                    {{-- NÚMERO SEQUENCIAL --}}
+                    <span class="item-numero inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#009496]/10 text-[#009496] text-xs font-bold flex-shrink-0 border border-[#009496]/20">
+                        0
+                    </span>
+
                     <div class="flex-1">
                         <p class="text-sm font-medium text-gray-800 mb-2">${descricao}</p>
-
                         <div class="flex gap-3">
                             <input type="hidden" name="${namePrefix}[${id}][item_id]" value="${id}">
-
                             <select name="${namePrefix}[${id}][unidade]"
-                                class="px-2 py-1 border border-gray-300 rounded text-sm"
-                                required>
+                                class="px-2 py-1 border border-gray-300 rounded text-sm" required>
                                 <option value="unidade">Unidade</option>
                                 <option value="pacote">Pacote</option>
                                 <option value="caixa">Caixa</option>
@@ -543,306 +559,320 @@ document.addEventListener("DOMContentLoaded", function () {
                                 <option value="quilograma">Quilograma</option>
                                 <option value="litro">Litro</option>
                             </select>
-
                             <input type="number"
                                 name="${namePrefix}[${id}][quantidade]"
-                                placeholder="Qtd"
-                                min="1"
-                                required
+                                placeholder="Qtd" min="1" required
                                 class="px-2 py-1 border border-gray-300 rounded text-sm w-20">
                         </div>
                     </div>
-
-                    <button type="button"
-                        class="ml-4 text-red-500 hover:text-red-700 font-bold"
-                        onclick="removerItemSelecionado(${id}, ${loteIndex})">
-                        ✕
-                    </button>
                 </div>
-            `;
-            
-            container.insertAdjacentHTML('beforeend', itemHTML);
-        } else {
-            removerItemSelecionado(id, loteIndex);
-        }
-    };
+                <button type="button"
+                    class="ml-4 text-red-500 hover:text-red-700 font-bold flex-shrink-0"
+                    onclick="removerItemSelecionado(${id}, ${loteIndex})">
+                    ✕
+                </button>
+            </div>
+        `;
 
-    window.removerItemSelecionado = function (id, loteIndex) {
-        const containerId = loteIndex !== null ? `itens-selecionados-lote-${loteIndex}` : 'itens-selecionados-sem-lote';
-        const itemDiv = document.getElementById(`item-${containerId}-${id}`);
-        if (itemDiv) itemDiv.remove();
+                    container.insertAdjacentHTML('beforeend', itemHTML);
+                } else {
+                    removerItemSelecionado(id, loteIndex);
+                }
 
-        // Desmarcar checkbox correspondente
-        const checkboxSelector = loteIndex !== null 
-            ? `.item-checkbox[value="${id}"][data-lote-index="${loteIndex}"]`
-            : `.item-checkbox[value="${id}"]:not([data-lote-index])`;
-        
-        const checkbox = document.querySelector(checkboxSelector);
-        if (checkbox) checkbox.checked = false;
-    };
+                // Renumerar após adicionar ou remover
+                renumerarItens(containerId);
+            };
+            window.removerItemSelecionado = function(id, loteIndex) {
+                const containerId = loteIndex !== null && loteIndex !== undefined ?
+                    `itens-selecionados-lote-${loteIndex}` :
+                    'itens-selecionados-sem-lote';
 
-    /* =====================================================
-        STEPS
-    ====================================================== */
+                const itemDiv = document.getElementById(`item-${containerId}-${id}`);
+                if (itemDiv) itemDiv.remove();
 
-    window.nextStep = function (step) {
-        if (step === 2) {
-            if (!secretariaSelect.value) {
-                alert('Selecione uma secretaria primeiro.');
+                const checkboxSelector = loteIndex !== null && loteIndex !== undefined ?
+                    `.item-checkbox[value="${id}"][data-lote-index="${loteIndex}"]` :
+                    `.item-checkbox[value="${id}"]:not([data-lote-index])`;
+
+                const checkbox = document.querySelector(checkboxSelector);
+                if (checkbox) checkbox.checked = false;
+
+                // Renumerar após remover
+                renumerarItens(containerId);
+            };
+            window.renumerarItens = function(containerId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                const badges = container.querySelectorAll('.item-numero');
+                badges.forEach((badge, idx) => {
+                    badge.textContent = idx + 1;
+                });
+            };
+
+            /* =====================================================
+                STEPS
+            ====================================================== */
+
+            window.nextStep = function(step) {
+                if (step === 2) {
+                    if (!secretariaSelect.value) {
+                        alert('Selecione uma secretaria primeiro.');
+                        return;
+                    }
+                    if (!modalidadeSelect.value) {
+                        alert('Selecione uma modalidade primeiro.');
+                        return;
+                    }
+                }
+
+                if (step === 3) {
+                    if (!document.getElementById('objeto_licitacao').value.trim()) {
+                        alert('Preencha o objeto primeiro.');
+                        return;
+                    }
+                }
+
+                document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
+                document.getElementById('step-' + step).classList.remove('hidden');
+                updateProgress(step);
+            };
+
+            window.prevStep = function(step) {
+                document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
+                document.getElementById('step-' + step).classList.remove('hidden');
+                updateProgress(step);
+            };
+
+            window.updateProgress = function(step) {
+                const progressBar = document.getElementById('progress-bar');
+
+                if (step === 1) progressBar.style.width = '33%';
+                if (step === 2) progressBar.style.width = '66%';
+                if (step === 3) progressBar.style.width = '100%';
+
+                for (let i = 1; i <= 3; i++) {
+                    let indicator = document.getElementById('indicator-' + i);
+                    let label = document.getElementById('label-' + i);
+
+                    if (i <= step) {
+                        indicator.classList.remove('bg-gray-200', 'text-gray-500');
+                        indicator.classList.add('bg-[#009496]', 'text-white');
+                        label.classList.remove('text-gray-400');
+                        label.classList.add('text-[#009496]');
+                    } else {
+                        indicator.classList.add('bg-gray-200', 'text-gray-500');
+                        indicator.classList.remove('bg-[#009496]', 'text-white');
+                        label.classList.add('text-gray-400');
+                        label.classList.remove('text-[#009496]');
+                    }
+                }
+            };
+
+            // Inicialização
+            toggleModalidadeFields();
+            toggleContratacaoTipo();
+
+            // Se for lote e não houver lotes, adiciona um
+            if (document.querySelector('input[name="tipo_contratacao"]:checked')?.value === 'lote') {
+                if (document.querySelectorAll('.lote-card').length === 0) {
+                    adicionarLote();
+                }
+            }
+        });
+        /* =====================================================
+            IMPORTAÇÃO DE ITENS VIA EXCEL
+        ====================================================== */
+
+        // Elementos do modal
+        const modalImportar = document.getElementById('modalImportarItens');
+        const btnImportar = document.getElementById('btnImportarItens');
+        const btnCancelar = document.getElementById('btnCancelarImportacao');
+        const btnConfirmar = document.getElementById('btnConfirmarImportacao');
+        const btnBaixarModelo = document.getElementById('btnBaixarModelo');
+        const overlay = document.getElementById('modal-overlay');
+        const arquivoInput = document.getElementById('arquivo_excel');
+        const nomeArquivoSpan = document.getElementById('nome-arquivo-selecionado');
+        const areaProgresso = document.getElementById('area-progresso');
+        const barraProgresso = document.getElementById('barra-progresso');
+        const percentualProgresso = document.getElementById('percentual-progresso');
+        const mensagemErro = document.getElementById('mensagem-erro');
+        const previaItens = document.getElementById('previa-itens');
+        const listaIitensImportados = document.getElementById('lista-itens-importados');
+
+        // Estado da importação
+        let itensImportados = [];
+        let tipoContratacaoAtual = null;
+
+        // Abrir modal
+        btnImportar.addEventListener('click', function() {
+            tipoContratacaoAtual = document.querySelector('input[name="tipo_contratacao"]:checked')?.value;
+
+            if (!tipoContratacaoAtual) {
+                alert('Selecione o tipo de contratação primeiro (Por Item ou Por Lote).');
                 return;
             }
-            if (!modalidadeSelect.value) {
-                alert('Selecione uma modalidade primeiro.');
-                return;
-            }
+
+            resetarModal();
+            modalImportar.classList.remove('hidden');
+            setTimeout(() => modalImportar.classList.add('show'), 10);
+        });
+
+        // Fechar modal
+        function fecharModal() {
+            modalImportar.classList.remove('show');
+            setTimeout(() => {
+                modalImportar.classList.add('hidden');
+                resetarModal();
+            }, 300);
         }
 
-        if (step === 3) {
-            if (!document.getElementById('objeto_licitacao').value.trim()) {
-                alert('Preencha o objeto primeiro.');
-                return;
-            }
-        }
+        btnCancelar.addEventListener('click', fecharModal);
+        overlay.addEventListener('click', fecharModal);
 
-        document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
-        document.getElementById('step-' + step).classList.remove('hidden');
-        updateProgress(step);
-    };
-
-    window.prevStep = function (step) {
-        document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
-        document.getElementById('step-' + step).classList.remove('hidden');
-        updateProgress(step);
-    };
-
-    window.updateProgress = function (step) {
-        const progressBar = document.getElementById('progress-bar');
-
-        if (step === 1) progressBar.style.width = '33%';
-        if (step === 2) progressBar.style.width = '66%';
-        if (step === 3) progressBar.style.width = '100%';
-
-        for (let i = 1; i <= 3; i++) {
-            let indicator = document.getElementById('indicator-' + i);
-            let label = document.getElementById('label-' + i);
-
-            if (i <= step) {
-                indicator.classList.remove('bg-gray-200', 'text-gray-500');
-                indicator.classList.add('bg-[#009496]', 'text-white');
-                label.classList.remove('text-gray-400');
-                label.classList.add('text-[#009496]');
-            } else {
-                indicator.classList.add('bg-gray-200', 'text-gray-500');
-                indicator.classList.remove('bg-[#009496]', 'text-white');
-                label.classList.add('text-gray-400');
-                label.classList.remove('text-[#009496]');
-            }
-        }
-    };
-
-    // Inicialização
-    toggleModalidadeFields();
-    toggleContratacaoTipo();
-    
-    // Se for lote e não houver lotes, adiciona um
-    if (document.querySelector('input[name="tipo_contratacao"]:checked')?.value === 'lote') {
-        if (document.querySelectorAll('.lote-card').length === 0) {
-            adicionarLote();
-        }
-    }
-});
-/* =====================================================
-    IMPORTAÇÃO DE ITENS VIA EXCEL
-====================================================== */
-
-// Elementos do modal
-const modalImportar = document.getElementById('modalImportarItens');
-const btnImportar = document.getElementById('btnImportarItens');
-const btnCancelar = document.getElementById('btnCancelarImportacao');
-const btnConfirmar = document.getElementById('btnConfirmarImportacao');
-const btnBaixarModelo = document.getElementById('btnBaixarModelo');
-const overlay = document.getElementById('modal-overlay');
-const arquivoInput = document.getElementById('arquivo_excel');
-const nomeArquivoSpan = document.getElementById('nome-arquivo-selecionado');
-const areaProgresso = document.getElementById('area-progresso');
-const barraProgresso = document.getElementById('barra-progresso');
-const percentualProgresso = document.getElementById('percentual-progresso');
-const mensagemErro = document.getElementById('mensagem-erro');
-const previaItens = document.getElementById('previa-itens');
-const listaIitensImportados = document.getElementById('lista-itens-importados');
-
-// Estado da importação
-let itensImportados = [];
-let tipoContratacaoAtual = null;
-
-// Abrir modal
-btnImportar.addEventListener('click', function() {
-    tipoContratacaoAtual = document.querySelector('input[name="tipo_contratacao"]:checked')?.value;
-    
-    if (!tipoContratacaoAtual) {
-        alert('Selecione o tipo de contratação primeiro (Por Item ou Por Lote).');
-        return;
-    }
-    
-    resetarModal();
-    modalImportar.classList.remove('hidden');
-    setTimeout(() => modalImportar.classList.add('show'), 10);
-});
-
-// Fechar modal
-function fecharModal() {
-    modalImportar.classList.remove('show');
-    setTimeout(() => {
-        modalImportar.classList.add('hidden');
-        resetarModal();
-    }, 300);
-}
-
-btnCancelar.addEventListener('click', fecharModal);
-overlay.addEventListener('click', fecharModal);
-
-// Resetar estado do modal
-function resetarModal() {
-    arquivoInput.value = '';
-    nomeArquivoSpan.classList.add('hidden');
-    areaProgresso.classList.add('hidden');
-    mensagemErro.classList.add('hidden');
-    previaItens.classList.add('hidden');
-    btnConfirmar.disabled = true;
-    itensImportados = [];
-}
-
-// Baixar modelo
-btnBaixarModelo.addEventListener('click', function() {
-    // Criar conteúdo da planilha
-    const headers = ['Descricao', 'Unidade', 'Quantidade'];
-    const exemplo = ['Caneta Azul', 'unidade', '50'];
-    
-    let csvContent = headers.join(',') + '\n' + exemplo.join(',');
-    
-    // Criar blob e download
-    const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' }); // \uFEFF para BOM UTF-8
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    
-    link.href = url;
-    link.setAttribute('download', 'modelo_importacao_itens.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-});
-
-// Upload do arquivo
-arquivoInput.addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    
-    // Validar tamanho
-    if (file.size > 10 * 1024 * 1024) {
-        mostrarErro('Arquivo muito grande. Máximo 10MB.');
-        return;
-    }
-    
-    // Mostrar nome do arquivo
-    nomeArquivoSpan.textContent = `Arquivo selecionado: ${file.name}`;
-    nomeArquivoSpan.classList.remove('hidden');
-    
-    // Enviar arquivo
-    enviarArquivo(file);
-});
-
-function enviarArquivo(file) {
-    // Mostrar progresso
-    areaProgresso.classList.remove('hidden');
-    barraProgresso.style.width = '30%';
-    percentualProgresso.textContent = '30%';
-    
-    const formData = new FormData();
-    formData.append('arquivo_excel', file);
-    
-    fetch('{{ route("admin.etps.importar-itens") }}', {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        },
-        body: formData
-    })
-    .then(response => {
-        barraProgresso.style.width = '70%';
-        percentualProgresso.textContent = '70%';
-        return response.json();
-    })
-    .then(data => {
-        barraProgresso.style.width = '100%';
-        percentualProgresso.textContent = '100%';
-        
-        setTimeout(() => {
-            if (data.success) {
-                itensImportados = data.itens;
-                mostrarPrevia(itensImportados);
-                btnConfirmar.disabled = false;
-            } else {
-                mostrarErro(data.message);
-            }
+        // Resetar estado do modal
+        function resetarModal() {
+            arquivoInput.value = '';
+            nomeArquivoSpan.classList.add('hidden');
             areaProgresso.classList.add('hidden');
-        }, 500);
-    })
-    .catch(error => {
-        mostrarErro('Erro ao enviar arquivo: ' + error.message);
-        areaProgresso.classList.add('hidden');
-    });
-}
+            mensagemErro.classList.add('hidden');
+            previaItens.classList.add('hidden');
+            btnConfirmar.disabled = true;
+            itensImportados = [];
+        }
 
-function mostrarErro(mensagem) {
-    mensagemErro.textContent = mensagem;
-    mensagemErro.classList.remove('hidden');
-    previaItens.classList.add('hidden');
-}
+        // Baixar modelo
+        btnBaixarModelo.addEventListener('click', function() {
+            // Criar conteúdo da planilha
+            const headers = ['Descricao', 'Unidade', 'Quantidade'];
+            const exemplo = ['Caneta Azul', 'unidade', '50'];
 
-function mostrarPrevia(itens) {
-    listaIitensImportados.innerHTML = '';
-    
-    itens.forEach(item => {
-        const li = document.createElement('li');
-        li.className = 'flex justify-between items-center text-sm';
-        li.innerHTML = `
+            let csvContent = headers.join(',') + '\n' + exemplo.join(',');
+
+            // Criar blob e download
+            const blob = new Blob(["\uFEFF" + csvContent], {
+                type: 'text/csv;charset=utf-8;'
+            }); // \uFEFF para BOM UTF-8
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+
+            link.href = url;
+            link.setAttribute('download', 'modelo_importacao_itens.csv');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        });
+
+        // Upload do arquivo
+        arquivoInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Validar tamanho
+            if (file.size > 10 * 1024 * 1024) {
+                mostrarErro('Arquivo muito grande. Máximo 10MB.');
+                return;
+            }
+
+            // Mostrar nome do arquivo
+            nomeArquivoSpan.textContent = `Arquivo selecionado: ${file.name}`;
+            nomeArquivoSpan.classList.remove('hidden');
+
+            // Enviar arquivo
+            enviarArquivo(file);
+        });
+
+        function enviarArquivo(file) {
+            // Mostrar progresso
+            areaProgresso.classList.remove('hidden');
+            barraProgresso.style.width = '30%';
+            percentualProgresso.textContent = '30%';
+
+            const formData = new FormData();
+            formData.append('arquivo_excel', file);
+
+            fetch('{{ route('admin.etps.importar-itens') }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: formData
+                })
+                .then(response => {
+                    barraProgresso.style.width = '70%';
+                    percentualProgresso.textContent = '70%';
+                    return response.json();
+                })
+                .then(data => {
+                    barraProgresso.style.width = '100%';
+                    percentualProgresso.textContent = '100%';
+
+                    setTimeout(() => {
+                        if (data.success) {
+                            itensImportados = data.itens;
+                            mostrarPrevia(itensImportados);
+                            btnConfirmar.disabled = false;
+                        } else {
+                            mostrarErro(data.message);
+                        }
+                        areaProgresso.classList.add('hidden');
+                    }, 500);
+                })
+                .catch(error => {
+                    mostrarErro('Erro ao enviar arquivo: ' + error.message);
+                    areaProgresso.classList.add('hidden');
+                });
+        }
+
+        function mostrarErro(mensagem) {
+            mensagemErro.textContent = mensagem;
+            mensagemErro.classList.remove('hidden');
+            previaItens.classList.add('hidden');
+        }
+
+        function mostrarPrevia(itens) {
+            listaIitensImportados.innerHTML = '';
+
+            itens.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'flex justify-between items-center text-sm';
+                li.innerHTML = `
             <span class="font-medium">${item.descricao}</span>
             <span class="text-gray-600">${item.quantidade} ${item.unidade}</span>
         `;
-        listaIitensImportados.appendChild(li);
-    });
-    
-    previaItens.classList.remove('hidden');
-}
+                listaIitensImportados.appendChild(li);
+            });
 
-// Confirmar importação
-btnConfirmar.addEventListener('click', function() {
-    if (!itensImportados.length) return;
-    
-    if (tipoContratacaoAtual === 'item') {
-        importarItensSemLote(itensImportados);
-    } else {
-        importarItensComLote(itensImportados);
-    }
-    
-    fecharModal();
-});
+            previaItens.classList.remove('hidden');
+        }
 
-function importarItensSemLote(itens) {
-    const container = document.getElementById('itens-selecionados-sem-lote');
-    
-    itens.forEach(item => {
-        // Verificar se o item já está selecionado
-        const itemExistente = document.getElementById(`item-itens-selecionados-sem-lote-${item.item_id}`);
-        if (itemExistente) return;
-        
-        // Criar elemento do item
-        const itemDiv = document.createElement('div');
-        itemDiv.className = 'flex items-center justify-between bg-white border rounded-lg p-3 shadow-sm';
-        itemDiv.id = `item-itens-selecionados-sem-lote-${item.item_id}`;
-        
-        itemDiv.innerHTML = `
+        // Confirmar importação
+        btnConfirmar.addEventListener('click', function() {
+            if (!itensImportados.length) return;
+
+            if (tipoContratacaoAtual === 'item') {
+                importarItensSemLote(itensImportados);
+            } else {
+                importarItensComLote(itensImportados);
+            }
+
+            fecharModal();
+        });
+
+        function importarItensSemLote(itens) {
+            const container = document.getElementById('itens-selecionados-sem-lote');
+
+            itens.forEach(item => {
+                // Verificar se o item já está selecionado
+                const itemExistente = document.getElementById(`item-itens-selecionados-sem-lote-${item.item_id}`);
+                if (itemExistente) return;
+
+                // Criar elemento do item
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'flex items-center justify-between bg-white border rounded-lg p-3 shadow-sm';
+                itemDiv.id = `item-itens-selecionados-sem-lote-${item.item_id}`;
+
+                itemDiv.innerHTML = `
             <div class="flex-1">
                 <p class="text-sm font-medium text-gray-800 mb-2">${item.descricao}</p>
                 <div class="flex gap-3">
@@ -860,49 +890,51 @@ function importarItensSemLote(itens) {
             </div>
             <button type="button" class="ml-4 text-red-500 hover:text-red-700 font-bold" onclick="removerItemSelecionado(${item.item_id}, null)">✕</button>
         `;
-        
-        container.appendChild(itemDiv);
-        
-        // Marcar checkbox correspondente
-        const checkbox = document.querySelector(`.item-checkbox[value="${item.item_id}"]:not([data-lote-index])`);
-        if (checkbox) {
-            checkbox.checked = true;
-        }
-    });
-}
 
-function importarItensComLote(itens) {
-    // Verificar se há lotes
-    const lotes = document.querySelectorAll('.lote-card');
-    if (!lotes.length) {
-        alert('Crie um lote antes de importar os itens.');
-        return;
-    }
-    
-    // Perguntar em qual lote importar
-    const loteIndex = prompt('Digite o número do lote (1 a ' + lotes.length + ') para importar os itens:');
-    if (!loteIndex) return;
-    
-    const index = parseInt(loteIndex) - 1;
-    if (isNaN(index) || index < 0 || index >= lotes.length) {
-        alert('Número de lote inválido.');
-        return;
-    }
-    
-    const container = document.getElementById(`itens-selecionados-lote-${index}`);
-    if (!container) return;
-    
-    itens.forEach(item => {
-        // Verificar se o item já está selecionado neste lote
-        const itemExistente = document.getElementById(`item-itens-selecionados-lote-${index}-${item.item_id}`);
-        if (itemExistente) return;
-        
-        // Criar elemento do item
-        const itemDiv = document.createElement('div');
-        itemDiv.className = 'flex items-center justify-between bg-white border rounded-lg p-3 shadow-sm';
-        itemDiv.id = `item-itens-selecionados-lote-${index}-${item.item_id}`;
-        
-        itemDiv.innerHTML = `
+                container.appendChild(itemDiv);
+
+                // Marcar checkbox correspondente
+                const checkbox = document.querySelector(
+                    `.item-checkbox[value="${item.item_id}"]:not([data-lote-index])`);
+                if (checkbox) {
+                    checkbox.checked = true;
+                }
+            });
+        }
+
+        function importarItensComLote(itens) {
+            // Verificar se há lotes
+            const lotes = document.querySelectorAll('.lote-card');
+            if (!lotes.length) {
+                alert('Crie um lote antes de importar os itens.');
+                return;
+            }
+
+            // Perguntar em qual lote importar
+            const loteIndex = prompt('Digite o número do lote (1 a ' + lotes.length + ') para importar os itens:');
+            if (!loteIndex) return;
+
+            const index = parseInt(loteIndex) - 1;
+            if (isNaN(index) || index < 0 || index >= lotes.length) {
+                alert('Número de lote inválido.');
+                return;
+            }
+
+            const container = document.getElementById(`itens-selecionados-lote-${index}`);
+            if (!container) return;
+
+            itens.forEach(item => {
+                // Verificar se o item já está selecionado neste lote
+                const itemExistente = document.getElementById(
+                    `item-itens-selecionados-lote-${index}-${item.item_id}`);
+                if (itemExistente) return;
+
+                // Criar elemento do item
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'flex items-center justify-between bg-white border rounded-lg p-3 shadow-sm';
+                itemDiv.id = `item-itens-selecionados-lote-${index}-${item.item_id}`;
+
+                itemDiv.innerHTML = `
             <div class="flex-1">
                 <p class="text-sm font-medium text-gray-800 mb-2">${item.descricao}</p>
                 <div class="flex gap-3">
@@ -920,34 +952,35 @@ function importarItensComLote(itens) {
             </div>
             <button type="button" class="ml-4 text-red-500 hover:text-red-700 font-bold" onclick="removerItemSelecionado(${item.item_id}, ${index})">✕</button>
         `;
-        
-        container.appendChild(itemDiv);
-        
-        // Marcar checkbox correspondente neste lote
-        const checkbox = document.querySelector(`.item-checkbox[value="${item.item_id}"][data-lote-index="${index}"]`);
-        if (checkbox) {
-            checkbox.checked = true;
+
+                container.appendChild(itemDiv);
+
+                // Marcar checkbox correspondente neste lote
+                const checkbox = document.querySelector(
+                    `.item-checkbox[value="${item.item_id}"][data-lote-index="${index}"]`);
+                if (checkbox) {
+                    checkbox.checked = true;
+                }
+            });
         }
-    });
-}
 
-// Modificar a função removerItemSelecionado existente para lidar com índices de lote
-window.removerItemSelecionado = function(id, loteIndex) {
-    const containerId = loteIndex !== null && loteIndex !== undefined 
-        ? `itens-selecionados-lote-${loteIndex}` 
-        : 'itens-selecionados-sem-lote';
-    
-    const itemDiv = document.getElementById(`item-${containerId}-${id}`);
-    if (itemDiv) itemDiv.remove();
+        // Modificar a função removerItemSelecionado existente para lidar com índices de lote
+        window.removerItemSelecionado = function(id, loteIndex) {
+            const containerId = loteIndex !== null && loteIndex !== undefined ?
+                `itens-selecionados-lote-${loteIndex}` :
+                'itens-selecionados-sem-lote';
 
-    // Desmarcar checkbox correspondente
-    const checkboxSelector = loteIndex !== null && loteIndex !== undefined
-        ? `.item-checkbox[value="${id}"][data-lote-index="${loteIndex}"]`
-        : `.item-checkbox[value="${id}"]:not([data-lote-index])`;
-    
-    const checkbox = document.querySelector(checkboxSelector);
-    if (checkbox) checkbox.checked = false;
-};
-</script>
+            const itemDiv = document.getElementById(`item-${containerId}-${id}`);
+            if (itemDiv) itemDiv.remove();
+
+            // Desmarcar checkbox correspondente
+            const checkboxSelector = loteIndex !== null && loteIndex !== undefined ?
+                `.item-checkbox[value="${id}"][data-lote-index="${loteIndex}"]` :
+                `.item-checkbox[value="${id}"]:not([data-lote-index])`;
+
+            const checkbox = document.querySelector(checkboxSelector);
+            if (checkbox) checkbox.checked = false;
+        };
+    </script>
 
 @endsection

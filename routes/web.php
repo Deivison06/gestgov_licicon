@@ -41,6 +41,7 @@ Route::prefix('admin/etps')->name('admin.etps.')->middleware(['auth', 'verified'
     Route::put('/{id}', [EtpController::class, 'update'])->name('update');
     Route::delete('/{id}', [EtpController::class, 'destroy'])->name('destroy');
     Route::post('/importar-itens', [EtpController::class, 'importarItensEtp'])->name('importar-itens');
+    Route::get('/{id}/export-itens', [EtpController::class, 'exportItens'])->name('export-itens');
 });
 
 // Admin ETPs Recebidos

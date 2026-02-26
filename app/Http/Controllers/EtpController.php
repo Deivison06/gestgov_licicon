@@ -11,6 +11,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
 class EtpController extends Controller
 {
@@ -82,7 +87,6 @@ class EtpController extends Controller
             return redirect()
                 ->route('admin.etps.index')
                 ->with('success', 'ETP criado com sucesso.');
-
         } catch (\Exception $e) {
             return back()
                 ->withInput()
@@ -176,7 +180,6 @@ class EtpController extends Controller
             return redirect()
                 ->route('admin.etps.show', $id)
                 ->with('success', 'ETP atualizado com sucesso.');
-
         } catch (\Exception $e) {
             return back()
                 ->withInput()
@@ -206,7 +209,6 @@ class EtpController extends Controller
             return redirect()
                 ->route('admin.etps.index')
                 ->with('success', 'ETP excluído com sucesso.');
-
         } catch (\Exception $e) {
             return back()->with('error', 'Erro ao excluir ETP: ' . $e->getMessage());
         }
@@ -218,7 +220,7 @@ class EtpController extends Controller
             // =============================
             // 1. VALIDAR ARQUIVO
             // =============================
-            
+
             $validator = Validator::make($request->all(), [
                 'arquivo_excel' => [
                     'required',
@@ -350,7 +352,6 @@ class EtpController extends Controller
                 'itens' => $itensImportados,
                 'erros' => $erros
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
@@ -358,5 +359,88 @@ class EtpController extends Controller
                 'message' => 'Erro ao importar: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    public function exportItens($id)
+    {
+        $etp = $this->etpService->findById($id);
+
+        // if ($etp->prefeitura_id !== auth()->user()->prefeitura_id) {
+        //     abort(403, 'Acesso negado.');
+        // }
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Itens');
+
+        // Cabeçalho simples
+        $headers = ['Descrição do Item', 'Unidade', 'Quantidade', 'Lote'];
+        foreach ($headers as $col => $header) {
+            $sheet->setCellValueByColumnAndRow($col + 1, 1, $header);
+        }
+
+        $row = 2;
+
+        if ($etp->tipo_contratacao === 'lote' && $etp->lotes->count() > 0) {
+
+            foreach ($etp->lotes as $lote) {
+                foreach ($lote->itens as $item) {
+
+                    $sheet->setCellValueByColumnAndRow(1, $row, $item->descricao_item);
+                    $sheet->setCellValueByColumnAndRow(2, $row, $item->pivot->unidade);
+                    $sheet->setCellValueByColumnAndRow(3, $row, $item->pivot->quantidade);
+                    $sheet->setCellValueByColumnAndRow(4, $row, $lote->nome);
+
+                    $row++;
+                }
+            }
+        } else {
+
+            foreach ($etp->itens as $item) {
+
+                $sheet->setCellValueByColumnAndRow(1, $row, $item->descricao_item);
+                $sheet->setCellValueByColumnAndRow(2, $row, $item->pivot->unidade);
+                $sheet->setCellValueByColumnAndRow(3, $row, $item->pivot->quantidade);
+                $sheet->setCellValueByColumnAndRow(4, $row, '');
+
+                $row++;
+            }
+        }
+
+        // Auto size das colunas
+        foreach (range('A', 'D') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        // Nome do arquivo seguro
+        $etpNumFile = 'ETP-' . str_pad($etp->id, 4, '0', STR_PAD_LEFT) . '-' . $etp->created_at->format('Y');
+        $filename = $etpNumFile . '_itens.xlsx';
+
+        $writer = new Xlsx($spreadsheet);
+
+        return response()->streamDownload(function () use ($writer) {
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type'  => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
+    }
+
+
+    /**
+     * Apply alternating row style to a data row.
+     */
+    private static function styleDataRow($sheet, int $row, int $num): void
+    {
+        $bgColor = ($num % 2 === 0) ? 'F9FAFB' : 'FFFFFF';
+
+        $sheet->getStyle('A' . $row . ':E' . $row)->applyFromArray([
+            'fill'    => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => $bgColor]],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => 'E5E7EB']]],
+            'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
+        ]);
+        $sheet->getStyle('A' . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('C' . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('D' . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getRowDimension($row)->setRowHeight(16);
     }
 }

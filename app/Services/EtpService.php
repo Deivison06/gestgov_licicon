@@ -3,9 +3,10 @@
 namespace App\Services;
 
 use App\Repositories\EtpRepository;
+use Exception;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
-use Exception;
+use Illuminate\Support\Str;
 
 class EtpService
 {
@@ -30,7 +31,14 @@ class EtpService
     {
         try {
             if ($cotacaoFile) {
-                $data['cotacao_path'] = $cotacaoFile->store('etps/cotacoes', 'public');
+                $nomeArquivo = time() . '_' . $cotacaoFile->getClientOriginalName();
+
+                $cotacaoFile->move(
+                    public_path('uploads/etps/cotacoes'),
+                    $nomeArquivo
+                );
+
+                $data['cotacao_path'] = 'uploads/etps/cotacoes/' . $nomeArquivo;
             }
 
             $itens = $data['itens'] ?? [];
@@ -86,11 +94,30 @@ class EtpService
             $etp = $this->findById($id);
 
             if ($cotacaoFile) {
-                // Remove old file if exists
+
+                // Remove arquivo antigo
                 if ($etp->cotacao_path) {
-                    Storage::disk('public')->delete($etp->cotacao_path);
+                    $caminhoAntigo = public_path($etp->cotacao_path);
+
+                    if (file_exists($caminhoAntigo)) {
+                        unlink($caminhoAntigo);
+                    }
                 }
-                $data['cotacao_path'] = $cotacaoFile->store('etps/cotacoes', 'public');
+
+                // Gera nome único
+                $nomeArquivo = Str::uuid() . '.' . $cotacaoFile->getClientOriginalExtension();
+
+                $destino = public_path('uploads/etps/cotacoes');
+
+                if (!file_exists($destino)) {
+                    mkdir($destino, 0755, true);
+                }
+
+                // Move arquivo
+                $cotacaoFile->move($destino, $nomeArquivo);
+
+                // Salva caminho relativo no banco
+                $data['cotacao_path'] = 'uploads/etps/cotacoes/' . $nomeArquivo;
             }
 
             $itens = $data['itens'] ?? [];
