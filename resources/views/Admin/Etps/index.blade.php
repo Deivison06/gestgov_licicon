@@ -83,7 +83,7 @@
                                     <i class="fas fa-eye"></i>
                                 </a>
                                 
-                                @if($etp->status === 'pendente')
+                                @if($etp->status !== 'aprovado' && $etp->status !== 'recusado')
                                     <a href="{{ route('admin.etps.edit', $etp->id) }}" 
                                     class="inline-flex items-center justify-center w-8 h-8 text-blue-600 transition-colors duration-200 rounded-md hover:bg-blue-100 focus:outline-none" 
                                     title="Editar ETP">

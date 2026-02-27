@@ -152,12 +152,20 @@
 
                 <!-- ITENS OU LOTES -->
                 @if (!in_array($etp->modalidade, ['concorrencia', 'inexigibilidade']))
-                    @if ($etp->tipo_contratacao === 'item')
-                        <!-- ITENS (SEM LOTE) -->
+                    @if (in_array($etp->tipo_contratacao, ['item', 'servicos', 'compras']))
+                        <!-- ITENS (PARA ITEM, SERVIÇOS E COMPRAS) -->
                         <div class="mb-8 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
                             <div class="border-b border-gray-200 mb-4 flex items-center justify-between">
-                                <h4 class="text-lg font-bold text-gray-800 mb-4  pb-2"><i
-                                        class="fas fa-boxes mr-2 text-[#009496]"></i> Itens Solicitados</h4>
+                                <h4 class="text-lg font-bold text-gray-800 mb-4 pb-2">
+                                    <i class="fas fa-boxes mr-2 text-[#009496]"></i> 
+                                    @if($etp->tipo_contratacao === 'servicos')
+                                        Serviços Solicitados
+                                    @elseif($etp->tipo_contratacao === 'compras')
+                                        Itens de Compra
+                                    @else
+                                        Itens Solicitados
+                                    @endif
+                                </h4>
                                 <a href="{{ route('admin.etps.export-itens', $etp->id) }}"
                                     class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-all shadow-sm">
                                     <i class="fas fa-file-excel mr-2"></i>
@@ -169,29 +177,23 @@
                                     <table class="w-full text-sm text-left text-gray-500">
                                         <thead class="text-xs text-gray-700 uppercase bg-gray-50">
                                             <tr>
-                                                <th scope="col"
-                                                    class="px-4 py-3 font-bold text-gray-800 w-12 text-center">#</th>
-                                                <th scope="col" class="px-6 py-3 font-bold text-gray-800">Descrição do
-                                                    Item</th>
+                                                <th scope="col" class="px-4 py-3 font-bold text-gray-800 w-12 text-center">#</th>
+                                                <th scope="col" class="px-6 py-3 font-bold text-gray-800">Descrição do Item</th>
                                                 <th scope="col" class="px-6 py-3 font-bold text-gray-800">Unidade</th>
-                                                <th scope="col" class="px-6 py-3 font-bold text-gray-800">Quantidade
-                                                </th>
+                                                <th scope="col" class="px-6 py-3 font-bold text-gray-800">Quantidade</th>
                                             </tr>
                                         </thead>
                                         <tbody class="divide-y divide-gray-200">
                                             @foreach ($etp->itens as $item)
                                                 <tr class="bg-white hover:bg-gray-50 transition-colors">
                                                     <td class="px-4 py-4 text-center">
-                                                        <span
-                                                            class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#009496]/10 text-[#009496] text-xs font-bold">
+                                                        <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#009496]/10 text-[#009496] text-xs font-bold">
                                                             {{ $loop->iteration }}
                                                         </span>
                                                     </td>
-                                                    <td class="px-6 py-4 text-gray-800 font-medium">
-                                                        {{ $item->descricao_item }}</td>
+                                                    <td class="px-6 py-4 text-gray-800 font-medium">{{ $item->descricao_item }}</td>
                                                     <td class="px-6 py-4 text-gray-600">{{ $item->pivot->unidade }}</td>
-                                                    <td class="px-6 py-4 text-gray-600">{{ $item->pivot->quantidade }}
-                                                    </td>
+                                                    <td class="px-6 py-4 text-gray-600">{{ $item->pivot->quantidade }}</td>
                                                 </tr>
                                             @endforeach
                                         </tbody>
@@ -204,8 +206,7 @@
                                             <i class="fas fa-exclamation-triangle text-yellow-400"></i>
                                         </div>
                                         <div class="ml-3">
-                                            <p class="text-sm text-yellow-700 font-medium">Nenhum item vinculado a este
-                                                ETP.</p>
+                                            <p class="text-sm text-yellow-700 font-medium">Nenhum item vinculado a este ETP.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -214,10 +215,17 @@
                     @elseif($etp->tipo_contratacao === 'lote' && $etp->lotes->count() > 0)
                         <!-- LOTES -->
                         <div class="mb-8">
-                            <h4 class="text-lg font-bold text-gray-800 mb-4 border-b border-gray-200 pb-2">
-                                <i class="fas fa-layer-group mr-2 text-[#009496]"></i> Lotes da Contratação
-                            </h4>
-
+                            <div class="border-b border-gray-200 mb-4 flex items-center justify-between">
+                                <h4 class="text-lg font-bold text-gray-800 mb-4 pb-2">
+                                    <i class="fas fa-layer-group mr-2 text-[#009496]"></i> Lotes da Contratação
+                                </h4>
+                                <a href="{{ route('admin.etps.export-itens', $etp->id) }}"
+                                    class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-all shadow-sm">
+                                    <i class="fas fa-file-excel mr-2"></i>
+                                    Exportar XLS
+                                </a>
+                            </div>
+                           
                             <div class="space-y-6">
                                 @foreach ($etp->lotes as $loteIndex => $lote)
                                     <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
@@ -234,25 +242,17 @@
                                                     <table class="w-full text-sm text-left text-gray-500">
                                                         <thead class="text-xs text-gray-700 uppercase bg-gray-50">
                                                             <tr>
-                                                                <th scope="col"
-                                                                    class="px-6 py-3 font-bold text-gray-800">Descrição do
-                                                                    Item</th>
-                                                                <th scope="col"
-                                                                    class="px-6 py-3 font-bold text-gray-800">Unidade</th>
-                                                                <th scope="col"
-                                                                    class="px-6 py-3 font-bold text-gray-800">Quantidade
-                                                                </th>
+                                                                <th scope="col" class="px-6 py-3 font-bold text-gray-800">Descrição do Item</th>
+                                                                <th scope="col" class="px-6 py-3 font-bold text-gray-800">Unidade</th>
+                                                                <th scope="col" class="px-6 py-3 font-bold text-gray-800">Quantidade</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody class="divide-y divide-gray-200">
                                                             @foreach ($lote->itens as $item)
                                                                 <tr class="bg-white hover:bg-gray-50 transition-colors">
-                                                                    <td class="px-6 py-4 text-gray-800 font-medium">
-                                                                        {{ $item->descricao_item }}</td>
-                                                                    <td class="px-6 py-4 text-gray-600">
-                                                                        {{ $item->pivot->unidade }}</td>
-                                                                    <td class="px-6 py-4 text-gray-600">
-                                                                        {{ $item->pivot->quantidade }}</td>
+                                                                    <td class="px-6 py-4 text-gray-800 font-medium">{{ $item->descricao_item }}</td>
+                                                                    <td class="px-6 py-4 text-gray-600">{{ $item->pivot->unidade }}</td>
+                                                                    <td class="px-6 py-4 text-gray-600">{{ $item->pivot->quantidade }}</td>
                                                                 </tr>
                                                             @endforeach
                                                         </tbody>

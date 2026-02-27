@@ -48,7 +48,7 @@ class EtpService
 
             $etp = $this->repository->create($data);
 
-            if ($data['tipo_contratacao'] === 'item' && !empty($itens)) {
+            if (in_array($data['tipo_contratacao'], ['item', 'servicos', 'compras']) && !empty($itens)) {
                 $itensFormatados = [];
                 foreach ($itens as $itemId => $itemData) {
                     $itensFormatados[$itemId] = [
@@ -129,7 +129,7 @@ class EtpService
             $etp = $this->repository->update($id, $data);
 
             // Clear existing relationships
-            if ($etp->tipo_contratacao === 'item') {
+            if (in_array($etp->tipo_contratacao, ['item', 'servicos', 'compras'])) {
                 $etp->itens()->detach();
                 $etp->lotes()->delete();
             } else {
@@ -137,7 +137,7 @@ class EtpService
             }
 
             // Process new data
-            if ($data['tipo_contratacao'] === 'item' && !empty($itens)) {
+            if (in_array($data['tipo_contratacao'], ['item', 'servicos', 'compras']) && !empty($itens)) {
                 $itensFormatados = [];
                 foreach ($itens as $itemId => $itemData) {
                     $itensFormatados[$itemId] = [

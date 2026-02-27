@@ -32,17 +32,22 @@ Route::get('/', [PrefeituraController::class, 'dashboard'])
 // ETP INTELIGENTE (Secretário e Admin)
 // ================================================
 Route::prefix('admin/etps')->name('admin.etps.')->middleware(['auth', 'verified'])->group(function () {
-    // Secretário
     Route::get('/', [EtpController::class, 'index'])->name('index');
     Route::get('/create', [EtpController::class, 'create'])->name('create');
     Route::post('/', [EtpController::class, 'store'])->name('store');
-    Route::get('/{etp}', [EtpController::class, 'show'])->name('show');
     Route::get('/edit/{id}', [EtpController::class, 'edit'])->name('edit');
+    Route::post('/importar-itens', [EtpController::class, 'importarItensEtp'])->name('importar-itens');
+
+    // ← NOVA ROTA: criar item rápido via modal (AJAX)
+    Route::post('/criar-item-rapido', [EtpController::class, 'criarItemRapido'])->name('criar-item-rapido');
+
+    // Rotas com parâmetro por último (para não conflitar com rotas estáticas acima)
+    Route::get('/{etp}', [EtpController::class, 'show'])->name('show');
     Route::put('/{id}', [EtpController::class, 'update'])->name('update');
     Route::delete('/{id}', [EtpController::class, 'destroy'])->name('destroy');
-    Route::post('/importar-itens', [EtpController::class, 'importarItensEtp'])->name('importar-itens');
     Route::get('/{id}/export-itens', [EtpController::class, 'exportItens'])->name('export-itens');
 });
+
 
 // Admin ETPs Recebidos
 Route::prefix('admin/etps-recebidos')->name('admin.etps_recebidos.')->middleware(['auth', 'verified'])->group(function () {

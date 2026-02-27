@@ -88,17 +88,22 @@
                 </div>
 
                 @if(!in_array($etp->modalidade, ['concorrencia', 'inexigibilidade']))
-                    @if($etp->tipo_contratacao === 'item')
-                        <!-- ITENS (SEM LOTE) -->
+                    @if(in_array($etp->tipo_contratacao, ['item', 'servicos', 'compras']))
+                        <!-- ITENS (PARA ITEM, SERVIÇOS E COMPRAS) -->
                         <div class="mb-8">
                             {{-- Cabeçalho com total e botão de export --}}
                             <div class="flex items-center justify-between mb-4 border-b pb-2">
                                 <h4 class="text-lg font-medium text-gray-800 flex items-center gap-2">
                                     <i class="fas fa-boxes text-[#009496]"></i>
-                                    Itens Solicitados
+                                    @if($etp->tipo_contratacao === 'servicos')
+                                        Serviços Solicitados
+                                    @elseif($etp->tipo_contratacao === 'compras')
+                                        Itens de Compra
+                                    @else
+                                        Itens Solicitados
+                                    @endif
                                     @if($etp->itens->count() > 0)
-                                        <span
-                                            class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-[#009496]/10 text-[#009496] border border-[#009496]/20">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-[#009496]/10 text-[#009496] border border-[#009496]/20">
                                             {{ $etp->itens->count() }} {{ $etp->itens->count() === 1 ? 'item' : 'itens' }}
                                         </span>
                                     @endif
@@ -127,8 +132,7 @@
                                             @foreach($etp->itens as $index => $item)
                                                 <tr class="bg-white border-b hover:bg-gray-50">
                                                     <td class="px-4 py-4 text-center">
-                                                        <span
-                                                            class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#009496]/10 text-[#009496] text-xs font-bold">
+                                                        <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#009496]/10 text-[#009496] text-xs font-bold">
                                                             {{ $index + 1 }}
                                                         </span>
                                                     </td>
@@ -140,8 +144,7 @@
                                         </tbody>
                                         <tfoot>
                                             <tr class="bg-gray-50 border-t-2 border-gray-200">
-                                                <td colspan="3" class="px-6 py-3 text-xs font-bold text-gray-600 uppercase">Total de
-                                                    Itens</td>
+                                                <td colspan="3" class="px-6 py-3 text-xs font-bold text-gray-600 uppercase">Total de Itens</td>
                                                 <td class="px-6 py-3 font-bold text-gray-800">{{ $etp->itens->count() }}</td>
                                             </tr>
                                         </tfoot>
@@ -162,8 +165,7 @@
                                 <h4 class="text-lg font-medium text-gray-800 flex items-center gap-2">
                                     <i class="fas fa-layer-group text-[#009496]"></i>
                                     Lotes da Contratação
-                                    <span
-                                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-[#009496]/10 text-[#009496] border border-[#009496]/20">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-[#009496]/10 text-[#009496] border border-[#009496]/20">
                                         {{ $etp->lotes->count() }} {{ $etp->lotes->count() === 1 ? 'lote' : 'lotes' }} ·
                                         {{ $totalItensGeral }} {{ $totalItensGeral === 1 ? 'item' : 'itens' }}
                                     </span>
@@ -205,8 +207,7 @@
                                                             @foreach($lote->itens as $item)
                                                                 <tr class="bg-white border-b hover:bg-gray-50">
                                                                     <td class="px-4 py-4 text-center">
-                                                                        <span
-                                                                            class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#009496]/10 text-[#009496] text-xs font-bold">
+                                                                        <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#009496]/10 text-[#009496] text-xs font-bold">
                                                                             {{ $numGlobal++ }}
                                                                         </span>
                                                                     </td>

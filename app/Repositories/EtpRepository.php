@@ -37,9 +37,11 @@ class EtpRepository
             $query->where('secretaria_id', $filters['secretaria_id']);
          }
 
-        if (isset($filters['status']) && $filters['status']) {
-             $query->where('status', $filters['status']);
+        // Se NÃO vier filtro de status, excluir pendente
+        if (!isset($filters['status']) || !$filters['status']) {
+            $query->where('status', '!=', 'pendente');
         }
+
 
          if (isset($filters['data_inicio']) && $filters['data_inicio']) {
              $query->whereDate('created_at', '>=', $filters['data_inicio']);

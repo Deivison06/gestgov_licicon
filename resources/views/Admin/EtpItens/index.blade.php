@@ -82,7 +82,6 @@
             <table class="w-full overflow-hidden divide-y divide-gray-200 rounded-lg shadow-sm">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">ID</th>
                         <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">Descrição do Item</th>
                         <th class="px-4 py-3 text-xs font-semibold tracking-wider text-center text-gray-600 uppercase">Ações</th>
                     </tr>
@@ -90,7 +89,6 @@
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($itens as $item)
                     <tr class="transition-colors duration-200 hover:bg-gray-50/80">
-                        <td class="px-4 py-3 text-sm text-gray-900 font-mono">{{ $item->id }}</td>
                         <td class="px-4 py-3 text-sm text-gray-900">{{ $item->descricao_item }}</td>
                         <td class="px-4 py-3 text-center flex justify-center space-x-2">
                             <button type="button" onclick="openModalEdit({{ $item->id }}, '{{ addslashes($item->descricao_item) }}')" class="inline-flex items-center justify-center w-8 h-8 text-indigo-600 transition-colors duration-200 rounded-md hover:bg-indigo-100 focus:outline-none" title="Editar Item">
