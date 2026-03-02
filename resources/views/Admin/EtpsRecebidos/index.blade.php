@@ -101,7 +101,7 @@
                         <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">Objeto</th>
                         <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">Modo</th>
                         <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">Status</th>
-                        <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">Data</th>
+                        <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">Modalidade</th>
                         <th class="px-4 py-3 text-xs font-semibold tracking-wider text-center text-gray-600 uppercase">Ações</th>
                     </tr>
                 </thead>
@@ -135,7 +135,7 @@
                                 {{ ucfirst(str_replace('_', ' ', $etp->status)) }}
                             </span>
                         </td>
-                        <td class="px-4 py-3 text-sm text-gray-900">{{ $etp->created_at->format('d/m/Y') }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-900">{{ $etp->modalidade }}</td>>
                         <td class="px-4 py-3 text-center">
                             <a href="{{ route('admin.etps_recebidos.show', $etp->id) }}" class="inline-flex items-center justify-center px-3 py-1.5 text-xs font-medium text-white transition-colors duration-200 bg-[#062F43] rounded-md hover:bg-[#065f8b] focus:outline-none" title="Analisar ETP">
                                 Analisar <i class="fas fa-arrow-right ml-1 relative top-[1px]"></i>

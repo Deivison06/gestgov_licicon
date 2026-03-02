@@ -568,14 +568,12 @@
                                 <p class="text-sm font-medium text-gray-800 mb-2">${descricao}</p>
                                 <div class="flex gap-3">
                                     <input type="hidden" name="${namePrefix}[${id}][item_id]" value="${id}">
-                                    <select name="${namePrefix}[${id}][unidade]" class="px-2 py-1 border border-gray-300 rounded text-sm" required>
-                                        <option value="unidade">Unidade</option>
-                                        <option value="pacote">Pacote</option>
-                                        <option value="caixa">Caixa</option>
-                                        <option value="metro">Metro</option>
-                                        <option value="quilograma">Quilograma</option>
-                                        <option value="litro">Litro</option>
-                                    </select>
+                                    <input type="text" 
+                                        name="${namePrefix}[${id}][unidade]" 
+                                        placeholder="Ex: Unidade, Pacote, Caixa..." 
+                                        value=""
+                                        class="px-2 py-1 border border-gray-300 rounded text-sm w-24" 
+                                        required>
                                     <input type="number" name="${namePrefix}[${id}][quantidade]" placeholder="Qtd" min="1" required class="px-2 py-1 border border-gray-300 rounded text-sm w-20">
                                 </div>
                             </div>
@@ -1043,14 +1041,12 @@
                         <p class="text-sm font-medium text-gray-800 mb-2">${item.descricao}</p>
                         <div class="flex gap-3">
                             <input type="hidden" name="itens[${item.item_id}][item_id]" value="${item.item_id}">
-                            <select name="itens[${item.item_id}][unidade]" class="px-2 py-1 border border-gray-300 rounded text-sm" required>
-                                <option value="unidade" ${item.unidade==='unidade'?'selected':''}>Unidade</option>
-                                <option value="pacote"  ${item.unidade==='pacote' ?'selected':''}>Pacote</option>
-                                <option value="caixa"   ${item.unidade==='caixa'  ?'selected':''}>Caixa</option>
-                                <option value="metro"   ${item.unidade==='metro'  ?'selected':''}>Metro</option>
-                                <option value="quilograma" ${item.unidade==='quilograma'?'selected':''}>Quilograma</option>
-                                <option value="litro"   ${item.unidade==='litro'  ?'selected':''}>Litro</option>
-                            </select>
+                            <input type="text" 
+                                name="itens[${item.item_id}][unidade]" 
+                                value="${item.unidade}" 
+                                placeholder="Ex: Unidade, Pacote, Caixa..." 
+                                class="px-2 py-1 border border-gray-300 rounded text-sm w-24" 
+                                required>
                             <input type="number" name="itens[${item.item_id}][quantidade]" value="${item.quantidade}" placeholder="Qtd" min="1" required class="px-2 py-1 border border-gray-300 rounded text-sm w-20">
                         </div>
                     </div>

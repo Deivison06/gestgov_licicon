@@ -779,7 +779,7 @@ class FinalizacaoPdfService
         $textoCarimbo = "Processo numerado por: {$processo->responsavel_numeracao} " .
             "Cargo: {$processo->unidade_numeracao} " .
             "Portaria nº {$processo->portaria_numeracao} " .
-            "Pág. {$paginaAbsoluta} / {$totalAbsoluto} - " .
+            "Pág. {$paginaAbsoluta} - " .
             "Documento gerado na Plataforma GestGov - Licenciado para Prefeitura de {$processo->prefeitura->cidade}. " .
             "Cod. de Autenticação: {$codigoAutenticacao} - Para autenticar acesse gestgov.com.br/autenticacao";
 

@@ -51,7 +51,7 @@
                         <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">Objeto</th>
                         <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">Tipo</th>
                         <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">Status</th>
-                        <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">Data</th>
+                        <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">Modalidade</th>
                         <th class="px-4 py-3 text-xs font-semibold tracking-wider text-center text-gray-600 uppercase">Ações</th>
                     </tr>
                 </thead>
@@ -74,7 +74,7 @@
                                 {{ ucfirst(str_replace('_', ' ', $etp->status)) }}
                             </span>
                         </td>
-                        <td class="px-4 py-3 text-sm text-gray-900">{{ $etp->created_at->format('d/m/Y') }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-900">{{ $etp->modalidade }}</td>
                         <td class="px-4 py-3 text-center">
                             <div class="flex items-center justify-center space-x-2">
                                 <a href="{{ route('admin.etps.show', $etp->id) }}" 

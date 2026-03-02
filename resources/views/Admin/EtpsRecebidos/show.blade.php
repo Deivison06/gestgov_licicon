@@ -225,34 +225,41 @@
                                     Exportar XLS
                                 </a>
                             </div>
-                           
+                        
                             <div class="space-y-6">
-                                @foreach ($etp->lotes as $loteIndex => $lote)
-                                    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                                        <div class="bg-gray-100 px-6 py-4 border-b border-gray-200">
-                                            <h5 class="text-md font-bold text-gray-800 flex items-center">
-                                                <i class="fas fa-tag mr-2 text-[#009496]"></i>
-                                                {{ $lote->nome }}
+                                @foreach($etp->lotes as $lote)
+                                    <div class="border border-gray-200 rounded-xl overflow-hidden">
+                                        <div class="bg-gray-100 px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                                            <h5 class="text-md font-semibold text-gray-800">
+                                                <i class="fas fa-tag mr-2 text-[#009496]"></i> {{ $lote->nome }}
                                             </h5>
+                                            <span class="text-xs font-medium text-gray-500">
+                                                {{ $lote->itens->count() }} {{ $lote->itens->count() === 1 ? 'item' : 'itens' }}
+                                            </span>
                                         </div>
-
                                         <div class="p-6">
-                                            @if ($lote->itens->count() > 0)
+                                            @if($lote->itens->count() > 0)
                                                 <div class="overflow-x-auto">
                                                     <table class="w-full text-sm text-left text-gray-500">
                                                         <thead class="text-xs text-gray-700 uppercase bg-gray-50">
                                                             <tr>
-                                                                <th scope="col" class="px-6 py-3 font-bold text-gray-800">Descrição do Item</th>
-                                                                <th scope="col" class="px-6 py-3 font-bold text-gray-800">Unidade</th>
-                                                                <th scope="col" class="px-6 py-3 font-bold text-gray-800">Quantidade</th>
+                                                                <th scope="col" class="px-4 py-3 w-12 text-center">#</th>
+                                                                <th scope="col" class="px-6 py-3">Descrição do Item</th>
+                                                                <th scope="col" class="px-6 py-3">Unidade</th>
+                                                                <th scope="col" class="px-6 py-3">Quantidade</th>
                                                             </tr>
                                                         </thead>
-                                                        <tbody class="divide-y divide-gray-200">
-                                                            @foreach ($lote->itens as $item)
-                                                                <tr class="bg-white hover:bg-gray-50 transition-colors">
-                                                                    <td class="px-6 py-4 text-gray-800 font-medium">{{ $item->descricao_item }}</td>
-                                                                    <td class="px-6 py-4 text-gray-600">{{ $item->pivot->unidade }}</td>
-                                                                    <td class="px-6 py-4 text-gray-600">{{ $item->pivot->quantidade }}</td>
+                                                        <tbody>
+                                                            @foreach($lote->itens as $item)
+                                                                <tr class="bg-white border-b hover:bg-gray-50">
+                                                                    <td class="px-4 py-4 text-center">
+                                                                        <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#009496]/10 text-[#009496] text-xs font-bold">
+                                                                            {{ $loop->iteration }} {{-- Isso reinicia em 1 para cada lote --}}
+                                                                        </span>
+                                                                    </td>
+                                                                    <td class="px-6 py-4">{{ $item->descricao_item }}</td>
+                                                                    <td class="px-6 py-4">{{ $item->pivot->unidade }}</td>
+                                                                    <td class="px-6 py-4">{{ $item->pivot->quantidade }}</td>
                                                                 </tr>
                                                             @endforeach
                                                         </tbody>
@@ -298,11 +305,13 @@
                                         <p class="text-xs text-blue-700">Clique no botão para visualizar o PDF</p>
                                     </div>
                                 </div>
-                                <a href="{{ url($etp->cotacao_path) }}" target="_blank"
+                                <a href="{{ asset($etp->cotacao_path) }}"
+                                    download
                                     class="inline-flex items-center px-4 py-2 bg-[#009496] text-white rounded-lg hover:bg-[#007a7a] transition-all">
-                                    <i class="fas fa-eye mr-2"></i>
-                                    Visualizar PDF
+                                        <i class="fas fa-download mr-2"></i>
+                                        Baixar PDF
                                 </a>
+
                             </div>
                         @elseif($isImage)
                             <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">

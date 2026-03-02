@@ -2,18 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Processo;
-use App\Models\Prefeitura;
-use App\Models\Documento;
+use App\Enums\ProcessoStatusEnum;
 use App\Http\Requests\ProcessoRequest;
-use App\Services\ProcessoService;
-use App\Services\ProcessoPdfService;
+use App\Models\Documento;
+use App\Models\Prefeitura;
+use App\Models\Processo;
 use App\Services\ProcessoDocumentoService;
+use App\Services\ProcessoPdfService;
+use App\Services\ProcessoService;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Barryvdh\DomPDF\Facade\Pdf;
-use App\Enums\ProcessoStatusEnum;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class ProcessoController extends Controller
 {
@@ -234,7 +235,7 @@ class ProcessoController extends Controller
                 'data' => $detalhe->toArray()
             ]);
         } catch (\Exception $e) {
-            \Log::error('Erro ao salvar detalhe do processo', [
+            Log::error('Erro ao salvar detalhe do processo', [
                 'processo_id' => $processo->id,
                 'erro' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
@@ -258,7 +259,7 @@ class ProcessoController extends Controller
                 'documento' => $request->query('documento')
             ]);
         } catch (\Exception $e) {
-            \Log::error('Erro ao gerar PDF', [
+            Log::error('Erro ao gerar PDF', [
                 'processo_id' => $processo->id,
                 'erro' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
@@ -308,7 +309,7 @@ class ProcessoController extends Controller
         try {
             return $this->pdfService->baixarTodosDocumentos($processo);
         } catch (\Exception $e) {
-            \Log::error('Erro ao baixar todos os documentos', [
+            Log::error('Erro ao baixar todos os documentos', [
                 'processo_id' => $processo->id,
                 'erro' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
@@ -332,7 +333,7 @@ class ProcessoController extends Controller
     public function republicarEdital(Request $request, Processo $processo)
     {
         try {
-            \Log::info('Iniciando republicação de edital', ['processo_id' => $processo->id]);
+            Log::info('Iniciando republicação de edital', ['processo_id' => $processo->id]);
 
             $request->validate([
                 'data' => 'nullable|date',
@@ -365,7 +366,7 @@ class ProcessoController extends Controller
             // Usar o método do serviço para determinar a view correta
             $viewMinuta = $this->pdfService->determinarViewRepublicacao($processo);
 
-            \Log::info('Gerando minuta de republicação', [
+            Log::info('Gerando minuta de republicação', [
                 'view' => $viewMinuta,
                 'processo_id' => $processo->id,
                 'modalidade' => $processo->modalidade?->name,
@@ -430,7 +431,7 @@ class ProcessoController extends Controller
 
             DB::commit();
 
-            \Log::info('Edital republicado com sucesso', [
+            Log::info('Edital republicado com sucesso', [
                 'processo_id' => $processo->id,
                 'documento_id' => $novoEdital->id,
                 'view_usada' => $viewMinuta
@@ -445,7 +446,7 @@ class ProcessoController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Erro ao republicar edital', [
+            Log::error('Erro ao republicar edital', [
                 'processo_id' => $processo->id,
                 'erro' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
@@ -493,7 +494,7 @@ class ProcessoController extends Controller
 
             // Verificar se o arquivo final foi criado
             if (file_exists($caminhoFinal) && filesize($caminhoFinal) > 0) {
-                \Log::info('Edital com capa criado com sucesso', [
+                Log::info('Edital com capa criado com sucesso', [
                     'caminho_final' => $caminhoFinal,
                     'tamanho' => filesize($caminhoFinal)
                 ]);
@@ -503,7 +504,7 @@ class ProcessoController extends Controller
             return null;
 
         } catch (\Exception $e) {
-            \Log::error('Erro ao criar edital com capa', [
+            Log::error('Erro ao criar edital com capa', [
                 'caminho_edital' => $caminhoEdital,
                 'erro' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
@@ -518,7 +519,7 @@ class ProcessoController extends Controller
     public function republicarProcesso(Request $request, Processo $processo)
     {
         try {
-            \Log::info('Iniciando republicação de processo', ['processo_original_id' => $processo->id]);
+            Log::info('Iniciando republicação de processo', ['processo_original_id' => $processo->id]);
 
             $request->validate([
                 'novo_numero_processo' => 'required|string|',
@@ -545,7 +546,7 @@ class ProcessoController extends Controller
             $novoProcesso->save();
 
             // Registrar log
-            \Log::info('Processo republicado', [
+            Log::info('Processo republicado', [
                 'processo_original_id' => $processo->id,
                 'novo_processo_id' => $novoProcesso->id,
                 'usuario_id' => auth()->id(),
@@ -562,7 +563,7 @@ class ProcessoController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Erro ao republicar processo', [
+            Log::error('Erro ao republicar processo', [
                 'processo_id' => $processo->id,
                 'erro' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
@@ -581,7 +582,7 @@ class ProcessoController extends Controller
     public function cancelarLicitacao(Request $request, Processo $processo)
     {
         try {
-            \Log::info('Iniciando cancelamento de licitação', ['processo_id' => $processo->id]);
+            Log::info('Iniciando cancelamento de licitação', ['processo_id' => $processo->id]);
 
             $request->validate([
                 'data_cancelamento' => 'required|date',
@@ -644,7 +645,7 @@ class ProcessoController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Erro ao cancelar licitação', [
+            Log::error('Erro ao cancelar licitação', [
                 'processo_id' => $processo->id,
                 'erro' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
@@ -663,7 +664,7 @@ class ProcessoController extends Controller
     public function reverterCancelamento(Request $request, Processo $processo)
     {
         try {
-            \Log::info('Iniciando reversão de cancelamento', ['processo_id' => $processo->id]);
+            Log::info('Iniciando reversão de cancelamento', ['processo_id' => $processo->id]);
 
             // Verificar se o processo está cancelado
             if ($processo->status !== ProcessoStatusEnum::CANCELADO) {
@@ -678,7 +679,7 @@ class ProcessoController extends Controller
             // Reverter para status anterior (ou definir um status padrão)
             // Você pode querer salvar o status anterior em um campo separado
             // ou usar uma lógica para determinar qual status reverter
-            $novoStatus = ProcessoStatusEnum::EM_INICIO; // Ou outro status apropriado
+            $novoStatus = ProcessoStatusEnum::EM_ANDAMENTO; // Ou outro status apropriado
 
             // Atualizar status
             $processo->status = $novoStatus;
@@ -691,7 +692,7 @@ class ProcessoController extends Controller
             $processo->save();
 
             // Registrar log da ação
-            \Log::info('Cancelamento revertido', [
+            Log::info('Cancelamento revertido', [
                 'processo_id' => $processo->id,
                 'novo_status' => $novoStatus->value,
                 'usuario_id' => auth()->id(),
@@ -711,7 +712,7 @@ class ProcessoController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Erro ao reverter cancelamento', [
+            Log::error('Erro ao reverter cancelamento', [
                 'processo_id' => $processo->id,
                 'erro' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
@@ -724,13 +725,10 @@ class ProcessoController extends Controller
         }
     }
 
-    /**
-     * Adiar licitação - CORRIGIDO
-     */
     public function adiarLicitacao(Request $request, Processo $processo)
     {
         try {
-            \Log::info('Iniciando adiamento de licitação', ['processo_id' => $processo->id]);
+            Log::info('Iniciando adiamento de licitação', ['processo_id' => $processo->id]);
 
             $request->validate([
                 'nova_data' => 'required|date',
@@ -806,7 +804,7 @@ class ProcessoController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Erro ao adiar licitação', [
+            Log::error('Erro ao adiar licitação', [
                 'processo_id' => $processo->id,
                 'erro' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
@@ -819,9 +817,6 @@ class ProcessoController extends Controller
         }
     }
 
-    /**
-     * Métodos auxiliares
-     */
     private function adicionarCapaRepublicacao(string $caminhoPdf, Processo $processo, ?string $justificativa = null): void
     {
         try {
@@ -847,7 +842,7 @@ class ProcessoController extends Controller
             }
 
         } catch (\Exception $e) {
-            \Log::error('Erro ao adicionar capa de republicação', [
+            Log::error('Erro ao adicionar capa de republicação', [
                 'caminho_pdf' => $caminhoPdf,
                 'erro' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
@@ -919,7 +914,7 @@ class ProcessoController extends Controller
             );
 
         } catch (\Exception $e) {
-            \Log::warning("Erro ao regenerar documento {$tipo}", [
+            Log::warning("Erro ao regenerar documento {$tipo}", [
                 'processo_id' => $processo->id,
                 'erro' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
