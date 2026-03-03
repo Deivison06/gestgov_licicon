@@ -48,22 +48,21 @@
                         <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">Nº</th>
                         <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">Secretaria</th>
                         <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">Responsável</th>
-                        <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">Objeto</th>
-                        <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">Tipo</th>
-                        <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">Status</th>
                         <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">Modalidade</th>
+                        <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">Modalidade</th>
+                        <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">Status</th>
                         <th class="px-4 py-3 text-xs font-semibold tracking-wider text-center text-gray-600 uppercase">Ações</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($etps as $etp)
                     <tr class="transition-colors duration-200 hover:bg-gray-50/80">
-                        <td class="px-4 py-3 font-mono text-sm text-gray-900 whitespace-nowrap">ETP-{{ str_pad($etp->id, 4, '0', STR_PAD_LEFT) }}/{{ $etp->created_at->format('Y') }}</td>
-                        <td class="px-4 py-3 text-sm text-gray-900">{{ $etp->secretaria->nome ?? 'N/A' }}</td>
-                        <td class="px-4 py-3 text-sm text-gray-900">{{ $etp->servidor_responsavel ?? 'N/A' }}</td>
-                        <td class="px-4 py-3 text-sm text-gray-900 cursor-help" title="{{ $etp->objeto_licitacao }}">{{ str()->limit($etp->objeto_licitacao, 40) }}</td>
-                        <td class="px-4 py-3 text-sm text-gray-900 uppercase">{{ $etp->tipo_contratacao }}</td>
-                        <td class="px-4 py-3 text-sm text-gray-900">
+                        <td class="px-4 py-3 font-mono text-sm text-gray-900 whitespace-nowrap align-top">ETP-{{ str_pad($etp->id, 4, '0', STR_PAD_LEFT) }}/{{ $etp->created_at->format('Y') }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-900 align-top">{{ $etp->secretaria->nome ?? 'N/A' }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-900 align-top">{{ $etp->servidor_responsavel ?? 'N/A' }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-900 align-top">{{ $etp->modalidade }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-900 uppercase align-top">{{ $etp->modalidade }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-900 align-top">
                             <span class="inline-flex items-center px-2.5 py-0.5 text-xs font-semibold rounded-full
                                 @if($etp->status === 'pendente') bg-yellow-100 text-yellow-800
                                 @elseif($etp->status === 'em_analise') bg-blue-100 text-blue-800
@@ -74,13 +73,18 @@
                                 {{ ucfirst(str_replace('_', ' ', $etp->status)) }}
                             </span>
                         </td>
-                        <td class="px-4 py-3 text-sm text-gray-900">{{ $etp->modalidade }}</td>
-                        <td class="px-4 py-3 text-center">
+                        <td class="px-4 py-3 text-center align-top">
                             <div class="flex items-center justify-center space-x-2">
                                 <a href="{{ route('admin.etps.show', $etp->id) }}" 
                                 class="inline-flex items-center justify-center w-8 h-8 text-indigo-600 transition-colors duration-200 rounded-md hover:bg-indigo-100 focus:outline-none" 
                                 title="Visualizar ETP">
                                     <i class="fas fa-eye"></i>
+                                </a>
+
+                                <a href="{{ route('admin.etps.pdf', $etp->id) }}" 
+                                class="inline-flex items-center justify-center w-8 h-8 text-green-600 transition-colors duration-200 rounded-md hover:bg-green-100 focus:outline-none" 
+                                title="Baixar PDF do ETP" target="_blank">
+                                    <i class="fas fa-file-pdf"></i>
                                 </a>
                                 
                                 @if($etp->status !== 'aprovado' && $etp->status !== 'recusado')
@@ -100,9 +104,18 @@
                             </div>
                         </td>
                     </tr>
+                    <!-- Linha do Objeto -->
+                    <tr class="border-t-0 bg-gray-50/30">
+                        <td colspan="7" class="px-4 py-2 text-sm text-gray-600">
+                            <div class="flex items-start gap-2">
+                                <span class="font-semibold text-gray-700 whitespace-nowrap">Objeto:</span>
+                                <span class="text-gray-600" title="{{ $etp->objeto_licitacao }}">{{ $etp->objeto_licitacao }}</span>
+                            </div>
+                        </td>
+                    </tr>
                     @empty
                     <tr>
-                        <td colspan="8" class="px-6 py-16 text-center text-gray-500">
+                        <td colspan="7" class="px-6 py-16 text-center text-gray-500">
                             <p class="text-sm font-medium text-gray-700">Nenhum ETP encontrado.</p>
                         </td>
                     </tr>

@@ -149,6 +149,14 @@
                         <p class="mt-1 text-xs text-gray-500">Descreva detalhadamente o que será adquirido ou contratado.
                         </p>
                     </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Justificativa da Necessidade *</label>
+                        <textarea name="justificativa_necessidade" id="justificativa_necessidade" rows="4"
+                            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent resize-y"
+                            required>{{ old('justificativa_necessidade', $etp->justificativa_necessidade ?? '') }}</textarea>
+                        <p class="mt-1 text-xs text-gray-500">Explique detalhadamente por que esta contratação é necessária.</p>
+                    </div>
                     <div class="mt-8 flex justify-between">
                         <button type="button"
                             class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all"
@@ -416,45 +424,60 @@
                 const radiosTipo = document.querySelectorAll('input[name="tipo_contratacao"]');
                 const opcoesPregao = document.getElementById('tipo-opcoes-pregao');
                 const opcoesDisp = document.getElementById('tipo-opcoes-dispensa');
+                const areaItensSemLote = document.getElementById('area-itens-sem-lote');
+                const areaLotes = document.getElementById('area-lotes');
+                const camposItens = document.getElementById('campos-itens-contratacao');
+                const labelPdf = document.getElementById('label_pdf_anexo');
+                const cotacaoInput = document.getElementById('cotacao_path');
 
                 radiosTipo.forEach(el => {
                     el.checked = false;
                     el.required = false;
                 });
+                opcoesPregao.classList.add('hidden');
+                opcoesDisp.classList.add('hidden');
+                camposItens.classList.remove('hidden');
+                labelPdf.innerText = 'Anexar Cotação do Fornecedor Local';
+                cotacaoInput.removeAttribute('required');
 
                 if (modalidade === 'concorrencia' || modalidade === 'inexigibilidade') {
                     camposItens.classList.add('hidden');
+                    areaItensSemLote.classList.add('hidden');
+                    areaLotes.classList.add('hidden');
                     labelPdf.innerText = 'Anexar Projeto Básico *';
                     cotacaoInput.setAttribute('required', 'required');
-                    opcoesPregao.classList.add('hidden');
-                    opcoesDisp.classList.add('hidden');
 
                 } else if (modalidade === 'dispensa') {
-                    camposItens.classList.remove('hidden');
-                    labelPdf.innerText = 'Anexar Cotação do Fornecedor Local';
-                    cotacaoInput.removeAttribute('required');
-                    opcoesPregao.classList.add('hidden');
                     opcoesDisp.classList.remove('hidden');
-                    opcoesDisp.querySelectorAll('input[type="radio"]').forEach(el => el.required = true);
+                    const valorSalvo = '{{ old('tipo_contratacao') }}';
+                    if (valorSalvo === 'servicos' || valorSalvo === 'compras' || valorSalvo === 'obras') {
+                        document.querySelector(`input[name="tipo_contratacao"][value="${valorSalvo}"]`)
+                            .checked = true;
+                    }
+                    opcoesDisp.querySelectorAll('input[type="radio"]').forEach(el => {
+                        el.required = true;
+                    });
+                    areaItensSemLote.classList.remove('hidden');
+                    areaLotes.classList.add('hidden');
+                    toggleContratacaoTipo();
 
                 } else if (modalidade === 'pregao') {
-                    camposItens.classList.remove('hidden');
-                    labelPdf.innerText = 'Anexar Cotação do Fornecedor Local';
-                    cotacaoInput.removeAttribute('required');
-                    opcoesDisp.classList.add('hidden');
                     opcoesPregao.classList.remove('hidden');
-                    opcoesPregao.querySelectorAll('input[type="radio"]').forEach(el => el.required = true);
+                    const valorSalvo = '{{ old('tipo_contratacao') }}';
+                    if (valorSalvo === 'item' || valorSalvo === 'lote') {
+                        document.querySelector(`input[name="tipo_contratacao"][value="${valorSalvo}"]`)
+                            .checked = true;
+                    }
+                    opcoesPregao.querySelectorAll('input[type="radio"]').forEach(el => {
+                        el.required = true;
+                    });
+                    toggleContratacaoTipo();
 
                 } else {
                     camposItens.classList.add('hidden');
-                    opcoesPregao.classList.add('hidden');
-                    opcoesDisp.classList.add('hidden');
-                    labelPdf.innerText = 'Anexar Cotação do Fornecedor Local';
-                    cotacaoInput.removeAttribute('required');
+                    areaItensSemLote.classList.add('hidden');
+                    areaLotes.classList.add('hidden');
                 }
-
-                document.getElementById('area-itens-sem-lote').classList.remove('hidden');
-                document.getElementById('area-lotes').classList.add('hidden');
             };
 
             /* ── TIPO CONTRATAÇÃO ── */
@@ -464,14 +487,28 @@
                 const val = selected.value;
                 const areaSemLote = document.getElementById('area-itens-sem-lote');
                 const areaLotes = document.getElementById('area-lotes');
-
-                if (val === 'lote') {
+                const camposItensContratacao = document.getElementById('campos-itens-contratacao');
+                const labelPdf = document.getElementById('label_pdf_anexo');
+                
+                // Se for OBRAS, esconde a área de itens e muda o label do PDF
+                if (val === 'obras') {
+                    areaSemLote.classList.add('hidden');
+                    areaLotes.classList.add('hidden');
+                    labelPdf.innerText = 'Anexar Projeto Básico *';
+                    document.getElementById('cotacao_path').setAttribute('required', 'required');
+                } 
+                else if (val === 'lote') {
                     areaSemLote.classList.add('hidden');
                     areaLotes.classList.remove('hidden');
+                    labelPdf.innerText = 'Anexar Cotação do Fornecedor Local';
+                    document.getElementById('cotacao_path').removeAttribute('required');
                     if (document.querySelectorAll('.lote-card').length === 0) adicionarLote();
-                } else {
+                } 
+                else {
                     areaSemLote.classList.remove('hidden');
                     areaLotes.classList.add('hidden');
+                    labelPdf.innerText = 'Anexar Cotação do Fornecedor Local';
+                    document.getElementById('cotacao_path').removeAttribute('required');
                 }
             };
 
@@ -624,24 +661,31 @@
 
             /* ── STEPS ── */
             window.nextStep = function(step) {
-                if (step === 2) {
-                    if (!secretariaSelect.value) {
-                        alert('Selecione uma secretaria primeiro.');
-                        return;
-                    }
-                    if (!modalidadeSelect.value) {
-                        alert('Selecione uma modalidade primeiro.');
-                        return;
-                    }
+            if (step === 2) {
+                if (!secretariaSelect.value) {
+                    alert('Selecione uma secretaria primeiro.');
+                    return;
                 }
-                if (step === 3 && !document.getElementById('objeto_licitacao').value.trim()) {
+                if (!modalidadeSelect.value) {
+                    alert('Selecione uma modalidade primeiro.');
+                    return;
+                }
+            }
+            if (step === 3) {
+                if (!document.getElementById('objeto_licitacao').value.trim()) {
                     alert('Preencha o objeto primeiro.');
                     return;
                 }
-                document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
-                document.getElementById('step-' + step).classList.remove('hidden');
-                updateProgress(step);
-            };
+                // NOVA VALIDAÇÃO: Verificar justificativa
+                if (!document.getElementById('justificativa_necessidade').value.trim()) {
+                    alert('Preencha a justificativa da necessidade.');
+                    return;
+                }
+            }
+            document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById('step-' + step).classList.remove('hidden');
+            updateProgress(step);
+        };
 
             window.prevStep = function(step) {
                 document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));

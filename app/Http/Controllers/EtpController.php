@@ -55,8 +55,9 @@ class EtpController extends Controller
             'secretaria_id'       => 'required|exists:unidades,id',
             'servidor_responsavel' => 'required|string|max:255',
             'objeto_licitacao'    => 'required|string',
+            'justificativa_necessidade' => 'required|string',
             'modalidade'          => 'required|in:pregao,concorrencia,dispensa,inexigibilidade',
-            'tipo_contratacao'    => 'required_if:modalidade,pregao,dispensa|in:item,lote,servicos,compras',
+            'tipo_contratacao'    => 'required_if:modalidade,pregao,dispensa|in:item,lote,servicos,compras,obras',
             'dotacao_orcamentaria' => 'required|string|max:255',
             'prazo_entrega'       => 'required|string|max:255',
             'cotacao_path'        => 'nullable|file|max:10240',
@@ -177,8 +178,9 @@ class EtpController extends Controller
             'secretaria_id'       => 'required|exists:unidades,id',
             'servidor_responsavel' => 'required|string|max:255',
             'objeto_licitacao'    => 'required|string',
+            'justificativa_necessidade' => 'required|string',
             'modalidade'          => 'required|in:pregao,concorrencia,dispensa,inexigibilidade',
-            'tipo_contratacao'    => 'required_if:modalidade,pregao,dispensa|in:item,lote,servicos,compras',
+            'tipo_contratacao'    => 'required_if:modalidade,pregao,dispensa|in:item,lote,servicos,compras,obras',
             'dotacao_orcamentaria' => 'required|string|max:255',
             'prazo_entrega'       => 'required|string|max:255',
             'cotacao_path'        => 'nullable|file|max:10240',
@@ -413,6 +415,22 @@ class EtpController extends Controller
                 'message' => 'Erro ao importar: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    public function gerarPdf($id)
+    {
+        $etp = $this->etpService->findById($id);
+
+        if ($etp->prefeitura_id !== auth()->user()->prefeitura_id) {
+            abort(403, 'Acesso negado.');
+        }
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('Admin.Etps.pdf.solicitacao', compact('etp'))
+            ->setPaper('a4', 'portrait');
+
+        $filename = 'ETP-' . str_pad($etp->id, 4, '0', STR_PAD_LEFT) . '_' . $etp->created_at->format('Y') . '_solicitacao.pdf';
+
+        return $pdf->download($filename);
     }
 
     public function exportItens($id)

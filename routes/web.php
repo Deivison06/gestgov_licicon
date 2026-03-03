@@ -46,6 +46,7 @@ Route::prefix('admin/etps')->name('admin.etps.')->middleware(['auth', 'verified'
     Route::put('/{id}', [EtpController::class, 'update'])->name('update');
     Route::delete('/{id}', [EtpController::class, 'destroy'])->name('destroy');
     Route::get('/{id}/export-itens', [EtpController::class, 'exportItens'])->name('export-itens');
+    Route::get('/{id}/pdf', [EtpController::class, 'gerarPdf'])->name('pdf');
 });
 
 

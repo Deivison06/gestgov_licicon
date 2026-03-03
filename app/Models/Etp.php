@@ -13,6 +13,7 @@ class Etp extends Model
         'secretaria_id',
         'servidor_responsavel',
         'objeto_licitacao',
+        'justificativa_necessidade',
         'modalidade',
         'dotacao_orcamentaria',
         'tipo_contratacao',
