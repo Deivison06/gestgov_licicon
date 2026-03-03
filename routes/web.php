@@ -15,6 +15,19 @@ use App\Http\Controllers\ContratoManualController; // Adicionado
 use App\Http\Controllers\EtpController;
 use App\Http\Controllers\EtpItemController;
 use App\Http\Controllers\AdminEtpController;
+use App\Http\Controllers\SolicitacaoController;
+
+// ================================================
+// SOLICITAÇÕES INTERNAS (Chat Administrativo)
+// ================================================
+Route::prefix('admin/solicitacoes')->name('admin.solicitacoes.')->middleware(['auth', 'verified'])->group(function () {
+    Route::get('/', [SolicitacaoController::class, 'index'])->name('index');
+    Route::get('/create', [SolicitacaoController::class, 'create'])->name('create');
+    Route::post('/', [SolicitacaoController::class, 'store'])->name('store');
+    Route::get('/{id}', [SolicitacaoController::class, 'show'])->name('show');
+    Route::post('/{id}/responder', [SolicitacaoController::class, 'responder'])->name('responder');
+    Route::patch('/{id}/finalizar', [SolicitacaoController::class, 'finalizar'])->name('finalizar');
+});
 
 // Rotas de perfil (usuário logado)
 Route::middleware('auth')->group(function () {

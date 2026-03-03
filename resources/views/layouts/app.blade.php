@@ -774,7 +774,13 @@
 
                             @endif
                         </div>
+                        
                     </div>
+                     <a href="{{ route('admin.solicitacoes.index') }}"
+                        class="nav-item {{ request()->routeIs('admin.solicitacoes.*') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-comments"></i>
+                        <span>SOLICITAÇÕES</span>
+                    </a>
                     @endif
 
                     {{-- Contratos visível para todos --}}
@@ -797,7 +803,9 @@
                         <i class="nav-icon fas fa-users"></i>
                         <span>USUÁRIOS</span>
                     </a>
+
                     @endif
+                   
                 </nav>
             </div>
 

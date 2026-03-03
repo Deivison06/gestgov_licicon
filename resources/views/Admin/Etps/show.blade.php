@@ -14,13 +14,6 @@
                 Voltar para a Lista
             </a>
 
-            <div class="inline-flex items-center px-4 py-2 text-sm font-bold rounded-lg shadow-sm
-                        @if($etp->status === 'pendente') bg-yellow-100 text-yellow-800 border-yellow-200
-                        @elseif($etp->status === 'em_analise') bg-blue-100 text-blue-800 border-blue-200
-                        @elseif($etp->status === 'aprovado') bg-green-100 text-green-800 border-green-200
-                        @elseif($etp->status === 'em_processo') bg-purple-100 text-purple-800 border-purple-200
-                        @elseif($etp->status === 'recusado') bg-red-100 text-red-800 border-red-200
-                        @endif border">
                 Status: {{ ucfirst(str_replace('_', ' ', $etp->status)) }}
             </div>
         </div>
