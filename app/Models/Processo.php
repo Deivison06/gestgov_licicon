@@ -30,6 +30,9 @@ class Processo extends Model
         'portaria_numeracao',
         'user_id',
         'contTotalPage', // CORREÇÃO: Removi o ponto extra
+        'contTotalPagePhase1',
+        'contTotalPagePhase2',
+        'contTotalPagePhase3',
         'status',
         'data_cancelamento', // Adicionado
         'motivo_cancelamento', // Adicionado

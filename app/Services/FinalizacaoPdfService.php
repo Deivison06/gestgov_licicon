@@ -679,10 +679,8 @@ class FinalizacaoPdfService
                     $pdf->AddPage();
                     $pdf->useTemplate($tplId);
 
-                    // Pula o carimbo na primeira página (geralmente é a capa/folha de rosto gerada pelo sistema)
-                    if ($pagina !== 1) {
-                        $this->adicionarCarimbo($pdf, $processo, $pagina - 1, $pageCount - 1);
-                    }
+                    // Aplica o carimbo em todas as páginas
+                    $this->adicionarCarimbo($pdf, $processo, $pagina, $pageCount);
                 }
 
                 $tempPath = sys_get_temp_dir() . "/chunk_finalizacao_{$i}_" . uniqid() . '.pdf';
@@ -725,9 +723,7 @@ class FinalizacaoPdfService
     private function atualizarContadorContrato(Processo $processo, int $paginasFinalizacao): void
     {
         try {
-            $totalPaginas = ($processo->contTotalPage ?? 0) + $paginasFinalizacao;
-
-            $processo->contTotalPage = $totalPaginas;
+            $processo->contTotalPagePhase2 = $paginasFinalizacao;
             $processo->save();
 
             Log::info('Contador atualizado para contrato', [
@@ -770,7 +766,7 @@ class FinalizacaoPdfService
         $pdf->Rect($x, $y, $boxWidth, $boxHeight, 'D');
         $pdf->SetTextColor(0, 0, 0);
 
-        $paginaInicial = $processo->contTotalPage ?? 0;
+        $paginaInicial = $processo->contTotalPagePhase1 ?? 0;
 
         $paginaAbsoluta = $paginaInicial + $paginaAtual;
         $totalAbsoluto = $paginaInicial + $pageCountTotal;
@@ -779,7 +775,7 @@ class FinalizacaoPdfService
         $textoCarimbo = "Processo numerado por: {$processo->responsavel_numeracao} " .
             "Cargo: {$processo->unidade_numeracao} " .
             "Portaria nº {$processo->portaria_numeracao} " .
-            "Pág. {$paginaAbsoluta} - " .
+            "Pág. {$paginaAbsoluta} de {$totalAbsoluto} - " .
             "Documento gerado na Plataforma GestGov - Licenciado para Prefeitura de {$processo->prefeitura->cidade}. " .
             "Cod. de Autenticação: {$codigoAutenticacao} - Para autenticar acesse gestgov.com.br/autenticacao";
 

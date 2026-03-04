@@ -255,7 +255,7 @@ class AtaPdfService
             }
 
             $caminhoCarimbado = tempnam(sys_get_temp_dir(), 'contrato_carimbado_') . '.pdf';
-            $paginaInicial = $processo->contTotalPage ?? 0;
+            $paginaInicial = ($processo->contTotalPagePhase1 ?? 0) + ($processo->contTotalPagePhase2 ?? 0);
 
             for ($pagina = 1; $pagina <= $pageCount; $pagina++) {
                 $paginaAtual = $pagina;
@@ -283,6 +283,10 @@ class AtaPdfService
                     'tamanho' => filesize($caminhoCarimbado),
                     'paginas' => $pageCount
                 ]);
+                // Atualizar contador de páginas
+                $processo->contTotalPagePhase3 = $pageCount;
+                $processo->save();
+
                 return $caminhoCarimbado;
             } else {
                 Log::error('Falha ao criar contrato carimbado');
@@ -350,7 +354,7 @@ class AtaPdfService
         $textoCarimbo = "Processo numerado por: {$processo->responsavel_numeracao} " .
             "Cargo: {$processo->unidade_numeracao} " .
             "Portaria nº {$processo->portaria_numeracao} " .
-            "Pág. {$paginaAbsoluta} - " .
+            "Pág. {$paginaAbsoluta} de {$totalAbsoluto} - " .
             "Documento gerado na Plataforma GestGov - Licenciado para Prefeitura de {$processo->prefeitura->cidade}. " .
             "Cod. de Autenticação: {$codigoAutenticacao} - Para autenticar acesse gestgov.com.br/autenticacao";
 

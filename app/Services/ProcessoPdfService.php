@@ -828,8 +828,9 @@ class ProcessoPdfService
                 $pdf->AddPage();
                 $pdf->useTemplate($tplId);
 
+                // Pula o carimbo apenas na primeira página (capa) da fase inicial
                 if ($pagina !== 1) {
-                    $this->adicionarCarimbo($pdf, $processo, $paginaAtual - 1, $pageCount - 1);
+                    $this->adicionarCarimbo($pdf, $processo, $pagina, $pageCount, 0);
                 }
 
                 $tempPath = sys_get_temp_dir() . "/pagina_{$pagina}_" . uniqid() . '.pdf';
@@ -882,7 +883,7 @@ class ProcessoPdfService
         }
     }
 
-    private function adicionarCarimbo(Fpdi $pdf, Processo $processo, int $paginaAtual, int $pageCountTotal, int $paginaInicial = 1): void
+    private function adicionarCarimbo(Fpdi $pdf, Processo $processo, int $paginaAtual, int $pageCountTotal, int $paginaInicial = 0): void
     {
         $pageWidth = $pdf->GetPageWidth();
         $pageHeight = $pdf->GetPageHeight();
@@ -904,7 +905,7 @@ class ProcessoPdfService
         $textoCarimbo = "Processo numerado por: {$processo->responsavel_numeracao} " .
             "Cargo: {$processo->unidade_numeracao} " .
             "Portaria nº {$processo->portaria_numeracao} " .
-            "Pág. {$paginaAbsoluta} - " .
+            "Pág. {$paginaAbsoluta} de {$totalAbsoluto} - " .
             "Documento gerado na Plataforma GestGov - Licenciado para Prefeitura de {$processo->prefeitura->cidade}. " .
             "Cod. de Autenticação: {$codigoAutenticacao} - Para autenticar acesse gestgov.com.br/autenticacao";
 
@@ -938,11 +939,8 @@ class ProcessoPdfService
     private function salvarTotalPaginas(Processo $processo, int $totalPaginas): void
     {
         try {
-            $processo->contTotalPage = $totalPaginas;
+            $processo->contTotalPagePhase1 = $totalPaginas;
             $processo->save();
-
-            Documento::where('processo_id', $processo->id)
-                ->update(['contTotalPage' => $totalPaginas]);
 
             Log::info('Total de páginas salvo no banco', [
                 'processo_id' => $processo->id,

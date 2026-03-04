@@ -329,7 +329,7 @@ class ContratoProcessoController extends Controller
             $caminhoCarimbado = tempnam(sys_get_temp_dir(), 'contrato_carimbado_') . '.pdf';
 
             // OBTER PÁGINA INICIAL DO CONTRATO
-            $paginaInicial = $processo->contTotalPage ?? 0;
+            $paginaInicial = ($processo->contTotalPagePhase1 ?? 0) + ($processo->contTotalPagePhase2 ?? 0);
 
             for ($pagina = 1; $pagina <= $pageCount; $pagina++) {
                 $paginaAtual = $pagina;
@@ -361,6 +361,10 @@ class ContratoProcessoController extends Controller
                     'pagina_inicial' => $paginaInicial,
                     'pagina_final' => $paginaInicial + $pageCount
                 ]);
+                // Atualizar o contador da fase 3
+                $processo->contTotalPagePhase3 = $pageCount;
+                $processo->save();
+
                 return $caminhoCarimbado;
             } else {
                 Log::error('Falha ao criar contrato carimbado');
@@ -855,17 +859,16 @@ class ContratoProcessoController extends Controller
         $pdf->SetTextColor(0, 0, 0);
 
         // OBTER PÁGINA INICIAL DO CONTRATO (continuação da finalização)
-        $paginaInicial = $processo->contTotalPage ?? 0;
+        $paginaInicial = ($processo->contTotalPagePhase1 ?? 0) + ($processo->contTotalPagePhase2 ?? 0);
 
         // CALCULAR PÁGINA ABSOLUTA (contrato)
         $paginaAbsoluta = $paginaInicial + $paginaAtual;
         $totalAbsoluto = $paginaInicial + $pageCountTotal;
-
         $codigoAutenticacao = $processo->prefeitura->id . now()->format('HisdmY');
         $textoCarimbo = "Processo numerado por: {$processo->responsavel_numeracao} " .
             "Cargo: {$processo->unidade_numeracao} " .
             "Portaria nº {$processo->portaria_numeracao} " .
-            "Pág. {$paginaAbsoluta} - " .
+            "Pág. {$paginaAbsoluta} de {$totalAbsoluto} - " .
             "Documento gerado na Plataforma GestGov - Licenciado para Prefeitura de {$processo->prefeitura->cidade}. " .
             "Cod. de Autenticação: {$codigoAutenticacao} - Para autenticar acesse gestgov.com.br/autenticacao";
 
