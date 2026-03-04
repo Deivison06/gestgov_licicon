@@ -77,7 +77,7 @@
             padding: 1.5rem 1rem;
             position: fixed;
             height: 100vh;
-            z-index: 1000;
+            z-index: 2000;
             box-shadow: var(--shadow-lg);
             transition: var(--transition);
             overflow-y: auto;
@@ -216,7 +216,7 @@
         }
 
         .nav-item.has-submenu.open .submenu {
-            display: block;
+            display: block !important;
         }
 
         .nav-subitem {
@@ -680,6 +680,161 @@
                 font-size: 1.5rem;
             }
         }
+
+    /* Top Header */
+    .top-header {
+        height: 70px;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding: 0 2rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .notif-button {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        position: relative;
+        transition: var(--transition);
+    }
+
+    .notif-button:hover {
+        background: #f1f5f9;
+        color: var(--primary);
+    }
+
+    .notif-button.active {
+        color: #ef4444;
+    }
+
+    .btn-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: #ef4444;
+        color: white;
+        font-size: 0.65rem;
+        font-weight: 700;
+        min-width: 18px;
+        height: 18px;
+        padding: 0 4px;
+        border-radius: 99px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid white;
+        animation: pulse-red 2s infinite;
+    }
+
+    .notif-dropdown {
+        position: absolute;
+        top: 60px;
+        right: 0;
+        width: 320px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        border: 1px solid #e2e8f0;
+        display: none;
+        z-index: 9999;
+        overflow: hidden;
+        animation: slideInTop 0.3s ease;
+    }
+
+    .notif-dropdown.show {
+        display: block !important;
+    }
+
+    .notif-header {
+        padding: 15px;
+        border-bottom: 1px solid #f1f5f9;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .notif-header h4 {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+    }
+
+    .notif-body {
+        max-height: 350px;
+        overflow-y: auto;
+    }
+
+    .notif-card {
+        padding: 12px 15px;
+        display: flex;
+        gap: 12px;
+        text-decoration: none;
+        color: inherit;
+        border-bottom: 1px solid #f8fafc;
+        transition: background 0.2s;
+    }
+
+    .notif-card:hover {
+        background: #f0fdf9;
+    }
+
+    .notif-card-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #ecfdf5;
+        color: #10b981;
+        flex-shrink: 0;
+    }
+
+    .notif-card-body h5 {
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 2px;
+        color: #334155;
+    }
+
+    .notif-card-body p {
+        font-size: 0.75rem;
+        color: #64748b;
+        line-height: 1.4;
+        margin: 0;
+    }
+
+    @keyframes slideInTop {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse-red {
+        0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+        70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+        100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
     </style>
 </head>
 
@@ -828,6 +983,65 @@
 
         <!-- Conteúdo Principal -->
         <div class="main-content">
+            <!-- Top Header Moderno -->
+            <header class="top-header">
+                <div class="header-actions">
+                    @auth
+                        @if(auth()->user()->hasAnyRole(['diretor_licicon', 'gerente_licicon']))
+                            @php 
+                                $notifications = auth()->user()->unreadNotifications;
+                                $notifCount = $notifications->count();
+                            @endphp
+                        
+                        <div style="position: relative;">
+                            <button class="notif-button {{ $notifCount > 0 ? 'active' : '' }}" id="bellToggle">
+                                <i class="fas fa-bell"></i>
+                                @if($notifCount > 0)
+                                    <span class="btn-badge">{{ $notifCount }}</span>
+                                @endif
+                            </button>
+
+                            <div class="notif-dropdown" id="notifMenu">
+                                <div class="notif-header">
+                                    <h4>Notificações</h4>
+                                    @if($notifCount > 0)
+                                        <span class="status-badge" style="background: #fee2e2; color: #ef4444;">{{ $notifCount }} novas</span>
+                                    @endif
+                                </div>
+                                <div class="notif-body">
+                                    @forelse($notifications as $notif)
+                                        <a href="{{ $notif->data['link'] }}" class="notif-card">
+                                            <div class="notif-card-icon">
+                                                <i class="fas {{ $notif->data['tipo'] == 'etp' ? 'fa-brain' : 'fa-comments' }}"></i>
+                                            </div>
+                                            <div class="notif-card-body">
+                                                <h5>{{ $notif->data['titulo'] }}</h5>
+                                                <p>{{ $notif->data['mensagem'] }}</p>
+                                            </div>
+                                        </a>
+                                    @empty
+                                        <div style="padding: 30px 20px; text-align: center; color: #94a3b8;">
+                                            <i class="fas fa-bell-slash" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.2; display: block;"></i>
+                                            <p style="font-size: 0.85rem; margin: 0;">Você não tem novas notificações.</p>
+                                        </div>
+                                    @endforelse
+                                </div>
+                            </div>
+                        </div>
+
+                        @endif
+
+                        <div style="display: flex; align-items: center; gap: 10px; padding-left: 10px; border-left: 1px solid #e2e8f0;">
+                            <div style="text-align: right;">
+                                <p style="font-size: 0.85rem; font-weight: 700; color: #1e293b; line-height: 1; margin-bottom: 4px;">{{ auth()->user()->name }}</p>
+                                <p style="font-size: 0.7rem; color: #64748b; margin: 0;">{{ ucfirst(str_replace('_', ' ', auth()->user()->getRoleNames()->first() ?? 'Usuário')) }}</p>
+                            </div>
+                            <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name) }}&background=115e59&color=fff" style="width: 38px; height: 38px; border-radius: 10px; border: 2px solid #f1f5f9;">
+                        </div>
+                    @endauth
+                </div>
+            </header>
+
             <div class="page-content fade-in">
                 <!-- Banner de boas-vindas personalizado por função -->
                 @if(auth()->user()->hasRole('prefeitura'))
@@ -908,26 +1122,29 @@
                 }
             });
 
-            // FUNÇÃO CORRIGIDA PARA O SUBMENU
-            const etpToggle = document.getElementById('etpToggle');
-            if (etpToggle) {
-                etpToggle.addEventListener('click', function(e) {
+            // LÓGICA GENÉRICA PARA SUBMENUS
+            const submenuToggles = document.querySelectorAll('.submenu-toggle');
+            submenuToggles.forEach(toggle => {
+                toggle.addEventListener('click', function(e) {
                     e.preventDefault();
                     e.stopPropagation();
                     
-                    const parentItem = this.closest('.has-submenu');
-                    if (parentItem) {
-                        parentItem.classList.toggle('open');
+                    const parentItem = this.parentElement; // div.has-submenu
+                    if (parentItem && parentItem.classList.contains('has-submenu')) {
+                        const isOpen = parentItem.classList.contains('open');
                         
-                        // Fecha outros submenus abertos
+                        // Fecha outros submenus
                         document.querySelectorAll('.has-submenu.open').forEach(menu => {
                             if (menu !== parentItem) {
                                 menu.classList.remove('open');
                             }
                         });
+                        
+                        // Alterna o atual
+                        parentItem.classList.toggle('open');
                     }
                 });
-            }
+            });
 
             // Previne que o clique no submenu feche o menu
             const submenuItems = document.querySelectorAll('.submenu');
@@ -946,12 +1163,30 @@
                 }
             }
 
-            // Fecha submenus ao clicar fora (opcional)
+            // LÓGICA DE CLIQUES (SINO E SIDEBAR)
             document.addEventListener('click', function(e) {
-                if (!e.target.closest('.has-submenu')) {
-                    document.querySelectorAll('.has-submenu.open').forEach(menu => {
-                        menu.classList.remove('open');
-                    });
+                // 1. Notificações
+                const bell = e.target.closest('#bellToggle');
+                const menu = document.getElementById('notifMenu');
+                if (bell) {
+                    e.preventDefault();
+                    if (menu) menu.classList.toggle('show');
+                    return;
+                }
+                if (menu && menu.classList.contains('show') && !menu.contains(e.target)) {
+                    menu.classList.remove('show');
+                }
+
+                // 2. Submenus Sidebar
+                const toggle = e.target.closest('.submenu-toggle');
+                if (toggle) {
+                    e.preventDefault();
+                    const parent = toggle.closest('.has-submenu');
+                    if (parent) {
+                        const isOpen = parent.classList.contains('open');
+                        document.querySelectorAll('.has-submenu.open').forEach(m => m.classList.remove('open'));
+                        if (!isOpen) parent.classList.add('open');
+                    }
                 }
             });
         });
