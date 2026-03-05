@@ -49,7 +49,6 @@
                         <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">Secretaria</th>
                         <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">Responsável</th>
                         <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">Modalidade</th>
-                        <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">Modalidade</th>
                         <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">Status</th>
                         <th class="px-4 py-3 text-xs font-semibold tracking-wider text-center text-gray-600 uppercase">Ações</th>
                     </tr>
@@ -60,7 +59,6 @@
                         <td class="px-4 py-3 font-mono text-sm text-gray-900 whitespace-nowrap align-top">ETP-{{ str_pad($etp->id, 4, '0', STR_PAD_LEFT) }}/{{ $etp->created_at->format('Y') }}</td>
                         <td class="px-4 py-3 text-sm text-gray-900 align-top">{{ $etp->secretaria->nome ?? 'N/A' }}</td>
                         <td class="px-4 py-3 text-sm text-gray-900 align-top">{{ $etp->servidor_responsavel ?? 'N/A' }}</td>
-                        <td class="px-4 py-3 text-sm text-gray-900 align-top">{{ $etp->modalidade }}</td>
                         <td class="px-4 py-3 text-sm text-gray-900 uppercase align-top">{{ $etp->modalidade }}</td>
                         <td class="px-4 py-3 text-sm text-gray-900 align-top">
                             <span class="inline-flex items-center px-2.5 py-0.5 text-xs font-semibold rounded-full

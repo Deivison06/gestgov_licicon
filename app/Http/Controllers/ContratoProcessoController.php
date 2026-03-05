@@ -363,7 +363,8 @@ class ContratoProcessoController extends Controller
                 ]);
                 // Atualizar o contador da fase 3
                 $processo->contTotalPagePhase3 = $pageCount;
-                $processo->save();
+                \App\Models\Processo::where('id', $processo->id)
+                    ->update(['contTotalPagePhase3' => $pageCount]);
 
                 return $caminhoCarimbado;
             } else {
