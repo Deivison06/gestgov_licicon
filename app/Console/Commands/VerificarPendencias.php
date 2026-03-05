@@ -35,14 +35,16 @@ class VerificarPendencias extends Command
         $etpsPendentes = Etp::where('status', 'em_analise')->with('prefeitura')->get();
         $countEtps = $etpsPendentes->count();
 
+        // Limpa notificações antigas para atualizar o contador (se ficar 0, limpa tudo)
+        foreach ($diretores as $diretor) {
+            $diretor->notifications()->where('data->tipo', 'etp')->delete();
+        }
+
         if ($countEtps > 0) {
             $this->warn("\n[!] Existem {$countEtps} ETP(s) aguardando análise:");
             
             // Notificar no Banco
             foreach ($diretores as $diretor) {
-                // Remove notificações antigas do mesmo tipo para não duplicar no front
-                $diretor->notifications()->where('data->tipo', 'etp')->delete();
-                
                 $diretor->notify(new \App\Notifications\PendenciaIdentificada([
                     'titulo' => 'ETPs Pendentes',
                     'mensagem' => "Existem {$countEtps} ETP(s) aguardando sua análise.",
@@ -66,13 +68,15 @@ class VerificarPendencias extends Command
         $solicitacoesPendentes = Solicitacao::whereIn('status', ['aberta', 'aguardando_resposta'])->with('prefeitura')->get();
         $countSols = $solicitacoesPendentes->count();
 
+        // Limpa notificações antigas para atualizar o contador (se ficar 0, limpa tudo)
+        foreach ($diretores as $diretor) {
+            $diretor->notifications()->where('data->tipo', 'solicitacao')->delete();
+        }
+
         if ($countSols > 0) {
             $this->warn("\n[!] Existem {$countSols} Solicitação(ões) pendente(s):");
             
             foreach ($diretores as $diretor) {
-                // Remove notificações antigas do mesmo tipo
-                $diretor->notifications()->where('data->tipo', 'solicitacao')->delete();
-
                 $diretor->notify(new \App\Notifications\PendenciaIdentificada([
                     'titulo' => 'Solicitações Internas',
                     'mensagem' => "Existem {$countSols} solicitação(ões) aguardando resposta.",

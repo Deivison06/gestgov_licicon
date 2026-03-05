@@ -31,26 +31,81 @@ class EtpItemController extends Controller
         ]);
 
         try {
-            $this->etpItemService->store($request->all());
-            return redirect()->route('admin.etp_itens.index')->with('success', 'Item criado com sucesso.');
+
+            $item = $this->etpItemService->store($request->all());
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Item criado com sucesso.',
+                    'item' => $item
+                ]);
+            }
+
+            return redirect()->route('admin.etp_itens.index')
+                ->with('success', 'Item criado com sucesso.');
+
         } catch (\Exception $e) {
-            return redirect()->back()->withInput()->with('error', $e->getMessage());
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage()
+                ], 500);
+            }
+
+            return redirect()->back()
+                ->withInput()
+                ->with('error', $e->getMessage());
         }
     }
+
 
     public function update(Request $request, $id)
     {
         $request->validate([
-             'descricao_item' => 'required|string'
+            'descricao_item' => 'required|string'
         ]);
 
         try {
-            $this->etpItemService->update($id, $request->all());
-            return redirect()->route('admin.etp_itens.index')->with('success', 'Item atualizado com sucesso.');
+
+            $item = $this->etpItemService->update($id, $request->all());
+
+            // Se for requisição AJAX
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Item atualizado com sucesso.',
+                    'item' => $item
+                ]);
+            }
+
+            // Requisição normal
+            return redirect()
+                ->route('admin.etp_itens.index')
+                ->with('success', 'Item atualizado com sucesso.');
+
         } catch (\Exception $e) {
-            return redirect()->back()->withInput()->with('error', $e->getMessage());
+
+            \Log::error('Erro ao atualizar item ETP', [
+                'erro' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro ao atualizar item.'
+                ], 500);
+            }
+
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', $e->getMessage());
         }
     }
+
 
     public function destroy($id)
     {
