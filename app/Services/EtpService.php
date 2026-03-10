@@ -48,7 +48,7 @@ class EtpService
 
             $etp = $this->repository->create($data);
 
-            if (in_array($data['tipo_contratacao'], ['item', 'servicos', 'compras']) && !empty($itens)) {
+            if (in_array($data['tipo_contratacao'] ?? null, ['item', 'servicos', 'compras']) && !empty($itens)) {
                 $itensFormatados = [];
                 foreach ($itens as $itemId => $itemData) {
                     $itensFormatados[$itemId] = [
@@ -59,7 +59,7 @@ class EtpService
                 $this->repository->syncItens($etp, $itensFormatados);
             }
 
-            if ($data['tipo_contratacao'] === 'lote' && !empty($lotes)) {
+            if (($data['tipo_contratacao'] ?? null) === 'lote' && !empty($lotes)) {
                 foreach ($lotes as $loteData) {
                     $itensLote = $loteData['itens'] ?? [];
                     unset($loteData['itens']);
@@ -137,7 +137,7 @@ class EtpService
             }
 
             // Process new data
-            if (in_array($data['tipo_contratacao'], ['item', 'servicos', 'compras']) && !empty($itens)) {
+            if (in_array($data['tipo_contratacao'] ?? null, ['item', 'servicos', 'compras']) && !empty($itens)) {
                 $itensFormatados = [];
                 foreach ($itens as $itemId => $itemData) {
                     $itensFormatados[$itemId] = [
@@ -148,7 +148,7 @@ class EtpService
                 $this->repository->syncItens($etp, $itensFormatados);
             }
 
-            if ($data['tipo_contratacao'] === 'lote' && !empty($lotes)) {
+            if (($data['tipo_contratacao'] ?? null) === 'lote' && !empty($lotes)) {
                 foreach ($lotes as $loteData) {
                     $itensLote = $loteData['itens'] ?? [];
                     unset($loteData['itens']);

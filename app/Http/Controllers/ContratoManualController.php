@@ -394,13 +394,25 @@ class ContratoManualController extends Controller
                     mkdir(public_path('uploads/contratos_externos'), 0755, true);
                 }
 
-                // Salva o arquivo
+                $arquivo = $request->file('arquivo_contrato');
+                $numeroContrato = $request->input('numero_contrato') ?: 'sem_numero';
+                $numeroContratoLimpo = preg_replace('/[^A-Za-z0-9\-]/', '_', $numeroContrato);
+
+                $nomeArquivo = 'Contrato_' . time() . '_' . $numeroContratoLimpo . '.' . $arquivo->getClientOriginalExtension();
+                $caminho = 'uploads/contratos_externos/' . $nomeArquivo;
+
+                if (!file_exists(public_path('uploads/contratos_externos'))) {
+                    mkdir(public_path('uploads/contratos_externos'), 0755, true);
+                }
+
+                $tamanhoArquivo = $arquivo->getSize(); // ← captura ANTES do move
+
                 $arquivo->move(public_path('uploads/contratos_externos'), $nomeArquivo);
 
                 $caminhoArquivo = $caminho;
                 Log::info('📄 Arquivo uploadado', [
                     'caminho' => $caminhoArquivo,
-                    'tamanho' => $arquivo->getSize()
+                    'tamanho' => $tamanhoArquivo // ← usa o valor já capturado
                 ]);
             }
 

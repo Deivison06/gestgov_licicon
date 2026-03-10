@@ -16,7 +16,7 @@
         </div>
 
         @if ($errors->any())
-            <div class="p-4 mb-8 border border-red-200 shadow-sm rounded-2xl bg-gradient-to-r from-red-50 to-red-100">
+            <div class="p-4 mb-8 mt-10 border border-red-200 shadow-sm rounded-2xl bg-gradient-to-r from-red-50 to-red-100">
                 <div class="flex items-center mb-2">
                     <svg class="w-5 h-5 mr-3 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -120,7 +120,7 @@
                 <!-- PASSO 2 -->
                 <div id="step-2" class="step-content hidden">
                     <h4 class="text-lg font-semibold text-gray-800 mb-6 border-b pb-2">Passo 2: Objeto da Licitação</h4>
-                    
+
                     <!-- Campo Objeto existente -->
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Especificar o objeto da licitação *</label>
@@ -129,7 +129,7 @@
                             required>{{ old('objeto_licitacao') }}</textarea>
                         <p class="mt-1 text-xs text-gray-500">Descreva detalhadamente o que será adquirido ou contratado.</p>
                     </div>
-                    
+
                     <!-- NOVO CAMPO: Justificativa da Necessidade -->
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Justificativa da Necessidade *</label>
@@ -138,7 +138,7 @@
                             required>{{ old('justificativa_necessidade') }}</textarea>
                         <p class="mt-1 text-xs text-gray-500">Explique detalhadamente por que esta contratação é necessária.</p>
                     </div>
-                    
+
                     <div class="mt-8 flex justify-between">
                         <button type="button"
                             class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all"
@@ -462,21 +462,21 @@
                 const areaLotes = document.getElementById('area-lotes');
                 const camposItensContratacao = document.getElementById('campos-itens-contratacao');
                 const labelPdf = document.getElementById('label_pdf_anexo');
-                
+
                 // Se for OBRAS, esconde a área de itens e muda o label do PDF
                 if (val === 'obras') {
                     areaSemLote.classList.add('hidden');
                     areaLotes.classList.add('hidden');
                     labelPdf.innerText = 'Anexar Projeto Básico *';
                     document.getElementById('cotacao_path').setAttribute('required', 'required');
-                } 
+                }
                 else if (val === 'lote') {
                     areaSemLote.classList.add('hidden');
                     areaLotes.classList.remove('hidden');
                     labelPdf.innerText = 'Anexar Cotação do Fornecedor Local';
                     document.getElementById('cotacao_path').removeAttribute('required');
                     if (document.querySelectorAll('.lote-card').length === 0) adicionarLote();
-                } 
+                }
                 else {
                     areaSemLote.classList.remove('hidden');
                     areaLotes.classList.add('hidden');
@@ -485,7 +485,54 @@
                 }
             };
 
-            /* ── LOTES ── */
+            // Normaliza texto removendo acentos e convertendo para minúsculas
+            function normalizarTexto(texto) {
+                return texto
+                    .toLowerCase()
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '');
+            }
+
+            /* ── FUNÇÃO CORRIGIDA DE BUSCA ── */
+            function inicializarBuscaLote(loteIndex) {
+                const buscaId = loteIndex !== undefined ? `buscar_item_lote_${loteIndex}` : 'buscar_item_global';
+                const listaId = loteIndex !== undefined ? `lista_itens_lote_${loteIndex}` : 'lista_itens_global';
+                const buscaInput = document.getElementById(buscaId);
+                if (!buscaInput) return;
+
+                // DEPOIS
+                buscaInput.addEventListener('keyup', function() {
+                    const termo = normalizarTexto(this.value.trim());
+                    const lista = document.getElementById(listaId);
+                    if (!lista) return;
+                    const itens = lista.querySelectorAll('.item-option');
+
+                    if (termo.length === 0) {
+                        lista.classList.add('hidden');
+                        itens.forEach(el => el.style.display = 'flex');
+                        return;
+                    }
+
+                    lista.classList.remove('hidden');
+                    itens.forEach(el => {
+                        const descricao = normalizarTexto(el.getAttribute('data-descricao') || '');
+                        el.style.display = descricao.includes(termo) ? 'flex' : 'none';
+                    });
+                });
+            }
+
+            /* ── FUNÇÃO PARA INICIALIZAR TODAS AS BUSCAS ── */
+            function inicializarTodasBuscas() {
+                // Inicializa busca global
+                inicializarBuscaLote();
+
+                // Inicializa busca para cada lote existente
+                document.querySelectorAll('.lote-card').forEach((card, index) => {
+                    inicializarBuscaLote(index);
+                });
+            }
+
+            /* ── LOTES (CORRIGIDO) ── */
             window.adicionarLote = function() {
                 const container = document.getElementById('lotes-container');
                 const loteDiv = document.createElement('div');
@@ -509,10 +556,12 @@
             `;
 
                 container.appendChild(loteDiv);
+                // CORREÇÃO: Inicializar a busca para o novo lote
                 inicializarBuscaLote(loteCounter);
                 loteCounter++;
             };
 
+            /* ── GERADOR DE ITENS SELECTOR (CORRIGIDO) ── */
             function gerarItensSelector(loteIndex) {
                 const buscaId = `buscar_item_lote_${loteIndex}`;
                 const listaId = `lista_itens_lote_${loteIndex}`;
@@ -520,6 +569,7 @@
 
                 let itensOptions = '';
                 @foreach ($itens as $item)
+                    // CORREÇÃO: Garantir que a descrição esteja em minúsculas no atributo data
                     itensOptions += `
                     <label class="flex items-center space-x-3 item-option" data-descricao="{{ strtolower($item->descricao_item) }}">
                         <input type="checkbox" value="{{ $item->id }}"
@@ -558,33 +608,6 @@
                 }
             };
 
-            /* ── BUSCA DE ITENS ── */
-            function inicializarBuscaLote(loteIndex) {
-                const buscaId = loteIndex !== undefined ? `buscar_item_lote_${loteIndex}` : 'buscar_item_global';
-                const listaId = loteIndex !== undefined ? `lista_itens_lote_${loteIndex}` : 'lista_itens_global';
-                const buscaInput = document.getElementById(buscaId);
-                if (!buscaInput) return;
-
-                buscaInput.addEventListener('keyup', function() {
-                    const termo = this.value.toLowerCase().trim();
-                    const lista = document.getElementById(listaId);
-                    if (!lista) return;
-                    const itens = lista.querySelectorAll('.item-option');
-                    if (termo.length < 2) {
-                        lista.classList.add('hidden');
-                        itens.forEach(el => el.style.display = 'flex');
-                        return;
-                    }
-                    lista.classList.remove('hidden');
-                    itens.forEach(el => {
-                        el.style.display = el.dataset.descricao.includes(termo) ? 'flex' : 'none';
-                    });
-                });
-            }
-
-            inicializarBuscaLote();
-            document.querySelectorAll('.lote-card').forEach((_, i) => inicializarBuscaLote(i));
-
             /* ── SELEÇÃO / REMOÇÃO DE ITENS ── */
             window.toggleItemSelecionado = function(checkbox, loteIndex) {
                 const id = checkbox.value;
@@ -603,11 +626,11 @@
                                 <p class="text-sm font-medium text-gray-800 mb-2">${descricao}</p>
                                 <div class="flex gap-3">
                                     <input type="hidden" name="${namePrefix}[${id}][item_id]" value="${id}">
-                                    <input type="text" 
-                                        name="${namePrefix}[${id}][unidade]" 
-                                        placeholder="Ex: Unidade, Pacote, Caixa..." 
+                                    <input type="text"
+                                        name="${namePrefix}[${id}][unidade]"
+                                        placeholder="Ex: Unidade, Pacote, Caixa..."
                                         value=""
-                                        class="px-2 py-1 border border-gray-300 rounded text-sm w-24" 
+                                        class="px-2 py-1 border border-gray-300 rounded text-sm w-24"
                                         required>
                                     <input type="number" name="${namePrefix}[${id}][quantidade]" placeholder="Qtd" min="1" required class="px-2 py-1 border border-gray-300 rounded text-sm w-20">
                                 </div>
@@ -728,19 +751,38 @@
                         method: 'POST',
                         body: formData,
                         headers: {
-                            'X-Requested-With': 'XMLHttpRequest'
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
                         }
                     })
-                    .then(response => response.json())
+                    .then(async response => {
+                        if (response.status === 422) {
+                            const data = await response.json();
+                            let errorList = 'Verifique os campos obrigatórios:\\n';
+                            for (let field in data.errors) {
+                                errorList += `• ${data.errors[field][0]}\\n`;
+                            }
+                            throw new Error(errorList);
+                        }
+                        if (!response.ok) {
+                            throw new Error('Erro na requisição. Entre em contato com o suporte.');
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         if (data.success) {
                             // Mostra mensagem de sucesso
                             mostrarNotificacao('success', data.message || 'Rascunho salvo com sucesso!');
 
-                            // Atualiza o ID do ETP no formulário para próximos saves
-                            if (data.etp_id) {
-                                // Se precisar atualizar o action do form com o ID para update
-                                // form.action = form.action.replace('store', data.etp_id);
+                            // Atualiza o ID do ETP no formulário para próximos saves se for store
+                            if (data.etp_id && form.action.endsWith('/etps')) {
+                                form.action = form.action + '/' + data.etp_id;
+                                // Muda method para PUT
+                                const methodInput = document.createElement('input');
+                                methodInput.type = 'hidden';
+                                methodInput.name = '_method';
+                                methodInput.value = 'PUT';
+                                form.appendChild(methodInput);
                             }
                         } else {
                             // Mostra mensagem de erro
@@ -749,7 +791,10 @@
                     })
                     .catch(error => {
                         console.error('Erro:', error);
-                        mostrarNotificacao('error', 'Erro ao salvar rascunho. Tente novamente.');
+                        // Exibir múltiplos erros se for validação (trocando \n por <br> se for HTML)
+                        let msg = error.message || 'Erro ao salvar rascunho. Tente novamente.';
+                        msg = msg.replace(/\n/g, '<br>');
+                        mostrarNotificacao('error', msg);
                     })
                     .finally(() => {
                         btnSalvar.disabled = false;
@@ -773,7 +818,7 @@
 
                 notificacao.innerHTML = `
                 <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    ${tipo === 'success' 
+                    ${tipo === 'success'
                         ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>'
                         : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>'
                     }
@@ -807,6 +852,9 @@
             } else {
                 toggleContratacaoTipo();
             }
+
+            // CORREÇÃO: Inicializar todas as buscas ao carregar a página
+            inicializarTodasBuscas();
         });
 
         /* ══════════════════════════════════════════════════════════
@@ -895,6 +943,7 @@
                 const onchange = loteIndex !== null ?
                     `onchange="toggleItemSelecionado(this, ${loteIndex})"` :
                     `onchange="toggleItemSelecionado(this, null)"`;
+                // CORREÇÃO: Adicionar data-descricao em minúsculas para busca
                 return `
                 <label class="flex items-center space-x-3 item-option" data-descricao="${item.descricao_item.toLowerCase()}">
                     <input type="checkbox" value="${item.id}"
@@ -1083,11 +1132,11 @@
                         <p class="text-sm font-medium text-gray-800 mb-2">${item.descricao}</p>
                         <div class="flex gap-3">
                             <input type="hidden" name="itens[${item.item_id}][item_id]" value="${item.item_id}">
-                            <input type="text" 
-                                name="itens[${item.item_id}][unidade]" 
-                                value="${item.unidade}" 
-                                placeholder="Ex: Unidade, Pacote, Caixa..." 
-                                class="px-2 py-1 border border-gray-300 rounded text-sm w-24" 
+                            <input type="text"
+                                name="itens[${item.item_id}][unidade]"
+                                value="${item.unidade}"
+                                placeholder="Ex: Unidade, Pacote, Caixa..."
+                                class="px-2 py-1 border border-gray-300 rounded text-sm w-24"
                                 required>
                             <input type="number" name="itens[${item.item_id}][quantidade]" value="${item.quantidade}" placeholder="Qtd" min="1" required class="px-2 py-1 border border-gray-300 rounded text-sm w-20">
                         </div>

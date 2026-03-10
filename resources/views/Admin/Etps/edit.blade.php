@@ -28,7 +28,7 @@
         </div>
 
         @if ($errors->any())
-            <div class="p-4 mb-8 border border-red-200 shadow-sm rounded-2xl bg-gradient-to-r from-red-50 to-red-100">
+            <div class="p-4 mb-8 mt-10 border border-red-200 shadow-sm rounded-2xl bg-gradient-to-r from-red-50 to-red-100">
                 <div class="flex items-center mb-2">
                     <svg class="w-5 h-5 mr-3 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -489,21 +489,21 @@
                 const areaLotes = document.getElementById('area-lotes');
                 const camposItensContratacao = document.getElementById('campos-itens-contratacao');
                 const labelPdf = document.getElementById('label_pdf_anexo');
-                
+
                 // Se for OBRAS, esconde a área de itens e muda o label do PDF
                 if (val === 'obras') {
                     areaSemLote.classList.add('hidden');
                     areaLotes.classList.add('hidden');
                     labelPdf.innerText = 'Anexar Projeto Básico *';
                     document.getElementById('cotacao_path').setAttribute('required', 'required');
-                } 
+                }
                 else if (val === 'lote') {
                     areaSemLote.classList.add('hidden');
                     areaLotes.classList.remove('hidden');
                     labelPdf.innerText = 'Anexar Cotação do Fornecedor Local';
                     document.getElementById('cotacao_path').removeAttribute('required');
                     if (document.querySelectorAll('.lote-card').length === 0) adicionarLote();
-                } 
+                }
                 else {
                     areaSemLote.classList.remove('hidden');
                     areaLotes.classList.add('hidden');
@@ -540,34 +540,39 @@
                 const buscaId = `buscar_item_lote_${loteIndex}`;
                 const listaId = `lista_itens_lote_${loteIndex}`;
                 const containerId = `itens-selecionados-lote-${loteIndex}`;
+
+                // Passa os itens do PHP para JavaScript
+                const itens = @json($itens);
+
                 let itensOptions = '';
-                @foreach ($itens as $item)
+                itens.forEach(item => {
                     itensOptions += `
-                <label class="flex items-center space-x-3 item-option" data-descricao="{{ strtolower($item->descricao_item) }}">
-                    <input type="checkbox" value="{{ $item->id }}"
-                        data-descricao="{{ $item->descricao_item }}"
-                        data-lote-index="${loteIndex}"
-                        class="item-checkbox w-4 h-4 text-[#009496]"
-                        onchange="toggleItemSelecionado(this, ${loteIndex})">
-                    <span class="text-sm text-gray-700">{{ $item->descricao_item }}</span>
-                </label>`;
-                @endforeach
+                    <label class="flex items-center space-x-3 item-option" data-descricao="${item.descricao_item.toLowerCase()}">
+                        <input type="checkbox" value="${item.id}"
+                            data-descricao="${item.descricao_item}"
+                            data-lote-index="${loteIndex}"
+                            class="item-checkbox w-4 h-4 text-[#009496]"
+                            onchange="toggleItemSelecionado(this, ${loteIndex})">
+                        <span class="text-sm text-gray-700">${item.descricao_item}</span>
+                    </label>`;
+                });
+
                 return `
-            <div class="mb-4 itens-selector" data-lote-index="${loteIndex}">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Selecionar Itens *</label>
-                <div class="mb-3">
-                    <input type="text" id="${buscaId}" placeholder="Buscar item..."
-                        class="buscar-item w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496]"
-                        data-lista="${listaId}">
-                </div>
-                <div id="${listaId}" class="hidden border border-gray-200 rounded-lg p-4 max-h-60 overflow-y-auto space-y-2 bg-gray-50">
-                    ${itensOptions}
-                </div>
-                <div class="mt-6">
-                    <h5 class="text-sm font-semibold mb-2 text-gray-700">Itens Selecionados - Lote ${loteIndex + 1}</h5>
-                    <div id="${containerId}" class="space-y-3"></div>
-                </div>
-            </div>`;
+                <div class="mb-4 itens-selector" data-lote-index="${loteIndex}">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Selecionar Itens *</label>
+                    <div class="mb-3">
+                        <input type="text" id="${buscaId}" placeholder="Buscar item..."
+                            class="buscar-item w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496]"
+                            data-lista="${listaId}">
+                    </div>
+                    <div id="${listaId}" class="hidden border border-gray-200 rounded-lg p-4 max-h-60 overflow-y-auto space-y-2 bg-gray-50">
+                        ${itensOptions}
+                    </div>
+                    <div class="mt-6">
+                        <h5 class="text-sm font-semibold mb-2 text-gray-700">Itens Selecionados - Lote ${loteIndex + 1}</h5>
+                        <div id="${containerId}" class="space-y-3"></div>
+                    </div>
+                </div>`;
             }
 
             window.removerLote = function(button) {
@@ -576,25 +581,37 @@
                 else alert('É necessário ter pelo menos um lote.');
             };
 
+            // Normaliza texto removendo acentos e convertendo para minúsculas
+            function normalizarTexto(texto) {
+                return texto
+                    .toLowerCase()
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '');
+            }
+
             /* ── BUSCA ── */
             function inicializarBuscaLote(loteIndex) {
                 const buscaId = loteIndex !== undefined ? `buscar_item_lote_${loteIndex}` : 'buscar_item_global';
                 const listaId = loteIndex !== undefined ? `lista_itens_lote_${loteIndex}` : 'lista_itens_global';
                 const buscaInput = document.getElementById(buscaId);
                 if (!buscaInput) return;
+                // DEPOIS
                 buscaInput.addEventListener('keyup', function() {
-                    const termo = this.value.toLowerCase().trim();
+                    const termo = normalizarTexto(this.value.trim());
                     const lista = document.getElementById(listaId);
                     if (!lista) return;
                     const itens = lista.querySelectorAll('.item-option');
-                    if (termo.length < 2) {
+
+                    if (termo.length === 0) {
                         lista.classList.add('hidden');
                         itens.forEach(el => el.style.display = 'flex');
                         return;
                     }
+
                     lista.classList.remove('hidden');
                     itens.forEach(el => {
-                        el.style.display = el.dataset.descricao.includes(termo) ? 'flex' : 'none';
+                        const descricao = normalizarTexto(el.getAttribute('data-descricao') || '');
+                        el.style.display = descricao.includes(termo) ? 'flex' : 'none';
                     });
                 });
             }
@@ -620,11 +637,11 @@
                             <p class="text-sm font-medium text-gray-800 mb-2">${descricao}</p>
                             <div class="flex gap-3">
                                 <input type="hidden" name="${namePrefix}[${id}][item_id]" value="${id}">
-                                <input type="text" 
-                                    name="${namePrefix}[${id}][unidade]" 
-                                    placeholder="Ex: Unidade, Pacote, Caixa..." 
+                                <input type="text"
+                                    name="${namePrefix}[${id}][unidade]"
+                                    placeholder="Ex: Unidade, Pacote, Caixa..."
                                     value=""
-                                    class="px-2 py-1 border border-gray-300 rounded text-sm w-24" 
+                                    class="px-2 py-1 border border-gray-300 rounded text-sm w-24"
                                     required>
                                 <input type="number" name="${namePrefix}[${id}][quantidade]" placeholder="Qtd" min="1" required class="px-2 py-1 border border-gray-300 rounded text-sm w-20">
                             </div>
@@ -788,7 +805,7 @@
 
                 notificacao.innerHTML = `
             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                ${tipo === 'success' 
+                ${tipo === 'success'
                     ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>'
                     : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>'
                 }
@@ -1104,11 +1121,11 @@
                     <p class="text-sm font-medium text-gray-800 mb-2">${item.descricao}</p>
                     <div class="flex gap-3">
                         <input type="hidden" name="itens[${item.item_id}][item_id]" value="${item.item_id}">
-                        <input type="text" 
-                            name="itens[${item.item_id}][unidade]" 
-                            value="${item.unidade}" 
-                            placeholder="Ex: Unidade, Pacote, Caixa..." 
-                            class="px-2 py-1 border border-gray-300 rounded text-sm w-24" 
+                        <input type="text"
+                            name="itens[${item.item_id}][unidade]"
+                            value="${item.unidade}"
+                            placeholder="Ex: Unidade, Pacote, Caixa..."
+                            class="px-2 py-1 border border-gray-300 rounded text-sm w-24"
                             required>
                         <input type="number" name="itens[${item.item_id}][quantidade]" value="${item.quantidade}" placeholder="Qtd" min="1" required class="px-2 py-1 border border-gray-300 rounded text-sm w-20">
                     </div>
@@ -1150,11 +1167,11 @@
                     <p class="text-sm font-medium text-gray-800 mb-2">${item.descricao}</p>
                     <div class="flex gap-3">
                         <input type="hidden" name="lotes[${index}][itens][${item.item_id}][item_id]" value="${item.item_id}">
-                        <input type="text" 
-                            name="lotes[${index}][itens][${item.item_id}][unidade]" 
-                            value="${item.unidade}" 
-                            placeholder="Ex: Unidade, Pacote, Caixa..." 
-                            class="px-2 py-1 border border-gray-300 rounded text-sm w-24" 
+                        <input type="text"
+                            name="lotes[${index}][itens][${item.item_id}][unidade]"
+                            value="${item.unidade}"
+                            placeholder="Ex: Unidade, Pacote, Caixa..."
+                            class="px-2 py-1 border border-gray-300 rounded text-sm w-24"
                             required>
                         <input type="number" name="lotes[${index}][itens][${item.item_id}][quantidade]" value="${item.quantidade}" placeholder="Qtd" min="1" required class="px-2 py-1 border border-gray-300 rounded text-sm w-20">
                     </div>
