@@ -78,9 +78,10 @@
                 </div>
                 <div class="flex items-center justify-between flex-wrap gap-4">
                     <div class="flex items-center gap-2">
-                        <label class="cursor-pointer bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2">
+                        <label for="anexo_resposta" class="cursor-pointer bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2">
                             <i class="fas fa-paperclip"></i> Anexar Arquivo
-                            <input type="file" name="anexo" class="hidden" onchange="document.getElementById('file-name').textContent = this.files[0].name" />
+                            <input type="file" name="anexo" id="anexo_resposta" class="sr-only"
+                                onchange="document.getElementById('file-name').textContent = this.files[0] ? this.files[0].name : ''" />
                         </label>
                         <span id="file-name" class="text-xs text-gray-500 italic max-w-[150px] truncate"></span>
                     </div>

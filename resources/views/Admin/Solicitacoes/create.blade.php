@@ -57,13 +57,14 @@
             <div>
                 <label class="block text-sm font-bold text-gray-700 mb-2">Anexar Documento (Opcional)</label>
                 <div class="flex items-center justify-center w-full">
-                    <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-200 border-dashed rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition-all">
+                    <label for="anexo_create" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-200 border-dashed rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition-all">
                         <div class="flex flex-col items-center justify-center pt-5 pb-6">
                             <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
-                            <p class="text-sm text-gray-500">Clique para selecionar ou arraste um arquivo</p>
+                            <p class="text-sm text-gray-500" id="anexo_create_label">Clique para selecionar ou arraste um arquivo</p>
                             <p class="text-xs text-gray-400">PDF, DOC, JPG ou PNG (Max 10MB)</p>
                         </div>
-                        <input type="file" name="anexo" class="hidden" />
+                        <input type="file" name="anexo" id="anexo_create" class="sr-only"
+                            onchange="document.getElementById('anexo_create_label').textContent = this.files[0] ? this.files[0].name : 'Clique para selecionar ou arraste um arquivo'" />
                     </label>
                 </div>
             </div>
