@@ -45,8 +45,9 @@
         @endif
 
         <div class="bg-white border border-gray-100 shadow-sm rounded-2xl overflow-hidden px-8 py-8 relative">
-            <form action="{{ route('admin.etps.store') }}" method="POST" enctype="multipart/form-data" id="etpForm">
+            <form action="{{ route('admin.etps.update', $etp->id) }}" method="POST" enctype="multipart/form-data" id="etpForm">
                 @csrf
+                @method('PUT')
                 {{-- Campo oculto que define se é rascunho ou conclusão --}}
                 <input type="hidden" id="action_type" name="action_type" value="concluir">
 
@@ -449,10 +450,10 @@
 
                 } else if (modalidade === 'dispensa') {
                     opcoesDisp.classList.remove('hidden');
-                    const valorSalvo = '{{ old('tipo_contratacao') }}';
+                    const valorSalvo = '{{ old('tipo_contratacao', $etp->tipo_contratacao) }}';
                     if (valorSalvo === 'servicos' || valorSalvo === 'compras' || valorSalvo === 'obras') {
-                        document.querySelector(`input[name="tipo_contratacao"][value="${valorSalvo}"]`)
-                            .checked = true;
+                        const radioEl = document.querySelector(`input[name="tipo_contratacao"][value="${valorSalvo}"]`);
+                        if (radioEl) radioEl.checked = true;
                     }
                     opcoesDisp.querySelectorAll('input[type="radio"]').forEach(el => {
                         el.required = true;
@@ -463,10 +464,10 @@
 
                 } else if (modalidade === 'pregao') {
                     opcoesPregao.classList.remove('hidden');
-                    const valorSalvo = '{{ old('tipo_contratacao') }}';
+                    const valorSalvo = '{{ old('tipo_contratacao', $etp->tipo_contratacao) }}';
                     if (valorSalvo === 'item' || valorSalvo === 'lote') {
-                        document.querySelector(`input[name="tipo_contratacao"][value="${valorSalvo}"]`)
-                            .checked = true;
+                        const radioEl = document.querySelector(`input[name="tipo_contratacao"][value="${valorSalvo}"]`);
+                        if (radioEl) radioEl.checked = true;
                     }
                     opcoesPregao.querySelectorAll('input[type="radio"]').forEach(el => {
                         el.required = true;

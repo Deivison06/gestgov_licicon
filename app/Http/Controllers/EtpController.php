@@ -101,7 +101,7 @@ class EtpController extends Controller
         $rules['itens']                   = 'required_if:tipo_contratacao,item|array';
         $rules['itens.*.item_id']         = 'required_if:tipo_contratacao,item|exists:etp_itens,id';
         $rules['itens.*.unidade']         = 'required_if:tipo_contratacao,item|string|max:100';
-        $rules['itens.*.quantidade']      = 'required_if:tipo_contratacao,item|integer|min:1';
+        $rules['itens.*.quantidade']      = 'required_if:tipo_contratacao,item|numeric|min:0.01';
 
         // Validação para lotes
         $rules['lotes']                       = 'required_if:tipo_contratacao,lote|array';
@@ -109,7 +109,7 @@ class EtpController extends Controller
         $rules['lotes.*.itens']               = 'required_if:tipo_contratacao,lote|array';
         $rules['lotes.*.itens.*.item_id']     = 'required_if:tipo_contratacao,lote|exists:etp_itens,id';
         $rules['lotes.*.itens.*.unidade']     = 'required_if:tipo_contratacao,lote|string|max:100';
-        $rules['lotes.*.itens.*.quantidade']  = 'required_if:tipo_contratacao,lote|integer|min:1';
+        $rules['lotes.*.itens.*.quantidade']  = 'required_if:tipo_contratacao,lote|numeric|min:0.01';
 
         try {
             $request->validate($rules);
@@ -327,14 +327,14 @@ class EtpController extends Controller
         $rules['itens']                   = 'required_if:tipo_contratacao,item|array';
         $rules['itens.*.item_id']         = 'required_if:tipo_contratacao,item|exists:etp_itens,id';
         $rules['itens.*.unidade']         = 'required_if:tipo_contratacao,item|string|max:100';
-        $rules['itens.*.quantidade']      = 'required_if:tipo_contratacao,item|integer|min:1';
+        $rules['itens.*.quantidade']      = 'required_if:tipo_contratacao,item|numeric|min:0.01';
 
         $rules['lotes']                       = 'required_if:tipo_contratacao,lote|array';
         $rules['lotes.*.nome']                = 'required_if:tipo_contratacao,lote|string|max:255';
         $rules['lotes.*.itens']               = 'required_if:tipo_contratacao,lote|array';
         $rules['lotes.*.itens.*.item_id']     = 'required_if:tipo_contratacao,lote|exists:etp_itens,id';
         $rules['lotes.*.itens.*.unidade']     = 'required_if:tipo_contratacao,lote|string|max:100';
-        $rules['lotes.*.itens.*.quantidade']  = 'required_if:tipo_contratacao,lote|integer|min:1';
+        $rules['lotes.*.itens.*.quantidade']  = 'required_if:tipo_contratacao,lote|numeric|min:0.01';
 
         try {
             $request->validate($rules);

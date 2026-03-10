@@ -55,15 +55,16 @@ class EtpRepository
     }
 
     public function findById($id)
-{
-    return $this->model
-        ->with([
-            'prefeitura',
-            'secretaria',
-            'lotes.itens'
-        ])
-        ->findOrFail($id);
-}
+    {
+        return $this->model
+            ->with([
+                'prefeitura',
+                'secretaria',
+                'itens',       // necessário para ETPs do tipo 'item', 'servicos', 'compras'
+                'lotes.itens', // necessário para ETPs do tipo 'lote'
+            ])
+            ->findOrFail($id);
+    }
 
 
     public function create(array $data)

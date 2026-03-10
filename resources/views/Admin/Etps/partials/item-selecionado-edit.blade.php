@@ -6,16 +6,12 @@
         <div class="flex gap-3">
             <input type="hidden" name="{{ $namePrefix }}[{{ $item->id }}][item_id]" value="{{ $item->id }}">
 
-            <select name="{{ $namePrefix }}[{{ $item->id }}][unidade]"
-                class="px-2 py-1 border border-gray-300 rounded text-sm"
+            <input type="text"
+                name="{{ $namePrefix }}[{{ $item->id }}][unidade]"
+                value="{{ $item->pivot->unidade }}"
+                placeholder="Ex: Unidade, Pacote, Caixa..."
+                class="px-2 py-1 border border-gray-300 rounded text-sm w-28"
                 required>
-                <option value="unidade" {{ $item->pivot->unidade == 'unidade' ? 'selected' : '' }}>Unidade</option>
-                <option value="pacote" {{ $item->pivot->unidade == 'pacote' ? 'selected' : '' }}>Pacote</option>
-                <option value="caixa" {{ $item->pivot->unidade == 'caixa' ? 'selected' : '' }}>Caixa</option>
-                <option value="metro" {{ $item->pivot->unidade == 'metro' ? 'selected' : '' }}>Metro</option>
-                <option value="quilograma" {{ $item->pivot->unidade == 'quilograma' ? 'selected' : '' }}>Quilograma</option>
-                <option value="litro" {{ $item->pivot->unidade == 'litro' ? 'selected' : '' }}>Litro</option>
-            </select>
 
             <input type="number"
                 name="{{ $namePrefix }}[{{ $item->id }}][quantidade]"
