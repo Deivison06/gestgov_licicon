@@ -891,10 +891,12 @@
                 1%, como condição de pré-habilitação nos termos do art. 58, da lei 14.133, ficando
                 vedada o envio de documentação via e-mail.
             </p>
-            <p style="text-align: justify;">
-                7.18. Encerrada a análise quanto à aceitação da proposta, o Agente de
-                Contratação verificará a habilitação do licitante, observado o disposto neste Edital.
-            </p>
+            @if($processo->detalhe->inversao_fase === "não")
+                <p style="text-align: justify;">
+                    7.18. Encerrada a análise quanto à aceitação da proposta, o Agente de
+                    Contratação verificará a habilitação do licitante, observado o disposto neste Edital.
+                </p>
+            @endif
         </div>
         <div>
             <p style="font-weight: bold;">8. DA HABILITAÇÃO.</p>
@@ -951,13 +953,22 @@
                 2006, seguindo-se a disciplina antes estabelecida para aceitação da proposta
                 subsequente.
             </p>
-            <p style="text-align: justify;">
-                8.2. Os documentos necessários e suficiente para demonstrar a capacidade do
-                licitante de realizar o objeto da licitação, serão exigidos para fins de habilitação,
-                apenas do licitante vencedor, nos termos de art. 62 a 70 da lei 14.133, e deveram
-                ser enviados em um prazo de 02 (duas) horas e deverão ser anexados
-                exclusivamente via plataforma, ficando vedado o envio de documentos via e-mail.
-            </p>
+            @if($processo->detalhe->inversao_fase === "sim")
+                <p style="text-align: justify;">
+                    8.2. Os documentos necessários e suficiente para demonstrar a capacidade do licitante de realizar 
+                    o objeto da licitação, serão exigidos para fins de habilitação, e deveram ser enviados, exclusivamente 
+                    via plataforma, no momento do cadastro da proposta junto ao sistema, ficando vedado o envio de documentos via e-mail.
+                </p>
+            @else
+                <p style="text-align: justify;">
+                    8.2. Os documentos necessários e suficiente para demonstrar a capacidade do
+                    licitante de realizar o objeto da licitação, serão exigidos para fins de habilitação,
+                    apenas do licitante vencedor, nos termos de art. 62 a 70 da lei 14.133, e deveram
+                    ser enviados em um prazo de 02 (duas) horas e deverão ser anexados
+                    exclusivamente via plataforma, ficando vedado o envio de documentos via e-mail.
+                </p>
+            @endif
+            
             <p style="text-align: justify;">
                 8.3. Havendo a necessidade de envio de documentos de habilitação
                 complementares, necessários à confirmação daqueles exigidos neste Edital e já
