@@ -936,6 +936,12 @@
                         <i class="nav-icon fas fa-comments"></i>
                         <span>SOLICITAÇÕES</span>
                     </a>
+
+                    <a href="{{ route('admin.pcas.index') }}"
+                        class="nav-item {{ request()->routeIs('admin.pcas.*') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-chart-bar"></i>
+                        <span>PCA</span>
+                    </a>
                     @endif
 
                     {{-- Contratos visível para todos --}}

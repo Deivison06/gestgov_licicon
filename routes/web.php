@@ -16,6 +16,21 @@ use App\Http\Controllers\EtpController;
 use App\Http\Controllers\EtpItemController;
 use App\Http\Controllers\AdminEtpController;
 use App\Http\Controllers\SolicitacaoController;
+use App\Http\Controllers\PcaController;
+
+// ================================================
+// PCA - PLANO DE CONTRATAÇÃO ANUAL
+// ================================================
+Route::prefix('admin/pcas')->name('admin.pcas.')->middleware(['auth', 'verified'])->group(function () {
+    Route::get('/', [PcaController::class, 'index'])->name('index');
+    Route::get('/create', [PcaController::class, 'create'])->name('create');
+    Route::post('/', [PcaController::class, 'store'])->name('store');
+    Route::get('/{id}', [PcaController::class, 'show'])->name('show');
+    Route::get('/{id}/edit', [PcaController::class, 'edit'])->name('edit');
+    Route::put('/{id}', [PcaController::class, 'update'])->name('update');
+    Route::delete('/{id}', [PcaController::class, 'destroy'])->name('destroy');
+    Route::get('/{id}/pdf', [PcaController::class, 'gerarPdf'])->name('pdf');
+});
 
 // ================================================
 // SOLICITAÇÕES INTERNAS (Chat Administrativo)

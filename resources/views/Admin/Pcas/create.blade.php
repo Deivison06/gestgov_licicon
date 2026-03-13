@@ -1,0 +1,438 @@
+@extends('layouts.app')
+@section('page-title', 'Novo Plano de Contratação Anual (PCA)')
+@section('page-subtitle', 'Preencha os dados do PCA, a equipe de elaboração e os itens previstos')
+
+@section('content')
+<div class="py-6 min-h-screen" x-data="pcaForm()">
+    
+    <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold text-gray-800">Criar PCA</h2>
+        <a href="{{ route('admin.pcas.index') }}" class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-700 transition-colors bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+    </div>
+
+    @if($errors->any())
+        <div class="p-4 mb-6 border border-red-200 shadow-sm rounded-xl bg-red-50">
+            <h3 class="text-sm font-semibold text-red-800 mb-2">Ops! Encontramos alguns problemas:</h3>
+            <ul class="list-disc list-inside text-sm text-red-700">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <div class="bg-white border border-gray-100 shadow-sm rounded-2xl overflow-hidden">
+        <div class="p-6 md:p-8">
+            
+            <!-- Progress Bar -->
+            <div class="max-w-4xl mx-auto mb-10">
+                <div class="relative">
+                    <div class="overflow-hidden h-2 text-xs flex rounded-full bg-gray-200">
+                        <div :style="`width: ${(step - 1) * 50}%`" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-[#0596A2] transition-all duration-500 ease-in-out"></div>
+                    </div>
+                    <div class="absolute top-0 left-0 -mt-3 transform -translate-x-1/2">
+                        <div class="w-8 h-8 mx-auto bg-white border-2 rounded-full text-lg flex items-center justify-center font-bold relative"
+                             :class="step >= 1 ? 'border-[#0596A2] text-[#0596A2]' : 'border-gray-300 text-gray-400'">
+                            1
+                        </div>
+                    </div>
+                    <div class="absolute top-0 left-1/2 -mt-3 transform -translate-x-1/2">
+                        <div class="w-8 h-8 mx-auto bg-white border-2 rounded-full text-lg flex items-center justify-center font-bold relative"
+                             :class="step >= 2 ? 'border-[#0596A2] text-[#0596A2]' : 'border-gray-300 text-gray-400'">
+                            2
+                        </div>
+                    </div>
+                    <div class="absolute top-0 right-0 -mt-3 transform px-1 translate-x-1/2">
+                        <div class="w-8 h-8 mx-auto bg-white border-2 rounded-full text-lg flex items-center justify-center font-bold"
+                             :class="step >= 3 ? 'border-[#0596A2] text-[#0596A2]' : 'border-gray-300 text-gray-400'">
+                            3
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-between mt-3 text-sm">
+                    <span :class="step >= 1 ? 'font-bold text-[#0596A2]' : 'text-gray-400 font-medium'">Dados Iniciais</span>
+                    <span :class="step >= 2 ? 'font-bold text-[#0596A2]' : 'text-gray-400 font-medium'" class="text-center">Equipe de Elaboração</span>
+                    <span :class="step >= 3 ? 'font-bold text-[#0596A2]' : 'text-gray-400 font-medium'" class="text-right">Itens de Contratação</span>
+                </div>
+            </div>
+
+            <form action="{{ route('admin.pcas.store') }}" method="POST" id="pcaForm" @submit.prevent="submitForm">
+                @csrf
+                <input type="hidden" name="status" x-model="status">
+
+                <!-- STEP 1: DADOS GERAIS E EQUIPE DE ELABORAÇÃO -->
+                <div x-show="step === 1" x-transition.opacity.duration.300ms>
+                    <h3 class="text-xl font-bold text-gray-800 mb-6">Dados Gerais do Plano</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                        @if(!$isPrefeituraUser)
+                        <div class="md:col-span-2">
+                            <label for="prefeitura_id" class="block text-sm font-medium text-gray-700 mb-1">Prefeitura <span class="text-red-500">*</span></label>
+                            <select name="prefeitura_id" id="prefeitura_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0596A2] focus:border-[#0596A2] outline-none" required x-model="prefeitura_id" @change="loadSecretarias()">
+                                <option value="">Selecione a Prefeitura</option>
+                                @foreach($prefeituras as $pref)
+                                    <option value="{{ $pref->id }}">{{ $pref->nome }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @else
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Prefeitura <span class="text-red-500">*</span></label>
+                            <input type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed" value="{{ $prefeituras->first()->nome ?? '' }}" readonly disabled>
+                            <input type="hidden" name="prefeitura_id" value="{{ $prefeituras->first()->id ?? '' }}">
+                        </div>
+                        @endif
+
+                        <div class="md:col-span-1">
+                            <label for="numero_pca" class="block text-sm font-medium text-gray-700 mb-1">Número do PCA (Opcional)</label>
+                            <input type="text" id="numero_pca" name="numero_pca" value="{{ old('numero_pca') }}" placeholder="Ex: 002/26" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0596A2] focus:border-[#0596A2] outline-none">
+                        </div>
+
+                        <div class="md:col-span-1">
+                            <label for="exercicio" class="block text-sm font-medium text-gray-700 mb-1">Exercício <span class="text-red-500">*</span></label>
+                            <input type="text" id="exercicio" name="exercicio" required value="{{ old('exercicio', date('Y') + 1) }}" placeholder="Ex: 2026" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0596A2] focus:border-[#0596A2] outline-none">
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label for="periodo_elaboracao_inicio" class="block text-sm font-medium text-gray-700 mb-1">Início Elaboração</label>
+                            <input type="date" id="periodo_elaboracao_inicio" name="periodo_elaboracao_inicio" value="{{ old('periodo_elaboracao_inicio') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0596A2] focus:border-[#0596A2] outline-none">
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label for="periodo_elaboracao_fim" class="block text-sm font-medium text-gray-700 mb-1">Fim Elaboração</label>
+                            <input type="date" id="periodo_elaboracao_fim" name="periodo_elaboracao_fim" value="{{ old('periodo_elaboracao_fim') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0596A2] focus:border-[#0596A2] outline-none">
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end mt-8 border-t border-gray-200 pt-6">
+                        <button type="button" class="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-white bg-[#0596A2] rounded-lg hover:bg-[#047a84] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0596A2]" @click="nextStep(2)">
+                            Próximo Passo <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 2: EQUIPE DE ELABORAÇÃO -->
+                <div x-show="step === 2" x-transition.opacity.duration.300ms style="display: none;">
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">Equipe de Elaboração</h3>
+                    <p class="text-sm text-gray-500 mb-6">Adicione os responsáveis que farão parte da equipe do plano.</p>
+
+                    <div class="overflow-x-auto bg-gray-50 rounded-lg border border-gray-200">
+                        <table class="w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-1/3">Unidade <span class="text-red-500">*</span></th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-1/4">Responsável <span class="text-red-500">*</span></th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-1/6">Nº Portaria</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-1/6">Data Portaria</th>
+                                    <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider w-16">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-100">
+                                <template x-for="(membro, index) in equipe" :key="membro.ui_id">
+                                    <tr class="hover:bg-gray-50/50">
+                                        <td class="px-4 py-3">
+                                            <select :name="'equipe_elaboracao['+index+'][unidade_id]'" class="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-[#0596A2] focus:border-[#0596A2] outline-none" x-model="membro.unidade_id" @change="updateResponsavel(index)" required>
+                                                <option value="">Selecione...</option>
+                                                <template x-for="sec in secretariasList" :key="sec.id">
+                                                    <option :value="sec.id" x-text="sec.nome"></option>
+                                                </template>
+                                            </select>
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <input type="text" :name="'equipe_elaboracao['+index+'][responsavel]'" class="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-[#0596A2] focus:border-[#0596A2] outline-none" x-model="membro.responsavel" required placeholder="Nome do Responsável">
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <input type="text" :name="'equipe_elaboracao['+index+'][numero_portaria]'" class="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-[#0596A2] focus:border-[#0596A2] outline-none" x-model="membro.numero_portaria" placeholder="Ex: 123/2026">
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <input type="date" :name="'equipe_elaboracao['+index+'][data_portaria]'" class="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-[#0596A2] focus:border-[#0596A2] outline-none" x-model="membro.data_portaria">
+                                        </td>
+                                        <td class="px-4 py-3 text-center">
+                                            <button type="button" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-2 rounded-md transition-colors" @click="removeMembro(index)" title="Remover" x-show="equipe.length > 1">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                        <div class="px-4 py-3 bg-white border-t border-gray-100">
+                            <button type="button" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#0596A2] bg-white border border-[#0596A2] rounded-lg hover:bg-[#0596A2] hover:text-white transition-colors" @click="addMembro()">
+                                <i class="fas fa-plus"></i> Adicionar Membro
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between mt-8 border-t border-gray-200 pt-6">
+                        <button type="button" class="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0596A2]" @click="step = 1">
+                            <i class="fas fa-arrow-left"></i> Voltar
+                        </button>
+                        <button type="button" class="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-white bg-[#0596A2] rounded-lg hover:bg-[#047a84] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0596A2]" @click="nextStep(3)">
+                            Próximo Passo <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 3: DETALHAMENTO DO PLANO (ITENS) -->
+                <div x-show="step === 3" x-transition.opacity.duration.300ms style="display: none;">
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">Detalhamento do Plano</h3>
+                    <p class="text-sm text-gray-500 mb-6">Adicione os itens de contratação estimados para o exercício.</p>
+
+                    <div class="overflow-x-auto bg-gray-50 rounded-lg border border-gray-200 shadow-sm">
+                        <table class="w-full divide-y divide-gray-200">
+                            <thead class="bg-[#052323] text-white">
+                                <tr>
+                                    <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider w-10 text-center">#</th>
+                                    <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider w-64">Unidade <span class="text-red-400">*</span></th>
+                                    <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider w-36">Modalidade</th>
+                                    <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider min-w-[200px]">Objeto <span class="text-red-400">*</span></th>
+                                    <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider w-32">Valor Est. <span class="text-red-400">*</span></th>
+                                    <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider w-32">Prioridade <span class="text-red-400">*</span></th>
+                                    <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider w-36">Datas (Início/Fim)</th>
+                                    <th class="px-3 py-3 text-center text-xs font-semibold uppercase tracking-wider w-20">Prorrog?</th>
+                                    <th class="px-3 py-3 text-center text-xs font-semibold uppercase tracking-wider w-12 text-center"></th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <template x-for="(item, index) in itens" :key="item.ui_id">
+                                    <tr class="hover:bg-blue-50/30 transition-colors">
+                                        <td class="px-2 py-3 text-center font-bold text-gray-700 text-sm" x-text="index + 1"></td>
+                                        <td class="px-2 py-3">
+                                            <select :name="'itens['+index+'][unidade_requisitante_id]'" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-[#0596A2] focus:border-[#0596A2] outline-none" x-model="item.unidade_requisitante_id" required>
+                                                <option value="">Selecione...</option>
+                                                <template x-for="sec in secretariasList" :key="sec.id">
+                                                    <option :value="sec.id" x-text="sec.nome"></option>
+                                                </template>
+                                            </select>
+                                        </td>
+                                        <td class="px-2 py-3">
+                                            <select :name="'itens['+index+'][modalidade]'" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-[#0596A2] focus:border-[#0596A2] outline-none" x-model="item.modalidade">
+                                                <option value="">Selecione...</option>
+                                                @foreach($modalidades as $mod)
+                                                    <option value="{{ $mod }}">{{ $mod }}</option>
+                                                @endforeach
+                                            </select>
+                                        </td>
+                                        <td class="px-2 py-3 relative">
+                                            <textarea rows="2" :name="'itens['+index+'][descricao_classe_grupo]'" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-[#0596A2] focus:border-[#0596A2] outline-none resize-y min-h-[44px]" x-model="item.descricao_classe_grupo" required placeholder="Descreva o objeto..."></textarea>
+                                        </td>
+                                        <td class="px-2 py-3">
+                                            <input type="number" step="0.01" min="0" :name="'itens['+index+'][valor_estimado]'" class="w-full px-2 py-1.5 text-xs text-right border border-gray-300 rounded focus:ring-[#0596A2] focus:border-[#0596A2] outline-none font-medium text-green-700" x-model="item.valor_estimado" required placeholder="1000.00">
+                                        </td>
+                                        <td class="px-2 py-3">
+                                            <select :name="'itens['+index+'][grau_prioridade]'" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-[#0596A2] focus:border-[#0596A2] outline-none" x-model="item.grau_prioridade" required>
+                                                <option value="alto">Alto</option>
+                                                <option value="medio">Médio</option>
+                                                <option value="baixo">Baixo</option>
+                                            </select>
+                                        </td>
+                                        <td class="px-2 py-3 space-y-1">
+                                            <input type="date" :name="'itens['+index+'][data_inicio_providencias]'" class="w-full px-1 py-1 text-[11px] border border-gray-300 rounded focus:ring-[#0596A2] focus:border-[#0596A2] outline-none" x-model="item.data_inicio_providencias" title="Data Início Providências">
+                                            <input type="date" :name="'itens['+index+'][data_desejada_conclusao]'" class="w-full px-1 py-1 text-[11px] border border-gray-300 rounded focus:ring-[#0596A2] focus:border-[#0596A2] outline-none" x-model="item.data_desejada_conclusao" title="Data Desejada Conclusão">
+                                        </td>
+                                        <td class="px-2 py-3 text-center">
+                                            <div class="flex justify-center items-center h-full">
+                                                <select :name="'itens['+index+'][prorrogacao_contrato]'" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-[#0596A2] focus:border-[#0596A2] outline-none" x-model="item.prorrogacao_contrato">
+                                                    <option value="0">Não</option>
+                                                    <option value="1">Sim</option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                        <td class="px-2 py-3 text-center">
+                                            <button type="button" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-1.5 rounded-md transition-colors w-8 h-8 flex items-center justify-center" @click="removeItem(index)" title="Remover Item">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                            <tfoot class="bg-gray-50 border-t border-gray-200">
+                                <tr>
+                                    <td colspan="4" class="px-4 py-4 text-right font-bold text-gray-700 text-sm">TOTAL ESTIMADO GERAL:</td>
+                                    <td class="px-2 py-4 text-right font-black text-green-700 text-base tracking-tight whitespace-nowrap">
+                                        R$ <span x-text="formatCurrency(totalValue)"></span>
+                                    </td>
+                                    <td colspan="4"></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                        <div class="px-4 py-3 bg-white border-t border-gray-100">
+                            <button type="button" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-emerald-600 bg-white border border-emerald-500 rounded-lg hover:bg-emerald-50 transition-colors shadow-sm" @click="addItem()">
+                                <i class="fas fa-plus"></i> Adicionar Item
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Botões de Ação -->
+                    <div class="flex items-center justify-between mt-10 pt-6 border-t border-gray-200">
+                        <button type="button" class="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0596A2]" @click="step = 2">
+                            <i class="fas fa-arrow-left"></i> Voltar
+                        </button>
+                        <div class="flex gap-3">
+                            <button type="button" class="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 shadow-sm transition-colors" @click="saveDraft()">
+                                <i class="fas fa-save"></i> Salvar Rascunho
+                            </button>
+                            <button type="button" class="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 shadow-md transition-all hover:scale-105" @click="saveFinal()">
+                                <i class="fas fa-check-circle"></i> Concluir Plano
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+</div>
+@endsection
+
+@push('scripts')
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('pcaForm', () => ({
+            step: 1,
+            prefeitura_id: '{{ $isPrefeituraUser ? ($prefeituras->first()->id ?? "") : "" }}',
+            secretariasList: @json($secretarias),
+            
+            equipe: [
+                { ui_id: Date.now(), unidade_id: '', responsavel: '', numero_portaria: '', data_portaria: '' }
+            ],
+            
+            itens: [
+                { ui_id: Date.now() + 1, unidade_requisitante_id: '', modalidade: '', descricao_classe_grupo: '', valor_estimado: '', grau_prioridade: 'medio', data_inicio_providencias: '', data_desejada_conclusao: '', prorrogacao_contrato: '0' }
+            ],
+
+            status: 'pendente',
+
+            get totalValue() {
+                return this.itens.reduce((total, item) => {
+                    const val = parseFloat(item.valor_estimado) || 0;
+                    return total + val;
+                }, 0);
+            },
+
+            formatCurrency(value) {
+                return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            },
+
+            async loadSecretarias() {
+                @if(!$isPrefeituraUser)
+                if (!this.prefeitura_id) {
+                    this.secretariasList = [];
+                    return;
+                }
+                try {
+                    const todasSecretarias = @json(App\Models\Unidade::orderBy('nome')->get());
+                    this.secretariasList = todasSecretarias.filter(s => s.prefeitura_id == this.prefeitura_id);
+                } catch (error) {
+                    console.error("Erro ao carregar secretarias", error);
+                }
+                @endif
+            },
+
+            addMembro() {
+                this.equipe.push({ ui_id: Date.now(), unidade_id: '', responsavel: '', numero_portaria: '', data_portaria: '' });
+            },
+
+            updateResponsavel(index) {
+                const unidadeId = this.equipe[index].unidade_id;
+                if (!unidadeId) {
+                    this.equipe[index].responsavel = '';
+                    return;
+                }
+                const unidade = this.secretariasList.find(s => s.id == unidadeId);
+                if (unidade && unidade.servidor_responsavel) {
+                    this.equipe[index].responsavel = unidade.servidor_responsavel;
+                } else {
+                    this.equipe[index].responsavel = '';
+                }
+            },
+
+            removeMembro(index) {
+                if(this.equipe.length > 1) {
+                    this.equipe.splice(index, 1);
+                }
+            },
+
+            addItem() {
+                this.itens.push({ ui_id: Date.now(), unidade_requisitante_id: '', modalidade: '', descricao_classe_grupo: '', valor_estimado: '', grau_prioridade: 'medio', data_inicio_providencias: '', data_desejada_conclusao: '', prorrogacao_contrato: '0' });
+            },
+
+            removeItem(index) {
+                this.itens.splice(index, 1);
+            },
+
+            nextStep(targetStep) {
+                // Se estiver avançando, valida o passo atual
+                if (targetStep > this.step) {
+                    const stepDiv = document.querySelector(`div[x-show="step === ${this.step}"]`);
+                    if (stepDiv) {
+                        const requiredFields = stepDiv.querySelectorAll('[required]');
+                        let isValid = true;
+                        
+                        for (let field of requiredFields) {
+                            if (!field.checkValidity()) {
+                                field.reportValidity();
+                                isValid = false;
+                                break;
+                            }
+                        }
+
+                        if (!isValid) return;
+                    }
+
+                    if (this.step === 2 && this.equipe.length === 0) {
+                        alert('Adicione ao menos 1 membro na equipe de elaboração.');
+                        return;
+                    }
+                }
+                
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                this.step = targetStep;
+            },
+
+            saveDraft() {
+                this.status = 'pendente';
+                const form = document.getElementById('pcaForm');
+                form.setAttribute('novalidate', 'novalidate');
+                form.submit();
+            },
+
+            saveFinal() {
+                // Valida o passo 3
+                const stepDiv = document.querySelector(`div[x-show="step === 3"]`);
+                if (stepDiv) {
+                    const requiredFields = stepDiv.querySelectorAll('[required]');
+                    let isValid = true;
+                    
+                    for (let field of requiredFields) {
+                        if (!field.checkValidity()) {
+                            field.reportValidity();
+                            isValid = false;
+                            break;
+                        }
+                    }
+
+                    if (!isValid) return;
+                }
+                
+                if(!confirm('Tem certeza que deseja conlcuir? O plano será enviado para análise.')) {
+                    return;
+                }
+
+                this.status = 'em_analise';
+                const form = document.getElementById('pcaForm');
+                form.setAttribute('novalidate', 'novalidate');
+                form.submit();
+            },
+
+            init() {
+                this.loadSecretarias();
+            }
+        }));
+    });
+</script>
+@endpush
