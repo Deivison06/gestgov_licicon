@@ -23,7 +23,7 @@ class PcaController extends Controller
     {
         $user = auth()->user();
         $isPrefeituraUser = $user->hasRole('prefeitura') && $user->prefeitura_id;
-        
+
         $filters = $request->only(['search', 'status', 'exercicio', 'prefeitura_id']);
 
         if ($isPrefeituraUser) {
@@ -44,7 +44,7 @@ class PcaController extends Controller
     {
         $user = auth()->user();
         $isPrefeituraUser = $user->hasRole('prefeitura') && $user->prefeitura_id;
-        
+
         if ($isPrefeituraUser) {
             $prefeituras = Prefeitura::where('id', $user->prefeitura_id)->get();
             $secretarias = Unidade::where('prefeitura_id', $user->prefeitura_id)
@@ -95,7 +95,7 @@ class PcaController extends Controller
     public function show($id)
     {
         $pca = $this->pcaService->findById($id);
-        
+
         if (!$pca) {
             abort(404);
         }
@@ -108,7 +108,7 @@ class PcaController extends Controller
     public function edit($id)
     {
         $pca = $this->pcaService->findById($id);
-        
+
         if (!$pca) {
             abort(404);
         }
@@ -117,7 +117,7 @@ class PcaController extends Controller
 
         $user = auth()->user();
         $isPrefeituraUser = $user->hasRole('prefeitura') && $user->prefeitura_id;
-        
+
         if ($isPrefeituraUser) {
             $prefeituras = Prefeitura::where('id', $user->prefeitura_id)->get();
             $secretarias = Unidade::where('prefeitura_id', $user->prefeitura_id)->orderBy('nome')->get();
@@ -188,15 +188,20 @@ class PcaController extends Controller
     public function gerarPdf($id)
     {
         $pca = $this->pcaService->findById($id);
-        
+
         if (!$pca) {
             abort(404);
         }
 
         $this->authorizeAccess($pca);
 
-        $pdf = Pdf::loadView('Admin.Pcas.pdf.pca', compact('pca'));
-        
+        $pdf = Pdf::setOptions([
+                'isHtml5ParserEnabled' => true,
+                'isRemoteEnabled' => true
+            ])
+            ->loadView('Admin.Pcas.pdf.pca', compact('pca'))
+            ->setPaper('a4', 'portrait');
+
         return $pdf->download("PCA_{$pca->exercicio}.pdf");
     }
 

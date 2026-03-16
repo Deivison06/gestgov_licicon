@@ -4,13 +4,30 @@
     <meta charset="UTF-8">
     <title>PCA - {{ $pca->numero_pca ?? $pca->id }}</title>
     <style>
+        @page {
+            margin: 0;
+            size: A4;
+        }
+
         body {
+            margin: 0;
+            padding: 4cm 1cm;
             font-family: Arial, sans-serif;
             font-size: 11px;
             color: #000;
             line-height: 1.3;
             text-align: justify;
         }
+
+        .timbre-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1000;
+        }
+
         .text-center { text-align: center; }
         .text-right { text-align: right; }
         .uppercase { text-transform: uppercase; }
@@ -26,12 +43,12 @@
 
         /* Estilos para Capa e Contra-capa */
         .cover-page {
-            padding-top: 250px;
+            padding-top: 100px;
             font-size: 20px;
             line-height: 2;
         }
         .inside-cover {
-            padding-top: 200px;
+            padding-top: 50px;
             font-size: 14px;
             line-height: 1.8;
         }
@@ -41,14 +58,14 @@
             margin: 0 5rem;
         }
 
-        /* Ajustes Otimizados para Tabela no DOMPDF */
+        /* Tabela no DOMPDF */
         .table-data {
             width: 100%;
             border-collapse: collapse;
             margin-top: 15px;
-            font-size: 8px; /* Reduzido para encaixar as 9 colunas */
-            table-layout: fixed; /* Força o respeito às larguras definidas */
-            word-wrap: break-word; /* Quebra o texto se for muito longo */
+            font-size: 8px;
+            table-layout: fixed;
+            word-wrap: break-word;
         }
         .table-data th, .table-data td {
             border: 1px solid #000;
@@ -74,11 +91,26 @@
     </style>
 </head>
 <body>
+    @php
+        $timbre = $pca->prefeitura->timbre ?? '';
+        $timbrePath = public_path($timbre);
+        $base64Timbre = '';
+
+        if ($timbre && file_exists($timbrePath)) {
+            $type = pathinfo($timbrePath, PATHINFO_EXTENSION);
+            $data = file_get_contents($timbrePath);
+            $base64Timbre = 'data:image/' . $type . ';base64,' . base64_encode($data);
+        }
+    @endphp
+
+    @if($base64Timbre)
+        <img class="timbre-bg" src="{{ $base64Timbre }}" alt="Timbre">
+    @endif
 
     <div class="cover-page text-center uppercase bold">
         {{ $pca->prefeitura->nome ?? 'XXXXXX' }} / PI<br>
     </div>
-     <div class="cover-page text-center uppercase bold" style="padding-top: 12rem;">
+    <div class="cover-page text-center uppercase bold" style="padding-top: 8rem;">
         Plano de Contratações Anual<br>
         Exercício {{ $pca->exercicio }}
     </div>
