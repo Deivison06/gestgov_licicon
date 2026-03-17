@@ -30,6 +30,7 @@
 
         .text-center { text-align: center; }
         .text-right { text-align: right; }
+        .text-sm { font-size: 14px; }
         .uppercase { text-transform: uppercase; }
         .bold { font-weight: bold; }
         .mt-2 { margin-top: 20px; }
@@ -80,14 +81,6 @@
         .table-data td.desc {
             text-align: justify;
         }
-
-        .team-list {
-            margin-top: 30px;
-            font-size: 12px;
-        }
-        .team-list div {
-            margin-bottom: 10px;
-        }
     </style>
 </head>
 <body>
@@ -108,7 +101,7 @@
     @endif
 
     <div class="cover-page text-center uppercase bold">
-        {{ $pca->prefeitura->nome ?? 'XXXXXX' }} / PI<br>
+        {{ $pca->prefeitura->nome ?? 'PREFEITURA NÃO INFORMADA' }} / PI<br>
     </div>
     <div class="cover-page text-center uppercase bold" style="padding-top: 8rem;">
         Plano de Contratações Anual<br>
@@ -117,34 +110,32 @@
 
     <div class="page-break"></div>
 
-    <div class="inside-cover text-center uppercase bold">
-        EQUIPE DE ELABORAÇÃO PCA<br>
-        Gestão Municipal ( - - - - )<br>
-        {{ $pca->exercicio }} – Prefeito Municipal {{ $pca->prefeitura->autoridade_competente ?? 'XXXXXX' }}
-
-        <div class="team-list">
-            @if(!empty($pca->equipe_elaboracao) && is_array($pca->equipe_elaboracao))
-                @foreach($pca->equipe_elaboracao as $membro)
-                    <div>{{ $membro['responsavel'] ?? 'N/I' }}</div>
-                @endforeach
-            @else
-                <div>Nenhum membro informado.</div>
-            @endif
-        </div>
+    <div class="bold text-sm text-center uppercase mt-4">Equipe de Elaboração PCA</div>
+    <div class="text-center mt-2">
+        @if(!empty($pca->equipe_elaboracao) && is_array($pca->equipe_elaboracao))
+            @foreach($pca->equipe_elaboracao as $membro)
+                <div style="margin-bottom: 1rem;">
+                    <span class="bold uppercase">{{ $membro['responsavel'] ?? 'N/I' }}</span><br>
+                    <span style="font-size: 10px;">{{ \App\Models\Unidade::find($membro['unidade_id'])->nome ?? 'N/I' }}</span>
+                </div>
+            @endforeach
+        @else
+            <div class="text-center">Nenhum membro informado.</div>
+        @endif
     </div>
 
     <div class="page-break"></div>
 
     <div class="content-body">
-        <div class="bold">REGULAMENTAÇÃO:</div>
+        <div class="bold text-sm uppercase">REGULAMENTAÇÃO:</div>
         <p style="text-indent: 0;">Lei n.º 14.133/2021, art. 12, inciso VII – a partir de documentos de formalização de demandas, os órgãos responsáveis pelo planejamento de cada ente federativo poderão, na forma de regulamento, elaborar plano de contratação anual, com o objetivo de racionalizar as contratações dos órgãos e entidades sob sua competencia, garantir o alinhamento com o seu planejamento estratégico e subsidiar a elaboração das respectivas leis orçamentárias.</p>
 
-        <div class="bold uppercase mt-2">INFORMAÇÕES DA UNIDADE</div>
+        <div class="bold text-sm uppercase mt-2">INFORMAÇÕES DA UNIDADE</div>
         <div style="margin-top: 5px; margin-bottom: 20px;">
-            <span class="bold">Órgão:</span> – PREFEITURA MUNICIPAL DE {{ mb_strtoupper($pca->prefeitura->nome ?? 'XXXXXX') }}<br>
+            <span class="bold">Órgão:</span> – {{ mb_strtoupper($pca->prefeitura->nome ?? 'PREFEITURA NÃO INFORMADA') }}<br>
             <span class="bold">Período Elaboração do PCA:</span>
             @if($pca->periodo_elaboracao_inicio && $pca->periodo_elaboracao_fim)
-                {{ \Carbon\Carbon::parse($pca->periodo_elaboracao_inicio)->translatedFormat('F') }} a {{ \Carbon\Carbon::parse($pca->periodo_elaboracao_fim)->translatedFormat('F de Y') }}
+                {{ $pca->periodo_elaboracao_inicio->translatedFormat('F') }} a {{ $pca->periodo_elaboracao_fim->translatedFormat('F \d\e Y') }}
             @else
                 Não informado
             @endif
@@ -177,7 +168,7 @@
             <p>O monitoramento do plano será realizado pelo Controle Interno, a cada 3 (três) meses, através do acompanhamento da execução do plano anual de contratações, com o objetivo de avaliar o andamento das contratações de forma a identificar tempestivamente contingências que possam comprometer o cumprimento do plano.</p>
         </div>
 
-        <div class="bold mt-2 uppercase">OBJETIVOS</div>
+        <div class="bold text-sm mt-2 uppercase">OBJETIVOS</div>
         <ol>
             <li>Fortalecer a cultura de planejamento das necessidades de suprimento de materiais e serviços nas Secretarias e Órgãos da Prefeitura.</li>
             <li>Aperfeiçoar a gestão interna das compras por meio da previsibilidade das demandas com vistas à eficiência dos estoques em almoxarifados, com redução de desperdícios e com a economicidade e racionalização de gastos;</li>
@@ -188,7 +179,7 @@
     </div>
     <div class="page-break"></div>
 
-    <div class="bold text-center uppercase mt-2">DETALHAMENTO DO PLANO</div>
+    <div class="bold text-sm text-center uppercase mt-2">DETALHAMENTO DO PLANO</div>
 
     <table class="table-data">
         <thead>
@@ -225,11 +216,11 @@
         </tbody>
     </table>
 
-    <div class="bold text-center uppercase mt-4">Agente de Contratação / Equipe de Elaboração</div>
+    <div class="bold text-sm text-center uppercase mt-4">Equipe de Elaboração</div>
     <div class="text-center mt-2">
         @if(!empty($pca->equipe_elaboracao) && is_array($pca->equipe_elaboracao))
             @foreach($pca->equipe_elaboracao as $membro)
-                <div style="margin-bottom: 12px;">
+                <div style="margin-bottom: 5rem;">
                     <span class="bold uppercase">{{ $membro['responsavel'] ?? 'N/I' }}</span><br>
                     <span style="font-size: 10px;">{{ \App\Models\Unidade::find($membro['unidade_id'])->nome ?? 'N/I' }}</span>
                 </div>
