@@ -153,7 +153,7 @@
 
     <div>
         <h4 style="text-align: center;">
-            CONTRATO Nº {{ $campos['numero_contrato'] }}
+            CONTRATO Nº {{ $processo->contrato->numero_contrato}}
         </h4>
 
         <!-- Unidade Requisitante -->
@@ -535,7 +535,7 @@
                 <!-- Cabeçalho -->
                 <tr>
                     <td colspan="2" style="padding:8px; text-align:center; font-weight:bold;">
-                        EXTRATO DO CONTRATO Nº {{ $campos['numero_extrato'] }}<br>
+                        EXTRATO DO CONTRATO Nº {{ $processo->contrato->numero_extrato }}<br>
                         PROCESSO ADMINISTRATIVO Nº {{ $processo->numero_processo }}<br>
                         MODALIDADE: CONCORRÊNCIA ELETRÔNICA Nº {{ $processo->numero_procedimento }}
                     </td>

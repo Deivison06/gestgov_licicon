@@ -84,7 +84,6 @@ class ProcessoDocumentoService
             'cor' => '#F97316',
             'data_id' => 'data_termo_referencia',
             'campos' => [
-                'encaminhamento_parecer_juridico',
                 'encaminhamento_autorizacao_abertura',
                 'itens_especificaca_quantitativos_xml',
                 'info_extras',
@@ -213,11 +212,11 @@ class ProcessoDocumentoService
                 'endereco_empresa_vencedora',
                 'representante_legal_empresa',
                 'cpf_representante',
-                'valor_total',        
                 'endereco_imovel',
                 'prazo_inicio_prestacao_servico',
                 'prazo_final_prestacao_servico',
                 'valor_mensal',
+                'empresa_vencedora_pdf'
 
             ],
         ],
@@ -239,6 +238,12 @@ class ProcessoDocumentoService
             'data_id' => 'data_parecer_controle_interno',
             'campos' => [''],
         ],
+        'ato_autorizacao' => [
+            'titulo' => 'ATO DE AUTORIZAÇÃO DE INEXIGIBILIDADE DE LICITAÇÃO',
+            'cor' => '#16A34A', // verde
+            'data_id' => 'data_ato_autorizacao',
+            'campos' => [''],
+        ],
         'contrato' => [
             'titulo' => 'CONTRATO',
             'cor' => '#EA580C', // laranja
@@ -253,6 +258,7 @@ class ProcessoDocumentoService
         'publicacoes_avisos_licitacao' => 'anexo_pdf_publicacoes',
         'edital' => ['anexo_pdf_minuta_contrato'],
         'projeto_basico' => 'projeto_basico_pdf',
+        'termo_juntada' => 'empresa_vencedora_pdf',
     ];
 
     public function getDocumentosPorModalidade(Processo $processo): array
@@ -295,6 +301,21 @@ class ProcessoDocumentoService
             }
 
             $documentosOrdenados[$tipo] = $this->documentos[$tipo];
+
+            if ($processo->modalidade === ModalidadeEnum::INEXIGIBILIDADE) {
+                // remove do termo de referência
+                if ($tipo === 'termo_referencia') {
+                    $documentosOrdenados[$tipo]['campos'] = array_values(array_filter(
+                        $documentosOrdenados[$tipo]['campos'],
+                        fn($campo) => $campo !== 'encaminhamento_parecer_juridico'
+                    ));
+                }
+
+                // adiciona no parecer técnico
+                if ($tipo === 'parecer_tecnico') {
+                    $documentosOrdenados[$tipo]['campos'][] = 'encaminhamento_parecer_juridico';
+                }
+            }
 
             if ($tipo === 'formalizacao') {
                 $documentosOrdenados[$tipo]['campos'] = $this->filtrarCamposFormalizacao(
@@ -427,6 +448,7 @@ class ProcessoDocumentoService
             'capa',
             'formalizacao',
             'estudo_tecnico',
+            'minutas',
             'disponibilidade_orçamento',
             'termo_referencia',
             'autorizacao_abertura_procedimento',
@@ -436,6 +458,7 @@ class ProcessoDocumentoService
             'parecer_tecnico',
             'parecer_juridico',
             'parecer_controle_interno',
+            'ato_autorizacao',
             'contrato',
             'publicacoes'
         ];
@@ -447,6 +470,7 @@ class ProcessoDocumentoService
             'capa',
             'formalizacao',
             'estudo_tecnico',
+            'minutas',
             'disponibilidade_orçamento',
             'termo_referencia',
             'autorizacao_abertura_procedimento',
@@ -455,6 +479,7 @@ class ProcessoDocumentoService
             'parecer_tecnico',
             'parecer_juridico',
             'parecer_controle_interno',
+            'ato_autorizacao',
             'contrato',
             'publicacoes_avisos_licitacao'
         ];
@@ -466,16 +491,16 @@ class ProcessoDocumentoService
             'capa',
             'formalizacao',
             'estudo_tecnico',
+            'minutas',
             'disponibilidade_orçamento',
             'termo_referencia',
             'autorizacao_abertura_procedimento',
-            'termo_recebimento',
             'termo_juntada',
             'termo_recebimento',
-            'termo_autuacao',
             'parecer_tecnico',
             'parecer_juridico',
             'parecer_controle_interno',
+            'ato_autorizacao',
             'contrato',
             'publicacoes_avisos_licitacao'
         ];
@@ -487,6 +512,7 @@ class ProcessoDocumentoService
             'capa',
             'formalizacao',
             'estudo_tecnico',
+            'minutas',
             'disponibilidade_orçamento',
             'termo_referencia',
             'autorizacao_abertura_procedimento',
@@ -495,6 +521,7 @@ class ProcessoDocumentoService
             'parecer_tecnico',
             'parecer_juridico',
             'parecer_controle_interno',
+            'ato_autorizacao',
             'contrato',
             'publicacoes_avisos_licitacao'
         ];

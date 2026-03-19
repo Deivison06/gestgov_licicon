@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>PARECER DO CONTROLE INTERNO{{ $processo->numero_processo ?? $processo->id }}</title>
+    <title>ATO DE AUTORIZAÇÃO DE INEXIGIBILIDADE DE LICITAÇÃO {{ $processo->numero_processo ?? $processo->id }}</title>
     <style type="text/css">
         @font-face {
             font-family: 'Aptos';
@@ -173,109 +173,99 @@
 <div id="cover-page">
     <img src="{{ public_path('icons/capa-documento.png') }}" alt="Martelo da Justiça" class="cover-image">
     <div class="cover-title">
-        TERMO DE REFERÊNCIAPARECER DO CONTROLE
-        INTERNO
+        ATO DE AUTORIZAÇÃO DE INEXIGIBILIDADE DE LICITAÇÃO
     </div>
 </div>
 {{-- QUEBRA DE PÁGINA --}}
 <div class="page-break"></div>
 
 <div>
-    <h4>
-        PARECER CONTROLE INTERNO <br>
-        PROCESSO ADM. Nº. {{ $processo->numero_processo}} <br>
-        INEXIGIBILIDADE Nº. {{ $processo->numero_procedimento}} <br>
-        INTERESSADO: PREFEITO MUNICIPAL DE <span style="text-transform: uppercase;">{{ $processo->prefeitura->cidade }}</span>
+    <h4 style="text-align: center">
+        ATO DE AUTORIZAÇÃO DE INEXIGIBILIDADE DE LICITAÇÃO <br>
+        PROCESSO ADMINISTRATIVO N° {{ $processo->numero_processo }}<br>
+        INEXIGIBILIDADE DE LICITAÇÃO N° {{ $processo->numero_procedimento }}
     </h4>
 
     <p style="text-align: justify">
-        Tratam os autos do processo de {!! strip_tags($processo->objeto) !!} ediante Inexigibilidade de licitação em favor da
-        empresa/profissional {{ $processo->detalhe->razao_social }},
-        inscrita no CNPJ/CPF sob o nº {{ $processo->detalhe->cnpj_empresa_vencedora }}, no valor de R$
-        {{ number_format($processo->detalhe->valor, 2, ',', '.') }}. Ressalta-se que o Procedimento ocorreu
-        dentro das formalidades legais, conforme detalhado no processo, baseado
-        na Lei 14.133/21
+        CONSIDERANDO os elementos contidos no presente processo de inexigibilidade de licitação, que
+        foi devidamente justificado, tanto pela razão da escolha do prestador de serviços, quanto pela
+        justificativa dos preços, vez que a empresa/profissional apresentou o menor preço global; <br><br>
+        CONSIDERANDO que o processo foi instruído com os documentos e requisitos que comprovam
+        que o contratado possui habilitação e qualificação mínima para celebrar o contrato, conforme
+        preconizado no artigo 72 da Lei Federal 14.133/2021; <br><br>
+        CONSIDERANDO que o PARECER TÉCNICO da Comissão de Contratação que prevê que a
+        INEXIGIBILIDADE DE LICITAÇÃO está em conformidade ao disposto no artigo 72 c/c 74 da Lei
+        Federal 14.133/2021;<br><br>
+        CONSIDERANDO que o PARECER JURÍDICO atesta que foram cumpridas as exigências legais e
+        os requisitos mínimos para a contratação;<br><br>
+        No uso das atribuições que me foram conferidas, em especial ao disposto no artigo 72, VIII da Lei
+        Federal 14.133/2021, AUTORIZO A INEXIGIBILIDADE DE LICITAÇÃO N° {{ $processo->numero_procedimento }}, nos termos
+        descritos abaixo:
     </p>
 
-    <h4>DO CONTROLE INTERNO</h4>
+    <table style="width:100%; border-collapse:collapse; font-size:10px;">
+        <tr>
+            <td style="border:1px solid #000; padding:6px; width:30%; font-weight:bold;">
+                OBJETO A SER CONTRATADO
+            </td>
+            <td style="border:1px solid #000; padding:6px; width:70%;">
+                {!! strip_tags($processo->objeto) !!}
+            </td>
+        </tr>
+        <tr>
+            <td style="border:1px solid #000; padding:6px; font-weight:bold;">
+                CONTRATADO
+            </td>
+            <td style="border:1px solid #000; padding:6px;">
+                {{ $processo->detalhe->razao_social }}
+            </td>
+        </tr>
+        <tr>
+            <td style="border:1px solid #000; padding:6px; font-weight:bold;">
+                PRAZO DE VIGÊNCIA
+            </td>
+            <td style="border:1px solid #000; padding:6px;">
+                @php
+                    $vigencia = is_array($processo->detalhe->prazo_vigencia ?? null)
+                        ? $processo->detalhe->prazo_vigencia
+                        : ['12_meses'];
 
-    <p style="text-align: justify">
-        A Constituição Federal de 1988, em seu art. 74, estabelece as finalidades do
-        Controle Interno, dentre outras competências, realizar acompanhamento,
-        levantamento, inspeção e auditoria nos sistemas administrativo, contábil,
-        financeiro, patrimonial e operacional relativo às atividades administrativas,
-        com vistas a verificar a legalidade e a legitimidade de atos de gestão pela
-        execução orçamentária, financeira e patrimonial e avaliar seus resultados
-        quanto a economicidade, eficiência e eficácia.<br>
-        O controle interno é fundamental para se atingir resultados favoráveis em
-        qualquer organização. Na gestão pública os mecanismos de controle
-        existentes previnem o erro, a fraude e o desperdício, trazendo benefícios à
-        população.<br>
-        Tendo em vista que o processo de contratação em exame, implica em
-        realização de despesa, demonstra-se a competência do Controle Interno
-        para análise e manifestação.
-    </p>
+                    $outro_vigencia = $processo->detalhe->prazo_vigencia_outro ?? '________________.';
 
-    <h4>DA INEXIGIBILIDADE DE LICITAÇÃO</h4>
+                    $objeto_continuado = strtolower($processo->detalhe->objeto_continuado ?? 'nao');
 
-    <p style="text-align: justify">
-        Conforme o Art. 74 da Lei nº 14.133/21, poderá ser utilizado Inexigibilidade
-        de Licitação nos casos previstos.
-    </p>
+                    // Texto para preencher automaticamente
+                    if (in_array('exercicio_financeiro', $vigencia)) {
+                        $textoVigencia = "até 31/12 do exercício financeiro da contratação";
+                    } elseif (in_array('12_meses', $vigencia)) {
+                        $textoVigencia = "12 meses";
+                    } elseif (in_array('outro', $vigencia)) {
+                        $textoVigencia = $outro_vigencia;
+                    } else {
+                        $textoVigencia = "________________";
+                    }
+                @endphp
+                {{ $textoVigencia }}
+            </td>
+        </tr>
+        <tr>
+            <td style="border:1px solid #000; padding:6px; font-weight:bold;">
+                VALOR TOTAL
+            </td>
+            <td style="border:1px solid #000; padding:6px;">
+                R$ {{ number_format($processo->valor_total, 2, ',', '.') }}
+            </td>
+        </tr>
+        <tr>
+            <td style="border:1px solid #000; padding:6px; font-weight:bold;">
+                FUNDAMENTO LEGAL
+            </td>
+            <td style="border:1px solid #000; padding:6px;">
+                    Artigo 72 c/c 74, inc. III, alínea “c”, da Lei 14.133/21 – Serviços Técnicos Especializados
+            </td>
 
-    <h4>DA ANÁLISE PROCEDIMENTAL</h4>
-
-    <p style="text-align: justify">
-        Em exame, quanto aos atos procedimentais na fase interna e externa
-        verificou-se que: <br><br>
-        I - Documento de formalização de demanda e, se for o caso, estudo técnico
-        preliminar, análise de riscos, termo de referência, projeto básico ou projeto
-        executivo;<br>
-        II - Estimativa de despesa, que deverá ser calculada na forma estabelecida
-        no art. 23 desta Lei;<br>
-        III - Parecer jurídico e pareceres técnicos, se for o caso, que demonstrem o
-        atendimento dos requisitos exigidos;<br>
-        IV - Demonstração da compatibilidade da previsão de recursos
-        orçamentários com o compromisso a ser assumido;<br>
-        V - Comprovação de que o contratado preenche os requisitos de habilitação
-        e qualificação mínima necessária;<br>
-        VI - Razão da escolha do contratado;<br>
-        VII - justificativa de preço;<br>
-        VIII - autorização da autoridade competente.
-    </p>
-
-    <h4>DOS FATOS</h4>
-
-    <p style="text-align: justify">
-        O Controle Interno, em suas considerações, faz saber que, após exames
-        detalhados dos atos procedimentais pela Comissão de Licitação, conclui-se,
-        que nenhuma irregularidade foi levantada, opinando nesta oportunidade
-        apenas para que sejam realizadas as publicações dos extratos dos contratos,
-        para que o procedimento realizado fique de acordo com a legislação
-        vigente, sendo então dado prosseguimento as demais etapas
-        subsequentes, evidenciando a presença efetiva de publicidade de todos os
-        atos realizados.
-    </p>
-
-    <h4>CONCLUSÃO</h4>
-
-    <p style="text-align: justify">
-        A Comissão de Licitação atendeu os requisitos das leis nas atividades
-        realizadas, nota-se, que o procedimento licitatório cumpriu seu objetivo,
-        tendo alcançado seu êxito na contratação destacando-se na oportunidade a
-        necessidade de publicação dos extratos para finalização do processo.
-        <br><br>
-        É o parecer,
-    </p>
-
-    <h4>DESPACHO</h4>
-
-    <p>
-        Ao(À) Ilmo(a). Sr(a).<br>
-        <span>{{ $processo->prefeitura->autoridade_competente }}</span>
-        <br>
-        Prefeito Municipal
-    </p>
+        </tr>
+    </table>
 
     {{-- Bloco de data e assinatura --}}
     <div class="footer-signature">
@@ -291,7 +281,7 @@
     @if ($hasSelectedAssinantes)
         {{-- Renderiza APENAS O PRIMEIRO assinante da lista --}}
         @php
-            $primeiroAssinante = $assinantes[0]; // Pega o primeiro item
+            $primeiroAssinante = $assinantes[0]; // Pega o segundo item
         @endphp
 
         <div style="margin-top: 40px; text-align: center;">

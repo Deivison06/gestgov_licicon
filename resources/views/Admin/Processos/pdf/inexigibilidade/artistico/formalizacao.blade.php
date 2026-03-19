@@ -316,12 +316,6 @@
                     Prazo de entrega/execução: {{ $detalhe->prazo_entrega ?? '' }}
                 </td>
             </tr>
-
-            <tr>
-                <td style="width: 100%; border: 1px solid #000; padding: 5px 8px; vertical-align: top;">
-                    Local(is) e horário(s) de entrega: {{ $detalhe->local_entrega ?? '' }}
-                </td>
-            </tr>
         </table>
 
         <table style="width: 100%; border: 1px solid #000; border-collapse: collapse; font-family: Arial, sans-serif; font-size: 12px;">

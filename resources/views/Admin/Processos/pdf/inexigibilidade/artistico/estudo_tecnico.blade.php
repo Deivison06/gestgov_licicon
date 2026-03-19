@@ -14,7 +14,7 @@
         @font-face {
             font-family: 'AptosExtraBold';
             src: url('{{ public_path('storage/fonts/Aptos-ExtraBold.ttf') }}') format('truetype');
-            font-style: normal;
+            font-style: normal;Os Serviços deverão ser executados de forma parcelada, de acordo
         }
 
 
@@ -415,51 +415,6 @@
             Para uma contratação mais segura e eficaz, sugerimos como técnica de averiguação, e controle, as
             seguintes exigências mínimas:
         </p>
-
-        <p style="text-align: justify; text-indent: 30px;">
-            Os Serviços deverão ser executados de forma parcelada, de acordo com as solicitações da
-            CONTRATANTE, por meio de suas respectivas OS.’s;
-        </p>
-
-        <p style="text-align: justify; text-indent: 30px;">
-            Os Serviços deverão ser iniciados em até 48 (quarenta e oito) horas contadas do envio da Ordem
-            de Serviço, devendo a contratada manter estoques compatíveis com as quantidades solicitadas
-            durante o prazo de vigência do contrato, evitando atrasos na prestação do serviço contratado, sem
-            a exigência de sem custos adicionais.
-        </p>
-
-        <p style="text-align: justify; text-indent: 30px;">
-            Os serviços deverão ser prestados nos locais de indicados pelo CONTRATANTE, em horários e
-            datas previamente estabelecidas na respectiva Ordem de Serviço;
-        </p>
-
-        <p style="text-align: justify; text-indent: 30px;">
-            A nota fiscal deverá ser apresentada no ato da entrega informado o número do Contrato
-            correspondente no campo “Dados Adicionais”.
-        </p>
-
-        <p style="text-align: justify; text-indent: 30px;">
-            A Contratada deverá arcar com as despesas de alimentação, deslocamento e demais despesas
-            referentes às prestações dos serviços.
-        </p>
-
-        <p style="text-align: justify; text-indent: 30px;">
-            Serão exigidas comprovações de localização da sede da empresa, com apresentação de fotos da
-            infraestrutura interna, com objetivo precípuo de averiguar a veracidade sobre a real existência da
-            empresa, evitando a contratação de empresas fantasmas ou de caráter inidôneo
-        </p>
-
-        <p style="text-align: justify; text-indent: 30px;">
-            Serão exigidas composições de custos que reflitam a realidade econômica da empresa licitante, a
-            ser definido no próprio edital, que estabelecem critérios de custos com despesas diretas e
-            indiretas;
-        </p>
-        <p style="text-align: justify; text-indent: 30px;">
-            Também será exigido garantia de proposta, nos termos do art. 96 e seguintes, visando estabelecer a
-            segurança do preço ofertado pelo licitante, garantindo assim, o seguro do custeio realizado pela
-            Administração no
-            momento da abertura do certame;
-        </p>
     </div>
 
     {!! str_replace(
@@ -515,121 +470,49 @@
 
     <div style="font-weight: 600;  margin-bottom: 20px;">
         <img src="{{ public_path('icons/lista.png') }}" width="30px" alt="REQUISITOS DA CONTRATAÇÃO">
-        ITENS E SEUS QUANTITATIVOS
+        PARCELAMENTO OU NÃO DA CONTRATAÇÃO
     </div>
-
-    <table border="1" cellspacing="0" cellpadding="4"
-           style="border-collapse: collapse; width: 100%; text-align: center; font-size: 10pt;">
-        <thead>
-        <tr>
-            <th style="width: 8%;">ITEM</th>
-            <th style="width: 70%;">DESCRIÇÃO/ESPECIFICAÇÃO</th>
-            <th style="width: 10%;">UND</th>
-            <th style="width: 12%;">QUANT.</th>
-        </tr>
-        </thead>
-        <tbody>
-        @php
-            $itens = json_decode($detalhe->itens_e_seus_quantitativos_xml, true);
-        @endphp
-
-        @if ($itens && count($itens) > 0)
-            @foreach ($itens as $item)
-                <tr>
-                    <td>{{ $item['numero'] ?? '' }}</td>
-                    <td style="text-align: left">{{ $item['descricao'] ?? '' }}</td>
-                    <td>{{ $item['und'] ?? '' }}</td>
-                    <td>{{ $item['quantidade'] ?? '' }}</td>
-                </tr>
-            @endforeach
-        @else
-            <tr>
-                <td colspan="4">Nenhum item encontrado</td>
-            </tr>
-        @endif
-        </tbody>
-    </table>
-
-    <p style="">Memória de Cálculo para Justificativa dos Quantitativos </p>
-    <p style="">Metodologia de Definição dos Quantitativos </p>
-
-    <div style="">O quantitativo de itens/serviços foi definido a partir da seguinte metodologia:
-    </div>
-    <ul style="">
-        <li>Levantamento da demanda junto às Secretarias/Unidades requisitantes; </li>
-        <li>Consideração do histórico de consumo/uso dos últimos [2] anos ou exercícios;</li>
-        <li>Análise do estoque atual disponível e das condições de uso dos bens já existentes
-            (quando aplicável); </li>
-        <li>Adequação à vigência estimada do contrato e à previsão de utilização durante esse
-            período. </li>
-    </ul>
-
-    <div style="">Dados Utilizados </div>
-    <ul style="">
-        <li>Unidades/Setores atendidos</li>
-        <li>Quantidade de usuários/beneficiários</li>
-        <li>Consumo médio histórico</li>
-        <li>Estoque atual disponível:</li>
-        <li>Déficit identificado: </li>
-    </ul>
-
-    <p style="">O quantitativo estimado encontra-se devidamente justificado com base em dados
-        oficiais, históricos de consumo, análise de estoque e previsão de demanda, atendendo ao princípio da
-        eficiência e
-        assegurando o interesse público, nos termos da Lei nº 14.133/2021. </p>
-
     <div style="font-weight: 600;  margin-bottom: 20px;">
         <img src="{{ public_path('icons/lista.png') }}" width="30px" alt="REQUISITOS DA CONTRATAÇÃO">
         PARCELAMENTO OU NÃO DA CONTRATAÇÃO
     </div>
-    <p style="text-align: justify;">
-        1.2. A licitação será dividida em itens, conforme tabela constante do Termo de Referência,
-        facultando-se ao licitante a participação em quantos itens forem de seu interesse, conforme
-        justificativa abaixo:
+    <p style="text-align: justify; text-indent: 30px;">
+        A contratação de serviços com objeto indivisível justifica-se pela
+        natureza técnica e operacional da atividade a ser executada, a qual exige
+        execução integrada, contínua e coordenada, não sendo possível sua
+        divisão em parcelas independentes sem prejuízo à eficiência, qualidade e
+        segurança dos resultados pretendidos pela Administração Pública.
     </p>
-    <ol type="a">
-        <li style="margin-bottom: 6px; text-align: justify;">
-            O fracionamento do objeto da licitação em itens encontra amparo legal no art. 40, § 1º da
-            Lei nº 14.133/2021, que incentiva o parcelamento sempre que viável, desde que não
-            comprometa a execução do objeto. A medida visa permitir a ampla participação de
-            fornecedores, principalmente de pequeno porte, bem como alcançar melhor resultado
-            para a Administração.
-        </li>
-        <li style="margin-bottom: 6px; text-align: justify;">
-            O objeto da presente licitação abrange diversos produtos/serviços com características
-            distintas, que podem ser adquiridos, entregues ou executados de forma independente, sem
-            prejuízo à integridade da execução contratual.
-        </li>
-        <li style="margin-bottom: 6px; text-align: justify;">
-            A divisão por itens não compromete a obtenção de preços vantajosos, e ao contrário,
-            estimula a competitividade, ao permitir que microempresas, empresas locais e
-            fornecedores especializados possam concorrer apenas nos itens de sua capacidade
-            técnica e logística.
-        </li>
-        <li style="margin-bottom: 6px; text-align: justify;">
-            Com isso, evita-se a concentração do fornecimento em um único fornecedor, promovendo
-            maior eficiência, economicidade e mitigação de riscos contratuais.
-        </li>
-        <li style="margin-bottom: 6px; text-align: justify;">
-            A adoção do parcelamento por itens está alinhada ao planejamento da Administração Pública, favorecendo:
-            <ul style="margin-top: 5px; margin-bottom: 5px;">
-                <li style="margin-bottom: 5px; text-align: justify;">Atendimento adequado às necessidades específicas de cada unidade administrativa;</li>
-                <li style="margin-bottom: 5px; text-align: justify;">Diversificação de fornecedores e redução do risco de desabastecimento;</li>
-                <li style="margin-bottom: 5px; text-align: justify;">Fortalecimento da economia local/regional; </li>
-                <li style="margin-bottom: 5px; text-align: justify;">Observância ao princípio da isonomia, conforme art. 5º da Lei nº 14.133/2021.</li>
-            </ul>
-        </li>
-        <li style="text-align: justify;">
-            Além disso, o parcelamento da contratação em lotes favorece uma competição saudável
-            entre fornecedores, o que pode resultar em custos mais baixos e condições mais
-            vantajosas para a Administração Pública. Ao permitir que empresas ofereçam suas
-            propostas por ITEM, a Prefeitura pode beneficiar-se da especialização dos
-            fornecedores, garantindo aquisição de XXXXXXXXX de melhor qualidade. Essa dinâmica
-            também contribui para minimizar riscos, uma vez que cada item pode ser ajustado
-            conforme a resposta do mercado e as demandas emergentes facilitando adaptações ao
-            longo do fornecimento.
-        </li>
-    </ol>
+    <p style="text-align: justify; text-indent: 30px;">
+        Nos termos da Lei nº 14.133/2021, a regra geral nas contratações
+        públicas é a divisão do objeto em parcelas quando tecnicamente viável, com
+        o objetivo de ampliar a competitividade. Entretanto, quando a divisão do
+        objeto puder comprometer a execução do serviço, gerar dificuldades de
+        gerenciamento contratual, ocasionar incompatibilidade técnica entre partes
+        do serviço ou resultar em prejuízo à economicidade e à eficiência
+        administrativa, admite-se a contratação de forma indivisível.
+    </p>
+    <p style="text-align: justify; text-indent: 30px;">
+        No caso em análise, o serviço apresenta características que
+        demandam padronização técnica, responsabilidade única pela
+        execução, uniformidade de procedimentos e integração das etapas,
+        fatores que tornam inviável a fragmentação do objeto entre diferentes
+        fornecedores. A divisão poderia ocasionar conflitos de responsabilidade,
+        aumento de custos operacionais, dificuldades de fiscalização e riscos à
+        qualidade final da prestação do serviço.
+    </p>
+    <p style="text-align: justify; text-indent: 30px;">
+        Além disso, a execução por um único contratado garante maior
+        controle da Administração sobre a qualidade dos serviços prestados, facilita
+        a gestão contratual, assegura a responsabilização direta em caso de falhas e
+        promove maior eficiência na execução das atividades.
+    </p>
+    <p style="text-align: justify; text-indent: 30px;">
+        Dessa forma, conclui-se que a contratação do objeto de forma
+        indivisível atende aos princípios da eficiência, economicidade,
+        planejamento e interesse público, estando devidamente justificada a
+        adoção dessa modalidade de contratação pela Administração.
+    </p>
 </div>
 
 {{-- ====================================================================== --}}
@@ -1990,6 +1873,15 @@
         </tr>
         <tr>
             <td style="border: 1px solid black; padding: 8px;">
+                <div style="display: block; margin-bottom: 4px;">
+                        <span
+                            style="display:inline-block; width:12px; height:12px; border:1px solid #000; margin-right:5px; vertical-align:middle; text-align:center; line-height:10px; font-size:10px; font-weight:bold;">
+                            @if ($processo->modalidade === \App\Enums\ModalidadeEnum::INEXIGIBILIDADE)
+                                X
+                            @endif
+                        </span>
+                    Inexigibilidade de Licitação;
+                </div>
                 <div style="display: block; margin-bottom: 4px;">
                         <span
                             style="display:inline-block; width:12px; height:12px; border:1px solid #000; margin-right:5px; vertical-align:middle; text-align:center; line-height:10px; font-size:10px; font-weight:bold;">

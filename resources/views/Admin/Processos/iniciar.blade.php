@@ -464,7 +464,7 @@
                         <input type="hidden" name="processo_id" value="{{ $processo->id }}">
 
                         <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                            
+
                             <!-- Número do Contrato -->
                             <div>
                                 <label for="numero_contrato" class="flex items-center gap-2 mb-2 text-sm font-semibold text-gray-800">
@@ -1115,6 +1115,7 @@
                 representante_legal_empresa: existing?.representante_legal_empresa ?? '',
                 cpf_representante: existing?.cpf_representante ?? '',
                 valor_total: existing?.valor_total ?? '',
+                empresa_vencedora_pdf: existing?.empresa_vencedora_pdf ?? '',
 
 
                 ...initialData,
@@ -1211,13 +1212,14 @@
                     razao_escolha_contratado: !!existing?.razao_escolha_contratado,
                     obrigacoes_contratado_extras: !!existing?.obrigacoes_contratado_extras,
                     obrigacoes_contratante_extras: !!existing?.obrigacoes_contratante_extras,
-                    razao_social: !!existing?.razao_social, 
+                    razao_social: !!existing?.razao_social,
                     cnpj_empresa_vencedora: !!existing?.cnpj_empresa_vencedora,
                     endereco_empresa_vencedora: !!existing?.endereco_empresa_vencedora,
                     representante_legal_empresa: !!existing?.representante_legal_empresa,
                     cpf_representante: !!existing?.cpf_representante,
                     valor_total: !!existing?.valor_total,
-                    
+                    empresa_vencedora_pdf: !!existing?.empresa_vencedora_pdf,
+
                     // Contrato confirmed state
                     numero_contrato: !!existing?.numero_contrato,
                     data_assinatura_contrato: !!existing?.data_assinatura_contrato,
@@ -1362,6 +1364,7 @@
                         'anexo_pdf_publicacoes',
                         'anexo_pdf_minuta_contrato',
                         'projeto_basico_pdf',
+                        'empresa_vencedora_pdf',
                     ].includes(field);
                 },
 

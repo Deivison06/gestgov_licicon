@@ -19,7 +19,7 @@
 
         body {
             font-family: 'Aptos', sans-serif;
-            font-size: 18pt;
+            font-size: 15px;
             font-weight: 900;
             text-transform: uppercase;
             margin: 0;

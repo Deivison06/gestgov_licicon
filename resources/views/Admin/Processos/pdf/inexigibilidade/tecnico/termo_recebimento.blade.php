@@ -389,7 +389,7 @@
                         FUNDAMENTAÇÃO:
                     </td>
                     <td style="border: 1px solid black; padding: 5px;">
-                        Lei 14.133/2021, Art. 28, I -  Inexigibilidade de Licitação
+                        Lei 14.133/2021, Art. 74, III, alínea ‘c’ - Inexigibilidade de Licitação
                     </td>
                 </tr>
             </tbody>

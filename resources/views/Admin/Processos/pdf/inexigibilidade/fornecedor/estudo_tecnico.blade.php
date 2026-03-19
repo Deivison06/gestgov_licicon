@@ -1991,6 +1991,15 @@
             <tr>
                 <td style="border: 1px solid black; padding: 8px;">
                     <div style="display: block; margin-bottom: 4px;">
+                            <span
+                                style="display:inline-block; width:12px; height:12px; border:1px solid #000; margin-right:5px; vertical-align:middle; text-align:center; line-height:10px; font-size:10px; font-weight:bold;">
+                                @if ($processo->modalidade === \App\Enums\ModalidadeEnum::INEXIGIBILIDADE)
+                                    X
+                                @endif
+                            </span>
+                        Inexigibilidade de Licitação;
+                    </div>
+                    <div style="display: block; margin-bottom: 4px;">
                         <span
                             style="display:inline-block; width:12px; height:12px; border:1px solid #000; margin-right:5px; vertical-align:middle; text-align:center; line-height:10px; font-size:10px; font-weight:bold;">
                             @if ($processo->modalidade === \App\Enums\ModalidadeEnum::DISPENSA)

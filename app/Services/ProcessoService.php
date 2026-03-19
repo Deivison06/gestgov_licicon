@@ -2,13 +2,14 @@
 
 namespace App\Services;
 
+use App\Models\Documento;
+use App\Models\Lote;
 use App\Models\Processo;
 use App\Models\ProcessoDetalhe;
-use App\Models\Documento;
-use App\Models\Vencedor;
-use App\Models\Lote;
 use App\Models\Reserva;
+use App\Models\Vencedor;
 use Illuminate\Support\Facades\DB;
+use Log;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class ProcessoService
@@ -25,6 +26,7 @@ class ProcessoService
         'itens_especificaca_quantitativos_xml',
         'anexo_pdf_minuta_contrato',
         'projeto_basico_pdf',
+        'empresa_vencedora_pdf',  // ← DEVE permanecer aqui para o loop não sobrescrever com UploadedFile
         // Campos de Contrato
         'numero_contrato',
         'data_assinatura_contrato',
@@ -43,7 +45,8 @@ class ProcessoService
         'anexar_minuta' => 'salvarAnexo',
         'anexo_pdf_publicacoes' => 'salvarAnexo',
         'anexo_pdf_minuta_contrato' => 'salvarAnexo',
-        'projeto_basico_pdf' => 'salvarAnexo'
+        'projeto_basico_pdf' => 'salvarAnexo',
+        'empresa_vencedora_pdf' => 'salvarAnexo'
     ];
 
     public function create(array $data): Processo
@@ -191,7 +194,7 @@ class ProcessoService
          * 6️⃣ Log estruturado (auditoria)
          */
         if (!empty($linhasEmBranco) || !empty($linhasInvalidas)) {
-            \Log::warning('Processamento de itens com linhas ignoradas', [
+            Log::warning('Processamento de itens com linhas ignoradas', [
                 'campo'             => $campo,
                 'linhas_em_branco'  => $linhasEmBranco,
                 'linhas_invalidas'  => $linhasInvalidas,
@@ -245,7 +248,7 @@ class ProcessoService
 
         // Logar linhas em branco encontradas
         if (!empty($linhasEmBranco)) {
-            \Log::warning('Linhas em branco identificadas no arquivo de especificação', [
+            Log::warning('Linhas em branco identificadas no arquivo de especificação', [
                 'campo' => $campo,
                 'linhas' => $linhasEmBranco,
                 'total_linhas' => count($rows),
@@ -303,6 +306,11 @@ class ProcessoService
 
     private function salvarAnexo($file, ProcessoDetalhe $detalhe, string $campo): void
     {
+        // Deletar arquivo antigo se existir
+        if (!empty($detalhe->{$campo}) && file_exists(public_path($detalhe->{$campo}))) {
+            unlink(public_path($detalhe->{$campo}));
+        }
+
         $filename = $campo . '_' . time() . '.' . $file->getClientOriginalExtension();
         $destinationPath = public_path('uploads/anexos');
 
@@ -311,7 +319,15 @@ class ProcessoService
         }
 
         $file->move($destinationPath, $filename);
-        $detalhe->{$campo} = 'uploads/anexos/' . $filename;
+        
+        $caminho = 'uploads/anexos/' . $filename;
+        $detalhe->{$campo} = $caminho;
+
+        Log::info('Anexo salvo', [
+            'campo'   => $campo,
+            'caminho' => $caminho,
+            'existe'  => file_exists(public_path($caminho)),
+        ]);
     }
 
     /**

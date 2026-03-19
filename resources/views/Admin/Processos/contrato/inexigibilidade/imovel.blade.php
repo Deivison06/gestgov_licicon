@@ -153,7 +153,7 @@
 
     <div>
         <h4 style="text-align: center;">
-            CONTRATO DE LOCAÇÃO IMÓVEL N° {{ $campos['numero_contrato'] }}
+            CONTRATO DE LOCAÇÃO IMÓVEL N° {{ $processo->contrato->numero_contrato}}
         </h4>
 
         <p style="text-align: justify">

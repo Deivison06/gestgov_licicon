@@ -106,7 +106,8 @@ class ProcessoDetalhe extends Model
         'especificacao_servicos_imovel',
         'razao_escolha_contratado',
         'obrigacoes_contratado_extras',
-        'obrigacoes_contratante_extras'
+        'obrigacoes_contratante_extras',
+        'empresa_vencedora_pdf'
     ];
 
     protected $casts = [

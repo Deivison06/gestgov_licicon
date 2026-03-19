@@ -204,29 +204,31 @@
     {{ \Carbon\Carbon::parse($dataSelecionada)->translatedFormat('d \d\e F \d\e Y') }}
 </div>
 
-@if ($hasSelectedAssinantes && !empty($assinantes))
-    <div style="margin-top: 40px; text-align: center;">
-        @foreach ($assinantes as $assinante)
-            <br>
+@if ($hasSelectedAssinantes)
+        {{-- Renderiza APENAS O PRIMEIRO assinante da lista --}}
+        @php
+            $primeiroAssinante = $assinantes[0]; // Pega o primeiro item
+        @endphp
+
+        <div style="margin-top: 40px; text-align: center;">
             <div class="signature-block" style="display: inline-block; margin: 0 40px;">
                 ___________________________________<br>
                 <p style="line-height: 1.2;">
-                    {{ $assinante['responsavel'] }} <br>
-                    <span>{{ $assinante['unidade_nome'] }}</span>
+                    {{ $primeiroAssinante['responsavel'] }} <br>
+                    <span>{{ $primeiroAssinante['unidade_nome'] }}</span>
                 </p>
             </div>
-        @endforeach
-    </div>
-@else
-    {{-- Bloco Padrão (Fallback) --}}
-    <div class="signature-block" style="margin-top: 40px; text-align: center;">
-        ___________________________________<br>
-        <p style="line-height: 1.2;">
-            {{ $processo->prefeitura->autoridade_competente }} <br>
-            <span style="color: red;">[Cargo/Título Padrão - A ser ajustado]</span>
-        </p>
-    </div>
-@endif
+        </div>
+    @else
+        {{-- Bloco Padrão (Fallback) --}}
+        <div class="signature-block" style="margin-top: 40px; text-align: center;">
+            ___________________________________<br>
+            <p style="line-height: 1.2;">
+                {{ $processo->prefeitura->autoridade_competente }} <br>
+                <span style="color: red;">[Cargo/Título Padrão - A ser ajustado]</span>
+            </p>
+        </div>
+    @endif
 
 {{-- QUEBRA DE PÁGINA --}}
 <div class="page-break"></div>
@@ -289,21 +291,18 @@
     </div>
 
 
-
-    @if ($hasSelectedAssinantes)
-        {{-- Renderiza APENAS O PRIMEIRO assinante da lista --}}
-        @php
-            $primeiroAssinante = $assinantes[0]; // Pega o primeiro item
-        @endphp
-
+    @if ($hasSelectedAssinantes && !empty($assinantes))
         <div style="margin-top: 40px; text-align: center;">
-            <div class="signature-block" style="display: inline-block; margin: 0 40px;">
-                ___________________________________<br>
-                <p style="line-height: 1.2;">
-                    {{ $primeiroAssinante['responsavel'] }} <br>
-                    <span>{{ $primeiroAssinante['unidade_nome'] }}</span>
-                </p>
-            </div>
+            @foreach ($assinantes as $assinante)
+                <br>
+                <div class="signature-block" style="display: inline-block; margin: 0 40px;">
+                    ___________________________________<br>
+                    <p style="line-height: 1.2;">
+                        {{ $assinante['responsavel'] }} <br>
+                        <span>{{ $assinante['unidade_nome'] }}</span>
+                    </p>
+                </div>
+            @endforeach
         </div>
     @else
         {{-- Bloco Padrão (Fallback) --}}

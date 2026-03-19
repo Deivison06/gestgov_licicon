@@ -328,12 +328,6 @@
             </tr>
 
             <tr>
-                <td style="width: 100%; border: 1px solid #000; padding: 5px 8px; vertical-align: top;">
-                    Local(is) e horário(s) de entrega: {{ $detalhe->local_entrega ?? '' }}
-                </td>
-            </tr>
-
-            <tr>
                 <td colspan="2" style="border: 1px solid #000; padding: 5px 8px; vertical-align: top;">
                     Houve contratações anteriores?
                     @php

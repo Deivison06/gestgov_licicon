@@ -153,7 +153,7 @@
 
     <div>
         <h4 style="text-align: center;">
-            CONTRATO Nº {{ $campos['numero_contrato'] }}
+            CONTRATO Nº {{ $processo->contrato->numero_contrato}}
         </h4>
 
         <!-- Unidade Requisitante -->

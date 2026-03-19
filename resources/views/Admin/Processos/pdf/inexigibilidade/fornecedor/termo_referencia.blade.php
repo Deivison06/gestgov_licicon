@@ -646,7 +646,7 @@
         </p>
 
         <p style="text-align: justify; color: red;">
-            14.1. {{ $processo->detalhe->razao_escolha_contratado }}
+            14.1. {!! strip_tags($processo->detalhe->razao_escolha_contratado) !!}
         </p>
     </div>
     <div>

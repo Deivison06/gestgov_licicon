@@ -229,13 +229,10 @@
             Anual (LOA) e compatibilidade com o Plano Plurianual (PPA) e com a Lei de Diretrizes
             Orçamentária (LDO).
         </p>
-
-        <p>
-            CLASSIFICAÇÃO DO OBJETO: OBRAS E SERVIÇOS DE ENGENHARIA
-        </p>
         <p>
             JUSTIFICATIVA DA CONTRATAÇÃO:
-            {!! str_replace('<p>', '<p style="text-align: justify;">', $detalhe->justificativa) !!}
+            {!! strip_tags($detalhe->justificativa) !!}.
+            {{-- {!! str_replace('<p>', '<p style="text-align: justify;">', $detalhe->justificativa) !!} --}}
         </p>
 
         <p>MODALIDADE: {{ $processo->modalidade->getDisplayName() }}</p>

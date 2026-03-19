@@ -61,7 +61,11 @@
     <x-form-field name="justificativa_solucao_escolhida" label="JUSTIFICATIVA DA SOLUÇÃO ESCOLHIDA" type="textarea" rows="5" />
 
     @elseif($campo === 'especificacao_servicos_imovel')
-    <x-form-field name="especificacao_servicos_imovel" label="ESPECIFICAÇÃO DOS SERVIÇOS DO IMÓVEL" type="textarea" rows="5" />
+        @if ($processo->modalidade === \App\Enums\ModalidadeEnum::INEXIGIBILIDADE && $processo->tipo_contratacao === \App\Enums\TipoContratacaoEnum::IMOVEL)
+            <x-form-field name="especificacao_servicos_imovel" label="ESPECIFICAÇÃO DOS SERVIÇOS DO IMÓVEL" type="textarea" rows="5" />
+        @else
+            <x-form-field name="especificacao_servicos_imovel" label="ESPECIFICAÇÃO DOS SERVIÇOS" type="textarea" rows="5" disabled />
+        @endif
 
     @elseif($campo === 'razao_escolha_contratado')
     <x-form-field name="razao_escolha_contratado" label="RAZÃO DA ESCOLHA DO CONTRATADO" type="textarea" rows="5" />
@@ -168,7 +172,7 @@
     @elseif(
     $campo === 'endereco_imovel' && $processo->modalidade === \App\Enums\ModalidadeEnum::INEXIGIBILIDADE && $processo->tipo_contratacao === \App\Enums\TipoContratacaoEnum::IMOVEL)
     <x-form-field name="endereco_imovel" label="Endereço do Imóvel" />
-    
+
     @elseif($campo === 'prazo_inicio_prestacao_servico')
     <x-form-field name="prazo_inicio_prestacao_servico" label="Prazo Início Prestação Serviço" type="datetime" />
 
@@ -178,8 +182,8 @@
     @elseif($campo === 'valor_mensal' && $processo->modalidade === \App\Enums\ModalidadeEnum::INEXIGIBILIDADE && $processo->tipo_contratacao === \App\Enums\TipoContratacaoEnum::IMOVEL)
     <x-form-field name="valor_mensal" label="Valor Mensal" />
 
-    @elseif($campo === 'valor_total')
-    <x-form-field name="valor_total" label="Valor Total" />
+{{--    @elseif($campo === 'valor_total')--}}
+{{--    <x-form-field name="valor_total" label="Valor Total" />--}}
 
     {{-- Campos Radio --}}
     @elseif($campo === 'tipo_srp')
@@ -195,7 +199,7 @@
     @elseif($campo === 'objeto_continuado')
     <x-form-field name="objeto_continuado" label="Objeto Continuado?" type="radio" :options="['sim' => 'Sim', 'nao' => 'Não']" />
 
-    @elseif($campo === 'inversao_fase')
+    @elseif($campo === 'inversao_fase' && $processo->modalidade !== \App\Enums\ModalidadeEnum::INEXIGIBILIDADE)
     <x-form-field name="inversao_fase" label="Documento contém inversão de fase?" type="radio" :options="['sim' => 'Sim', 'nao' => 'Não']" />
 
     @elseif($campo === 'exigencia_garantia_proposta')
@@ -251,6 +255,9 @@
     @elseif($campo === 'anexo_pdf_analise_mercado')
     <x-form-field name="anexo_pdf_analise_mercado" label="📎 Anexar PDF à Análise de Mercado" type="file" accept="application/pdf" />
 
+    @elseif($campo === 'empresa_vencedora_pdf')
+    <x-form-field name="empresa_vencedora_pdf" label="📎 Anexar PDF à Empresa Vencedora" type="file" accept="application/pdf" />
+
     @elseif($campo === 'anexar_minuta')
     <x-form-field name="anexar_minuta" label="📎 Anexar PDF à Minutas" type="file" accept="application/pdf" />
 
@@ -276,7 +283,7 @@
     @elseif($campo === 'encaminhamento_doacao_orcamentaria')
         {{-- 🔧 MODIFICAÇÃO: Condição única para ambos os modos --}}
         @if($processo->modalidade === \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO ||
-            $processo->modalidade === \App\Enums\ModalidadeEnum::DISPENSA)
+            $processo->modalidade === \App\Enums\ModalidadeEnum::DISPENSA  || $processo->modalidade === \App\Enums\ModalidadeEnum::INEXIGIBILIDADE)
             <x-form-field name="encaminhamento_doacao_orcamentaria"
                             label="Encaminhamento para doação orçamentária"
                             type="select"
@@ -285,8 +292,13 @@
         @endif
 
 
+
     @elseif($campo === 'encaminhamento_elaborar_editais')
-    <x-form-field name="encaminhamento_elaborar_editais" label="Encaminhamento para ELABORAÇÃO DE EDITAL E MINUTA DE CONTRATO" type="select" :options="$processo->prefeitura->unidades->pluck('nome', 'nome')->toArray()" placeholder="Selecione uma unidade" />
+        @if ($processo->modalidade == \App\Enums\ModalidadeEnum::INEXIGIBILIDADE)
+            <x-form-field name="encaminhamento_elaborar_editais" label="Encaminhamento para ELABORAÇÃO DE MINUTA DE CONTRATO " type="select" :options="$processo->prefeitura->unidades->pluck('nome', 'nome')->toArray()" placeholder="Selecione uma unidade" />
+        @else
+            <x-form-field name="encaminhamento_elaborar_editais" label="Encaminhamento para ELABORAÇÃO DE EDITAL E MINUTA DE CONTRATO" type="select" :options="$processo->prefeitura->unidades->pluck('nome', 'nome')->toArray()" placeholder="Selecione uma unidade" />
+        @endif
 
     @elseif($campo === 'encaminhamento_elaborar_termo_referencia')
         <x-form-field name="encaminhamento_termo_referencia" label="Encaminhamento para ELABORAÇÃO DO TERMO DE REFERÊNCIA" type="select" :options="$processo->prefeitura->unidades->pluck('nome', 'nome')->toArray()" placeholder="Selecione uma unidade" />

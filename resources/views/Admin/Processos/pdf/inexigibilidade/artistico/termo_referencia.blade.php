@@ -544,7 +544,7 @@
             <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 14. DA RAZÃO E ESCOLHA DO CONTRATADO
         </p>
         <p style="text-align: justify;">
-            14.1. {{ $processo->detalhe->razao_escolha_contratado }}
+            14.1. {!! strip_tags($processo->detalhe->razao_escolha_contratado) !!}
         </p>
 
         <p style="display: flex; align-items: center; font-weight: bold; ">
