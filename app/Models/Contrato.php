@@ -24,4 +24,9 @@ class Contrato extends Model
     {
         return $this->belongsTo(Processo::class, 'processo_id');
     }
+
+    public function fiscalizacoes()
+    {
+        return $this->morphMany(Fiscalizacao::class, 'fiscalizavel');
+    }
 }

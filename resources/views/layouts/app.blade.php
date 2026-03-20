@@ -488,7 +488,7 @@
             .submenu {
                 padding-left: 2rem;
             }
-            
+
             .nav-subitem {
                 padding: 0.6rem 0.8rem;
                 font-size: 0.85rem;
@@ -892,8 +892,8 @@
                     ]))
 
                     @php
-                        $etpMenuActive = request()->routeIs('admin.etps.*') 
-                            || request()->routeIs('admin.etps_recebidos.*') 
+                        $etpMenuActive = request()->routeIs('admin.etps.*')
+                            || request()->routeIs('admin.etps_recebidos.*')
                             || request()->routeIs('admin.etp_itens.*');
                     @endphp
 
@@ -929,7 +929,7 @@
 
                             @endif
                         </div>
-                        
+
                     </div>
                      <a href="{{ route('admin.solicitacoes.index') }}"
                         class="nav-item {{ request()->routeIs('admin.solicitacoes.*') ? 'active' : '' }}">
@@ -948,7 +948,14 @@
                     <a href="{{ route('admin.contratos.index') }}"
                         class="nav-item {{ request()->routeIs('admin.contratos.*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-file-signature"></i>
-                        <span>Contratos</span>
+                        <span>CONTRATOS</span>
+                    </a>
+
+                    {{-- Fiscalização de Contratos visível para todos --}}
+                    <a href="{{ route('admin.fiscalizacoes.index') }}"
+                        class="nav-item {{ request()->routeIs('admin.fiscalizacoes.*') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-clipboard-check"></i>
+                        <span>FISCALIZAÇÃO</span>
                     </a>
 
                     {{-- Apenas admin/diretor/gerente --}}
@@ -966,7 +973,7 @@
                     </a>
 
                     @endif
-                   
+
                 </nav>
             </div>
 
@@ -994,11 +1001,11 @@
                 <div class="header-actions">
                     @auth
                         @if(auth()->user()->hasAnyRole(['diretor_licicon', 'gerente_licicon']))
-                            @php 
+                            @php
                                 $notifications = auth()->user()->unreadNotifications;
                                 $notifCount = $notifications->count();
                             @endphp
-                        
+
                         <div style="position: relative;">
                             <button class="notif-button {{ $notifCount > 0 ? 'active' : '' }}" id="bellToggle">
                                 <i class="fas fa-bell"></i>
@@ -1134,18 +1141,18 @@
                 toggle.addEventListener('click', function(e) {
                     e.preventDefault();
                     e.stopPropagation();
-                    
+
                     const parentItem = this.parentElement; // div.has-submenu
                     if (parentItem && parentItem.classList.contains('has-submenu')) {
                         const isOpen = parentItem.classList.contains('open');
-                        
+
                         // Fecha outros submenus
                         document.querySelectorAll('.has-submenu.open').forEach(menu => {
                             if (menu !== parentItem) {
                                 menu.classList.remove('open');
                             }
                         });
-                        
+
                         // Alterna o atual
                         parentItem.classList.toggle('open');
                     }

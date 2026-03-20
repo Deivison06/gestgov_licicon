@@ -49,6 +49,10 @@ class ContratoManual extends Model
         return $this->belongsTo(Prefeitura::class);
     }
 
+    public function fiscalizacoes()
+    {
+        return $this->morphMany(Fiscalizacao::class, 'fiscalizavel');
+    }
 
     protected static function booted()
     {
