@@ -312,17 +312,22 @@
                 </div>
             </div>
 
-            <p class="mt-3 text-sm text-gray-500">
-                <i class="mr-1 fas fa-info-circle text-blue-500"></i>
-                Não encontrou o contrato?
-                <a href="{{ route('admin.contratos.create') }}" target="_blank" class="text-[#009496] hover:underline font-medium">
-                    <i class="fas fa-plus-circle mr-1"></i>Cadastrar novo contrato
+            <div id="helper_cadastrar_contrato" class="mt-3 flex items-center justify-between px-2">
+                <p class="text-sm text-gray-500 italic">
+                    <i class="mr-1 fas fa-info-circle text-blue-500"></i>
+                    Não encontrou o contrato na lista?
+                </p>
+                <a href="{{ route('admin.contratos.create') }}" target="_blank"
+                class="text-xs bg-gray-100 hover:bg-gray-200 text-[#009496] px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-2 border border-gray-200">
+                    <i class="fas fa-plus-circle"></i> Cadastrar Novo Contrato
                 </a>
-            </p>
+            </div>
 
             {{-- Hidden fields para o polimorfismo --}}
-            <input type="hidden" name="fiscalizavel_id" id="fiscalizavel_id" value="{{ old('fiscalizavel_id') }}">
-            <input type="hidden" name="fiscalizavel_type" id="fiscalizavel_type" value="{{ old('fiscalizavel_type') }}">
+            <input type="hidden" name="fiscalizavel_id" id="fiscalizavel_id"
+                value="{{ old('fiscalizavel_id', $contratoPreSelecionado['id_puro'] ?? '') }}">
+            <input type="hidden" name="fiscalizavel_type" id="fiscalizavel_type"
+                value="{{ old('fiscalizavel_type', $contratoPreSelecionado['type_puro'] ?? '') }}">
         </div>
 
         {{-- ============================================================ --}}
@@ -561,8 +566,8 @@
         {{-- BOTÕES DE AÇÃO                                              --}}
         {{-- ============================================================ --}}
         <div class="flex justify-end gap-3 pt-6">
-            <a href="{{ route('admin.fiscalizacoes.index') }}"
-               class="flex items-center justify-center px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors bg-gray-100 rounded-lg hover:bg-gray-200 shadow-sm">
+            <a href="{{ request()->has('id') ? route('admin.fiscalizacoes.selecionar-contrato') : route('admin.fiscalizacoes.index') }}"
+                class="flex items-center justify-center px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors bg-gray-100 rounded-lg hover:bg-gray-200 shadow-sm">
                 <i class="mr-2 fas fa-times"></i>
                 Cancelar
             </a>
@@ -596,9 +601,31 @@ document.addEventListener('DOMContentLoaded', function () {
     const chipRemove        = document.getElementById('chipRemove');
     const fiscalizavelId    = document.getElementById('fiscalizavel_id');
     const fiscalizavelType  = document.getElementById('fiscalizavel_type');
+    const helperCadastrar   = document.getElementById('helper_cadastrar_contrato'); // Adicione esta
 
     const SEARCH_URL = @json(route('admin.fiscalizacoes.buscar-contratos'));
     const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    const preSelecionado = @json($contratoPreSelecionado);
+
+    if (preSelecionado) {
+        console.log('💡 Aplicando pré-seleção da Lobby...');
+
+        if (helperCadastrar) helperCadastrar.style.display = 'none';
+
+        selecionarContrato({
+            id: preSelecionado.id_puro + '|' + preSelecionado.type_puro,
+            numero_contrato: preSelecionado.numero_contrato,
+            objeto: preSelecionado.objeto,
+            secretaria: preSelecionado.secretaria,
+            modalidade: preSelecionado.modalidade,
+            razao_social: preSelecionado.razao_social,
+            cnpj: preSelecionado.cnpj,
+            endereco: preSelecionado.endereco,
+            representante: preSelecionado.representante,
+            origem: preSelecionado.origem
+        });
+    }
 
     let debounceTimer = null;
     let currentAbortController = null;
@@ -633,10 +660,8 @@ document.addEventListener('DOMContentLoaded', function () {
     searchInput.addEventListener('input', function () {
         const termo = this.value.trim();
 
-        // Mostrar botão de limpar
         clearBtn.classList.toggle('active', termo.length > 0);
 
-        // Cancelar requisição anterior
         if (currentAbortController) {
             currentAbortController.abort();
         }
@@ -648,7 +673,6 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        // Debounce de 350ms
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(function () {
             buscarContratos(termo);
@@ -721,20 +745,20 @@ document.addEventListener('DOMContentLoaded', function () {
             const badgeText = isManual ? 'Manual' : 'Sistema';
 
             html += `
-                <div class="search-result-item" data-contrato='${JSON.stringify(item)}' 
+                <div class="search-result-item" data-contrato='${JSON.stringify(item)}'
                      style="padding: 14px 16px; border-left: 4px solid transparent; transition: all 0.2s;">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
                         <span style="font-weight: 700; color: #115e59; font-size: 0.95rem;">
-                            <i class="fas fa-file-signature mr-1" style="color: #009496;"></i> 
+                            <i class="fas fa-file-signature mr-1" style="color: #009496;"></i>
                             ${escapeHtml(item.numero_contrato || 'S/N')}
                         </span>
                         <span class="badge-origem ${badgeClass}" style="font-size: 0.6rem; padding: 1px 8px;">${badgeText}</span>
                     </div>
-                    
+
                     <div style="font-size: 0.82rem; color: #374151; font-weight: 500; margin-bottom: 8px; line-height: 1.4;">
                         ${escapeHtml(truncate(item.objeto, 100))}
                     </div>
-                    
+
                     <div style="display: grid; grid-template-columns: 1fr; gap: 4px; padding-top: 8px; border-top: 1px solid #f3f4f6;">
                         <div class="result-detail" style="margin: 0;">
                             <i class="fas fa-building" style="color: #64748b; font-size: 0.75rem;"></i>
@@ -759,12 +783,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         searchResults.innerHTML = html;
         searchResults.classList.add('active');
-
-        // Adicionar efeito visual de hover via JS para manter limpo
         searchResults.querySelectorAll('.search-result-item').forEach(function (el) {
             el.addEventListener('mouseenter', () => el.style.borderLeftColor = '#009496');
             el.addEventListener('mouseleave', () => el.style.borderLeftColor = 'transparent');
-            
+
             el.addEventListener('click', function () {
                 const data = JSON.parse(this.getAttribute('data-contrato'));
                 selecionarContrato(data);
@@ -778,12 +800,10 @@ document.addEventListener('DOMContentLoaded', function () {
     function selecionarContrato(data) {
         console.log('✅ Contrato selecionado:', data);
 
-        // Extrair id e type do campo id composto (ex: "5|App\\Models\\ContratoManual")
         const parts = data.id.split('|');
         fiscalizavelId.value = parts[0];
         fiscalizavelType.value = parts[1];
 
-        // Preencher dados readonly
         document.getElementById('info_secretaria').value = data.secretaria || '—';
         document.getElementById('info_numero_contrato').value = data.numero_contrato || '—';
         document.getElementById('info_numero_processo').value = data.numero_processo || '—';
@@ -807,6 +827,8 @@ document.addEventListener('DOMContentLoaded', function () {
         searchResults.classList.remove('active');
         searchInput.value = '';
         clearBtn.classList.remove('active');
+
+        if (helperCadastrar) helperCadastrar.style.display = 'none';
     }
 
     // ==========================================================
@@ -818,7 +840,6 @@ document.addEventListener('DOMContentLoaded', function () {
         fiscalizavelId.value = '';
         fiscalizavelType.value = '';
 
-        // Limpar campos readonly
         ['info_secretaria', 'info_numero_contrato', 'info_numero_processo', 'info_objeto',
          'info_modalidade', 'info_razao_social', 'info_cnpj', 'info_endereco', 'info_representante']
             .forEach(function (id) { document.getElementById(id).value = ''; });
@@ -829,6 +850,8 @@ document.addEventListener('DOMContentLoaded', function () {
         selectedChip.classList.remove('active');
         searchInputCont.style.display = 'block';
         searchInput.focus();
+
+        if (helperCadastrar) helperCadastrar.style.display = 'flex';
     }
 
     chipRemove.addEventListener('click', removerContrato);
@@ -841,7 +864,6 @@ document.addEventListener('DOMContentLoaded', function () {
         clearBtn.classList.remove('active');
     });
 
-    // Fechar dropdown ao clicar fora
     document.addEventListener('click', function (e) {
         if (!e.target.closest('#searchWrapper')) {
             searchResults.classList.remove('active');

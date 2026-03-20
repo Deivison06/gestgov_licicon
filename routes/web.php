@@ -32,6 +32,7 @@ Route::prefix('admin/fiscalizacoes')->name('admin.fiscalizacoes.')->middleware([
     Route::put('/{id}', [FiscalizacaoController::class, 'update'])->name('update');
     Route::delete('/{id}', [FiscalizacaoController::class, 'destroy'])->name('destroy');
     Route::get('/{id}/pdf', [FiscalizacaoController::class, 'gerarRelatorio'])->name('pdf');
+    Route::get('fiscalizacoes/selecionar-contrato', [FiscalizacaoController::class, 'selecionarContrato'])->name('selecionar-contrato');
 });
 
 // ================================================

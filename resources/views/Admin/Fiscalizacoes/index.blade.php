@@ -13,8 +13,8 @@
                 <i class="fas fa-clipboard-check text-[#009496] mr-2"></i>Fiscalizações Cadastradas
             </h3>
         </div>
-        <a href="{{ route('admin.fiscalizacoes.create') }}"
-           class="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white transition-colors bg-[#009496] rounded-lg hover:bg-[#244853] shadow-sm">
+        <a href="{{ route('admin.fiscalizacoes.selecionar-contrato') }}"
+            class="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white transition-colors bg-[#009496] rounded-lg hover:bg-[#244853] shadow-sm">
             <i class="fas fa-plus"></i> Nova Fiscalização
         </a>
     </div>
