@@ -30,12 +30,12 @@ Route::prefix('admin/fiscalizacoes')
         Route::get('/', [FiscalizacaoController::class, 'index'])->name('index');
         Route::get('/create', [FiscalizacaoController::class, 'create'])->name('create');
         Route::post('/', [FiscalizacaoController::class, 'store'])->name('store');
+        Route::get('/selecionar-contrato', [FiscalizacaoController::class, 'selecionarContrato'])->name('selecionar-contrato');
         Route::get('/{id}', [FiscalizacaoController::class, 'show'])->name('show');
         Route::get('/{id}/edit', [FiscalizacaoController::class, 'edit'])->name('edit');
         Route::put('/{id}', [FiscalizacaoController::class, 'update'])->name('update');
         Route::delete('/{id}', [FiscalizacaoController::class, 'destroy'])->name('destroy');
         Route::get('/{id}/pdf', [FiscalizacaoController::class, 'gerarRelatorio'])->name('pdf');
-        Route::get('/selecionar-contrato', [FiscalizacaoController::class, 'selecionarContrato'])->name('selecionar-contrato');
 });
 
 // ================================================

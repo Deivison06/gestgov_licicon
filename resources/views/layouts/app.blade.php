@@ -951,13 +951,14 @@
                         <span>CONTRATOS</span>
                     </a>
 
-                    {{-- Fiscalização de Contratos visível para todos --}}
-                    <a href="{{ route('admin.fiscalizacoes.index') }}"
-                        class="nav-item {{ request()->routeIs('admin.fiscalizacoes.*') ? 'active' : '' }}">
-                        <i class="nav-icon fas fa-clipboard-check"></i>
-                        <span>FISCALIZAÇÃO</span>
-                    </a>
-
+                    {{-- Fiscalização de Contratos visível apenas para quem tem a permissão --}}
+                    @can('fiscalizar contratos')
+                        <a href="{{ route('admin.fiscalizacoes.index') }}"
+                            class="nav-item {{ request()->routeIs('admin.fiscalizacoes.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-clipboard-check"></i>
+                            <span>FISCALIZAÇÃO</span>
+                        </a>
+                    @endcan
                     {{-- Apenas admin/diretor/gerente --}}
                     @if(auth()->user()->hasAnyRole(['diretor_licicon', 'gerente_licicon']))
                     <a href="{{ route('admin.prefeituras.index') }}"
