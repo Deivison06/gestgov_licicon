@@ -54,6 +54,20 @@
                     </select>
                 </div>
             @endif
+            {{-- Filtro de Unidade --}}
+            <div class="min-w-[200px]" id="div_unidade_filtro">
+                <label class="block text-xs font-medium text-gray-500 mb-1">Secretaria/Unidade</label>
+                <select name="unidade_id" id="unidade_id_filtro"
+                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496]">
+                    <option value="">Todas</option>
+                    @foreach($unidades as $un)
+                        <option value="{{ $un->id }}" data-prefeitura="{{ $un->prefeitura_id }}" 
+                            {{ request('unidade_id') == $un->id ? 'selected' : '' }}>
+                            {{ $un->nome }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
             <div class="flex gap-2">
                 <button type="submit"
                         class="px-4 py-2 text-sm font-medium text-white bg-[#009496] rounded-lg hover:bg-[#244853] transition-colors">
@@ -150,6 +164,31 @@
 </div>
 
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const prefeituraSelect = document.querySelector('select[name="prefeitura_id"]');
+    const unidadeSelect = document.getElementById('unidade_id_filtro');
+    
+    if (prefeituraSelect && unidadeSelect) {
+        const unidadeOptions = Array.from(unidadeSelect.options);
+
+        function filterUnidades() {
+            const prefeituraId = prefeituraSelect.value;
+            const currentVal = unidadeSelect.value;
+
+            unidadeSelect.innerHTML = '<option value="">Todas</option>';
+            unidadeOptions.forEach(opt => {
+                if (opt.value === "" || opt.dataset.prefeitura === prefeituraId) {
+                    unidadeSelect.appendChild(opt);
+                }
+            });
+            unidadeSelect.value = currentVal;
+        }
+
+        prefeituraSelect.addEventListener('change', filterUnidades);
+        if (prefeituraSelect.value) filterUnidades();
+    }
+});
+
 function confirmarExclusao(event) {
     event.preventDefault();
     Swal.fire({

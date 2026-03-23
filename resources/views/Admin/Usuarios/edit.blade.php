@@ -169,46 +169,43 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Elementos para a lógica de Prefeitura/Role
     const roleInputs = document.querySelectorAll('input[name="role"]');
     const prefeituraSelect = document.getElementById('prefeitura_id');
-    const prefeituraInfo = document.getElementById('prefeitura-info');
-
-    // Elementos para a lógica de Unidade/Secretaria
     const unidadeSelect = document.getElementById('unidade_id');
     const divUnidade = document.getElementById('div_unidade_id');
+    const divPrefeitura = prefeituraSelect.closest('div');
     const unidadeOptions = Array.from(unidadeSelect.options);
 
-    // 1. Lógica de Obrigatoriedade da Prefeitura baseada na Role
-    function togglePrefeituraRequired() {
-        const selectedRole = Array.from(roleInputs).find(input => input.checked);
-        if (selectedRole) {
-            const label = document.querySelector(`label[for="${selectedRole.id}"]`);
-            const roleName = label ? label.textContent.trim().toLowerCase() : '';
-            if (roleName === 'prefeitura') {
-                prefeituraSelect.setAttribute('required', 'required');
-                if (prefeituraInfo) prefeituraInfo.style.display = 'block';
-            } else {
-                prefeituraSelect.removeAttribute('required');
-                if (prefeituraInfo) prefeituraInfo.style.display = 'none';
-            }
-        }
+    function getSelectedRoleName() {
+        const selected = Array.from(roleInputs).find(input => input.checked);
+        if (!selected) return '';
+        const label = document.querySelector(`label[for="${selected.id}"]`);
+        return label ? label.textContent.trim().toLowerCase() : '';
     }
 
-    // 2. Lógica de Visibilidade da Unidade baseada na Permissão
-    function getFiscalizarCheckbox() {
-        return Array.from(document.querySelectorAll('input[name="permissions[]"]'))
+    function toggleInterface() {
+        const roleName = getSelectedRoleName();
+        const isAdmin = roleName.includes('diretor') || roleName.includes('gerente');
+        
+        if (isAdmin || roleName === '') {
+            divPrefeitura.style.display = 'none';
+            prefeituraSelect.value = '';
+            prefeituraSelect.removeAttribute('required');
+        } else {
+            divPrefeitura.style.display = 'block';
+            if (roleName === 'prefeitura') prefeituraSelect.setAttribute('required', 'required');
+        }
+
+        const fiscalCheck = Array.from(document.querySelectorAll('input[name="permissions[]"]'))
             .find(cb => {
                 const label = document.querySelector(`label[for="${cb.id}"]`);
                 return label && label.textContent.trim().toLowerCase().includes('fiscalizar contratos');
             });
-    }
 
-    function toggleUnidadeVisibility() {
-        const cb = getFiscalizarCheckbox();
-        if (cb && cb.checked) {
+        if (fiscalCheck && fiscalCheck.checked && !isAdmin) {
             divUnidade.style.display = 'block';
             unidadeSelect.setAttribute('required', 'required');
+            filterUnidades();
         } else {
             divUnidade.style.display = 'none';
             unidadeSelect.removeAttribute('required');
@@ -216,34 +213,25 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // 3. Lógica de Filtragem de Unidades baseada na Prefeitura
     function filterUnidades() {
         const prefeituraId = prefeituraSelect.value;
-        const currentUnidade = unidadeSelect.value; 
-        
+        const currentUnidade = unidadeSelect.value;
         unidadeSelect.innerHTML = '<option value="">Selecione uma unidade</option>';
-        
         unidadeOptions.forEach(opt => {
             if (opt.dataset.prefeitura === prefeituraId || opt.value === "") {
                 unidadeSelect.appendChild(opt);
             }
         });
-
         unidadeSelect.value = currentUnidade;
     }
 
-    // Listeners
-    roleInputs.forEach(input => input.addEventListener('change', togglePrefeituraRequired));
+    roleInputs.forEach(input => input.addEventListener('change', toggleInterface));
     prefeituraSelect.addEventListener('change', filterUnidades);
-    
     document.querySelectorAll('input[name="permissions[]"]').forEach(cb => {
-        cb.addEventListener('change', toggleUnidadeVisibility);
+        cb.addEventListener('change', toggleInterface);
     });
 
-    // Inicialização ao carregar a página
-    togglePrefeituraRequired();
-    filterUnidades();
-    toggleUnidadeVisibility();
+    toggleInterface(); 
 });
 </script>
 @endsection

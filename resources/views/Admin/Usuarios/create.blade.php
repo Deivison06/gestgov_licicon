@@ -152,25 +152,43 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const roleInputs = document.querySelectorAll('input[name="role"]');
     const prefeituraSelect = document.getElementById('prefeitura_id');
     const unidadeSelect = document.getElementById('unidade_id');
     const divUnidade = document.getElementById('div_unidade_id');
+    const divPrefeitura = prefeituraSelect.closest('div');
     const unidadeOptions = Array.from(unidadeSelect.options);
 
-    // Função para encontrar a checkbox de "fiscalizar contratos"
-    function getFiscalizarCheckbox() {
-        return Array.from(document.querySelectorAll('input[name="permissions[]"]'))
-            .find(cb => {
-                const label = document.querySelector(`label[for="${cb.id}"]`);
-                return label && label.textContent.trim().toLowerCase() === 'fiscalizar contratos';
-            });
+    function getSelectedRoleName() {
+        const selected = Array.from(roleInputs).find(input => input.checked);
+        if (!selected) return '';
+        const label = document.querySelector(`label[for="${selected.id}"]`);
+        return label ? label.textContent.trim().toLowerCase() : '';
     }
 
-    function toggleUnidadeVisibility() {
-        const cb = getFiscalizarCheckbox();
-        if (cb && cb.checked) {
+    function toggleInterface() {
+        const roleName = getSelectedRoleName();
+        const isAdmin = roleName.includes('diretor') || roleName.includes('gerente');
+        
+        if (isAdmin || roleName === '') {
+            divPrefeitura.style.display = 'none';
+            prefeituraSelect.value = '';
+            prefeituraSelect.removeAttribute('required');
+        } else {
+            divPrefeitura.style.display = 'block';
+            if (roleName === 'prefeitura') prefeituraSelect.setAttribute('required', 'required');
+        }
+
+        const fiscalCheck = Array.from(document.querySelectorAll('input[name="permissions[]"]'))
+            .find(cb => {
+                const label = document.querySelector(`label[for="${cb.id}"]`);
+                return label && label.textContent.trim().toLowerCase().includes('fiscalizar contratos');
+            });
+
+        if (fiscalCheck && fiscalCheck.checked && !isAdmin) {
             divUnidade.style.display = 'block';
             unidadeSelect.setAttribute('required', 'required');
+            filterUnidades();
         } else {
             divUnidade.style.display = 'none';
             unidadeSelect.removeAttribute('required');
@@ -180,25 +198,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function filterUnidades() {
         const prefeituraId = prefeituraSelect.value;
+        const currentUnidade = unidadeSelect.value;
         unidadeSelect.innerHTML = '<option value="">Selecione uma unidade</option>';
-        
         unidadeOptions.forEach(opt => {
             if (opt.dataset.prefeitura === prefeituraId || opt.value === "") {
                 unidadeSelect.appendChild(opt);
             }
         });
+        unidadeSelect.value = currentUnidade;
     }
 
-    // Listeners
+    roleInputs.forEach(input => input.addEventListener('change', toggleInterface));
     prefeituraSelect.addEventListener('change', filterUnidades);
-    
     document.querySelectorAll('input[name="permissions[]"]').forEach(cb => {
-        cb.addEventListener('change', toggleUnidadeVisibility);
+        cb.addEventListener('change', toggleInterface);
     });
 
-    // Inicialização
-    filterUnidades();
-    toggleUnidadeVisibility();
+    toggleInterface();
 });
 </script>
 @endsection

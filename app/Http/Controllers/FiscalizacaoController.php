@@ -32,18 +32,53 @@ class FiscalizacaoController extends Controller
         $user = auth()->user();
         $userPrefeituraId = $user->prefeitura_id;
         $isPrefeituraUser = $user->hasRole('prefeitura') && $userPrefeituraId;
+        $isLiciconAdmin = $user->hasAnyRole(['diretor_licicon', 'gerente_licicon']);
 
-        $query = Fiscalizacao::with(['fiscalizavel', 'prefeitura', 'user'])
-            ->latest();
+        $query = Fiscalizacao::with(['fiscalizavel', 'prefeitura', 'user'])->latest();
 
-        if ($user->unidade_id) {
+        if ($user->unidade_id && !$isLiciconAdmin) {
             $query->whereHasMorph('fiscalizavel', [ContratoManual::class, Contrato::class], function ($q, $type) use ($user) {
                 if ($type === ContratoManual::class) {
                     $q->where('unidade_id', $user->unidade_id);
                 } else {
-                    $q->whereHas('processo', function($proc) use ($user) {
-                        $proc->where('unidade_id', $user->unidade_id); 
-                    });
+                    $q->whereHas('processo', fn($proc) => $proc->where('unidade_id', $user->unidade_id));
+                }
+            });
+        }
+
+        if ($isPrefeituraUser) {
+            $prefeituras = Prefeitura::where('id', $userPrefeituraId)->get();
+            $unidades = Unidade::where('prefeitura_id', $userPrefeituraId)->orderBy('nome')->get();
+        } else {
+            $prefeituras = Prefeitura::orderBy('nome')->get();
+            $unidades = Unidade::orderBy('nome')->get(); 
+        }
+
+        if ($user->unidade_id && !$isLiciconAdmin) {
+            $query->whereHasMorph('fiscalizavel', [ContratoManual::class, Contrato::class], function ($q, $type) use ($user) {
+                if ($type === ContratoManual::class) {
+                    $q->where('unidade_id', $user->unidade_id);
+                } else {
+                    $q->whereHas('processo', fn($proc) => $proc->where('unidade_id', $user->unidade_id));
+                }
+            });
+        }
+
+        if ($isPrefeituraUser) {
+            $prefeituras = Prefeitura::where('id', $userPrefeituraId)->get();
+            $unidades = Unidade::where('prefeitura_id', $userPrefeituraId)->orderBy('nome')->get();
+        } else {
+            $prefeituras = Prefeitura::orderBy('nome')->get();
+            $unidades = Unidade::orderBy('nome')->get(); 
+        }
+
+        if ($request->filled('unidade_id')) {
+            $unidadeId = $request->unidade_id;
+            $query->whereHasMorph('fiscalizavel', [ContratoManual::class, Contrato::class], function ($q, $type) use ($unidadeId) {
+                if ($type === ContratoManual::class) {
+                    $q->where('unidade_id', $unidadeId);
+                } else {
+                    $q->whereHas('processo', fn($proc) => $proc->where('unidade_id', $unidadeId));
                 }
             });
         }
@@ -87,6 +122,7 @@ class FiscalizacaoController extends Controller
             'fiscalizacoes',
             'tiposFiscalizacao',
             'prefeituras',
+            'unidades',
             'isPrefeituraUser'
         ));
     }
