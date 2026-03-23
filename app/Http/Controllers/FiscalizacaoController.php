@@ -25,10 +25,6 @@ class FiscalizacaoController extends Controller
     // =========================================================
     public function index(Request $request)
     {
-        if (!auth()->user()->can('fiscalizar contratos')) {
-            abort(403, 'Acesso negado.');
-        }
-        
         $user = auth()->user();
         $userPrefeituraId = $user->prefeitura_id;
         $isPrefeituraUser = $user->hasRole('prefeitura') && $userPrefeituraId;
@@ -36,49 +32,37 @@ class FiscalizacaoController extends Controller
 
         $query = Fiscalizacao::with(['fiscalizavel', 'prefeitura', 'user'])->latest();
 
+        // 1. ISOLAMENTO DE UNIDADE (Fiscais Restritos)
+        // Usa a tabela explícita ou relação com User criador do processo para evitar erro 1054
         if ($user->unidade_id && !$isLiciconAdmin) {
             $query->whereHasMorph('fiscalizavel', [ContratoManual::class, Contrato::class], function ($q, $type) use ($user) {
                 if ($type === ContratoManual::class) {
-                    $q->where('unidade_id', $user->unidade_id);
+                    $q->where('contratos_manuais.unidade_id', $user->unidade_id);
                 } else {
-                    $q->whereHas('processo', fn($proc) => $proc->where('unidade_id', $user->unidade_id));
+                    $q->whereHas('processo.user', function($u) use ($user) {
+                        $u->where('unidade_id', $user->unidade_id);
+                    });
                 }
             });
         }
 
-        if ($isPrefeituraUser) {
-            $prefeituras = Prefeitura::where('id', $userPrefeituraId)->get();
-            $unidades = Unidade::where('prefeitura_id', $userPrefeituraId)->orderBy('nome')->get();
-        } else {
-            $prefeituras = Prefeitura::orderBy('nome')->get();
-            $unidades = Unidade::orderBy('nome')->get(); 
-        }
+        // 2. BUSCA DE DADOS PARA FILTROS
+        $prefeituras = $isPrefeituraUser
+            ? Prefeitura::where('id', $userPrefeituraId)->get()
+            : Prefeitura::orderBy('nome')->get();
 
-        if ($user->unidade_id && !$isLiciconAdmin) {
-            $query->whereHasMorph('fiscalizavel', [ContratoManual::class, Contrato::class], function ($q, $type) use ($user) {
-                if ($type === ContratoManual::class) {
-                    $q->where('unidade_id', $user->unidade_id);
-                } else {
-                    $q->whereHas('processo', fn($proc) => $proc->where('unidade_id', $user->unidade_id));
-                }
-            });
-        }
+        $unidades = $isPrefeituraUser
+            ? Unidade::where('prefeitura_id', $userPrefeituraId)->orderBy('nome')->get()
+            : Unidade::orderBy('nome')->get();
 
-        if ($isPrefeituraUser) {
-            $prefeituras = Prefeitura::where('id', $userPrefeituraId)->get();
-            $unidades = Unidade::where('prefeitura_id', $userPrefeituraId)->orderBy('nome')->get();
-        } else {
-            $prefeituras = Prefeitura::orderBy('nome')->get();
-            $unidades = Unidade::orderBy('nome')->get(); 
-        }
-
+        // 3. FILTRO DE UNIDADE VIA REQUEST (Seleção na tela)
         if ($request->filled('unidade_id')) {
-            $unidadeId = $request->unidade_id;
-            $query->whereHasMorph('fiscalizavel', [ContratoManual::class, Contrato::class], function ($q, $type) use ($unidadeId) {
+            $unidadeFiltro = $request->unidade_id;
+            $query->whereHasMorph('fiscalizavel', [ContratoManual::class, Contrato::class], function ($q, $type) use ($unidadeFiltro) {
                 if ($type === ContratoManual::class) {
-                    $q->where('unidade_id', $unidadeId);
+                    $q->where('contratos_manuais.unidade_id', $unidadeFiltro);
                 } else {
-                    $q->whereHas('processo', fn($proc) => $proc->where('unidade_id', $unidadeId));
+                    $q->whereHas('processo.user', fn($u) => $u->where('unidade_id', $unidadeFiltro));
                 }
             });
         }
@@ -111,12 +95,6 @@ class FiscalizacaoController extends Controller
         });
 
         $tiposFiscalizacao = TipoFiscalizacaoEnum::cases();
-
-        if ($isPrefeituraUser) {
-            $prefeituras = Prefeitura::where('id', $userPrefeituraId)->get();
-        } else {
-            $prefeituras = Prefeitura::orderBy('nome')->get();
-        }
 
         return view('Admin.Fiscalizacoes.index', compact(
             'fiscalizacoes',
@@ -373,7 +351,6 @@ class FiscalizacaoController extends Controller
         if (!$texto) return '—';
 
         $texto = html_entity_decode($texto, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-
         $texto = strip_tags($texto);
 
         return trim(preg_replace('/\s+/', ' ', $texto));
@@ -386,6 +363,7 @@ class FiscalizacaoController extends Controller
     {
         $user = auth()->user();
         $termo = $request->get('q', '');
+        $isLiciconAdmin = $user->hasAnyRole(['diretor_licicon', 'gerente_licicon']);
 
         if (strlen($termo) < 2) {
             return response()->json(['results' => []]);
@@ -396,7 +374,7 @@ class FiscalizacaoController extends Controller
         // 1. FILTRO CONTRATOS MANUAIS
         $contratosManual = ContratoManual::with(['empresa', 'secretaria'])
             ->where('prefeitura_id', $user->prefeitura_id)
-            ->when($user->unidade_id, function($q) use ($user) {
+            ->when($user->unidade_id && !$isLiciconAdmin, function($q) use ($user) {
                 return $q->where('unidade_id', $user->unidade_id);
             })
             ->where(function ($q) use ($termo) {
@@ -410,7 +388,7 @@ class FiscalizacaoController extends Controller
         foreach ($contratosManual as $cm) {
             $resultados[] = [
                 'id'               => $cm->id . '|App\\Models\\ContratoManual',
-                'text'             => ($cm->numero_contrato ?: 'S/N') . ' — ' . \Str::limit($this->limparHtml($cm->objeto), 60) . ' (' . ($cm->empresa?->razao_social ?? 'Sem empresa') . ')',
+                'text'             => ($cm->numero_contrato ?: 'S/N') . ' — ' . Str::limit($this->limparHtml($cm->objeto), 60) . ' (' . ($cm->empresa?->razao_social ?? 'Sem empresa') . ')',
                 'numero_contrato'  => $cm->numero_contrato,
                 'objeto'           => $this->limparHtml($cm->objeto),
                 'numero_processo'  => $cm->numero_processo,
@@ -428,9 +406,9 @@ class FiscalizacaoController extends Controller
         $processos = Processo::with(['contrato', 'vencedores', 'prefeitura', 'detalhe'])
             ->has('contrato')
             ->where('prefeitura_id', $user->prefeitura_id)
-            ->when($user->unidade_id, function($q) use ($user) {
-                // Aplica o filtro se o processo tiver unidade_id ou via detalhe
-                return $q->where('unidade_id', $user->unidade_id); 
+            ->when($user->unidade_id && !$isLiciconAdmin, function($q) use ($user) {
+                // Filtra através do usuário criador do processo
+                return $q->whereHas('user', fn($u) => $u->where('unidade_id', $user->unidade_id));
             })
             ->where(function ($q) use ($termo) {
                 $q->where('numero_processo', 'LIKE', "%{$termo}%")
@@ -451,12 +429,12 @@ class FiscalizacaoController extends Controller
             $vencedor = $proc->vencedores->first();
             $resultados[] = [
                 'id'               => $proc->contrato?->id . '|App\\Models\\Contrato',
-                'text'             => ($proc->contrato?->numero_contrato ?: 'S/N') . ' — ' . \Str::limit($this->limparHtml($proc->objeto), 60) . ' (' . ($vencedor?->razao_social ?? 'Sem empresa') . ')',
+                'text'             => ($proc->contrato?->numero_contrato ?: 'S/N') . ' — ' . Str::limit($this->limparHtml($proc->objeto), 60) . ' (' . ($vencedor?->razao_social ?? 'Sem empresa') . ')',
                 'numero_contrato'  => $proc->contrato?->numero_contrato,
                 'objeto'           => $this->limparHtml($proc->objeto),
                 'numero_processo'  => $proc->numero_processo,
                 'modalidade'       => $proc->modalidade?->getDisplayName() ?? '—',
-                'secretaria'       => $proc->detalhe?->unidade_numeracao ?? $proc->prefeitura?->nome ?? '—',
+                'secretaria'       => $proc->unidade_numeracao ?? $proc->detalhe?->secretaria ?? '—',
                 'razao_social'     => $vencedor?->razao_social ?? '—',
                 'cnpj'             => $vencedor?->cnpj_formatado ?? $vencedor?->cpf_formatado ?? '—',
                 'endereco'         => $vencedor?->endereco ?? '—',
@@ -485,13 +463,13 @@ class FiscalizacaoController extends Controller
 
         if ($user->unidade_id) {
             $fiscalizavel = $fiscalizacao->fiscalizavel;
-            
+
             if ($fiscalizavel instanceof ContratoManual) {
                 if ($fiscalizavel->unidade_id != $user->unidade_id) {
                     abort(403, 'Acesso negado: Este contrato manual pertence a outra unidade.');
                 }
             } elseif ($fiscalizavel instanceof Contrato) {
-                if ($fiscalizavel->processo->unidade_id != $user->unidade_id) {
+                if ($fiscalizavel->processo->user->unidade_id != $user->unidade_id) {
                     abort(403, 'Acesso negado: Este contrato do sistema pertence a outra unidade.');
                 }
             }
@@ -565,7 +543,7 @@ class FiscalizacaoController extends Controller
                 'objeto'          => $this->limparHtml($processo->objeto),
                 'numero_processo' => $processo->numero_processo ?? '—',
                 'modalidade'      => $processo->modalidade?->getDisplayName() ?? '—',
-                'secretaria'      => $processo->detalhe->unidade_numeracao ?? $processo->prefeitura->nome ?? '—',
+                'secretaria'      => $processo->unidade_numeracao ?? $processo->detalhe?->secretaria ?? '—',
                 'razao_social'    => $vencedor?->razao_social ?? '—',
                 'cnpj'            => $vencedor?->cnpj_formatado ?? $vencedor?->cpf_formatado ?? '—',
                 'endereco'        => $vencedor?->endereco ?? '—',
@@ -613,11 +591,12 @@ class FiscalizacaoController extends Controller
     public function selecionarContrato(Request $request)
     {
         $user = auth()->user();
+        $isLiciconAdmin = $user->hasAnyRole(['diretor_licicon', 'gerente_licicon']);
         $prefeituraId = $user->prefeitura_id;
 
         $manuais = ContratoManual::with(['empresa', 'fiscalizacoes'])
             ->where('prefeitura_id', $prefeituraId)
-            ->when($user->unidade_id, function($q) use ($user) {
+            ->when($user->unidade_id && !$isLiciconAdmin, function($q) use ($user) {
                 return $q->where('unidade_id', $user->unidade_id);
             })
             ->get()
@@ -636,11 +615,12 @@ class FiscalizacaoController extends Controller
                 ];
             });
 
-        $sistema = Processo::with(['contrato.fiscalizacoes' => function($q) {
-                $q->latest('data_fiscalizacao');
-            }, 'vencedores'])
+        $sistema = Processo::with(['contrato.fiscalizacoes', 'vencedores'])
             ->has('contrato')
             ->where('prefeitura_id', $prefeituraId)
+            ->when($user->unidade_id && !$isLiciconAdmin, function($q) use ($user) {
+                return $q->whereHas('user', fn($u) => $u->where('unidade_id', $user->unidade_id));
+            })
             ->get()
             ->map(function ($item) {
                 $vencedor = $item->vencedores->first();

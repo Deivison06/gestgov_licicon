@@ -13,10 +13,12 @@
                 <i class="fas fa-clipboard-check text-[#009496] mr-2"></i>Fiscalizações Cadastradas
             </h3>
         </div>
-        <a href="{{ route('admin.fiscalizacoes.selecionar-contrato') }}"
-            class="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white transition-colors bg-[#009496] rounded-lg hover:bg-[#244853] shadow-sm">
-            <i class="fas fa-plus"></i> Nova Fiscalização
-        </a>
+        @can('fiscalizar contratos')
+            <a href="{{ route('admin.fiscalizacoes.selecionar-contrato') }}"
+                class="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white transition-colors bg-[#009496] rounded-lg hover:bg-[#244853] shadow-sm">
+                <i class="fas fa-plus"></i> Nova Fiscalização
+            </a>
+        @endcan
     </div>
 
     {{-- Filtros --}}
@@ -61,7 +63,7 @@
                         class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496]">
                     <option value="">Todas</option>
                     @foreach($unidades as $un)
-                        <option value="{{ $un->id }}" data-prefeitura="{{ $un->prefeitura_id }}" 
+                        <option value="{{ $un->id }}" data-prefeitura="{{ $un->prefeitura_id }}"
                             {{ request('unidade_id') == $un->id ? 'selected' : '' }}>
                             {{ $un->nome }}
                         </option>
@@ -167,7 +169,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     const prefeituraSelect = document.querySelector('select[name="prefeitura_id"]');
     const unidadeSelect = document.getElementById('unidade_id_filtro');
-    
+
     if (prefeituraSelect && unidadeSelect) {
         const unidadeOptions = Array.from(unidadeSelect.options);
 

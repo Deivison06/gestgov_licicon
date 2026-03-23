@@ -65,16 +65,16 @@ class UsuarioRequest extends FormRequest
                 function ($attribute, $value, $fail) {
                     $roleId = $this->input('role');
                     $role = Role::find($roleId);
-                    
+
                     if ($role && in_array($role->name, ['diretor_licicon', 'gerente_licicon'])) {
                         return;
                     }
 
                     $permissions = $this->input('permissions', []);
                     $fiscalizarPerm = Permission::where('name', 'fiscalizar contratos')->first();
-                    
+
                     if ($fiscalizarPerm && in_array($fiscalizarPerm->id, $permissions) && empty($value)) {
-                        $fail('A Secretaria/Unidade é obrigatória para fiscais de prefeitura.');
+                        $fail('A Secretaria/Unidade é obrigatória para usuários com permissão de Fiscalização.');
                     }
                 }
             ],

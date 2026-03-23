@@ -24,7 +24,7 @@ use App\Http\Controllers\FiscalizacaoController;
 // ================================================
 Route::prefix('admin/fiscalizacoes')
     ->name('admin.fiscalizacoes.')
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth', 'verified','can:fiscalizar contratos'])
     ->group(function () {
         Route::get('/buscar-contratos', [FiscalizacaoController::class, 'buscarContratos'])->name('buscar-contratos');
         Route::get('/', [FiscalizacaoController::class, 'index'])->name('index');
