@@ -22,17 +22,20 @@ use App\Http\Controllers\FiscalizacaoController;
 // ================================================
 // FISCALIZAÇÃO DE CONTRATOS
 // ================================================
-Route::prefix('admin/fiscalizacoes')->name('admin.fiscalizacoes.')->middleware(['auth', 'verified'])->group(function () {
-    Route::get('/buscar-contratos', [FiscalizacaoController::class, 'buscarContratos'])->name('buscar-contratos');
-    Route::get('/', [FiscalizacaoController::class, 'index'])->name('index');
-    Route::get('/create', [FiscalizacaoController::class, 'create'])->name('create');
-    Route::post('/', [FiscalizacaoController::class, 'store'])->name('store');
-    Route::get('/{id}', [FiscalizacaoController::class, 'show'])->name('show');
-    Route::get('/{id}/edit', [FiscalizacaoController::class, 'edit'])->name('edit');
-    Route::put('/{id}', [FiscalizacaoController::class, 'update'])->name('update');
-    Route::delete('/{id}', [FiscalizacaoController::class, 'destroy'])->name('destroy');
-    Route::get('/{id}/pdf', [FiscalizacaoController::class, 'gerarRelatorio'])->name('pdf');
-    Route::get('fiscalizacoes/selecionar-contrato', [FiscalizacaoController::class, 'selecionarContrato'])->name('selecionar-contrato');
+Route::prefix('admin/fiscalizacoes')
+    ->name('admin.fiscalizacoes.')
+    ->middleware(['auth', 'verified', 'can:fiscalizar contratos']) // 👈 ADICIONADO 'can:fiscalizar contratos'
+    ->group(function () {
+        Route::get('/buscar-contratos', [FiscalizacaoController::class, 'buscarContratos'])->name('buscar-contratos');
+        Route::get('/', [FiscalizacaoController::class, 'index'])->name('index');
+        Route::get('/create', [FiscalizacaoController::class, 'create'])->name('create');
+        Route::post('/', [FiscalizacaoController::class, 'store'])->name('store');
+        Route::get('/{id}', [FiscalizacaoController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [FiscalizacaoController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [FiscalizacaoController::class, 'update'])->name('update');
+        Route::delete('/{id}', [FiscalizacaoController::class, 'destroy'])->name('destroy');
+        Route::get('/{id}/pdf', [FiscalizacaoController::class, 'gerarRelatorio'])->name('pdf');
+        Route::get('/selecionar-contrato', [FiscalizacaoController::class, 'selecionarContrato'])->name('selecionar-contrato');
 });
 
 // ================================================

@@ -16,7 +16,8 @@ class RolePermissionSeeder extends Seeder
             'dar seguimento processos',
             'assinar processos',
             'contratos',
-            'etp inteligente'
+            'etp inteligente',
+            'fiscalizar contratos'
         ];
 
         foreach ($permissions as $permission) {
@@ -25,7 +26,7 @@ class RolePermissionSeeder extends Seeder
 
         $roles = [
             'diretor_licicon' => $permissions,
-            'gerente_licicon' => ['criar processos', 'dar seguimento processos', 'assinar processos', 'contratos', 'etp inteligente'], // tudo menos gerenciar usuários
+            'gerente_licicon' => ['criar processos', 'dar seguimento processos', 'assinar processos', 'contratos', 'etp inteligente', 'fiscalizar contratos'], // tudo menos gerenciar usuários
             'colaborador_licicon' => ['dar seguimento processos'], // só dar seguimento
             'prefeitura' => ['assinar processos', 'contratos', 'etp inteligente'], // só assinar e contratos
         ];

@@ -25,12 +25,28 @@ class FiscalizacaoController extends Controller
     // =========================================================
     public function index(Request $request)
     {
+        if (!auth()->user()->can('fiscalizar contratos')) {
+            abort(403, 'Acesso negado.');
+        }
+        
         $user = auth()->user();
         $userPrefeituraId = $user->prefeitura_id;
         $isPrefeituraUser = $user->hasRole('prefeitura') && $userPrefeituraId;
 
         $query = Fiscalizacao::with(['fiscalizavel', 'prefeitura', 'user'])
             ->latest();
+
+        if ($user->unidade_id) {
+            $query->whereHasMorph('fiscalizavel', [ContratoManual::class, Contrato::class], function ($q, $type) use ($user) {
+                if ($type === ContratoManual::class) {
+                    $q->where('unidade_id', $user->unidade_id);
+                } else {
+                    $q->whereHas('processo', function($proc) use ($user) {
+                        $proc->where('unidade_id', $user->unidade_id); 
+                    });
+                }
+            });
+        }
 
         // Multi-tenant para admin
         if (!$isPrefeituraUser && $request->filled('prefeitura_id')) {
@@ -341,30 +357,26 @@ class FiscalizacaoController extends Controller
 
         $resultados = [];
 
-        $queryManual = ContratoManual::with(['empresa', 'secretaria'])
+        // 1. FILTRO CONTRATOS MANUAIS
+        $contratosManual = ContratoManual::with(['empresa', 'secretaria'])
+            ->where('prefeitura_id', $user->prefeitura_id)
+            ->when($user->unidade_id, function($q) use ($user) {
+                return $q->where('unidade_id', $user->unidade_id);
+            })
             ->where(function ($q) use ($termo) {
                 $q->where('numero_contrato', 'LIKE', "%{$termo}%")
-                    ->orWhere('objeto', 'LIKE', "%{$termo}%")
-                    ->orWhere('numero_processo', 'LIKE', "%{$termo}%")
-                    ->orWhereHas('empresa', function ($q2) use ($termo) {
-                        $q2->where('razao_social', 'LIKE', "%{$termo}%")
-                            ->orWhere('cnpj', 'LIKE', "%{$termo}%");
-                    });
-            });
-
-        if ($user->hasRole('prefeitura') && $user->prefeitura_id) {
-            $queryManual->where('prefeitura_id', $user->prefeitura_id);
-        }
-
-        $contratosManual = $queryManual->limit(10)->get();
+                ->orWhere('objeto', 'LIKE', "%{$termo}%")
+                ->orWhereHas('empresa', fn($e) => $e->where('razao_social', 'LIKE', "%{$termo}%"));
+            })
+            ->limit(10)
+            ->get();
 
         foreach ($contratosManual as $cm) {
-            $objetoLimpo = $this->limparHtml($cm->objeto);
             $resultados[] = [
                 'id'               => $cm->id . '|App\\Models\\ContratoManual',
-                'text'             => ($cm->numero_contrato ?: 'S/N') . ' — ' . \Str::limit($cm->objeto, 60) . ' (' . ($cm->empresa?->razao_social ?? 'Sem empresa') . ')',
+                'text'             => ($cm->numero_contrato ?: 'S/N') . ' — ' . \Str::limit($this->limparHtml($cm->objeto), 60) . ' (' . ($cm->empresa?->razao_social ?? 'Sem empresa') . ')',
                 'numero_contrato'  => $cm->numero_contrato,
-                'objeto'           => $objetoLimpo,
+                'objeto'           => $this->limparHtml($cm->objeto),
                 'numero_processo'  => $cm->numero_processo,
                 'modalidade'       => $cm->modalidade?->getDisplayName() ?? '—',
                 'secretaria'       => $cm->secretaria?->nome ?? '—',
@@ -376,8 +388,14 @@ class FiscalizacaoController extends Controller
             ];
         }
 
-        $queryProcesso = Processo::with(['contrato', 'vencedores', 'prefeitura', 'detalhe'])
+        // 2. FILTRO CONTRATOS DO SISTEMA (Processos)
+        $processos = Processo::with(['contrato', 'vencedores', 'prefeitura', 'detalhe'])
             ->has('contrato')
+            ->where('prefeitura_id', $user->prefeitura_id)
+            ->when($user->unidade_id, function($q) use ($user) {
+                // Aplica o filtro se o processo tiver unidade_id ou via detalhe
+                return $q->where('unidade_id', $user->unidade_id); 
+            })
             ->where(function ($q) use ($termo) {
                 $q->where('numero_processo', 'LIKE', "%{$termo}%")
                     ->orWhere('objeto', 'LIKE', "%{$termo}%")
@@ -385,28 +403,21 @@ class FiscalizacaoController extends Controller
                         $q2->where('numero_contrato', 'LIKE', "%{$termo}%");
                     })
                     ->orWhereHas('vencedores', function ($q2) use ($termo) {
-                        $q2->where(function($group) use ($termo) {
-                            $group->where('razao_social', 'LIKE', "%{$termo}%")
-                                ->orWhere('cnpj', 'LIKE', "%{$termo}%")
-                                ->orWhere('cpf', 'LIKE', "%{$termo}%");
-                        });
+                        $q2->where('razao_social', 'LIKE', "%{$termo}%")
+                            ->orWhere('cnpj', 'LIKE', "%{$termo}%")
+                            ->orWhere('cpf', 'LIKE', "%{$termo}%");
                     });
-            });
-
-        if ($user->hasRole('prefeitura') && $user->prefeitura_id) {
-            $queryProcesso->where('prefeitura_id', $user->prefeitura_id);
-        }
-
-        $processos = $queryProcesso->limit(10)->get();
+            })
+            ->limit(10)
+            ->get();
 
         foreach ($processos as $proc) {
             $vencedor = $proc->vencedores->first();
-            $objetoLimpo = $this->limparHtml($proc->objeto);
             $resultados[] = [
                 'id'               => $proc->contrato?->id . '|App\\Models\\Contrato',
-                'text'             => ($proc->contrato?->numero_contrato ?: 'S/N') . ' — ' . \Str::limit($proc->objeto, 60) . ' (' . ($vencedor?->razao_social ?? 'Sem empresa') . ')',
+                'text'             => ($proc->contrato?->numero_contrato ?: 'S/N') . ' — ' . \Str::limit($this->limparHtml($proc->objeto), 60) . ' (' . ($vencedor?->razao_social ?? 'Sem empresa') . ')',
                 'numero_contrato'  => $proc->contrato?->numero_contrato,
-                'objeto'           => $objetoLimpo,
+                'objeto'           => $this->limparHtml($proc->objeto),
                 'numero_processo'  => $proc->numero_processo,
                 'modalidade'       => $proc->modalidade?->getDisplayName() ?? '—',
                 'secretaria'       => $proc->detalhe?->unidade_numeracao ?? $proc->prefeitura?->nome ?? '—',
@@ -433,12 +444,21 @@ class FiscalizacaoController extends Controller
         }
 
         if ($user->hasRole('prefeitura') && $fiscalizacao->prefeitura_id != $user->prefeitura_id) {
-            Log::warning('🚫 Tentativa de acesso não autorizado à fiscalização', [
-                'user_id' => $user->id,
-                'fiscalizacao_prefeitura_id' => $fiscalizacao->prefeitura_id,
-                'user_prefeitura_id' => $user->prefeitura_id
-            ]);
-            abort(403, 'Acesso não autorizado.');
+            abort(403, 'Acesso não autorizado à prefeitura.');
+        }
+
+        if ($user->unidade_id) {
+            $fiscalizavel = $fiscalizacao->fiscalizavel;
+            
+            if ($fiscalizavel instanceof ContratoManual) {
+                if ($fiscalizavel->unidade_id != $user->unidade_id) {
+                    abort(403, 'Acesso negado: Este contrato manual pertence a outra unidade.');
+                }
+            } elseif ($fiscalizavel instanceof Contrato) {
+                if ($fiscalizavel->processo->unidade_id != $user->unidade_id) {
+                    abort(403, 'Acesso negado: Este contrato do sistema pertence a outra unidade.');
+                }
+            }
         }
     }
 
@@ -559,10 +579,11 @@ class FiscalizacaoController extends Controller
         $user = auth()->user();
         $prefeituraId = $user->prefeitura_id;
 
-        $manuais = ContratoManual::with(['empresa', 'fiscalizacoes' => function($q) {
-                $q->latest('data_fiscalizacao');
-            }])
+        $manuais = ContratoManual::with(['empresa', 'fiscalizacoes'])
             ->where('prefeitura_id', $prefeituraId)
+            ->when($user->unidade_id, function($q) use ($user) {
+                return $q->where('unidade_id', $user->unidade_id);
+            })
             ->get()
             ->map(function ($item) {
                 $ultima = $item->fiscalizacoes->first();

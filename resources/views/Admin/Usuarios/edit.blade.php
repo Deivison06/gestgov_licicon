@@ -78,6 +78,20 @@
                 </p>
             </div>
 
+            <div id="div_unidade_id" style="{{ $usuario->hasPermissionTo('fiscalizar contratos') ? '' : 'display: none;' }}">
+                <label for="unidade_id" class="block mb-2 text-sm font-medium text-gray-700">Secretaria/Unidade Responsável</label>
+                <select name="unidade_id" id="unidade_id"
+                        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496] transition-colors">
+                    <option value="">Selecione uma unidade</option>
+                    @foreach($unidades as $unidade)
+                        <option value="{{ $unidade->id }}" data-prefeitura="{{ $unidade->prefeitura_id }}" 
+                            {{ old('unidade_id', $usuario->unidade_id) == $unidade->id ? 'selected' : '' }}>
+                            {{ $unidade->nome }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
             <div>
                 <label for="password" class="block mb-2 text-sm font-medium text-gray-700">Nova Senha (opcional)</label>
                 <input type="password" name="password" id="password"
@@ -155,31 +169,81 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Elementos para a lógica de Prefeitura/Role
     const roleInputs = document.querySelectorAll('input[name="role"]');
     const prefeituraSelect = document.getElementById('prefeitura_id');
     const prefeituraInfo = document.getElementById('prefeitura-info');
-    
+
+    // Elementos para a lógica de Unidade/Secretaria
+    const unidadeSelect = document.getElementById('unidade_id');
+    const divUnidade = document.getElementById('div_unidade_id');
+    const unidadeOptions = Array.from(unidadeSelect.options);
+
+    // 1. Lógica de Obrigatoriedade da Prefeitura baseada na Role
     function togglePrefeituraRequired() {
         const selectedRole = Array.from(roleInputs).find(input => input.checked);
         if (selectedRole) {
             const label = document.querySelector(`label[for="${selectedRole.id}"]`);
-            const roleName = label ? label.textContent.trim() : '';
+            const roleName = label ? label.textContent.trim().toLowerCase() : '';
             if (roleName === 'prefeitura') {
                 prefeituraSelect.setAttribute('required', 'required');
-                prefeituraInfo.style.display = 'block';
+                if (prefeituraInfo) prefeituraInfo.style.display = 'block';
             } else {
                 prefeituraSelect.removeAttribute('required');
-                prefeituraInfo.style.display = 'none';
+                if (prefeituraInfo) prefeituraInfo.style.display = 'none';
             }
         }
     }
+
+    // 2. Lógica de Visibilidade da Unidade baseada na Permissão
+    function getFiscalizarCheckbox() {
+        return Array.from(document.querySelectorAll('input[name="permissions[]"]'))
+            .find(cb => {
+                const label = document.querySelector(`label[for="${cb.id}"]`);
+                return label && label.textContent.trim().toLowerCase().includes('fiscalizar contratos');
+            });
+    }
+
+    function toggleUnidadeVisibility() {
+        const cb = getFiscalizarCheckbox();
+        if (cb && cb.checked) {
+            divUnidade.style.display = 'block';
+            unidadeSelect.setAttribute('required', 'required');
+        } else {
+            divUnidade.style.display = 'none';
+            unidadeSelect.removeAttribute('required');
+            unidadeSelect.value = '';
+        }
+    }
+
+    // 3. Lógica de Filtragem de Unidades baseada na Prefeitura
+    function filterUnidades() {
+        const prefeituraId = prefeituraSelect.value;
+        const currentUnidade = unidadeSelect.value; 
+        
+        unidadeSelect.innerHTML = '<option value="">Selecione uma unidade</option>';
+        
+        unidadeOptions.forEach(opt => {
+            if (opt.dataset.prefeitura === prefeituraId || opt.value === "") {
+                unidadeSelect.appendChild(opt);
+            }
+        });
+
+        unidadeSelect.value = currentUnidade;
+    }
+
+    // Listeners
+    roleInputs.forEach(input => input.addEventListener('change', togglePrefeituraRequired));
+    prefeituraSelect.addEventListener('change', filterUnidades);
     
-    roleInputs.forEach(input => {
-        input.addEventListener('change', togglePrefeituraRequired);
+    document.querySelectorAll('input[name="permissions[]"]').forEach(cb => {
+        cb.addEventListener('change', toggleUnidadeVisibility);
     });
-    
-    // Inicializar
+
+    // Inicialização ao carregar a página
     togglePrefeituraRequired();
+    filterUnidades();
+    toggleUnidadeVisibility();
 });
 </script>
 @endsection

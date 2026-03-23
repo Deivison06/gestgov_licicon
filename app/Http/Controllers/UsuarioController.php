@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Exception;
 use App\Models\User;
 use App\Models\Prefeitura;
+use App\Models\Unidade;
 use Illuminate\Http\Request;
 use App\Services\UserService;
 use Spatie\Permission\Models\Role;
@@ -51,7 +52,8 @@ class UsuarioController extends Controller
         return view('Admin.Usuarios.create', [
             'roles' => Role::all(),
             'permissions' => Permission::all(),
-            'prefeituras' => Prefeitura::orderBy('nome')->get() // Adicione esta linha
+            'prefeituras' => Prefeitura::orderBy('nome')->get(),
+            'unidades' => Unidade::orderBy('nome')->get(),
         ]);
     }
 
@@ -75,7 +77,8 @@ class UsuarioController extends Controller
             'usuario' => $usuario,
             'roles' => Role::all(),
             'permissions' => Permission::all(),
-            'prefeituras' => Prefeitura::orderBy('nome')->get() // Adicione esta linha
+            'prefeituras' => Prefeitura::orderBy('nome')->get(),
+            'unidades' => Unidade::orderBy('nome')->get()
         ]);
     }
 

@@ -17,7 +17,8 @@ class User extends Authenticatable
         'email',
         'password',
         'cpf',
-        'prefeitura_id' // Adicione este campo
+        'prefeitura_id',
+        'unidade_id'
     ];
 
     protected $hidden = [
@@ -37,5 +38,10 @@ class User extends Authenticatable
     public function prefeitura()
     {
         return $this->belongsTo(Prefeitura::class);
+    }
+
+    public function unidade()
+    {
+        return $this->belongsTo(Unidade::class, 'unidade_id');
     }
 }

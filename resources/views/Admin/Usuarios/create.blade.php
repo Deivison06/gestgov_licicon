@@ -73,6 +73,20 @@
                 <p class="mt-1 text-sm text-gray-500">Obrigatório para usuários do tipo Prefeitura</p>
             </div>
 
+            <div id="div_unidade_id" style="display: none;">
+                <label for="unidade_id" class="block mb-2 text-sm font-medium text-gray-700">Secretaria/Unidade Responsável</label>
+                <select name="unidade_id" id="unidade_id"
+                        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496] transition-colors">
+                    <option value="">Selecione uma unidade</option>
+                    @foreach($unidades as $unidade)
+                        <option value="{{ $unidade->id }}" data-prefeitura="{{ $unidade->prefeitura_id }}" {{ old('unidade_id') == $unidade->id ? 'selected' : '' }}>
+                            {{ $unidade->nome }}
+                        </option>
+                    @endforeach
+                </select>
+                <p class="mt-1 text-sm text-red-500 font-medium">Obrigatório para fiscais de contrato</p>
+            </div>
+
             <div>
                 <label for="password" class="block mb-2 text-sm font-medium text-gray-700">Senha</label>
                 <input type="password" name="password" id="password"
@@ -138,30 +152,53 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const roleInputs = document.querySelectorAll('input[name="role"]');
     const prefeituraSelect = document.getElementById('prefeitura_id');
-    
-    function togglePrefeituraRequired() {
-        const selectedRole = Array.from(roleInputs).find(input => input.checked);
-        if (selectedRole) {
-            const label = document.querySelector(`label[for="${selectedRole.id}"]`);
-            const roleName = label ? label.textContent.trim() : '';
-            if (roleName === 'prefeitura') {
-                prefeituraSelect.setAttribute('required', 'required');
-                prefeituraSelect.closest('div').querySelector('p').style.display = 'block';
-            } else {
-                prefeituraSelect.removeAttribute('required');
-                prefeituraSelect.closest('div').querySelector('p').style.display = 'none';
-            }
+    const unidadeSelect = document.getElementById('unidade_id');
+    const divUnidade = document.getElementById('div_unidade_id');
+    const unidadeOptions = Array.from(unidadeSelect.options);
+
+    // Função para encontrar a checkbox de "fiscalizar contratos"
+    function getFiscalizarCheckbox() {
+        return Array.from(document.querySelectorAll('input[name="permissions[]"]'))
+            .find(cb => {
+                const label = document.querySelector(`label[for="${cb.id}"]`);
+                return label && label.textContent.trim().toLowerCase() === 'fiscalizar contratos';
+            });
+    }
+
+    function toggleUnidadeVisibility() {
+        const cb = getFiscalizarCheckbox();
+        if (cb && cb.checked) {
+            divUnidade.style.display = 'block';
+            unidadeSelect.setAttribute('required', 'required');
+        } else {
+            divUnidade.style.display = 'none';
+            unidadeSelect.removeAttribute('required');
+            unidadeSelect.value = '';
         }
     }
+
+    function filterUnidades() {
+        const prefeituraId = prefeituraSelect.value;
+        unidadeSelect.innerHTML = '<option value="">Selecione uma unidade</option>';
+        
+        unidadeOptions.forEach(opt => {
+            if (opt.dataset.prefeitura === prefeituraId || opt.value === "") {
+                unidadeSelect.appendChild(opt);
+            }
+        });
+    }
+
+    // Listeners
+    prefeituraSelect.addEventListener('change', filterUnidades);
     
-    roleInputs.forEach(input => {
-        input.addEventListener('change', togglePrefeituraRequired);
+    document.querySelectorAll('input[name="permissions[]"]').forEach(cb => {
+        cb.addEventListener('change', toggleUnidadeVisibility);
     });
-    
-    // Inicializar
-    togglePrefeituraRequired();
+
+    // Inicialização
+    filterUnidades();
+    toggleUnidadeVisibility();
 });
 </script>
 @endsection

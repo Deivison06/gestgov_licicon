@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Validation\Rule;
 use Spatie\Permission\Models\Role;
 use Illuminate\Foundation\Http\FormRequest;
+use Spatie\Permission\Models\Permission;
 
 class UsuarioRequest extends FormRequest
 {
@@ -56,7 +57,20 @@ class UsuarioRequest extends FormRequest
             ],
 
             'permissions' => 'nullable|array',
-            'permissions.*' => 'exists:permissions,id'
+            'permissions.*' => 'exists:permissions,id',
+
+            'unidade_id' => [
+                'nullable',
+                'exists:unidades,id',
+                function ($attribute, $value, $fail) {
+                    $permissions = $this->input('permissions', []);
+                    $fiscalizarPerm = Permission::where('name', 'fiscalizar contratos')->first();
+                    
+                    if ($fiscalizarPerm && in_array($fiscalizarPerm->id, $permissions) && empty($value)) {
+                        $fail('A Secretaria/Unidade é obrigatória para usuários com permissão de Fiscalização.');
+                    }
+                }
+            ],
         ];
     }
 
@@ -87,6 +101,7 @@ class UsuarioRequest extends FormRequest
             'password' => 'senha',
             'role' => 'função',
             'prefeitura_id' => 'prefeitura',
+            'unidade_id' => 'secretaria/unidade',
             'permissions' => 'permissões'
         ];
     }
