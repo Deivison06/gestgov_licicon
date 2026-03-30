@@ -402,7 +402,7 @@
         </p>
 
         <p style="text-align: justify; color: red;">
-            {{ $processo->detalhe->especificacao_servicos_imovel }}
+            {!! strip_tags($processo->detalhe->especificacao_servicos_imovel) !!}
         </p>
         
     </div>

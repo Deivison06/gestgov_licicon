@@ -459,25 +459,27 @@
                                             <i class="mr-1 fas fa-play-circle"></i>
                                             Iniciar
                                         </a>
+                                        @if ($modalidadeValue != \App\Enums\ModalidadeEnum::INEXIGIBILIDADE->value)
 
-                                        <!-- Botão Finalizar -->
-                                        <a href="{{ route('admin.processos.finalizacao.finalizar', $processo->id) }}"
-                                           class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white transition-colors duration-200 bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-1"
-                                           title="Finalizar processo">
-                                            <i class="mr-1 fas fa-check-circle"></i>
-                                            Finalizar
-                                        </a>
-
-                                        <!-- Botão Contrato -->
-                                        @if (!($processo->modalidade == 4 && optional($processo->detalhe)->tipo_srp === 'nao'))
-                                            <a href="{{ route('admin.processos.contrato.index', $processo->id) }}"
-                                               class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-1"
-                                               title="Emitir Contrato">
-                                                <i class="mr-1 fas fa-file-contract"></i>
-                                                Contrato
+                                            <!-- Botão Finalizar -->
+                                            <a href="{{ route('admin.processos.finalizacao.finalizar', $processo->id) }}"
+                                            class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white transition-colors duration-200 bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-1"
+                                            title="Finalizar processo">
+                                                <i class="mr-1 fas fa-check-circle"></i>
+                                                Finalizar
                                             </a>
-                                        @endif
 
+                                            <!-- Botão Contrato -->
+                                            @if (!($processo->modalidade == 4 && optional($processo->detalhe)->tipo_srp === 'nao'))
+                                                <a href="{{ route('admin.processos.contrato.index', $processo->id) }}"
+                                                class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-1"
+                                                title="Emitir Contrato">
+                                                    <i class="mr-1 fas fa-file-contract"></i>
+                                                    Contrato
+                                                </a>
+                                            @endif
+
+                                        @endif
                                         <!-- Ações especiais para processos ativos -->
                                         @if($status->isAtivo())
                                             <!-- Republicar -->

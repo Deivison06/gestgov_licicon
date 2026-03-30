@@ -349,7 +349,7 @@
             <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 5. DA ESPECIFICAÇÃO DOS SERVIÇOS
         </p>
         <p style="text-align: justify;">
-            {{ $processo->detalhe->especificacao_servicos_imovel }}.
+            {!! strip_tags($processo->detalhe->especificacao_servicos_imovel) !!}
         </p>
 
         <p style="display: flex; align-items: center; font-weight: bold; ">

@@ -431,9 +431,9 @@
                 <div class="signature-block" style="display: inline-block; margin: 0 40px;">
                     ___________________________________<br>
                     <p style="line-height: 1.2;">
-                        {{ $processo->finalizacao->razao_social }} <br>
-                        {{ $processo->finalizacao->representante_legal_empresa }} <br>
-                        {{ $processo->finalizacao->cpf_representante }} <br>
+                        {{ $processo->detalhe->razao_social }} <br>
+                        {{ $processo->detalhe->representante_legal_empresa }} <br>
+                        {{ $processo->detalhe->cpf_representante }} <br>
                     </p>
                 </div>
             </div>
@@ -463,7 +463,7 @@
                     <td colspan="2" style="padding:8px; text-align:center; font-weight:bold;">
                         EXTRATO DO CONTRATO Nº {{ $processo->contrato->numero_extrato }}<br>
                         PROCESSO ADMINISTRATIVO Nº {{ $processo->numero_processo }}<br>
-                        MODALIDADE: INEXIGIBILIDADE DE LICITAÇÃO Nº {{ $processo->numero_procedimento }}
+                        MODALIDADE: INEXIGIBILIDADE Nº {{ $processo->numero_procedimento }}
                     </td>
                 </tr>
 
@@ -493,7 +493,7 @@
                         CONTRATADO:
                     </td>
                     <td style="padding:6px;">
-                        {{ $processo->finalizacao->razao_social }}
+                        {{ $processo->detalhe->razao_social }}
                     </td>
                 </tr>
 
@@ -503,7 +503,7 @@
                         CNPJ (CONTRATADO):
                     </td>
                     <td style="padding:6px;">
-                        {{ $processo->finalizacao->cnpj_empresa_vencedora }}
+                        {{ $processo->detalhe->cnpj_empresa_vencedora }}
                     </td>
                 </tr>
 

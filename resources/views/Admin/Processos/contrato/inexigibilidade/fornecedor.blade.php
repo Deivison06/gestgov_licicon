@@ -240,7 +240,7 @@
             <h4 style="display: inline-block; margin: 0 0 0 10px; vertical-align: middle;">4. CLÁUSULA QUARTA - DO PREÇO E FORMA DE PAGAMENTO</h4>
         </div>
         <p style="text-align: justify;">
-            4.1- O valor do presente Termo de Contrato é de R$ {{ number_format($processo->detalhe->valor_total, 2, ',', '.') }}; <br>
+            4.1- O valor do presente Termo de Contrato é de R$  {{ $detalhe->valor_estimado }}; <br>
             4.2 - No valor acima estão incluídas todas as despesas ordinárias diretas e indiretas decorrentes da execução contratual,
             inclusive tributos e/ou impostos, encargos sociais, trabalhistas, previdenciários, fiscais e comerciais incidentes, taxa de
             administração, frete, seguro e outros necessários ao cumprimento integral do objeto da contratação;<br>
@@ -504,9 +504,9 @@
                 <div class="signature-block" style="display: inline-block; margin: 0 40px;">
                     ___________________________________<br>
                     <p style="line-height: 1.2;">
-                        {{ $processo->finalizacao->razao_social }} <br>
-                        {{ $processo->finalizacao->representante_legal_empresa }} <br>
-                        {{ $processo->finalizacao->cpf_representante }} <br>
+                        {{ $processo->detalhe->razao_social }} <br>
+                        {{ $processo->detalhe->representante_legal_empresa }} <br>
+                        {{ $processo->detalhe->cpf_representante }} <br>
                     </p>
                 </div>
             </div>
@@ -536,7 +536,7 @@
                     <td colspan="2" style="padding:8px; text-align:center; font-weight:bold;">
                         EXTRATO DO CONTRATO Nº {{ $processo->contrato->numero_extrato }}<br>
                         PROCESSO ADMINISTRATIVO Nº {{ $processo->numero_processo }}<br>
-                        MODALIDADE: INEXIGIBILIDADE DE LICITAÇÃO Nº {{ $processo->numero_procedimento }}
+                        MODALIDADE: INEXIGIBILIDADE Nº {{ $processo->numero_procedimento }}
                     </td>
                 </tr>
 
@@ -586,7 +586,7 @@
                         VALOR:
                     </td>
                     <td style="padding:6px;">
-                        R$ {{ number_format($processo->detalhe->valor_total, 2, ',', '.') }}
+                        R$ {{ $detalhe->valor_estimado }}
                     </td>
                 </tr>
 
@@ -635,7 +635,7 @@
                         FUNDAMENTAÇÃO LEGAL:
                     </td>
                     <td style="padding:6px; text-align:justify;">
-                        Será regida pelas normas fixadas na Concorrência Eletrônica nº
+                        Será regida pelas normas fixadas na Inexigibilidade Eletrônica nº
                         {{ $processo->numero_procedimento }},
                         e pela Lei 14.133/21, de 1 de abril de 2021, e legislação posterior,
                         que o suplementam no que for omisso.
@@ -648,8 +648,7 @@
                         ASSINATURA (CONTRATANTE):
                     </td>
                     <td style="padding:6px;">
-                        
-                        
+                        {{ $primeiroAssinante['responsavel'] }}
                     </td>
                 </tr>
 
@@ -659,7 +658,7 @@
                         ASSINATURA (CONTRATADO):
                     </td>
                     <td style="padding:6px;">
-                        {{ $primeiroAssinante['responsavel'] }}
+                         {{ $processo->detalhe->representante_legal_empresa }}
                     </td>
                 </tr>
 
