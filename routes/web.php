@@ -36,7 +36,9 @@ Route::prefix('admin/fiscalizacoes')
         Route::put('/{id}', [FiscalizacaoController::class, 'update'])->name('update');
         Route::delete('/{id}', [FiscalizacaoController::class, 'destroy'])->name('destroy');
         Route::get('/{id}/pdf', [FiscalizacaoController::class, 'gerarRelatorio'])->name('pdf');
-});
+        Route::get('/{id}/relatorio-tecnico', [FiscalizacaoController::class, 'imprimirRelatorioTecnico'])->name('relatorio-tecnico');
+        Route::get('/{id}/notificacoes', [FiscalizacaoController::class, 'imprimirNotificacoes'])->name('notificacoes');
+    });
 
 // ================================================
 // PCA - PLANO DE CONTRATAÇÃO ANUAL

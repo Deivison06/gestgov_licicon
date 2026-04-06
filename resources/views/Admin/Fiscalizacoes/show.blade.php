@@ -29,18 +29,26 @@
         <div>
             <h2 class="text-2xl font-bold text-gray-800">Fiscalização {{ $fiscalizacao->numero_fiscalizacao }}</h2>
         </div>
-        <div class="flex gap-3">
-            <a href="{{ route('admin.fiscalizacoes.index') }}" class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-700 transition-colors bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0596A2]">
+        <div class="flex flex-wrap items-center gap-3">
+            
+            <a href="{{ route('admin.fiscalizacoes.index') }}" class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-700 transition-colors bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0596A2] shadow-sm">
                 <i class="fas fa-arrow-left"></i> Voltar
             </a>
 
-            <a href="{{ route('admin.fiscalizacoes.pdf', $fiscalizacao->id) }}" class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white transition-colors bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500" target="_blank">
-                <i class="fas fa-file-pdf"></i> Imprimir PDF
+            <a href="{{ route('admin.fiscalizacoes.edit', $fiscalizacao->id) }}" class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-700 transition-colors bg-gray-100 border border-gray-200 rounded-lg hover:bg-gray-200 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 shadow-sm">
+                <i class="fas fa-edit text-amber-500"></i> Editar Dados
             </a>
 
-            <a href="{{ route('admin.fiscalizacoes.edit', $fiscalizacao->id) }}" class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white transition-colors bg-[#0596A2] rounded-lg hover:bg-[#047a85] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0596A2]">
-                <i class="fas fa-edit"></i> Editar Dados
+            <div class="hidden md:block w-px h-8 bg-gray-300 mx-1"></div> {{-- Separador visual --}}
+
+            <a href="{{ route('admin.fiscalizacoes.relatorio-tecnico', $fiscalizacao->id) }}" class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white transition-colors bg-[#009496] rounded-lg hover:bg-[#062F43] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#009496] shadow-sm" target="_blank">
+                <i class="fas fa-file-contract"></i> Relatório Técnico
             </a>
+
+            <a href="{{ route('admin.fiscalizacoes.notificacoes', $fiscalizacao->id) }}" class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white transition-colors bg-red-600 rounded-lg hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 shadow-sm" target="_blank">
+                <i class="fas fa-exclamation-triangle"></i> Notificações e Recomendações
+            </a>
+            
         </div>
     </div>
 

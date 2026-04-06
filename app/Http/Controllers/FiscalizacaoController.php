@@ -566,9 +566,6 @@ class FiscalizacaoController extends Controller
         ];
     }
 
-    // =========================================================
-    // GERAR PDF — Relatório de Fiscalização
-    // =========================================================
     public function gerarRelatorio($id)
     {
         $fiscalizacao = Fiscalizacao::with(['fiscalizavel', 'prefeitura', 'user'])->findOrFail($id);
@@ -586,6 +583,36 @@ class FiscalizacaoController extends Controller
 
         $nomeArquivo = "Relatorio_Fiscalizacao_" . str_replace(['/', '\\'], '_', $fiscalizacao->numero_fiscalizacao) . ".pdf";
         return $pdf->stream($nomeArquivo);
+    }
+
+    public function imprimirRelatorioTecnico($id)
+    {
+        $fiscalizacao = Fiscalizacao::with(['fiscalizavel', 'prefeitura', 'user'])->findOrFail($id);
+        $this->authorizeAccess($fiscalizacao);
+
+        $fiscalizacao->contrato_info = $this->extrairInfoContrato($fiscalizacao);
+        
+        $pdf = Pdf::loadView('Admin.Fiscalizacoes.relatorio_tecnico', compact('fiscalizacao'));
+        $pdf->setPaper('a4', 'portrait');
+
+        $numeroLimpo = str_replace(['/', '\\'], '_', $fiscalizacao->numero_fiscalizacao);
+
+        return $pdf->stream("Relatorio_Tecnico_{$numeroLimpo}.pdf");
+    }
+
+    public function imprimirNotificacoes($id)
+    {
+        $fiscalizacao = Fiscalizacao::with(['fiscalizavel', 'prefeitura', 'user'])->findOrFail($id);
+        $this->authorizeAccess($fiscalizacao);
+
+        $fiscalizacao->contrato_info = $this->extrairInfoContrato($fiscalizacao);
+        
+        $pdf = Pdf::loadView('Admin.Fiscalizacoes.notificacoes', compact('fiscalizacao'));
+        $pdf->setPaper('a4', 'portrait');
+
+        $numeroLimpo = str_replace(['/', '\\'], '_', $fiscalizacao->numero_fiscalizacao);
+
+        return $pdf->stream("Notificacoes_{$numeroLimpo}.pdf");
     }
 
     public function selecionarContrato(Request $request)
