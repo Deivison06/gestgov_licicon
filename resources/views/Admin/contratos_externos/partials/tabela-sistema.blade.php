@@ -82,14 +82,26 @@
                 </td>
 
                 <td class="px-6 pt-5 pb-3 whitespace-nowrap text-center text-sm font-medium">
-                    @if($processo->contrato)
-                        {{-- Contrato gerado pelo SISTEMA --}}
-                        <a href="{{ route('admin.processos.contrato.download', ['processo' => $processo->id]) }}"
-                           class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white
-                                    transition-colors duration-200 bg-cyan-600 rounded-lg hover:bg-cyan-700 shadow-sm">
-                            <i class="fas fa-download"></i> Baixar
+                    <div class="flex flex-wrap gap-1 justify-center">
+                        {{-- Botão Ver --}}
+                        <a href="{{ route('admin.contratos.show.sistema', $processo->id) }}"
+                        class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-white bg-blue-500 rounded hover:bg-blue-600 transition-colors"
+                        title="Visualizar detalhes">
+                            <i class="fas fa-eye text-[10px]"></i>
+                            <span>Ver</span>
                         </a>
-                    @endif
+
+                        @if($processo->contrato)
+                            {{-- Contrato gerado pelo SISTEMA --}}
+                            <a href="{{ route('admin.processos.contrato.download', ['processo' => $processo->id]) }}"
+                                target="_blank"
+                                class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-white bg-green-500 rounded hover:bg-green-600 transition-colors"
+                                title="Baixar PDF">
+                                <i class="fas fa-download text-[10px]"></i>
+                                <span>PDF</span>
+                            </a>
+                        @endif
+                    </div>
                 </td>
             </tr>
             <tr class="border-b border-gray-200">

@@ -27,9 +27,10 @@
                         {{-- Botão Download --}}
                         @if($processo->contrato)
                             <a href="{{ route('admin.processos.contrato.download', ['processo' => $processo->id]) }}"
+                               target="_blank"
                                class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700">
                                 <i class="fas fa-download mr-2"></i>
-                                Download Contrato
+                                Download PDF
                             </a>
                         @endif
                     </div>
@@ -39,9 +40,9 @@
             {{-- Informações Gerais --}}
             <div class="p-6">
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-                    {{-- Coluna 1: Dados do Processo --}}
+                    {{-- Coluna 1: Dados do Contrato e Processo --}}
                     <div>
-                        <h3 class="mb-4 text-lg font-semibold text-gray-900">Informações do Processo</h3>
+                        <h3 class="mb-4 text-lg font-semibold text-gray-900">Informações do Contrato</h3>
 
                         <div class="space-y-4">
                             <div>
@@ -55,112 +56,120 @@
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-500">Número do Procedimento</label>
-                                <p class="mt-1 text-sm text-gray-900">{{ $processo->numero_procedimento ?? '-' }}</p>
+                                <label class="block text-sm font-medium text-gray-500">Número do Contrato</label>
+                                <p class="mt-1 text-sm text-gray-900">{{ optional($processo->contrato)->numero_contrato ?? '-' }}</p>
                             </div>
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-500">Modalidade</label>
-                                <p class="mt-1 text-sm text-gray-900">{{ $processo->modalidade->getDisplayName() }}</p>
+                                <p class="mt-1 text-sm text-gray-900">
+                                    {{ $processo->modalidade ? $processo->modalidade->getDisplayName() : '-' }}
+                                </p>
                             </div>
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-500">Tipo de Procedimento</label>
-                                <p class="mt-1 text-sm text-gray-900">{{ $processo->tipo_procedimento_nome ?? '-' }}</p>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    {{ $processo->tipo_procedimento_nome ?? '-' }}
+                                </span>
                             </div>
 
-                            @if($processo->contrato)
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-500">Número do Contrato</label>
-                                    <p class="mt-1 text-sm text-gray-900">{{ $processo->contrato->numero_contrato ?? '-' }}</p>
-                                </div>
-
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-500">Data de Assinatura</label>
-                                    <p class="mt-1 text-sm text-gray-900">{{ $processo->contrato->data_assinatura_contrato ? $processo->contrato->data_assinatura_contrato->format('d/m/Y') : '-' }}</p>
-                                </div>
-                            @endif
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500">Valor Total Estimado do Processo</label>
+                                <p class="mt-1 text-lg font-bold text-gray-900">R$ {{ number_format($processo->valor_total_vencedores ?? 0, 2, ',', '.') }}</p>
+                            </div>
                         </div>
                     </div>
 
-                    {{-- Coluna 2: Empresa Vencedora --}}
+                    {{-- Coluna 2: Vigência --}}
                     <div>
-                        <h3 class="mb-4 text-lg font-semibold text-gray-900">Empresa Vencedora</h3>
+                        <h3 class="mb-4 text-lg font-semibold text-gray-900">Vigência</h3>
 
-                        @if($processo->vencedores->isNotEmpty())
-                            @foreach($processo->vencedores as $vencedor)
-                                <div class="space-y-4 mb-6 p-4 bg-gray-50 rounded-lg">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-500">Razão Social</label>
-                                        <p class="mt-1 text-sm text-gray-900">{{ $vencedor->razao_social ?? '-' }}</p>
-                                    </div>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500">Data de Assinatura</label>
+                                <p class="mt-1 text-sm text-gray-900">
+                                    {{ optional(optional($processo->contrato)->data_assinatura_contrato)->format('d/m/Y') ?? '-' }}
+                                </p>
+                            </div>
 
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-500">CPF/CNPJ</label>
-                                        <p class="mt-1 text-sm text-gray-900">{{ $vencedor->cpf_cnpj_formatado ?? '-' }}</p>
-                                    </div>
+                            @php
+                                $vigencia = is_array($processo->detalhe->prazo_vigencia ?? null)
+                                    ? $processo->detalhe->prazo_vigencia
+                                    : ['12_meses'];
 
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-500">Valor Vencedor</label>
-                                        <p class="mt-1 text-lg font-bold text-gray-900">R$ {{ number_format($vencedor->valor_vencedor, 2, ',', '.') }}</p>
-                                    </div>
-                                </div>
-                            @endforeach
-                        @else
-                            <p class="text-sm text-gray-500 italic">Nenhuma empresa vencedora registrada</p>
-                        @endif
+                                $outro_vigencia = $processo->detalhe->prazo_vigencia_outro ?? '________________.';
+                                $objeto_continuado = strtolower($processo->detalhe->objeto_continuado ?? 'nao');
+
+                                if (in_array('exercicio_financeiro', $vigencia)) {
+                                    $textoVigencia = "Até 31/12 do exercício financeiro da contratação";
+                                } elseif (in_array('12_meses', $vigencia)) {
+                                    $textoVigencia = "12 meses";
+                                } elseif (in_array('outro', $vigencia)) {
+                                    $textoVigencia = $outro_vigencia;
+                                } else {
+                                    $textoVigencia = "________________";
+                                }
+                            @endphp
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500">Prazo de Vigência</label>
+                                <span class="mt-1 inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800">
+                                    {{ $textoVigencia }}
+                                </span>
+                            </div>
+
+                            @if($objeto_continuado == 'sim')
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500">Prorrogação</label>
+                                <p class="mt-1 text-sm text-gray-900">Admite prorrogação (Objeto Continuado)</p>
+                            </div>
+                            @endif
+                        </div>
                     </div>
                 </div>
 
                 {{-- Objeto --}}
                 <div class="mt-8">
-                    <h3 class="mb-2 text-lg font-semibold text-gray-900">Objeto do Processo</h3>
+                    <h3 class="mb-2 text-lg font-semibold text-gray-900">Objeto do Contrato</h3>
                     <div class="p-4 bg-gray-50 rounded-lg">
                         <p class="text-gray-700">{!! $processo->objeto ?? 'Não informado' !!}</p>
                     </div>
                 </div>
 
-                {{-- Vigência --}}
+                {{-- Dados da Empresa Vencedora --}}
                 <div class="mt-8">
-                    <h3 class="mb-4 text-lg font-semibold text-gray-900">Prazo de Vigência</h3>
+                    <h3 class="mb-4 text-lg font-semibold text-gray-900">Dados das Empresas Vencedoras</h3>
 
-                    @php
-                        $vigencia = is_array($processo->detalhe->prazo_vigencia ?? null)
-                            ? $processo->detalhe->prazo_vigencia
-                            : ['12_meses'];
+                    @if($processo->vencedores->isNotEmpty())
+                        <div class="grid grid-cols-1 gap-6">
+                            @foreach($processo->vencedores as $vencedor)
+                                <div class="p-5 border border-gray-200 rounded-lg shadow-sm bg-white">
+                                    <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-500">Razão Social</label>
+                                            <p class="mt-1 text-sm text-gray-900 font-medium">{{ $vencedor->razao_social ?? '-' }}</p>
+                                        </div>
 
-                        $outro_vigencia = $processo->detalhe->prazo_vigencia_outro ?? '________________.';
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-500">CPF/CNPJ</label>
+                                            <p class="mt-1 text-sm text-gray-900">{{ $vencedor->cpf_cnpj_formatado ?? ($vencedor->cpf_cnpj ?? ($vencedor->cnpj ?? '-')) }}</p>
+                                        </div>
 
-                        $objeto_continuado = strtolower($processo->detalhe->objeto_continuado ?? 'nao');
-
-                        if (in_array('exercicio_financeiro', $vigencia)) {
-                            $textoVigencia = "até 31/12 do exercício financeiro da contratação";
-                        } elseif (in_array('12_meses', $vigencia)) {
-                            $textoVigencia = "12 meses";
-                        } elseif (in_array('outro', $vigencia)) {
-                            $textoVigencia = $outro_vigencia;
-                        } else {
-                            $textoVigencia = "________________";
-                        }
-                    @endphp
-
-                    <div class="p-4 bg-gray-50 rounded-lg">
-                        <div class="flex items-center gap-2">
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-blue-100 text-blue-800">
-                            Vigência
-                        </span>
-                            <p class="text-gray-700">{{ $textoVigencia }}</p>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-500">Valor Contratado</label>
+                                            <p class="mt-1 text-sm font-bold text-green-700">R$ {{ number_format($vencedor->valor_vencedor ?? $vencedor->valor_total, 2, ',', '.') }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
                         </div>
-
-                        @if($objeto_continuado == 'sim')
-                            <div class="mt-2 flex items-center gap-2">
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800">
-                            Prorrogação
-                        </span>
-                                <p class="text-gray-700">Admite prorrogação</p>
-                            </div>
-                        @endif
-                    </div>
+                    @else
+                        <div class="p-4 bg-yellow-50 text-yellow-800 rounded-lg border border-yellow-200">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            Nenhuma empresa vencedora registrada para este processo.
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

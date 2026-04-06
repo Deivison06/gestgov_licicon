@@ -59,7 +59,7 @@ class ContratoManualController extends Controller
                         })
                         ->orWhereHas('vencedores', function($q2) use ($searchTerm) {
                             $q2->where('razao_social', 'LIKE', "%{$searchTerm}%")
-                                ->orWhere('cpf_cnpj', 'LIKE', "%{$searchTerm}%");
+                            ->orWhere('cnpj', 'LIKE', "%{$searchTerm}%");
                         })
                         ->orWhereHas('prefeitura', function($q2) use ($searchTerm) {
                             $q2->where('nome', 'LIKE', "%{$searchTerm}%");
