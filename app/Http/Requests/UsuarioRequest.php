@@ -19,68 +19,49 @@ class UsuarioRequest extends FormRequest
         $userId = $this->route('usuario')?->id;
         $isUpdate = !is_null($userId);
 
+        // Lógica limpa para determinar a obrigatoriedade dinâmica
+        $roleId = $this->input('role');
+        $role = $roleId ? Role::find($roleId) : null;
+        $permissions = $this->input('permissions', []);
+
+        $isPrefeituraRequired = $role && $role->name === 'prefeitura';
+
+        $fiscalizarPerm = Permission::where('name', 'fiscalizar contratos')->first();
+        $isFiscal = $fiscalizarPerm && in_array($fiscalizarPerm->id, $permissions);
+        $isAdmin = $role && in_array($role->name, ['diretor_licicon', 'gerente_licicon']);
+
+        $isUnidadeRequired = $isFiscal && !$isAdmin;
+
         return [
             'name' => 'required|string|max:255',
-
             'email' => [
                 'required',
                 'email',
                 'max:255',
                 Rule::unique('users', 'email')->ignore($userId),
             ],
-
             'cpf' => [
                 'nullable',
                 'string',
                 'max:18',
                 Rule::unique('users', 'cpf')->ignore($userId),
             ],
-
             'password' => $isUpdate
                 ? 'nullable|min:8|confirmed'
                 : 'required|min:8|confirmed',
-
             'role' => 'required|exists:roles,id',
-
             'prefeitura_id' => [
-                'nullable',
+                $isPrefeituraRequired ? 'required' : 'nullable',
                 'exists:prefeituras,id',
-                function ($attribute, $value, $fail) {
-                    $roleId = $this->input('role');
-                    if ($roleId) {
-                        $role = Role::find($roleId);
-                        if ($role && $role->name === 'prefeitura' && empty($value)) {
-                            $fail('O campo prefeitura é obrigatório para usuários do tipo Prefeitura.');
-                        }
-                    }
-                }
             ],
-
             'permissions' => 'nullable|array',
             'permissions.*' => 'exists:permissions,id',
-
             'unidade_id' => [
-                'nullable',
+                $isUnidadeRequired ? 'required' : 'nullable',
                 'exists:unidades,id',
-                function ($attribute, $value, $fail) {
-                    $roleId = $this->input('role');
-                    $role = Role::find($roleId);
-
-                    if ($role && in_array($role->name, ['diretor_licicon', 'gerente_licicon'])) {
-                        return;
-                    }
-
-                    $permissions = $this->input('permissions', []);
-                    $fiscalizarPerm = Permission::where('name', 'fiscalizar contratos')->first();
-
-                    if ($fiscalizarPerm && in_array($fiscalizarPerm->id, $permissions) && empty($value)) {
-                        $fail('A Secretaria/Unidade é obrigatória para usuários com permissão de Fiscalização.');
-                    }
-                }
             ],
         ];
     }
-
 
     public function messages()
     {
@@ -95,7 +76,10 @@ class UsuarioRequest extends FormRequest
             'password.confirmed' => 'A confirmação de senha não corresponde',
             'role.required' => 'A função é obrigatória',
             'role.exists' => 'A função selecionada é inválida',
+            'prefeitura_id.required' => 'O campo prefeitura é obrigatório para usuários do tipo Prefeitura.',
             'prefeitura_id.exists' => 'A prefeitura selecionada é inválida',
+            'unidade_id.required' => 'A Secretaria/Unidade é obrigatória para usuários com permissão de Fiscalização.',
+            'unidade_id.exists' => 'A unidade selecionada é inválida',
             'permissions.*.exists' => 'A permissão selecionada é inválida'
         ];
     }
@@ -113,10 +97,8 @@ class UsuarioRequest extends FormRequest
         ];
     }
 
-    // Método para preparar os dados antes da validação
     protected function prepareForValidation()
     {
-        // Se não for envio de permissões, define como array vazio
         if (!$this->has('permissions')) {
             $this->merge([
                 'permissions' => []

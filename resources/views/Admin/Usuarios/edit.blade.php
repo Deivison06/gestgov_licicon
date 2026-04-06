@@ -66,13 +66,13 @@
                         class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496] transition-colors">
                     <option value="">Selecione uma prefeitura</option>
                     @foreach($prefeituras as $prefeitura)
-                        <option value="{{ $prefeitura->id }}" 
+                        <option value="{{ $prefeitura->id }}"
                             {{ old('prefeitura_id', $usuario->prefeitura_id) == $prefeitura->id ? 'selected' : '' }}>
                             {{ $prefeitura->nome }} - {{ $prefeitura->cidade }}
                         </option>
                     @endforeach
                 </select>
-                <p class="mt-1 text-sm text-gray-500" id="prefeitura-info" 
+                <p class="mt-1 text-sm text-gray-500" id="prefeitura-info"
                    style="{{ $usuario->hasRole('prefeitura') ? '' : 'display: none;' }}">
                    Obrigatório para usuários do tipo Prefeitura
                 </p>
@@ -84,7 +84,7 @@
                         class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496] transition-colors">
                     <option value="">Selecione uma unidade</option>
                     @foreach($unidades as $unidade)
-                        <option value="{{ $unidade->id }}" data-prefeitura="{{ $unidade->prefeitura_id }}" 
+                        <option value="{{ $unidade->id }}" data-prefeitura="{{ $unidade->prefeitura_id }}"
                             {{ old('unidade_id', $usuario->unidade_id) == $unidade->id ? 'selected' : '' }}>
                             {{ $unidade->nome }}
                         </option>
@@ -131,12 +131,12 @@
                         // Obter todas as permissões do usuário (incluindo herdadas)
                         $userAllPermissions = $usuario->getAllPermissions()->pluck('id')->toArray();
                     @endphp
-                    
+
                     @foreach($permissions as $permission)
                         <div class="flex items-center mb-2">
-                            <input type="checkbox" 
-                                name="permissions[]" 
-                                value="{{ $permission->id }}" 
+                            <input type="checkbox"
+                                name="permissions[]"
+                                value="{{ $permission->id }}"
                                 id="permission_{{ $permission->id }}"
                                 {{ in_array($permission->id, $userAllPermissions) ? 'checked' : '' }}
                                 {{ $usuario->hasRole('prefeitura') && $permission->name == 'contratos' ? 'checked disabled' : '' }}
@@ -183,10 +183,12 @@ document.addEventListener('DOMContentLoaded', function() {
         return label ? label.textContent.trim().toLowerCase() : '';
     }
 
+    let isFirstLoad = true;
+
     function toggleInterface() {
         const roleName = getSelectedRoleName();
         const isAdmin = roleName.includes('diretor') || roleName.includes('gerente');
-        
+
         if (isAdmin || roleName === '') {
             divPrefeitura.style.display = 'none';
             prefeituraSelect.value = '';
@@ -197,20 +199,25 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         const fiscalCheck = Array.from(document.querySelectorAll('input[name="permissions[]"]'))
-            .find(cb => {
-                const label = document.querySelector(`label[for="${cb.id}"]`);
-                return label && label.textContent.trim().toLowerCase().includes('fiscalizar contratos');
-            });
+        .find(cb => {
+            const label = document.querySelector(`label[for="${cb.id}"]`);
+            return label && label.textContent.trim().toLowerCase().includes('fiscalizar contratos');
+        });
 
-        if (fiscalCheck && fiscalCheck.checked && !isAdmin) {
+        if (fiscalCheck && fiscalCheck.checked) {
             divUnidade.style.display = 'block';
             unidadeSelect.setAttribute('required', 'required');
             filterUnidades();
         } else {
             divUnidade.style.display = 'none';
             unidadeSelect.removeAttribute('required');
-            unidadeSelect.value = '';
+
+            if (!isFirstLoad) {
+                unidadeSelect.value = '';
+            }
         }
+
+        isFirstLoad = false;
     }
 
     function filterUnidades() {
@@ -231,7 +238,7 @@ document.addEventListener('DOMContentLoaded', function() {
         cb.addEventListener('change', toggleInterface);
     });
 
-    toggleInterface(); 
+    toggleInterface();
 });
 </script>
 @endsection

@@ -86,7 +86,7 @@ class UsuarioController extends Controller
     {
         try {
             $this->userService->updateUser($usuario, $request->validated());
-            return redirect()->route('admin.users.index')
+            return redirect()->route('admin.usuarios.index')
                 ->with('success', 'Usuário atualizado com sucesso!');
         } catch (Exception $e) {
             return redirect()->back()
@@ -99,7 +99,7 @@ class UsuarioController extends Controller
     {
         try {
             $this->userService->deleteUser($usuario);
-            return redirect()->route('admin.users.index')
+            return redirect()->route('admin.usuarios.index')
                 ->with('success', 'Usuário excluído com sucesso!');
         } catch (Exception $e) {
             return redirect()->back()
