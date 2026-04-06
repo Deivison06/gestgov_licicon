@@ -835,6 +835,80 @@
         70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
         100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
     }
+
+    /* Abas internas do dropdown de notificações */
+    .notif-tabs {
+        display: flex;
+        border-bottom: 1px solid #e2e8f0;
+        background: #f8fafc;
+    }
+
+    .notif-tab-btn {
+        flex: 1;
+        padding: 9px 10px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: #64748b;
+        background: transparent;
+        border: none;
+        border-bottom: 2px solid transparent;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        transition: color 0.2s, border-color 0.2s;
+    }
+
+    .notif-tab-btn:hover {
+        color: #0596a2;
+    }
+
+    .notif-tab-btn.active {
+        color: #0596a2;
+        border-bottom-color: #0596a2;
+        background: white;
+    }
+
+    .notif-tab-badge {
+        background: #ef4444;
+        color: white;
+        font-size: 0.6rem;
+        font-weight: 700;
+        min-width: 16px;
+        height: 16px;
+        padding: 0 4px;
+        border-radius: 99px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .notif-tab-panel {
+        display: none;
+    }
+
+    .notif-tab-panel.active {
+        display: block;
+    }
+
+    .notif-empty {
+        padding: 28px 20px;
+        text-align: center;
+        color: #94a3b8;
+    }
+
+    .notif-empty i {
+        font-size: 1.8rem;
+        margin-bottom: 8px;
+        opacity: 0.25;
+        display: block;
+    }
+
+    .notif-empty p {
+        font-size: 0.8rem;
+        margin: 0;
+    }
     </style>
 </head>
 
@@ -873,11 +947,13 @@
                         <span>PROCESSOS</span>
                     </a>
 
+                    @can('atas e contratacoes')
                     <a href="{{ route('admin.atas.index') }}"
                         class="nav-item {{ request()->routeIs('admin.atas.*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-clipboard-list"></i>
                         <span>ATAS E CONTRATAÇÕES</span>
                     </a>
+                    @endcan
                     @endif
 
                     {{-- ========================================= --}}
@@ -1003,8 +1079,12 @@
                     @auth
                         @if(auth()->user()->hasAnyRole(['diretor_licicon', 'gerente_licicon']))
                             @php
-                                $notifications = auth()->user()->unreadNotifications;
-                                $notifCount = $notifications->count();
+                                $notifications    = auth()->user()->unreadNotifications;
+                                $notifEtp         = $notifications->filter(fn($n) => ($n->data['tipo'] ?? '') === 'etp');
+                                $notifSolicitacao = $notifications->filter(fn($n) => in_array($n->data['tipo'] ?? '', ['solicitacao', 'mensagem']));
+                                $notifCount       = $notifications->count();
+                                $countEtp         = $notifEtp->count();
+                                $countSolic       = $notifSolicitacao->count();
                             @endphp
 
                         <div style="position: relative;">
@@ -1016,29 +1096,72 @@
                             </button>
 
                             <div class="notif-dropdown" id="notifMenu">
+                                {{-- Cabeçalho --}}
                                 <div class="notif-header">
                                     <h4>Notificações</h4>
                                     @if($notifCount > 0)
-                                        <span class="status-badge" style="background: #fee2e2; color: #ef4444;">{{ $notifCount }} novas</span>
+                                        <span class="status-badge" style="background:#fee2e2;color:#ef4444;">{{ $notifCount }} novas</span>
                                     @endif
                                 </div>
+
+                                {{-- Abas ETP / Solicitações --}}
+                                <div class="notif-tabs">
+                                    <button class="notif-tab-btn active" data-tab="notif-etp">
+                                        <i class="fas fa-brain"></i>
+                                        ETP
+                                        @if($countEtp > 0)
+                                            <span class="notif-tab-badge">{{ $countEtp }}</span>
+                                        @endif
+                                    </button>
+                                    <button class="notif-tab-btn" data-tab="notif-solic">
+                                        <i class="fas fa-comments"></i>
+                                        Solicitações
+                                        @if($countSolic > 0)
+                                            <span class="notif-tab-badge">{{ $countSolic }}</span>
+                                        @endif
+                                    </button>
+                                </div>
+
+                                {{-- Painel ETP --}}
                                 <div class="notif-body">
-                                    @forelse($notifications as $notif)
-                                        <a href="{{ $notif->data['link'] }}" class="notif-card">
-                                            <div class="notif-card-icon">
-                                                <i class="fas {{ $notif->data['tipo'] == 'etp' ? 'fa-brain' : 'fa-comments' }}"></i>
+                                    <div id="notif-etp" class="notif-tab-panel active">
+                                        @forelse($notifEtp as $notif)
+                                            <a href="{{ $notif->data['link'] }}" class="notif-card">
+                                                <div class="notif-card-icon" style="background:#eff6ff;color:#3b82f6;">
+                                                    <i class="fas fa-brain"></i>
+                                                </div>
+                                                <div class="notif-card-body">
+                                                    <h5>{{ $notif->data['titulo'] }}</h5>
+                                                    <p>{{ $notif->data['mensagem'] }}</p>
+                                                </div>
+                                            </a>
+                                        @empty
+                                            <div class="notif-empty">
+                                                <i class="fas fa-brain"></i>
+                                                <p>Nenhuma notificação de ETP.</p>
                                             </div>
-                                            <div class="notif-card-body">
-                                                <h5>{{ $notif->data['titulo'] }}</h5>
-                                                <p>{{ $notif->data['mensagem'] }}</p>
+                                        @endforelse
+                                    </div>
+
+                                    {{-- Painel Solicitações --}}
+                                    <div id="notif-solic" class="notif-tab-panel">
+                                        @forelse($notifSolicitacao as $notif)
+                                            <a href="{{ $notif->data['link'] }}" class="notif-card">
+                                                <div class="notif-card-icon" style="background:#f0fdf4;color:#10b981;">
+                                                    <i class="fas fa-comments"></i>
+                                                </div>
+                                                <div class="notif-card-body">
+                                                    <h5>{{ $notif->data['titulo'] }}</h5>
+                                                    <p>{{ $notif->data['mensagem'] }}</p>
+                                                </div>
+                                            </a>
+                                        @empty
+                                            <div class="notif-empty">
+                                                <i class="fas fa-comments"></i>
+                                                <p>Nenhuma notificação de Solicitações.</p>
                                             </div>
-                                        </a>
-                                    @empty
-                                        <div style="padding: 30px 20px; text-align: center; color: #94a3b8;">
-                                            <i class="fas fa-bell-slash" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.2; display: block;"></i>
-                                            <p style="font-size: 0.85rem; margin: 0;">Você não tem novas notificações.</p>
-                                        </div>
-                                    @endforelse
+                                        @endforelse
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1179,7 +1302,7 @@
 
             // LÓGICA DE CLIQUES (SINO E SIDEBAR)
             document.addEventListener('click', function(e) {
-                // 1. Notificações
+                // 1. Notificações: toggle dropdown
                 const bell = e.target.closest('#bellToggle');
                 const menu = document.getElementById('notifMenu');
                 if (bell) {
@@ -1191,7 +1314,21 @@
                     menu.classList.remove('show');
                 }
 
-                // 2. Submenus Sidebar
+                // 2. Abas internas das notificações
+                const tabBtn = e.target.closest('.notif-tab-btn');
+                if (tabBtn) {
+                    const targetId = tabBtn.dataset.tab;
+                    // Botões
+                    document.querySelectorAll('.notif-tab-btn').forEach(b => b.classList.remove('active'));
+                    tabBtn.classList.add('active');
+                    // Painéis
+                    document.querySelectorAll('.notif-tab-panel').forEach(p => p.classList.remove('active'));
+                    const panel = document.getElementById(targetId);
+                    if (panel) panel.classList.add('active');
+                    return;
+                }
+
+                // 3. Submenus Sidebar
                 const toggle = e.target.closest('.submenu-toggle');
                 if (toggle) {
                     e.preventDefault();

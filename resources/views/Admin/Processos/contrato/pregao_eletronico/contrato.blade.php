@@ -228,29 +228,20 @@
 
         <table style="width:100%; border-collapse:collapse; font-size:8pt;">
             <thead>
-            <tr>
-                <th style="border:2px solid #000; padding:8px; text-align:left; font-weight:700; width:6%;">ITEM</th>
-                <th style="border:2px solid #000; padding:8px; text-align:left; font-weight:700; width:46%;">ESPECIFICAÇÃO</th>
-                <th style="border:2px solid #000; padding:8px; text-align:center; font-weight:700; width:16%;">UNIDADE<br>DE MEDIDA</th>
-                <th style="border:2px solid #000; padding:8px; text-align:center; font-weight:700; width:10%;">QUANTIDADE</th>
-                <th style="border:2px solid #000; padding:8px; text-align:center; font-weight:700; width:11%;">VALOR<br>UNITÁRIO</th>
-                <th style="border:2px solid #000; padding:8px; text-align:center; font-weight:700; width:11%;">VALOR<br>TOTAL</th>
-            </tr>
+                <tr>
+                    <th style="border:2px solid #000; padding:8px; text-align:left; font-weight:700; width:6%;">ITEM</th>
+                    <th style="border:2px solid #000; padding:8px; text-align:left; font-weight:700; width:46%;">ESPECIFICAÇÃO</th>
+                    <th style="border:2px solid #000; padding:8px; text-align:center; font-weight:700; width:16%;">UNIDADE<br>DE MEDIDA</th>
+                    <th style="border:2px solid #000; padding:8px; text-align:center; font-weight:700; width:10%;">QUANTIDADE</th>
+                    <th style="border:2px solid #000; padding:8px; text-align:center; font-weight:700; width:11%;">VALOR<br>UNITÁRIO</th>
+                    <th style="border:2px solid #000; padding:8px; text-align:center; font-weight:700; width:11%;">VALOR<br>TOTAL</th>
+                </tr>
             </thead>
             <tbody>
             @if(count($itensTabela) > 0)
                 @foreach($itensTabela as $item)
-                    @if(isset($item['is_lote_header']) && $item['is_lote_header'])
-                        <tr style="background-color:#f0f0f0;">
-                            <td colspan="6" style="border:1px solid #000; padding:10px; text-align:center; font-weight:bold;">
-                                {{ $item['especificacao'] }}
-                            </td>
-                        </tr>
-                    @elseif(isset($item['is_spacer']) && $item['is_spacer'])
-                        <tr style="height: 5px;">
-                            <td colspan="6" style="border:none; padding:0;"></td>
-                        </tr>
-                    @else
+                    {{-- Ignora o cabeçalho de LOTE e o espaçador --}}
+                    @if(!(isset($item['is_lote_header']) && $item['is_lote_header']) && !(isset($item['is_spacer']) && $item['is_spacer']))
                         <tr>
                             <td style="border:1px solid #000; padding:14px; vertical-align:top; text-align:center;">{{ $item['item'] }}</td>
                             <td style="border:1px solid #000; padding:14px; vertical-align:top;">{{ $item['especificacao'] }}</td>
@@ -262,7 +253,6 @@
                     @endif
                 @endforeach
 
-                <!-- Linha de totalização -->
                 <tr>
                     <td colspan="3" style="border:1px solid #000; padding:14px; vertical-align:top; text-align:right; font-weight:bold;">TOTAL GERAL</td>
                     <td colspan="3" style="border:1px solid #000; padding:14px; vertical-align:top; text-align:right; font-weight:bold;">R$ {{ number_format($valorTotalContrato, 2, ',', '.') }}</td>
@@ -276,7 +266,6 @@
             @endif
             </tbody>
         </table>
-
         <p style="text-align: justify;">
             1.1. Vinculam esta contratação, independentemente de transcrição:
         </p>

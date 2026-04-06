@@ -30,14 +30,15 @@ class EtpService
     public function store(array $data, ?UploadedFile $cotacaoFile = null)
     {
         try {
+            // Cria o diretório se não existir
             if ($cotacaoFile) {
+                $destino = public_path('uploads/etps/cotacoes');
+                if (!file_exists($destino)) {
+                    mkdir($destino, 0755, true);
+                }
+
                 $nomeArquivo = time() . '_' . $cotacaoFile->getClientOriginalName();
-
-                $cotacaoFile->move(
-                    public_path('uploads/etps/cotacoes'),
-                    $nomeArquivo
-                );
-
+                $cotacaoFile->move($destino, $nomeArquivo);
                 $data['cotacao_path'] = 'uploads/etps/cotacoes/' . $nomeArquivo;
             }
 
@@ -48,17 +49,19 @@ class EtpService
 
             $etp = $this->repository->create($data);
 
-            if (in_array($data['tipo_contratacao'] ?? null, ['item', 'servicos', 'compras']) && !empty($itens)) {
+            // Sync itens para tipos que não usam lote
+            if (in_array($data['tipo_contratacao'] ?? null, ['item', 'servicos', 'compras', 'obras']) && !empty($itens)) {
                 $itensFormatados = [];
                 foreach ($itens as $itemId => $itemData) {
                     $itensFormatados[$itemId] = [
-                        'unidade' => $itemData['unidade'],
-                        'quantidade' => $itemData['quantidade'],
+                        'unidade' => $itemData['unidade'] ?? 'UN',
+                        'quantidade' => $itemData['quantidade'] ?? 0,
                     ];
                 }
                 $this->repository->syncItens($etp, $itensFormatados);
             }
 
+            // Processa lotes
             if (($data['tipo_contratacao'] ?? null) === 'lote' && !empty($lotes)) {
                 foreach ($lotes as $loteData) {
                     $itensLote = $loteData['itens'] ?? [];
@@ -67,14 +70,18 @@ class EtpService
                     $lote = $this->repository->createLote($etp, $loteData);
 
                     $itensFormatados = [];
-                    foreach ($itensLote as $itemId => $itemData) {
-                        $itensFormatados[$itemData['item_id']] = [
-                            'unidade' => $itemData['unidade'],
-                            'quantidade' => $itemData['quantidade'],
-                        ];
+                    foreach ($itensLote as $itemData) {
+                        if (isset($itemData['item_id'])) {
+                            $itensFormatados[$itemData['item_id']] = [
+                                'unidade' => $itemData['unidade'] ?? 'UN',
+                                'quantidade' => $itemData['quantidade'] ?? 0,
+                            ];
+                        }
                     }
 
-                    $this->repository->syncItensLote($lote, $itensFormatados);
+                    if (!empty($itensFormatados)) {
+                        $this->repository->syncItensLote($lote, $itensFormatados);
+                    }
                 }
             }
 
@@ -128,26 +135,26 @@ class EtpService
             // Update ETP
             $etp = $this->repository->update($id, $data);
 
-            // Clear existing relationships
-            if (in_array($etp->tipo_contratacao, ['item', 'servicos', 'compras'])) {
-                $etp->itens()->detach();
-                $etp->lotes()->delete();
-            } else {
-                $etp->lotes()->delete();
+            // Limpa relacionamentos existentes garantindo que nada órfão fique para trás
+            $etp->itens()->detach();
+            foreach ($etp->lotes as $loteOld) {
+                $loteOld->itens()->detach();
+                $loteOld->delete();
             }
 
-            // Process new data
-            if (in_array($data['tipo_contratacao'] ?? null, ['item', 'servicos', 'compras']) && !empty($itens)) {
+            // Sync itens para tipos que não usam lote
+            if (in_array($data['tipo_contratacao'] ?? null, ['item', 'servicos', 'compras', 'obras']) && !empty($itens)) {
                 $itensFormatados = [];
                 foreach ($itens as $itemId => $itemData) {
                     $itensFormatados[$itemId] = [
-                        'unidade' => $itemData['unidade'],
-                        'quantidade' => $itemData['quantidade'],
+                        'unidade' => $itemData['unidade'] ?? 'UN',
+                        'quantidade' => $itemData['quantidade'] ?? 0,
                     ];
                 }
                 $this->repository->syncItens($etp, $itensFormatados);
             }
 
+            // Processa lotes
             if (($data['tipo_contratacao'] ?? null) === 'lote' && !empty($lotes)) {
                 foreach ($lotes as $loteData) {
                     $itensLote = $loteData['itens'] ?? [];
@@ -156,14 +163,18 @@ class EtpService
                     $lote = $this->repository->createLote($etp, $loteData);
 
                     $itensFormatados = [];
-                    foreach ($itensLote as $itemId => $itemData) {
-                        $itensFormatados[$itemData['item_id']] = [
-                            'unidade' => $itemData['unidade'],
-                            'quantidade' => $itemData['quantidade'],
-                        ];
+                    foreach ($itensLote as $itemData) {
+                        if (isset($itemData['item_id'])) {
+                            $itensFormatados[$itemData['item_id']] = [
+                                'unidade' => $itemData['unidade'] ?? 'UN',
+                                'quantidade' => $itemData['quantidade'] ?? 0,
+                            ];
+                        }
                     }
 
-                    $this->repository->syncItensLote($lote, $itensFormatados);
+                    if (!empty($itensFormatados)) {
+                        $this->repository->syncItensLote($lote, $itensFormatados);
+                    }
                 }
             }
 

@@ -17,25 +17,41 @@ class RolePermissionSeeder extends Seeder
             'assinar processos',
             'contratos',
             'etp inteligente',
-            'fiscalizar contratos'
+            'fiscalizar contratos',
+            'atas e contratacoes', // 👈 nova permissão
         ];
 
-        foreach ($permissions as $permission) {
-            Permission::firstOrCreate(['name' => $permission]);
-        }
-
-        $roles = [
-            'diretor_licicon' => $permissions,
-            'gerente_licicon' => ['criar processos', 'dar seguimento processos', 'assinar processos', 'contratos', 'etp inteligente', 'fiscalizar contratos'], // tudo menos gerenciar usuários
-            'colaborador_licicon' => ['dar seguimento processos'], // só dar seguimento
-            'prefeitura' => ['assinar processos', 'contratos', 'etp inteligente'], // só assinar e contratos
-        ];
-
+        // Cria todas as permissões (sem duplicar)
         foreach ($permissions as $permission) {
             Permission::firstOrCreate([
-                'name' => $permission,
-                'guard_name' => 'web' // 👈 IMPORTANTE
+                'name'       => $permission,
+                'guard_name' => 'web',
             ]);
+        }
+
+        // Define quais permissões cada role possui
+        $roles = [
+            'diretor_licicon'    => $permissions, // tudo
+            'gerente_licicon'    => [
+                'criar processos',
+                'dar seguimento processos',
+                'assinar processos',
+                'contratos',
+                'etp inteligente',
+                'fiscalizar contratos',
+                'atas e contratacoes',
+            ],
+            'colaborador_licicon' => ['dar seguimento processos'],
+            'prefeitura'          => ['assinar processos', 'contratos', 'etp inteligente'],
+        ];
+
+        // Sincroniza permissões de cada role
+        foreach ($roles as $roleName => $rolePermissions) {
+            $role = Role::firstOrCreate([
+                'name'       => $roleName,
+                'guard_name' => 'web',
+            ]);
+            $role->syncPermissions($rolePermissions);
         }
 
         $this->command->info('Roles e permissões criadas com sucesso!');

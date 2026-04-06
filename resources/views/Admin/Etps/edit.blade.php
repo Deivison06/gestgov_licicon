@@ -761,28 +761,36 @@
                         method: 'POST',
                         body: formData,
                         headers: {
-                            'X-Requested-With': 'XMLHttpRequest'
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
                         }
                     })
-                    .then(response => response.json())
+                    .then(async response => {
+                        const data = await response.json();
+                        if (response.status === 422) {
+                            let errorList = 'Verifique os campos:\\n';
+                            if (data.errors) {
+                                for (let field in data.errors) {
+                                    errorList += `• ${data.errors[field][0]}\\n`;
+                                }
+                            }
+                            throw new Error(errorList);
+                        }
+                        if (!response.ok) throw new Error(data.message || 'Erro ao salvar rascunho.');
+                        return data;
+                    })
                     .then(data => {
                         if (data.success) {
-                            // Mostra mensagem de sucesso
-                            mostrarNotificacao('success', data.message || 'Rascunho salvo com sucesso!');
-
-                            // Atualiza o ID do ETP no formulário para próximos saves
-                            if (data.etp_id) {
-                                // Se precisar atualizar o action do form com o ID para update
-                                // form.action = form.action.replace('store', data.etp_id);
-                            }
+                            mostrarNotificacao('success', data.message || 'Rascunho atualizado com sucesso!');
                         } else {
-                            // Mostra mensagem de erro
                             mostrarNotificacao('error', data.message || 'Erro ao salvar rascunho.');
                         }
                     })
                     .catch(error => {
                         console.error('Erro:', error);
-                        mostrarNotificacao('error', 'Erro ao salvar rascunho. Tente novamente.');
+                        let msg = error.message || 'Erro ao salvar rascunho. Tente novamente.';
+                        msg = msg.replace(/\\n/g, '<br>');
+                        mostrarNotificacao('error', msg);
                     })
                     .finally(() => {
                         btnSalvar.disabled = false;
@@ -793,39 +801,62 @@
             // Função para mostrar notificações
             function mostrarNotificacao(tipo, mensagem) {
                 // Remove notificações existentes
-                const notificacaoExistente = document.querySelector('.notificacao-flutuante');
-                if (notificacaoExistente) {
-                    notificacaoExistente.remove();
-                }
+                const notificacoes = document.querySelectorAll('.notificacao-flutuante');
+                notificacoes.forEach(n => {
+                    n.classList.add('translate-x-full', 'opacity-0');
+                    setTimeout(() => n.remove(), 300);
+                });
 
                 // Cria a notificação
                 const notificacao = document.createElement('div');
-                notificacao.className = `notificacao-flutuante fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg ${
-            tipo === 'success' ? 'bg-green-500' : 'bg-red-500'
-        } text-white flex items-center gap-3 transform transition-all duration-300 translate-x-full`;
+                
+                const bgColor = tipo === 'success' ? 'bg-[#009496]' : 'bg-[#e11d48]';
+                const icon = tipo === 'success' 
+                    ? '<i class="fas fa-check-circle text-xl"></i>' 
+                    : '<i class="fas fa-exclamation-circle text-xl"></i>';
+
+                notificacao.className = `notificacao-flutuante fixed top-6 right-6 z-[9999] px-6 py-4 rounded-2xl shadow-2xl ${bgColor} text-white flex items-start gap-4 transform transition-all duration-500 translate-x-full max-w-md border border-white/20 backdrop-blur-md`;
 
                 notificacao.innerHTML = `
-            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                ${tipo === 'success'
-                    ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>'
-                    : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>'
-                }
-            </svg>
-            <span class="text-sm font-medium">${mensagem}</span>
-        `;
+                    <div class="flex-shrink-0 mt-0.5">
+                        ${icon}
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm font-bold leading-tight mb-1">${tipo === 'success' ? 'Sucesso!' : 'Algo deu errado'}</p>
+                        <div class="text-xs font-medium leading-relaxed opacity-95">${mensagem}</div>
+                    </div>
+                    <button onclick="fecharNotificacao(this)" class="flex-shrink-0 ml-2 p-1 hover:bg-white/20 rounded-lg transition-colors">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
 
                 document.body.appendChild(notificacao);
 
                 // Animação de entrada
-                setTimeout(() => {
-                    notificacao.classList.remove('translate-x-full');
-                }, 100);
+                requestAnimationFrame(() => {
+                    setTimeout(() => {
+                        notificacao.classList.remove('translate-x-full');
+                    }, 50);
+                });
 
-                // Remove após 3 segundos
-                setTimeout(() => {
-                    notificacao.classList.add('translate-x-full');
-                    setTimeout(() => notificacao.remove(), 300);
-                }, 3000);
+                // Remove automaticamente após tempo variável
+                const timer = tipo === 'success' ? 4000 : 12000;
+                const autoHide = setTimeout(() => {
+                    fecharNotificacao(notificacao);
+                }, timer);
+
+                notificacao.dataset.timerId = autoHide;
+            }
+
+            window.fecharNotificacao = function(el) {
+                const target = el instanceof HTMLElement && el.classList.contains('notificacao-flutuante') 
+                    ? el 
+                    : el.closest('.notificacao-flutuante');
+                
+                if (target) {
+                    target.classList.add('translate-x-full', 'opacity-0');
+                    setTimeout(() => target.remove(), 500);
+                }
             }
 
             window.confirmarCancelamento = function() {

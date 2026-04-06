@@ -156,6 +156,10 @@
                             data-tab="itens">
                         Itens da Ata
                     </button>
+                    <button onclick="mostrarAba('saldo')" class="tab-button py-4 px-1 border-b-2 font-medium text-sm"
+                            data-tab="saldo">
+                        Saldo Disponível para Contratação
+                    </button>
                 </nav>
             </div>
         </div>
@@ -816,6 +820,158 @@
                 </div>
             @endif
         </div>
+
+        <!-- Aba: Saldo Disponível para Contratação -->
+        <div id="aba-saldo" class="tab-content hidden">
+            @php
+                $totalLicitado = collect($dadosAtas)->sum('quantidade_total');
+                $totalAdquirido = collect($dadosAtas)->sum('quantidade_utilizada');
+                $totalSaldo = collect($dadosAtas)->sum('quantidade_disponivel');
+                $totalValorDisponivel = collect($dadosAtas)->sum('valor_total_disponivel');
+                $itensSaldo = collect($dadosAtas)->filter(fn($i) => $i['quantidade_disponivel'] > 0)->count();
+                $itensEsgotados = collect($dadosAtas)->filter(fn($i) => $i['quantidade_disponivel'] <= 0)->count();
+            @endphp
+
+            {{-- Cards de resumo --}}
+            <!-- <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div class="bg-white rounded-xl shadow p-5 flex items-center gap-4">
+                    <div class="bg-blue-100 p-3 rounded-lg">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase font-medium">Total Licitado</p>
+                        <p class="text-lg font-bold text-gray-900">{{ number_format($totalLicitado, 2, ',', '.') }}</p>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow p-5 flex items-center gap-4">
+                    <div class="bg-yellow-100 p-3 rounded-lg">
+                        <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase font-medium">Total Adquirido</p>
+                        <p class="text-lg font-bold text-gray-900">{{ number_format($totalAdquirido, 2, ',', '.') }}</p>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow p-5 flex items-center gap-4">
+                    <div class="bg-green-100 p-3 rounded-lg">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase font-medium">Saldo Disponível</p>
+                        <p class="text-lg font-bold text-green-700">{{ number_format($totalSaldo, 2, ',', '.') }}</p>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow p-5 flex items-center gap-4">
+                    <div class="bg-purple-100 p-3 rounded-lg">
+                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase font-medium">Valor Disponível</p>
+                        <p class="text-lg font-bold text-purple-700">R$ {{ number_format($totalValorDisponivel, 2, ',', '.') }}</p>
+                    </div>
+                </div>
+            </div> -->
+
+            {{-- Filtro de busca e legenda --}}
+            <div class="bg-white rounded-xl shadow mb-1">
+                <div class="p-4 border-b flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div>
+                        <h3 class="text-base font-bold text-gray-900">Saldo por Item</h3>
+                        <p class="text-sm text-gray-500 mt-0.5">
+                            <span class="font-medium text-green-600">{{ $itensSaldo }}</span> itens com saldo &middot;
+                            <span class="font-medium text-red-500">{{ $itensEsgotados }}</span> esgotados
+                        </p>
+                    </div>
+                    <div class="flex gap-2">
+                        <input type="text" id="saldo-search"
+                               oninput="filtrarSaldo(this.value)"
+                               placeholder="Buscar item..."
+                               class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-52">
+                        <select id="saldo-filter" onchange="filtrarSaldo(document.getElementById('saldo-search').value)"
+                                class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="todos">Todos</option>
+                            <option value="disponivel">Com Saldo</option>
+                            <option value="esgotado">Esgotados</option>
+                        </select>
+                        <button onclick="baixarSaldoXls()"
+                                title="Exportar saldo dos itens para Excel"
+                                class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-lg transition-colors shadow-sm">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                            </svg>
+                            Baixar XLS
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full" id="tabela-saldo">
+                        <thead class="bg-gray-50">
+                            <tr class="text-xs text-gray-500 uppercase tracking-wider">
+                                <th class="px-6 py-3 text-left">Item</th>
+                                <th class="px-6 py-3 text-right">Licitado</th>
+                                <th class="px-6 py-3 text-right">Adquirido</th>
+                                <th class="px-6 py-3 text-right">Saldo</th>
+                                <th class="px-6 py-3 text-left" style="min-width:180px">Progresso</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100" id="tbody-saldo">
+                            @foreach ($dadosAtas as $item)
+                                @php
+                                    $pct = $item['percentual_utilizado'];
+                                    $saldoZero = $item['quantidade_disponivel'] <= 0;
+                                    // Cor da barra: verde até 50%, amarelo até 80%, vermelho acima
+                                    $barColor = $pct >= 100 ? '#ef4444' : ($pct >= 80 ? '#f59e0b' : '#10b981');
+                                @endphp
+                                <tr class="hover:bg-gray-50 saldo-row"
+                                    data-status="{{ $saldoZero ? 'esgotado' : 'disponivel' }}"
+                                    data-descricao="{{ strtolower($item['item'] . ' ' . $item['descricao'] . ' ' . $item['vencedor']) }}">
+                                    <td class="px-6 py-4">
+                                        <div class="font-medium text-gray-900 text-sm">{{ $item['item'] }}</div>
+                                        <div class="text-xs text-gray-500 mt-0.5">{{ Str::limit($item['descricao'], 70) }}</div>
+                                        <div class="text-xs text-gray-400 mt-0.5">{{ $item['vencedor'] }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <span class="font-medium text-gray-700">{{ number_format($item['quantidade_total'], 2, ',', '.') }}</span>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <span class="font-semibold {{ $item['quantidade_utilizada'] > 0 ? 'text-blue-700' : 'text-gray-400' }}">
+                                            {{ number_format($item['quantidade_utilizada'], 2, ',', '.') }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        @if ($saldoZero)
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">Esgotado</span>
+                                        @else
+                                            <span class="font-bold text-green-700">{{ number_format($item['quantidade_disponivel'], 2, ',', '.') }}</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="flex-1 bg-gray-200 rounded-full overflow-hidden" style="height:8px">
+                                                <div class="h-full rounded-full transition-all"
+                                                     style="width: {{ min($pct, 100) }}%; background-color: {{ $barColor }};"></div>
+                                            </div>
+                                            <span class="text-xs text-gray-500 whitespace-nowrap" style="min-width:38px">{{ number_format($pct, 1) }}%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                    <div id="saldo-empty" class="hidden text-center py-10 text-gray-400 text-sm">Nenhum item encontrado.</div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Modal de Contratação -->
@@ -1085,6 +1241,35 @@
 
             document.getElementById('aba-' + aba).classList.remove('hidden');
             document.getElementById('aba-' + aba).classList.add('active');
+        }
+
+        // ==============================================
+        // FUNÇÕES DA ABA SALDO DISPONÍVEL
+        // ==============================================
+
+        function filtrarSaldo(busca) {
+            const filtro = (document.getElementById('saldo-filter')?.value || 'todos');
+            const termo = (busca || '').toLowerCase().trim();
+            const rows = document.querySelectorAll('.saldo-row');
+            let visiveis = 0;
+
+            rows.forEach(row => {
+                const descricao = row.dataset.descricao || '';
+                const status = row.dataset.status || '';
+
+                const matchTexto = termo === '' || descricao.includes(termo);
+                const matchFiltro = filtro === 'todos' || status === filtro;
+
+                if (matchTexto && matchFiltro) {
+                    row.classList.remove('hidden');
+                    visiveis++;
+                } else {
+                    row.classList.add('hidden');
+                }
+            });
+
+            const emptyEl = document.getElementById('saldo-empty');
+            if (emptyEl) emptyEl.classList.toggle('hidden', visiveis > 0);
         }
 
         // ==============================================
@@ -2337,6 +2522,74 @@
         }
     `;
         document.head.appendChild(estilo);
+    </script>
+
+    {{-- SheetJS para exportação XLS --}}
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+    <script>
+        /**
+         * Exporta os itens visíveis da aba "Saldo Disponível" para um arquivo .xlsx
+         * Colunas: Item | Descrição | Vencedor | Licitado | Adquirido | Saldo
+         */
+        function baixarSaldoXls() {
+            const rows = document.querySelectorAll('.saldo-row:not(.hidden)');
+
+            if (rows.length === 0) {
+                alert('Nenhum item visível para exportar.');
+                return;
+            }
+
+            // Monta o array de dados
+            const dados = [['Item', 'Descrição', 'Vencedor', 'Licitado', 'Adquirido', 'Saldo']];
+
+            rows.forEach(row => {
+                const celulas = row.querySelectorAll('td');
+                // td[0]: Item / Descrição / Vencedor  td[1]: Licitado  td[2]: Adquirido  td[3]: Saldo
+                const itemDiv     = celulas[0]?.querySelectorAll('div');
+                const item        = itemDiv?.[0]?.innerText?.trim() ?? '';
+                const descricao   = itemDiv?.[1]?.innerText?.trim() ?? '';
+                const vencedor    = itemDiv?.[2]?.innerText?.trim() ?? '';
+
+                // Converte formatação BR para número
+                const parseBR = txt => {
+                    const s = (txt || '').trim()
+                        .replace(/\./g, '')
+                        .replace(',', '.');
+                    const n = parseFloat(s);
+                    return isNaN(n) ? 0 : n;
+                };
+
+                const licitado  = parseBR(celulas[1]?.innerText);
+                const adquirido = parseBR(celulas[2]?.innerText);
+
+                // Saldo pode ser "Esgotado" (badge) ou um número
+                const saldoText = celulas[3]?.innerText?.trim() ?? '';
+                const saldo = saldoText.toLowerCase() === 'esgotado' ? 0 : parseBR(saldoText);
+
+                dados.push([item, descricao, vencedor, licitado, adquirido, saldo]);
+            });
+
+            // Cria workbook
+            const ws = XLSX.utils.aoa_to_sheet(dados);
+
+            // Largura das colunas
+            ws['!cols'] = [
+                { wch: 20 },  // Item
+                { wch: 60 },  // Descrição
+                { wch: 35 },  // Vencedor
+                { wch: 14 },  // Licitado
+                { wch: 14 },  // Adquirido
+                { wch: 14 },  // Saldo
+            ];
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Saldo Disponível');
+
+            // Nome do arquivo com número do processo
+            const processo = '{{ $processo->numero_processo }}';
+            const dataHoje = new Date().toISOString().slice(0, 10);
+            XLSX.writeFile(wb, `Saldo_${processo}_${dataHoje}.xlsx`);
+        }
     </script>
 
     <style>
