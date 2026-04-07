@@ -41,8 +41,8 @@ class RolePermissionSeeder extends Seeder
                 'fiscalizar contratos',
                 'atas e contratacoes',
             ],
-            'colaborador_licicon' => ['dar seguimento processos'],
-            'prefeitura'          => ['assinar processos', 'contratos', 'etp inteligente'],
+            'colaborador_licicon' => ['dar seguimento processos', 'atas e contratacoes'],
+            'prefeitura'          => ['assinar processos', 'contratos', 'etp inteligente', 'atas e contratacoes'],
         ];
 
         // Sincroniza permissões de cada role

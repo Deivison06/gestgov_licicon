@@ -5,17 +5,6 @@
 @section('content')
     <div class="py-6">
         @php
-            $unidadesData = $processo->prefeitura->unidades->map(function ($unidade) {
-                return [
-                    'id' => $unidade->id,
-                    'nome' => $unidade->nome,
-                    'servidor_responsavel' => $unidade->servidor_responsavel,
-                    'cargo_responsavel' => $unidade->cargo_responsavel ?? '',
-                    'numero_portaria' => $unidade->numero_portaria,
-                    'data_portaria' => $unidade->data_portaria,
-                ];
-            });
-
             // Decodificar os dados da ata se existirem
             $camposAta = $contrato
                 ? [
@@ -28,9 +17,12 @@
                 ]
                 : [];
 
-            $assinantesAta = $dadosAta ? json_decode($dadosAta->assinantes ?? '[]', true) : [];
-            $contratacoesSelecionadas = $dadosAta
-                ? json_decode($dadosAta->contratacoes_selecionadas ?? '[]', true)
+            $assinantesAta = $dadosAta 
+                ? (is_array($dadosAta->assinantes) ? $dadosAta->assinantes : json_decode($dadosAta->assinantes ?? '[]', true)) 
+                : [];
+            
+            $contratacoesSelecionadas = $dadosAta 
+                ? (is_array($dadosAta->contratacoes_selecionadas) ? $dadosAta->contratacoes_selecionadas : json_decode($dadosAta->contratacoes_selecionadas ?? '[]', true)) 
                 : [];
         @endphp
 
@@ -357,12 +349,15 @@
                             <tbody class="divide-y divide-gray-200">
                             @foreach ($documentos as $documento)
                                 @php
-                                    // Tenta acessar de duas formas: do JSON do documento ou do modelo Contrato
-                                    $camposJson = json_decode($documento->campos ?? '{}', true);
+                                    // Com o cast 'array' no modelo Documento, os campos já vêm decodificados,
+                                    // mas em produção pode vir como string se houver cache/problemas de cast
+                                    $camposJson = is_array($documento->campos) 
+                                        ? $documento->campos 
+                                        : json_decode($documento->campos ?? '{}', true);
+                                    
+                                    $camposJson = $camposJson ?? [];
                                     $numeroContrato = $camposJson['numero_contrato'] ?? 'Não informado';
-                                    $dataAssinatura =
-                                        $documento->campos['data_assinatura_contrato'] ??
-                                        ($documento->contrato->data_assinatura_contrato ?? null);
+                                    $dataAssinatura = $camposJson['data_assinatura_contrato'] ?? null;
                                     $contratacoesIncluidas = $documento->contratacoes_selecionadas ?? [];
                                     $valorTotal = $documento->valor_total ?? 0;
                                     $quantidadeItens = $documento->quantidade_itens ?? 0;
@@ -771,45 +766,60 @@
                             </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200">
-                            @foreach ($dadosAtas as $item)
+                                @php
+                                    // Agrupamos sempre. Se não houver lote, o grupo será uma string vazia ou null.
+                                    $itensAgrupados = collect($dadosAtas)->groupBy('lote_num');
+                                @endphp
 
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-6 py-4">
-                                        <div class="font-medium text-gray-900">{{ $item['item'] }}</div>
-                                        <div class="text-sm text-gray-500">{{ $item['descricao'] }}</div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        {{ $item['vencedor'] }}
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="font-medium">
-                                            {{ number_format($item['quantidade_contratada'], 2, ',', '.') }}</div>
-                                        <div class="text-sm text-gray-500">
-                                            Disp: {{ number_format($item['quantidade_disponivel'], 2, ',', '.') }}
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="font-bold">R$
-                                            {{ number_format($item['valor_total_contratado'], 2, ',', '.') }}</div>
-                                        <div class="text-sm text-gray-500">
-                                            R$ {{ number_format($item['valor_unitario'], 2, ',', '.') }} un
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        @if ($item['status'] === 'ESGOTADO')
-                                            <span
-                                                class="px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
-                                                    Esgotado
-                                                </span>
-                                        @else
-                                            <span
-                                                class="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                                                    Disponível
-                                                </span>
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endforeach
+                                @foreach($itensAgrupados as $loteNum => $itensDoLote)
+                                    {{-- Só exibe o cabeçalho do lote se o número do lote existir ou se o tipo for LOTE --}}
+                                    @if(!empty($loteNum) || $processo->tipo_contratacao == \App\Enums\TipoContratacaoEnum::LOTE->value)
+                                        <tr class="bg-gray-100 border-t border-b border-gray-200">
+                                            <td colspan="5" class="px-6 py-2 text-sm font-bold text-gray-700">
+                                                LOTE {{ $loteNum ?: 'Único / Global' }}
+                                            </td>
+                                        </tr>
+                                    @endif
+
+                                    @foreach ($itensDoLote as $item)
+                                        <tr class="hover:bg-gray-50 border-b border-gray-100">
+                                            <td class="px-6 py-4">
+                                                <div class="font-medium text-gray-900">{{ $item['item'] }}</div>
+                                                <div class="text-sm text-gray-500">{{ $item['descricao'] }}</div>
+                                            </td>
+                                            <td class="px-6 py-4 text-sm">{{ $item['vencedor'] }}</td>
+                                            <td class="px-6 py-4">
+                                                <div class="font-medium text-gray-900">
+                                                    {{ number_format($item['quantidade_total'], 2, ',', '.') }}
+                                                    <span class="text-xs text-gray-400 font-normal ml-1">Licitado</span>
+                                                </div>
+                                                <div class="flex flex-col gap-0.5 mt-1">
+                                                    <div class="text-xs text-blue-600 font-medium">
+                                                        Adquirido: {{ number_format($item['quantidade_utilizada'], 2, ',', '.') }}
+                                                    </div>
+                                                    <div class="text-xs text-gray-500">
+                                                        Saldo: {{ number_format($item['quantidade_disponivel'], 2, ',', '.') }}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <div class="font-bold text-gray-900">
+                                                    R$ {{ number_format($item['valor_total_item'], 2, ',', '.') }}
+                                                </div>
+                                                <div class="text-xs text-gray-500 mt-0.5">
+                                                    Unit: R$ {{ number_format($item['valor_unitario'], 2, ',', '.') }}
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                @if ($item['quantidade_disponivel'] <= 0)
+                                                    <span class="px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Esgotado</span>
+                                                @else
+                                                    <span class="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Disponível</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                @endforeach
                             </tbody>
                         </table>
                     </div>
@@ -910,6 +920,17 @@
                             </svg>
                             Baixar XLS
                         </button>
+
+                        <a href="{{ route('admin.atas.exportar.saldo.pdf', $processo->id) }}"
+                           target="_blank"
+                           title="Exportar saldo dos itens para PDF"
+                           class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 active:bg-red-800 rounded-lg transition-colors shadow-sm">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                            </svg>
+                            Baixar PDF
+                        </a>
                     </div>
                 </div>
 
@@ -925,47 +946,99 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100" id="tbody-saldo">
-                            @foreach ($dadosAtas as $item)
+                            @if($processo->tipo_contratacao == \App\Enums\TipoContratacaoEnum::LOTE->value || $processo->tipo_contratacao == \App\Enums\TipoContratacaoEnum::LOTE)
                                 @php
-                                    $pct = $item['percentual_utilizado'];
-                                    $saldoZero = $item['quantidade_disponivel'] <= 0;
-                                    // Cor da barra: verde até 50%, amarelo até 80%, vermelho acima
-                                    $barColor = $pct >= 100 ? '#ef4444' : ($pct >= 80 ? '#f59e0b' : '#10b981');
+                                    $itensAgrupados = collect($dadosAtas)->groupBy('lote_num');
                                 @endphp
-                                <tr class="hover:bg-gray-50 saldo-row"
-                                    data-status="{{ $saldoZero ? 'esgotado' : 'disponivel' }}"
-                                    data-descricao="{{ strtolower($item['item'] . ' ' . $item['descricao'] . ' ' . $item['vencedor']) }}">
-                                    <td class="px-6 py-4">
-                                        <div class="font-medium text-gray-900 text-sm">{{ $item['item'] }}</div>
-                                        <div class="text-xs text-gray-500 mt-0.5">{{ Str::limit($item['descricao'], 70) }}</div>
-                                        <div class="text-xs text-gray-400 mt-0.5">{{ $item['vencedor'] }}</div>
-                                    </td>
-                                    <td class="px-6 py-4 text-right">
-                                        <span class="font-medium text-gray-700">{{ number_format($item['quantidade_total'], 2, ',', '.') }}</span>
-                                    </td>
-                                    <td class="px-6 py-4 text-right">
-                                        <span class="font-semibold {{ $item['quantidade_utilizada'] > 0 ? 'text-blue-700' : 'text-gray-400' }}">
-                                            {{ number_format($item['quantidade_utilizada'], 2, ',', '.') }}
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 text-right">
-                                        @if ($saldoZero)
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">Esgotado</span>
-                                        @else
-                                            <span class="font-bold text-green-700">{{ number_format($item['quantidade_disponivel'], 2, ',', '.') }}</span>
-                                        @endif
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex-1 bg-gray-200 rounded-full overflow-hidden" style="height:8px">
-                                                <div class="h-full rounded-full transition-all"
-                                                     style="width: {{ min($pct, 100) }}%; background-color: {{ $barColor }};"></div>
+                                @foreach($itensAgrupados as $loteNum => $itensDoLote)
+                                    <tr class="bg-gray-100 border-t border-b border-gray-200 saldo-row always-visible">
+                                        <td colspan="5" class="px-6 py-2 text-sm font-bold text-gray-700">
+                                            LOTE {{ $loteNum ?: 'Único' }}
+                                        </td>
+                                    </tr>
+                                    @foreach ($itensDoLote as $item)
+                                        @php
+                                            $pct = $item['percentual_utilizado'];
+                                            $saldoZero = $item['quantidade_disponivel'] <= 0;
+                                            $barColor = $pct >= 100 ? '#ef4444' : ($pct >= 80 ? '#f59e0b' : '#10b981');
+                                        @endphp
+                                        <tr class="hover:bg-gray-50 saldo-row"
+                                            data-status="{{ $saldoZero ? 'esgotado' : 'disponivel' }}"
+                                            data-descricao="{{ strtolower($item['item'] . ' ' . $item['descricao'] . ' ' . $item['vencedor']) }}">
+                                            <td class="px-6 py-4 border-b border-gray-100">
+                                                <div class="font-medium text-gray-900 text-sm">{{ $item['item'] }}</div>
+                                                <div class="text-xs text-gray-500 mt-0.5">{{ Str::limit($item['descricao'], 70) }}</div>
+                                                <div class="text-xs text-gray-400 mt-0.5">{{ $item['vencedor'] }}</div>
+                                            </td>
+                                            <td class="px-6 py-4 text-right border-b border-gray-100">
+                                                <span class="font-medium text-gray-700">{{ number_format($item['quantidade_total'], 2, ',', '.') }}</span>
+                                            </td>
+                                            <td class="px-6 py-4 text-right border-b border-gray-100">
+                                                <span class="font-semibold {{ $item['quantidade_utilizada'] > 0 ? 'text-blue-700' : 'text-gray-400' }}">
+                                                    {{ number_format($item['quantidade_utilizada'], 2, ',', '.') }}
+                                                </span>
+                                            </td>
+                                            <td class="px-6 py-4 text-right border-b border-gray-100">
+                                                @if ($saldoZero)
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">Esgotado</span>
+                                                @else
+                                                    <span class="font-bold text-green-700">{{ number_format($item['quantidade_disponivel'], 2, ',', '.') }}</span>
+                                                @endif
+                                            </td>
+                                            <td class="px-6 py-4 border-b border-gray-100">
+                                                <div class="flex items-center gap-3">
+                                                    <div class="flex-1 bg-gray-200 rounded-full overflow-hidden" style="height:8px">
+                                                        <div class="h-full rounded-full transition-all"
+                                                             style="width: {{ min($pct, 100) }}%; background-color: {{ $barColor }};"></div>
+                                                    </div>
+                                                    <span class="text-xs text-gray-500 whitespace-nowrap" style="min-width:38px">{{ number_format($pct, 1) }}%</span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                @endforeach
+                            @else
+                                @foreach ($dadosAtas as $item)
+                                    @php
+                                        $pct = $item['percentual_utilizado'];
+                                        $saldoZero = $item['quantidade_disponivel'] <= 0;
+                                        $barColor = $pct >= 100 ? '#ef4444' : ($pct >= 80 ? '#f59e0b' : '#10b981');
+                                    @endphp
+                                    <tr class="hover:bg-gray-50 saldo-row"
+                                        data-status="{{ $saldoZero ? 'esgotado' : 'disponivel' }}"
+                                        data-descricao="{{ strtolower($item['item'] . ' ' . $item['descricao'] . ' ' . $item['vencedor']) }}">
+                                        <td class="px-6 py-4 border-b border-gray-100">
+                                            <div class="font-medium text-gray-900 text-sm">{{ $item['item'] }}</div>
+                                            <div class="text-xs text-gray-500 mt-0.5">{{ Str::limit($item['descricao'], 70) }}</div>
+                                            <div class="text-xs text-gray-400 mt-0.5">{{ $item['vencedor'] }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 text-right border-b border-gray-100">
+                                            <span class="font-medium text-gray-700">{{ number_format($item['quantidade_total'], 2, ',', '.') }}</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-right border-b border-gray-100">
+                                            <span class="font-semibold {{ $item['quantidade_utilizada'] > 0 ? 'text-blue-700' : 'text-gray-400' }}">
+                                                {{ number_format($item['quantidade_utilizada'], 2, ',', '.') }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 text-right border-b border-gray-100">
+                                            @if ($saldoZero)
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">Esgotado</span>
+                                            @else
+                                                <span class="font-bold text-green-700">{{ number_format($item['quantidade_disponivel'], 2, ',', '.') }}</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-6 py-4 border-b border-gray-100">
+                                            <div class="flex items-center gap-3">
+                                                <div class="flex-1 bg-gray-200 rounded-full overflow-hidden" style="height:8px">
+                                                    <div class="h-full rounded-full transition-all"
+                                                         style="width: {{ min($pct, 100) }}%; background-color: {{ $barColor }};"></div>
+                                                </div>
+                                                <span class="text-xs text-gray-500 whitespace-nowrap" style="min-width:38px">{{ number_format($pct, 1) }}%</span>
                                             </div>
-                                            <span class="text-xs text-gray-500 whitespace-nowrap" style="min-width:38px">{{ number_format($pct, 1) }}%</span>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforeach
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            @endif
                         </tbody>
                     </table>
                     <div id="saldo-empty" class="hidden text-center py-10 text-gray-400 text-sm">Nenhum item encontrado.</div>
@@ -1254,6 +1327,11 @@
             let visiveis = 0;
 
             rows.forEach(row => {
+                if (row.classList.contains('always-visible')) {
+                    row.classList.remove('hidden');
+                    return;
+                }
+
                 const descricao = row.dataset.descricao || '';
                 const status = row.dataset.status || '';
 
@@ -1267,6 +1345,9 @@
                     row.classList.add('hidden');
                 }
             });
+
+            // Optional enhancement: Hide lot headers if all their items are hidden
+            // But for now keeping them always visible is safe enough.
 
             const emptyEl = document.getElementById('saldo-empty');
             if (emptyEl) emptyEl.classList.toggle('hidden', visiveis > 0);

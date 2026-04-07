@@ -240,16 +240,28 @@
             <tbody>
             @if(count($itensTabela) > 0)
                 @foreach($itensTabela as $item)
-                    {{-- Ignora o cabeçalho de LOTE e o espaçador --}}
-                    @if(!(isset($item['is_lote_header']) && $item['is_lote_header']) && !(isset($item['is_spacer']) && $item['is_spacer']))
-                        <tr>
-                            <td style="border:1px solid #000; padding:14px; vertical-align:top; text-align:center;">{{ $item['item'] }}</td>
-                            <td style="border:1px solid #000; padding:14px; vertical-align:top;">{{ $item['especificacao'] }}</td>
-                            <td style="border:1px solid #000; padding:14px; vertical-align:top; text-align:center;">{{ $item['unidade_medida'] }}</td>
-                            <td style="border:1px solid #000; padding:14px; vertical-align:top; text-align:center;">{{ $item['quantidade'] }}</td>
-                            <td style="border:1px solid #000; padding:14px; vertical-align:top; text-align:right;">{{ $item['valor_unitario'] }}</td>
-                            <td style="border:1px solid #000; padding:14px; vertical-align:top; text-align:right;">{{ $item['valor_total'] }}</td>
-                        </tr>
+                    {{-- Ignora apenas as linhas que são apenas espaçadores vazios --}}
+                    @if(!(isset($item['is_spacer']) && $item['is_spacer']))
+                        
+                        {{-- Se for cabeçalho de LOTE, cria a linha divisória --}}
+                        @if(isset($item['is_lote_header']) && $item['is_lote_header'])
+                            <tr>
+                                <td colspan="6" style="border:1px solid #000; padding:10px; background-color: #f2f2f2; font-weight:bold; text-align:left;">
+                                    {{ $item['especificacao'] ?? $item['item'] }}
+                                </td>
+                            </tr>
+                        @else
+                            {{-- Renderização normal do ITEM --}}
+                            <tr>
+                                <td style="border:1px solid #000; padding:14px; vertical-align:top; text-align:center;">{{ $item['item'] }}</td>
+                                <td style="border:1px solid #000; padding:14px; vertical-align:top;">{{ $item['especificacao'] }}</td>
+                                <td style="border:1px solid #000; padding:14px; vertical-align:top; text-align:center;">{{ $item['unidade_medida'] }}</td>
+                                <td style="border:1px solid #000; padding:14px; vertical-align:top; text-align:center;">{{ $item['quantidade'] }}</td>
+                                <td style="border:1px solid #000; padding:14px; vertical-align:top; text-align:right;">{{ $item['valor_unitario'] }}</td>
+                                <td style="border:1px solid #000; padding:14px; vertical-align:top; text-align:right;">{{ $item['valor_total'] }}</td>
+                            </tr>
+                        @endif
+
                     @endif
                 @endforeach
 

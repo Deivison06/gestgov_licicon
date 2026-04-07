@@ -19,48 +19,45 @@ class AtaService
             'lotesContratados',
             'lotes',
             'user',
-            'vencedores' // Carregar vencedores para busca por nome
+            'vencedores'
         ]);
 
-        // Filtro por prefeitura
+        // 1. FILTROS GLOBAIS (Sempre aplicados com AND)
+        // Use ->value se for um Backed Enum (PHP 8.1+)
+        $query->where('modalidade', \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO->value ?? \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO);
+
+        $query->whereHas('detalhe', function($q) {
+            $q->where('tipo_srp', 'sim');
+        });
+
+        $query->has('vencedores');
+
+        // 2. FILTROS ESPECÍFICOS
         if ($prefeituraId) {
             $query->where('prefeitura_id', $prefeituraId);
         }
 
-        // Filtro por processo específico
         if ($processoId) {
             $query->where('id', $processoId);
         }
 
-        // Filtro por pesquisa livre
+        // 3. FILTRO DE PESQUISA (Agrupado para não quebrar os filtros acima)
         if ($search) {
-            \Log::info('Search term:', ['search' => $search]);
-
             $query->where(function($q) use ($search) {
-                // Busca por parte do objeto
                 $q->where('objeto', 'like', "%{$search}%")
-                    // Busca por número do processo
-                    ->orWhere('numero_processo', 'like', "%{$search}%")
-                    // Busca por número do procedimento
-                    ->orWhere('numero_procedimento', 'like', "%{$search}%")
-                    // Busca por prefeitura - DEPURAÇÃO
-                    ->orWhereHas('prefeitura', function($q2) use ($search) {
-                        \Log::info('Searching prefeitura for:', ['search' => $search]);
-                        $q2->where('nome', 'like', "%{$search}%")
-                            ->orWhere('cidade', 'like', "%{$search}%");
-                    })
-                    // Busca por nome do contratado (vencedor) - CORRIGIDO AQUI
-                    ->orWhereHas('vencedores', function($q3) use ($search) {
-                        // REMOVA 'nome' e use apenas 'razao_social'
-                        $q3->where('razao_social', 'like', "%{$search}%");
-                    });
+                ->orWhere('numero_processo', 'like', "%{$search}%")
+                ->orWhere('numero_procedimento', 'like', "%{$search}%")
+                ->orWhereHas('prefeitura', function($q2) use ($search) {
+                    $q2->where('nome', 'like', "%{$search}%")
+                        ->orWhere('cidade', 'like', "%{$search}%");
+                })
+                ->orWhereHas('vencedores', function($q3) use ($search) {
+                    $q3->where('razao_social', 'like', "%{$search}%");
+                });
             });
         }
 
-        // Ordenar do mais recente para o mais antigo
-        $query->orderBy('created_at', 'desc');
-
-        return $query->get();
+        return $query->orderBy('created_at', 'desc')->get();
     }
 
 
@@ -91,9 +88,36 @@ class AtaService
 
         $contrato = \App\Models\Contrato::where('processo_id', $processo->id)->first();
 
-        $totalContratacoes = LoteContratado::where('processo_id', $processo->id)->count();
-        $valorTotalContratado = LoteContratado::where('processo_id', $processo->id)->sum('valor_total');
+        $totalContratacoes = LoteContratado::where('processo_id', $processo->id)
+            ->whereIn('status', ['PENDENTE', 'CONTRATADO'])
+            ->count();
+        $valorTotalContratado = LoteContratado::where('processo_id', $processo->id)
+            ->whereIn('status', ['PENDENTE', 'CONTRATADO'])
+            ->sum('valor_total');
         $totalContratos = $documentos->count();
+
+        $unidadesData = $processo->prefeitura->unidades->map(function($u) {
+            $dataPortaria = $u->data_portaria;
+            if ($dataPortaria && !($dataPortaria instanceof \Carbon\Carbon)) {
+                try {
+                    $dataPortaria = \Carbon\Carbon::parse($dataPortaria);
+                } catch (\Exception $e) {
+                    $dataPortaria = null;
+                }
+            }
+
+            return [
+                'id' => $u->id,
+                'nome' => $u->nome,
+                'servidor_responsavel' => $u->servidor_responsavel,
+                'cargo_responsavel' => $u->cargo_responsavel,
+                'numero_portaria' => $u->numero_portaria,
+                'data_portaria' => $dataPortaria ? $dataPortaria->format('Y-m-d') : null,
+            ];
+        })->toArray();
+
+        $itensSaldo = collect($dadosAtas)->filter(fn($i) => $i['quantidade_disponivel'] > 0)->count();
+        $itensEsgotados = collect($dadosAtas)->filter(fn($i) => $i['quantidade_disponivel'] <= 0)->count();
 
         return compact(
             'processo',
@@ -104,7 +128,10 @@ class AtaService
             'contrato',
             'totalContratacoes',
             'valorTotalContratado',
-            'totalContratos'
+            'totalContratos',
+            'unidadesData',
+            'itensSaldo',
+            'itensEsgotados'
         );
     }
 
@@ -117,6 +144,14 @@ class AtaService
                     $query->whereIn('status', ['PENDENTE', 'CONTRATADO']);
                 }
             ]);
+
+        // FILTRO OBRIGATÓRIO: Apenas Pregão Eletrônico
+        $query->where('modalidade', \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO);
+
+        // FILTRO OBRIGATÓRIO: Apenas do tipo SRP
+        $query->whereHas('detalhe', function($q) {
+            $q->where('tipo_srp', 'sim');
+        });
 
         if ($prefeituraId) {
             $query->where('prefeitura_id', $prefeituraId);
@@ -159,47 +194,66 @@ class AtaService
         $dados = [];
 
         foreach ($processo->lotes as $lote) {
-            $quantidadeContratada = $lote->contratados
+            // Soma contratações já consolidadas (CONTRATADO)
+            $quantidadeAdquirida = $lote->contratados
                 ->where('processo_id', $processo->id)
+                ->where('status', 'CONTRATADO')
+                ->sum('quantidade_contratada');
+
+            // Soma contratações em planejamento (PENDENTE)
+            $quantidadePendente = $lote->contratados
+                ->where('processo_id', $processo->id)
+                ->where('status', 'PENDENTE')
                 ->sum('quantidade_contratada');
 
             $estoque = EstoqueLote::where('lote_id', $lote->id)
                 ->where('processo_id', $processo->id)
                 ->first();
 
-            $quantidadeDisponivel = $estoque ? (float) $estoque->quantidade_disponivel : (float) $lote->quantidade;
-            $quantidadeUtilizada = $estoque ? (float) $estoque->quantidade_utilizada : 0;
-
-            if ($quantidadeContratada == 0) {
-                $quantidadeContratada = (float) $lote->quantidade;
-            }
+            // O Licitado é fixo do Lote
+            $quantidadeLicitada = (float) $lote->quantidade;
+            
+            // O "Adquirido" visual na aba de Itens geralmente inclui o que já foi contratado de fato
+            $quantidadeUtilizada = $quantidadeAdquirida;
+            
+            // O "Saldo" é o que sobra do Licitado subtraindo o que já foi Adquirido E o que está Pendente
+            $quantidadeDisponivel = $quantidadeLicitada - ($quantidadeAdquirida + $quantidadePendente);
+            
+            // Garantir que não fique negativo por erros de arredondamento
+            $quantidadeDisponivel = max(0, $quantidadeDisponivel);
 
             $dados[] = [
                 'vencedor' => $lote->vencedor?->razao_social ?? 'Não definido',
                 'id' => $lote->id,
+                'lote_num' => $lote->lote,
                 'item' => $lote->item,
                 'descricao' => $lote->descricao,
                 'unidade' => $lote->unidade,
-                'quantidade_total' => (float) $lote->quantidade,
-                'quantidade_contratada' => $quantidadeContratada,
+                'quantidade_total' => $quantidadeLicitada,
+                'quantidade_contratada' => $quantidadeAdquirida + $quantidadePendente,
                 'quantidade_disponivel' => $quantidadeDisponivel,
                 'quantidade_utilizada' => $quantidadeUtilizada,
                 'valor_unitario' => (float) $lote->vl_unit,
-                'valor_total_contratado' => $quantidadeContratada * (float) $lote->vl_unit,
+                'valor_total_item' => $quantidadeLicitada * (float) $lote->vl_unit,
+                'valor_total_contratado' => ($quantidadeAdquirida + $quantidadePendente) * (float) $lote->vl_unit,
                 'valor_total_disponivel' => $quantidadeDisponivel * (float) $lote->vl_unit,
-                'percentual_utilizado' => (float) $lote->quantidade > 0
-                    ? round(($quantidadeUtilizada / (float) $lote->quantidade) * 100, 2)
+                'percentual_utilizado' => $quantidadeLicitada > 0
+                    ? round(($quantidadeUtilizada / $quantidadeLicitada) * 100, 2)
                     : 0,
                 'status' => $quantidadeDisponivel > 0 ? 'PARCIAL' : 'ESGOTADO',
-                'tem_contratacao' => $quantidadeUtilizada > 0,
+                'tem_contratacao' => ($quantidadeAdquirida + $quantidadePendente) > 0,
             ];
         }
 
         usort($dados, function($a, $b) {
-            if ($a['vencedor'] === $b['vencedor']) {
-                return strcmp($a['item'], $b['item']);
+            if ($a['lote_num'] === $b['lote_num']) {
+                if ($a['vencedor'] === $b['vencedor']) {
+                    // Ordenação natural para considerar números corretamente (ex: 2 antes de 10)
+                    return strnatcmp($a['item'], $b['item']);
+                }
+                return strcmp($a['vencedor'], $b['vencedor']);
             }
-            return strcmp($a['vencedor'], $b['vencedor']);
+            return (int) $a['lote_num'] - (int) $b['lote_num'];
         });
 
         return $dados;

@@ -31,11 +31,19 @@ class AtaController extends Controller
 
     public function index(Request $request)
     {
-        $prefeituras = Prefeitura::with(['processos' => function($query) {
-            $query->orderBy('created_at', 'desc');
-        }])->get();
-
+        $user = auth()->user();
         $prefeituraId = $request->get('prefeitura_id');
+
+        // Se o usuário for de uma prefeitura específica, ele só vê coisas dessa prefeitura
+        if ($user->prefeitura_id) {
+            $prefeituraId = $user->prefeitura_id;
+            $prefeituras = Prefeitura::where('id', $prefeituraId)->get();
+        } else {
+            $prefeituras = Prefeitura::with(['processos' => function($query) {
+                $query->orderBy('created_at', 'desc');
+            }])->get();
+        }
+
         $processoId = $request->get('processo_id');
         $search = $request->get('search'); // Novo campo de pesquisa
 
@@ -270,11 +278,18 @@ class AtaController extends Controller
 
     public function dashboard(Request $request)
     {
+        $user = auth()->user();
         $prefeituraId = $request->get('prefeitura_id');
+
+        if ($user->prefeitura_id) {
+            $prefeituraId = $user->prefeitura_id;
+            $prefeituras = Prefeitura::where('id', $prefeituraId)->get();
+        } else {
+            $prefeituras = Prefeitura::all();
+        }
 
         $processos = $this->ataService->getProcessosParaDashboard($prefeituraId);
         $estatisticas = $this->ataService->calcularEstatisticas($processos);
-        $prefeituras = Prefeitura::all();
 
         return view('Admin.Atas.dashboard', compact('processos', 'estatisticas', 'prefeituras', 'prefeituraId'));
     }
@@ -473,6 +488,19 @@ class AtaController extends Controller
                 'success' => false,
                 'message' => 'Erro ao desfazer contrato: ' . $e->getMessage()
             ], 500);
+        }
+    }
+    public function exportarSaldoPdf(Processo $processo)
+    {
+        try {
+            return $this->pdfService->gerarPdfSaldoDisponivel($processo);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Erro ao exportar PDF de saldo', [
+                'processo_id' => $processo->id,
+                'erro' => $e->getMessage()
+            ]);
+
+            return back()->with('error', 'Erro ao gerar PDF: ' . $e->getMessage());
         }
     }
 }

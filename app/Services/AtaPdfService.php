@@ -165,7 +165,7 @@ class AtaPdfService
             ->where('tipo_documento', 'contrato')
             ->first();
 
-        $assinantesAta = $dadosAta ? json_decode($dadosAta->assinantes ?? '[]', true) : [];
+        $assinantesAta = $dadosAta ? ($dadosAta->assinantes ?? []) : [];
 
         $dados = [
             'processo' => $processo,
@@ -576,7 +576,7 @@ class AtaPdfService
         ];
 
         if (!empty($campos)) {
-            $dadosDocumento['campos'] = json_encode($campos);
+            $dadosDocumento['campos'] = $campos;
             Log::info('Campos salvos no JSON do documento', [
                 'processo_id' => $processo->id,
                 'campos_json' => $campos,
@@ -584,11 +584,11 @@ class AtaPdfService
         }
 
         if (!empty($assinantes)) {
-            $dadosDocumento['assinantes'] = json_encode($assinantes);
+            $dadosDocumento['assinantes'] = $assinantes;
         }
 
         if (!empty($contratacoesIds)) {
-            $dadosDocumento['contratacoes_selecionadas'] = json_encode($contratacoesIds);
+            $dadosDocumento['contratacoes_selecionadas'] = $contratacoesIds;
         }
 
         $documentoExistente = Documento::where('processo_id', $processo->id)
@@ -802,5 +802,23 @@ class AtaPdfService
         }
 
         return $cpf;
+    }
+    public function gerarPdfSaldoDisponivel(Processo $processo)
+    {
+        $ataService = app(AtaService::class);
+        $dados = $ataService->prepararDadosParaExibicao($processo);
+        
+        $pdf = Pdf::loadView('Admin.Atas.pdf.saldo_disponivel', [
+            'processo' => $processo,
+            'prefeitura' => $processo->prefeitura,
+            'dadosAtas' => $dados['dadosAtas'],
+            'itensSaldo' => $dados['itensSaldo'],
+            'itensEsgotados' => $dados['itensEsgotados'],
+        ])->setPaper('a4', 'portrait');
+
+        $numeroProcessoLimpo = str_replace(['/', '\\'], '_', $processo->numero_processo);
+        $nomeArquivo = "saldo_ata_{$numeroProcessoLimpo}.pdf";
+
+        return $pdf->download($nomeArquivo);
     }
 }

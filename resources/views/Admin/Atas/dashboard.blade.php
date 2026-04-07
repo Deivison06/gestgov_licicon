@@ -38,14 +38,21 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label for="prefeitura_id">Prefeitura</label>
-                            <select name="prefeitura_id" id="prefeitura_id" class="form-control">
-                                <option value="">Todas as Prefeituras</option>
+                            <select name="prefeitura_id" id="prefeitura_id" 
+                                    {{ auth()->user()->prefeitura_id ? 'disabled' : '' }}
+                                    class="form-control">
+                                @if(!auth()->user()->prefeitura_id)
+                                    <option value="">Todas as Prefeituras</option>
+                                @endif
                                 @foreach($prefeituras as $prefeitura)
-                                    <option value="{{ $prefeitura->id }}" {{ $prefeituraId == $prefeitura->id ? 'selected' : '' }}>
+                                    <option value="{{ $prefeitura->id }}" {{ ($prefeituraId == $prefeitura->id || auth()->user()->prefeitura_id == $prefeitura->id) ? 'selected' : '' }}>
                                         {{ $prefeitura->cidade }} - {{ $prefeitura->uf }}
                                     </option>
                                 @endforeach
                             </select>
+                            @if(auth()->user()->prefeitura_id)
+                                <input type="hidden" name="prefeitura_id" value="{{ auth()->user()->prefeitura_id }}">
+                            @endif
                         </div>
                     </div>
                     <div class="col-md-6">

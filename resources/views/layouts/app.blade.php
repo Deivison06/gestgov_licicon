@@ -946,6 +946,7 @@
                         <i class="nav-icon fas fa-clipboard-list"></i>
                         <span>PROCESSOS</span>
                     </a>
+                    @endif
 
                     @can('atas e contratacoes')
                     <a href="{{ route('admin.atas.index') }}"
@@ -954,7 +955,6 @@
                         <span>ATAS E CONTRATAÇÕES</span>
                     </a>
                     @endcan
-                    @endif
 
                     {{-- ========================================= --}}
                     {{-- ETP INTELIGENTE --}}

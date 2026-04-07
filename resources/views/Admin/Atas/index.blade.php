@@ -35,14 +35,20 @@
                                 </label>
                                 <div class="mt-1">
                                     <select name="prefeitura_id" id="prefeitura_id"
+                                            {{ auth()->user()->prefeitura_id ? 'disabled' : '' }}
                                             class="block w-full px-3 py-2 text-base bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                                        <option value="">Todas as Prefeituras</option>
+                                        @if(!auth()->user()->prefeitura_id)
+                                            <option value="">Todas as Prefeituras</option>
+                                        @endif
                                         @foreach($prefeituras as $prefeitura)
-                                            <option value="{{ $prefeitura->id }}" {{ $prefeituraId == $prefeitura->id ? 'selected' : '' }}>
+                                            <option value="{{ $prefeitura->id }}" {{ ($prefeituraId == $prefeitura->id || auth()->user()->prefeitura_id == $prefeitura->id) ? 'selected' : '' }}>
                                                 {{ $prefeitura->cidade }} - {{ $prefeitura->uf }}
                                             </option>
                                         @endforeach
                                     </select>
+                                    @if(auth()->user()->prefeitura_id)
+                                        <input type="hidden" name="prefeitura_id" value="{{ auth()->user()->prefeitura_id }}">
+                                    @endif
                                 </div>
                             </div>
 

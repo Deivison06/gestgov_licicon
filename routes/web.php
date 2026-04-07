@@ -472,6 +472,9 @@ Route::prefix('admin')
             // Desfazer/cancelar contrato
             Route::post('/{processo}/desfazer-contrato/{documento}', [AtaController::class, 'desfazerContrato'])
                 ->name('contrato.desfazer');
+            // Exportar saldo para PDF
+            Route::get('/{processo}/exportar-saldo-pdf', [AtaController::class, 'exportarSaldoPdf'])
+                ->name('exportar.saldo.pdf');
         });
     });
 

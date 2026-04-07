@@ -25,7 +25,7 @@ class AtaDocumentoService
             ->where('tipo_documento', 'contrato')
             ->firstOrFail();
 
-        $contratacoesIds = json_decode($documento->contratacoes_selecionadas ?? '[]', true);
+        $contratacoesIds = $documento->contratacoes_selecionadas ?? [];
 
         $contratacoes = LoteContratado::whereIn('id', $contratacoesIds)
             ->where('processo_id', $processo->id)
@@ -113,13 +113,13 @@ class AtaDocumentoService
 
         if ($documento) {
             $documento->update([
-                'assinantes' => json_encode($assinantes)
+                'assinantes' => $assinantes
             ]);
         } else {
             Documento::create([
                 'processo_id' => $processo->id,
                 'tipo_documento' => 'contrato',
-                'assinantes' => json_encode($assinantes),
+                'assinantes' => $assinantes,
                 'gerado_em' => now()
             ]);
         }
@@ -138,13 +138,13 @@ class AtaDocumentoService
 
         if ($documento) {
             $documento->update([
-                'contratacoes_selecionadas' => json_encode($contratacoesSelecionadas)
+                'contratacoes_selecionadas' => $contratacoesSelecionadas
             ]);
         } else {
             Documento::create([
                 'processo_id' => $processo->id,
                 'tipo_documento' => 'contrato',
-                'contratacoes_selecionadas' => json_encode($contratacoesSelecionadas),
+                'contratacoes_selecionadas' => $contratacoesSelecionadas,
                 'gerado_em' => now()
             ]);
         }
@@ -167,7 +167,7 @@ class AtaDocumentoService
 
         return [
             'documentos' => $documentos->map(function($doc) {
-                $camposJson = json_decode($doc->campos ?? '{}', true);
+                $camposJson = $doc->campos ?? [];
                 return [
                     'id' => $doc->id,
                     'campos' => $doc->campos,

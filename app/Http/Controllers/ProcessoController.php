@@ -925,7 +925,12 @@ class ProcessoController extends Controller
     public function byPrefeitura(Request $request)
     {
         $prefeituraId = $request->input('prefeitura_id');
-        $processos = Processo::where('prefeitura_id', $prefeituraId)->get();
+        $processos = Processo::where('prefeitura_id', $prefeituraId)
+            ->where('modalidade', \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO)
+            ->whereHas('detalhe', function($q) {
+                $q->where('tipo_srp', 'sim');
+            })
+            ->get();
 
         return response()->json($processos);
     }
