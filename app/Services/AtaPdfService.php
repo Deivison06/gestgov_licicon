@@ -175,7 +175,7 @@ class AtaPdfService
             'dataSelecionada' => now()->format('Y-m-d'),
             'temContratacoesSelecionadas' => !empty($contratacoesIds),
             'contratacoes' => $contratacoes,
-            'itensTabela' => $this->prepararItensParaTabela($contratacoes),
+            'itensTabela' => $this->prepararItensParaTabela($processo, $contratacoes),
             'valorTotalContrato' => $valorTotalContrato,
             'quantidadeTotalContrato' => $quantidadeTotalContrato,
             'valorTotalPorExtenso' => $this->escreverValorPorExtenso($valorTotalContrato),
@@ -619,54 +619,49 @@ class AtaPdfService
             ->update(['status' => 'CONTRATADO']);
     }
 
-    private function prepararItensParaTabela($contratacoes): array
+    private function prepararItensParaTabela($processo, $contratacoes): array
     {
         $itens = [];
+        $itemNumero = 1;
 
-        // Agrupar contratacoes por lote
-        $contratacoesAgrupadas = $contratacoes->groupBy(function($contratacao) {
-            return $contratacao->lote->lote ?? '0';
+        // Ordenar contratações por lote e item (se houver)
+        $contratacoesOrdenadas = $contratacoes->sortBy(function($c) {
+            $loteNum = $c->lote->lote ?? '';
+            $itemNum = $c->lote->item ?? 0;
+            return sprintf('%05s-%010d', $loteNum, $itemNum);
         });
 
-        foreach ($contratacoesAgrupadas as $numeroLote => $contratacoesLote) {
-            // Adicionar linha do cabeçalho do lote se houver mais de um lote
-            if ($contratacoesAgrupadas->count() > 1) {
-                $itens[] = [
-                    'item' => '',
-                    'especificacao' => "LOTE {$numeroLote}",
-                    'unidade_medida' => '',
-                    'quantidade' => '',
-                    'valor_unitario' => '',
-                    'valor_total' => '',
-                    'is_lote_header' => true // Flag para estilizar diferente
-                ];
-            }
+        $loteAtual = null;
+        $isLoteProcess = $processo->tipo_contratacao?->getDisplayName() === 'LOTE';
 
-            // Adicionar itens deste lote
-            foreach ($contratacoesLote as $contratacao) {
-                if ($contratacao->lote) {
+        foreach ($contratacoesOrdenadas as $contratacao) {
+            if ($contratacao->lote) {
+                // Se o lote mudou e é um processo por lote, adiciona o cabeçalho do lote
+                if ($isLoteProcess && $loteAtual !== $contratacao->lote->lote) {
+                    $loteAtual = $contratacao->lote->lote;
                     $itens[] = [
-                        'item' => $contratacao->lote->item ?? '', // Usar o número do item do lote
-                        'especificacao' => $contratacao->lote->descricao ?? 'Não especificado',
-                        'unidade_medida' => $contratacao->lote->unidade ?? '',
-                        'quantidade' => number_format($contratacao->quantidade_contratada, 2, ',', '.'),
-                        'valor_unitario' => 'R$ ' . number_format($contratacao->valor_unitario, 2, ',', '.'),
-                        'valor_total' => 'R$ ' . number_format($contratacao->valor_total, 2, ',', '.'),
-                        'is_lote_header' => false
+                        'is_lote_header' => true,
+                        'item' => $loteAtual,
+                        'especificacao' => "LOTE " . $loteAtual,
+                        'unidade_medida' => '',
+                        'quantidade' => '',
+                        'valor_unitario' => '',
+                        'valor_total' => '',
+                        'marca' => '',
+                        'modelo' => '',
                     ];
                 }
-            }
 
-            // Adicionar linha vazia entre lotes (exceto no último)
-            if ($numeroLote != $contratacoesAgrupadas->keys()->last()) {
                 $itens[] = [
-                    'item' => '',
-                    'especificacao' => '',
-                    'unidade_medida' => '',
-                    'quantidade' => '',
-                    'valor_unitario' => '',
-                    'valor_total' => '',
-                    'is_spacer' => true // Flag para linha espaçadora
+                    'item' => $contratacao->lote->item ?? $itemNumero++,
+                    'especificacao' => $contratacao->lote->descricao ?? 'Não especificado',
+                    'unidade_medida' => $contratacao->lote->unidade ?? '',
+                    'quantidade' => number_format($contratacao->quantidade_contratada, 2, ',', '.'),
+                    'valor_unitario' => 'R$ ' . number_format($contratacao->valor_unitario, 2, ',', '.'),
+                    'valor_total' => 'R$ ' . number_format($contratacao->valor_total, 2, ',', '.'),
+                    'is_lote_header' => false,
+                    'marca' => $contratacao->lote->marca ?? '',
+                    'modelo' => $contratacao->lote->modelo ?? '',
                 ];
             }
         }

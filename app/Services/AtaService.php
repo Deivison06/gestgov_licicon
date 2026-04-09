@@ -88,13 +88,22 @@ class AtaService
 
         $contrato = \App\Models\Contrato::where('processo_id', $processo->id)->first();
 
-        $totalContratacoes = LoteContratado::where('processo_id', $processo->id)
-            ->whereIn('status', ['PENDENTE', 'CONTRATADO'])
-            ->count();
-        $valorTotalContratado = LoteContratado::where('processo_id', $processo->id)
-            ->whereIn('status', ['PENDENTE', 'CONTRATADO'])
-            ->sum('valor_total');
         $totalContratos = $documentos->count();
+
+        // Valores para os cards de resumo
+        $valorLicitado = (float) $processo->lotes->sum(function($lote) {
+            return (float) $lote->quantidade * (float) $lote->vl_unit;
+        });
+
+        $valorRealContratado = (float) LoteContratado::where('processo_id', $processo->id)
+            ->where('status', 'CONTRATADO')
+            ->sum('valor_total');
+            
+        $valorPendenteContratacao = (float) LoteContratado::where('processo_id', $processo->id)
+            ->where('status', 'PENDENTE')
+            ->sum('valor_total');
+
+        $saldoAContratar = $valorLicitado - $valorRealContratado;
 
         $unidadesData = $processo->prefeitura->unidades->map(function($u) {
             $dataPortaria = $u->data_portaria;
@@ -126,8 +135,10 @@ class AtaService
             'documentos',
             'dadosAta',
             'contrato',
-            'totalContratacoes',
-            'valorTotalContratado',
+            'valorLicitado',
+            'valorRealContratado',
+            'valorPendenteContratacao',
+            'saldoAContratar',
             'totalContratos',
             'unidadesData',
             'itensSaldo',

@@ -134,31 +134,55 @@
         <thead>
             <tr>
                 <th width="5%">Item</th>
-                <th width="40%">Descrição</th>
-                <th width="15%">Vencedor</th>
-                <th width="10%" class="text-center">Licitado</th>
-                <th width="10%" class="text-center">Adquirido</th>
-                <th width="10%" class="text-center">Saldo</th>
+                <th width="30%">Descrição / Vencedor</th>
+                <th width="15%" class="text-right">Quantidade</th>
+                <th width="12%" class="text-right">Vl. Unit.</th>
+                <th width="12%" class="text-right">Vl. Total</th>
                 <th width="10%" class="text-center">Status</th>
             </tr>
         </thead>
         <tbody>
-            @foreach($dadosAtas as $item)
-                <tr>
-                    <td class="text-center">{{ $item['item'] }}</td>
-                    <td>{{ $item['descricao'] }}</td>
-                    <td style="font-size: 5pt;">{{ $item['vencedor'] }}</td>
-                    <td class="text-center">{{ number_format($item['quantidade_total'], 2, ',', '.') }}</td>
-                    <td class="text-center">{{ number_format($item['quantidade_utilizada'], 2, ',', '.') }}</td>
-                    <td class="text-center font-bold">{{ number_format($item['quantidade_disponivel'], 2, ',', '.') }}</td>
-                    <td class="text-center">
-                        @if($item['quantidade_disponivel'] > 0)
-                            <span class="badge badge-success">DISPONÍVEL</span>
-                        @else
-                            <span class="badge badge-danger">ESGOTADO</span>
-                        @endif
-                    </td>
-                </tr>
+            @php
+                $itensAgrupados = collect($dadosAtas)->groupBy('lote_num');
+            @endphp
+
+            @foreach($itensAgrupados as $loteNum => $itensDoLote)
+                @if(!empty($loteNum) || $processo->tipo_contratacao == \App\Enums\TipoContratacaoEnum::LOTE->value)
+                    <tr style="background-color: #f9fafb;">
+                        <td colspan="6" class="font-bold" style="padding: 4px 8px; border: 0.5px solid #d1d5db;">
+                            LOTE {{ $loteNum ?: 'Único' }}
+                        </td>
+                    </tr>
+                @endif
+                
+                @foreach($itensDoLote as $item)
+                    <tr>
+                        <td class="text-center">{{ $item['item'] }}</td>
+                        <td>
+                            <div class="font-bold">{{ $item['descricao'] }}</div>
+                            <div style="font-size: 7pt; color: #4b5563;">Venc: {{ $item['vencedor'] }}</div>
+                        </td>
+                        <td class="text-right">
+                            <div class="font-bold">
+                                {{ number_format($item['quantidade_total'], 2, ',', '.') }}
+                                <span style="font-size: 7pt; font-weight: normal; color: #6b7280; margin-left: 2px;">Licitado</span>
+                            </div>
+                            <div style="font-size: 7pt; margin-top: 2px;">
+                                <div style="color: #2563eb;">Adquirido: {{ number_format($item['quantidade_utilizada'], 2, ',', '.') }}</div>
+                                <div style="color: #4b5563;">Saldo: {{ number_format($item['quantidade_disponivel'], 2, ',', '.') }}</div>
+                            </div>
+                        </td>
+                        <td class="text-right">R$ {{ number_format($item['valor_unitario'], 2, ',', '.') }}</td>
+                        <td class="text-right font-bold">R$ {{ number_format($item['valor_total_item'], 2, ',', '.') }}</td>
+                        <td class="text-center">
+                            @if($item['quantidade_disponivel'] > 0)
+                                <span class="badge badge-success">DISPONÍVEL</span>
+                            @else
+                                <span class="badge badge-danger">ESGOTADO</span>
+                            @endif
+                        </td>
+                    </tr>
+                @endforeach
             @endforeach
         </tbody>
     </table>

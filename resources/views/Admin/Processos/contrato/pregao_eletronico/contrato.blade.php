@@ -226,7 +226,8 @@
             1.1 {!! strip_tags($processo->objeto) !!}
         </p>
 
-        <table style="width:100%; border-collapse:collapse; font-size:8pt;">
+       @if(($processo->tipo_contratacao->getDisplayName() ?? '') === 'ITEM')
+       <table style="width:100%; border-collapse:collapse; font-size:8pt;">
             <thead>
                 <tr>
                     <th style="border:2px solid #000; padding:8px; text-align:left; font-weight:700; width:6%;">ITEM</th>
@@ -240,21 +241,42 @@
             <tbody>
             @if(count($itensTabela) > 0)
                 @foreach($itensTabela as $item)
-                    {{-- Ignora apenas as linhas que são apenas espaçadores vazios --}}
                     @if(!(isset($item['is_spacer']) && $item['is_spacer']))
                         
-                        {{-- Se for cabeçalho de LOTE, cria a linha divisória --}}
                         @if(isset($item['is_lote_header']) && $item['is_lote_header'])
                             <tr>
                                 <td colspan="6" style="border:1px solid #000; padding:10px; background-color: #f2f2f2; font-weight:bold; text-align:left;">
                                     {{ $item['especificacao'] ?? $item['item'] }}
+                                    
+                                    {{-- Adicionado para aparecer no Lote também --}}
+                                    @if(!empty($item['marca']) || !empty($item['modelo']))
+                                        <br>
+                                        <small style="font-weight: normal; font-size: 8pt;">
+                                            @if(!empty($item['marca'])) Marca: {{ $item['marca'] }} @endif
+                                            @if(!empty($item['marca']) && !empty($item['modelo'])) - @endif
+                                            @if(!empty($item['modelo'])) Modelo: {{ $item['modelo'] }} @endif
+                                        </small>
+                                    @endif
                                 </td>
                             </tr>
                         @else
-                            {{-- Renderização normal do ITEM --}}
                             <tr>
                                 <td style="border:1px solid #000; padding:14px; vertical-align:top; text-align:center;">{{ $item['item'] }}</td>
-                                <td style="border:1px solid #000; padding:14px; vertical-align:top;">{{ $item['especificacao'] }}</td>
+                                <td style="border:1px solid #000; padding:14px; vertical-align:top;">
+                                    {{ $item['especificacao'] }}
+                                    
+                                    {{-- INÍCIO DO BLOCO DE MARCA E MODELO --}}
+                                    @if(!empty($item['marca']) || !empty($item['modelo']))
+                                        <br>
+                                        <small style="color:#666; font-size: 7pt;">
+                                            @if(!empty($item['marca'])) Marca: {{ $item['marca'] }} @endif
+                                            @if(!empty($item['marca']) && !empty($item['modelo'])) - @endif
+                                            @if(!empty($item['modelo'])) Modelo: {{ $item['modelo'] }} @endif
+                                        </small>
+                                    @endif
+                                    {{-- FIM DO BLOCO DE MARCA E MODELO --}}
+                                    
+                                </td>
                                 <td style="border:1px solid #000; padding:14px; vertical-align:top; text-align:center;">{{ $item['unidade_medida'] }}</td>
                                 <td style="border:1px solid #000; padding:14px; vertical-align:top; text-align:center;">{{ $item['quantidade'] }}</td>
                                 <td style="border:1px solid #000; padding:14px; vertical-align:top; text-align:right;">{{ $item['valor_unitario'] }}</td>
@@ -278,6 +300,65 @@
             @endif
             </tbody>
         </table>
+        @else
+        <table border="1" cellspacing="0" cellpadding="4" style="border-collapse: collapse; width: 100%; text-align: center; font-size: 8pt;">
+            <thead>
+                <tr>
+                    <th style="width: 6%;">ITEM</th>
+                    <th style="width: 30%;">ESPECIFICAÇÃO</th>
+                    <th style="width: 8%;">UNIDADE</th>
+                    <th style="width: 20%;">QUANTIDADE ESTIMADA</th>
+                    <th style="width: 18%;">VALOR UNITÁRIO</th>
+                    <th style="width: 18%;">VALOR TOTAL</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (isset($itensTabela) && count($itensTabela) > 0)
+                @foreach ($itensTabela as $item)
+                
+                @if(isset($item['is_lote_header']) && $item['is_lote_header'])
+                    <tr>
+                        <td colspan="6" style="border:1px solid #000; padding:10px; background-color: #f2f2f2; font-weight:bold; text-align:left;">
+                            {{ $item['especificacao'] ?? $item['item'] }}
+                        </td>
+                    </tr>
+                @else
+                <tr>
+                    <td>{{ $item['item'] ?? '' }}</td>
+                    <td style="text-align: left;">
+                        {{ $item['especificacao'] }}
+                        
+                        {{-- INÍCIO DO BLOCO DE MARCA E MODELO --}}
+                        @if(!empty($item['marca']) || !empty($item['modelo']))
+                            <br>
+                            <small style="color:#666; font-size: 7pt;">
+                                @if(!empty($item['marca'])) Marca: {{ $item['marca'] }} @endif
+                                @if(!empty($item['marca']) && !empty($item['modelo'])) - @endif
+                                @if(!empty($item['modelo'])) Modelo: {{ $item['modelo'] }} @endif
+                            </small>
+                        @endif
+                        {{-- FIM DO BLOCO DE MARCA E MODELO --}}
+                        
+                    </td>
+                    <td>{{ $item['unidade_medida'] ?? '' }}</td>
+                    <td>{{ $item['quantidade'] ?? '' }}</td>
+                    <td>{{ $item['valor_unitario'] ?? '' }}</td>
+                    <td>{{ $item['valor_total'] ?? '' }}</td>
+                </tr>
+                @endif
+                @endforeach
+                @else
+                <tr>
+                    <td colspan="6">Nenhum item encontrado</td>
+                </tr>
+                @endif
+                <tr>
+                    <td colspan="3" style="border:1px solid #000; padding:14px; vertical-align:top; text-align:right; font-weight:bold;">TOTAL GERAL</td>
+                    <td colspan="3" style="border:1px solid #000; padding:14px; vertical-align:top; text-align:right; font-weight:bold;">R$ {{ number_format($valorTotalContrato, 2, ',', '.') }}</td>
+                </tr>
+            </tbody>
+        </table>
+        @endif
         <p style="text-align: justify;">
             1.1. Vinculam esta contratação, independentemente de transcrição:
         </p>

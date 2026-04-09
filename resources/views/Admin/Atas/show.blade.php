@@ -89,24 +89,24 @@
                         </svg>
                     </div>
                     <div>
-                        <p class="text-sm text-gray-500">Itens Contratados</p>
-                        <p class="font-bold text-gray-900">{{ $totalContratacoes }}</p>
+                        <p class="text-sm text-gray-500">Valor Contratado</p>
+                        <p class="font-bold text-gray-900">R$ {{ number_format($valorRealContratado, 2, ',', '.') }}</p>
                     </div>
                 </div>
             </div>
 
             <div class="bg-white rounded-xl shadow p-6">
                 <div class="flex items-center">
-                    <div class="bg-purple-100 p-3 rounded-lg mr-4">
-                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="bg-blue-100 p-3 rounded-lg mr-4">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                   d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
                     <div>
-                        <p class="text-sm text-gray-500">Valor Total Contratado</p>
+                        <p class="text-sm text-gray-500">Valor Total Licitado</p>
                         <p class="font-bold text-gray-900">
-                            R$ {{ number_format($valorTotalContratado, 2, ',', '.') }}
+                             R$ {{ number_format($valorLicitado, 2, ',', '.') }}
                         </p>
                     </div>
                 </div>
@@ -114,15 +114,17 @@
 
             <div class="bg-white rounded-xl shadow p-6">
                 <div class="flex items-center">
-                    <div class="bg-yellow-100 p-3 rounded-lg mr-4">
-                        <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="bg-amber-100 p-3 rounded-lg mr-4">
+                        <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
                     <div>
-                        <p class="text-sm text-gray-500">Contratos Gerados</p>
-                        <p class="font-bold text-gray-900">{{ $totalContratos }}</p>
+                        <p class="text-sm text-gray-500">Saldo a Contratar</p>
+                        <p class="font-bold text-red-600">
+                            R$ {{ number_format($saldoAContratar, 2, ',', '.') }}
+                        </p>
                     </div>
                 </div>
             </div>
@@ -143,10 +145,6 @@
                     <button onclick="mostrarAba('gerar-ata')" class="tab-button py-4 px-1 border-b-2 font-medium text-sm"
                             data-tab="gerar-ata">
                         Gerar Contrato
-                    </button>
-                    <button onclick="mostrarAba('itens')" class="tab-button py-4 px-1 border-b-2 font-medium text-sm"
-                            data-tab="itens">
-                        Itens da Ata
                     </button>
                     <button onclick="mostrarAba('saldo')" class="tab-button py-4 px-1 border-b-2 font-medium text-sm"
                             data-tab="saldo">
@@ -750,86 +748,7 @@
             </div>
         </div>
 
-        <!-- Aba: Itens da Ata -->
-        <div id="aba-itens" class="tab-content">
-            @if (count($dadosAtas) > 0)
-                <div class="bg-white rounded-xl shadow overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full">
-                            <thead class="bg-gray-50">
-                            <tr class="text-xs text-gray-500 uppercase">
-                                <th class="px-6 py-3 text-left">Item</th>
-                                <th class="px-6 py-3 text-left">Vencedor</th>
-                                <th class="px-6 py-3 text-left">Quantidade</th>
-                                <th class="px-6 py-3 text-left">Valor</th>
-                                <th class="px-6 py-3 text-left">Status</th>
-                            </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200">
-                                @php
-                                    // Agrupamos sempre. Se não houver lote, o grupo será uma string vazia ou null.
-                                    $itensAgrupados = collect($dadosAtas)->groupBy('lote_num');
-                                @endphp
 
-                                @foreach($itensAgrupados as $loteNum => $itensDoLote)
-                                    {{-- Só exibe o cabeçalho do lote se o número do lote existir ou se o tipo for LOTE --}}
-                                    @if(!empty($loteNum) || $processo->tipo_contratacao == \App\Enums\TipoContratacaoEnum::LOTE->value)
-                                        <tr class="bg-gray-100 border-t border-b border-gray-200">
-                                            <td colspan="5" class="px-6 py-2 text-sm font-bold text-gray-700">
-                                                LOTE {{ $loteNum ?: 'Único / Global' }}
-                                            </td>
-                                        </tr>
-                                    @endif
-
-                                    @foreach ($itensDoLote as $item)
-                                        <tr class="hover:bg-gray-50 border-b border-gray-100">
-                                            <td class="px-6 py-4">
-                                                <div class="font-medium text-gray-900">{{ $item['item'] }}</div>
-                                                <div class="text-sm text-gray-500">{{ $item['descricao'] }}</div>
-                                            </td>
-                                            <td class="px-6 py-4 text-sm">{{ $item['vencedor'] }}</td>
-                                            <td class="px-6 py-4">
-                                                <div class="font-medium text-gray-900">
-                                                    {{ number_format($item['quantidade_total'], 2, ',', '.') }}
-                                                    <span class="text-xs text-gray-400 font-normal ml-1">Licitado</span>
-                                                </div>
-                                                <div class="flex flex-col gap-0.5 mt-1">
-                                                    <div class="text-xs text-blue-600 font-medium">
-                                                        Adquirido: {{ number_format($item['quantidade_utilizada'], 2, ',', '.') }}
-                                                    </div>
-                                                    <div class="text-xs text-gray-500">
-                                                        Saldo: {{ number_format($item['quantidade_disponivel'], 2, ',', '.') }}
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="px-6 py-4">
-                                                <div class="font-bold text-gray-900">
-                                                    R$ {{ number_format($item['valor_total_item'], 2, ',', '.') }}
-                                                </div>
-                                                <div class="text-xs text-gray-500 mt-0.5">
-                                                    Unit: R$ {{ number_format($item['valor_unitario'], 2, ',', '.') }}
-                                                </div>
-                                            </td>
-                                            <td class="px-6 py-4">
-                                                @if ($item['quantidade_disponivel'] <= 0)
-                                                    <span class="px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Esgotado</span>
-                                                @else
-                                                    <span class="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Disponível</span>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            @else
-                <div class="text-center py-12 bg-white rounded-xl shadow">
-                    <p class="text-gray-500">Nenhum item disponível para exibição</p>
-                </div>
-            @endif
-        </div>
 
         <!-- Aba: Saldo Disponível para Contratação -->
         <div id="aba-saldo" class="tab-content hidden">
@@ -842,54 +761,7 @@
                 $itensEsgotados = collect($dadosAtas)->filter(fn($i) => $i['quantidade_disponivel'] <= 0)->count();
             @endphp
 
-            {{-- Cards de resumo --}}
-            <!-- <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <div class="bg-white rounded-xl shadow p-5 flex items-center gap-4">
-                    <div class="bg-blue-100 p-3 rounded-lg">
-                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                        </svg>
-                    </div>
-                    <div>
-                        <p class="text-xs text-gray-500 uppercase font-medium">Total Licitado</p>
-                        <p class="text-lg font-bold text-gray-900">{{ number_format($totalLicitado, 2, ',', '.') }}</p>
-                    </div>
-                </div>
-                <div class="bg-white rounded-xl shadow p-5 flex items-center gap-4">
-                    <div class="bg-yellow-100 p-3 rounded-lg">
-                        <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <p class="text-xs text-gray-500 uppercase font-medium">Total Adquirido</p>
-                        <p class="text-lg font-bold text-gray-900">{{ number_format($totalAdquirido, 2, ',', '.') }}</p>
-                    </div>
-                </div>
-                <div class="bg-white rounded-xl shadow p-5 flex items-center gap-4">
-                    <div class="bg-green-100 p-3 rounded-lg">
-                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <p class="text-xs text-gray-500 uppercase font-medium">Saldo Disponível</p>
-                        <p class="text-lg font-bold text-green-700">{{ number_format($totalSaldo, 2, ',', '.') }}</p>
-                    </div>
-                </div>
-                <div class="bg-white rounded-xl shadow p-5 flex items-center gap-4">
-                    <div class="bg-purple-100 p-3 rounded-lg">
-                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <p class="text-xs text-gray-500 uppercase font-medium">Valor Disponível</p>
-                        <p class="text-lg font-bold text-purple-700">R$ {{ number_format($totalValorDisponivel, 2, ',', '.') }}</p>
-                    </div>
-                </div>
-            </div> -->
-
+    
             {{-- Filtro de busca e legenda --}}
             <div class="bg-white rounded-xl shadow mb-1">
                 <div class="p-4 border-b flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -939,10 +811,10 @@
                         <thead class="bg-gray-50">
                             <tr class="text-xs text-gray-500 uppercase tracking-wider">
                                 <th class="px-6 py-3 text-left">Item</th>
-                                <th class="px-6 py-3 text-right">Licitado</th>
-                                <th class="px-6 py-3 text-right">Adquirido</th>
-                                <th class="px-6 py-3 text-right">Saldo</th>
+                                <th class="px-6 py-3 text-left">Quantidade</th>
+                                <th class="px-6 py-3 text-left">Valor</th>
                                 <th class="px-6 py-3 text-left" style="min-width:180px">Progresso</th>
+                                <th class="px-6 py-3 text-center">Status</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100" id="tbody-saldo">
@@ -970,21 +842,31 @@
                                                 <div class="text-xs text-gray-500 mt-0.5">{{ Str::limit($item['descricao'], 70) }}</div>
                                                 <div class="text-xs text-gray-400 mt-0.5">{{ $item['vencedor'] }}</div>
                                             </td>
-                                            <td class="px-6 py-4 text-right border-b border-gray-100">
-                                                <span class="font-medium text-gray-700">{{ number_format($item['quantidade_total'], 2, ',', '.') }}</span>
+
+                                            <td class="px-6 py-4 border-b border-gray-100">
+                                                <div class="font-medium text-gray-900">
+                                                    {{ number_format($item['quantidade_total'], 2, ',', '.') }}
+                                                    <span class="text-xs text-gray-400 font-normal ml-1">Licitado</span>
+                                                </div>
+                                                <div class="flex flex-col gap-0.5 mt-1">
+                                                    <div class="text-xs text-blue-600 font-medium">
+                                                        Adquirido: {{ number_format($item['quantidade_utilizada'], 2, ',', '.') }}
+                                                    </div>
+                                                    <div class="text-xs text-gray-500">
+                                                        Saldo: {{ number_format($item['quantidade_disponivel'], 2, ',', '.') }}
+                                                    </div>
+                                                </div>
                                             </td>
-                                            <td class="px-6 py-4 text-right border-b border-gray-100">
-                                                <span class="font-semibold {{ $item['quantidade_utilizada'] > 0 ? 'text-blue-700' : 'text-gray-400' }}">
-                                                    {{ number_format($item['quantidade_utilizada'], 2, ',', '.') }}
-                                                </span>
+
+                                            <td class="px-6 py-4 border-b border-gray-100">
+                                                <div class="font-bold text-gray-900">
+                                                    R$ {{ number_format($item['valor_total_item'], 2, ',', '.') }}
+                                                </div>
+                                                <div class="text-xs text-gray-500 mt-0.5">
+                                                    Unit: R$ {{ number_format($item['valor_unitario'], 2, ',', '.') }}
+                                                </div>
                                             </td>
-                                            <td class="px-6 py-4 text-right border-b border-gray-100">
-                                                @if ($saldoZero)
-                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">Esgotado</span>
-                                                @else
-                                                    <span class="font-bold text-green-700">{{ number_format($item['quantidade_disponivel'], 2, ',', '.') }}</span>
-                                                @endif
-                                            </td>
+
                                             <td class="px-6 py-4 border-b border-gray-100">
                                                 <div class="flex items-center gap-3">
                                                     <div class="flex-1 bg-gray-200 rounded-full overflow-hidden" style="height:8px">
@@ -993,6 +875,14 @@
                                                     </div>
                                                     <span class="text-xs text-gray-500 whitespace-nowrap" style="min-width:38px">{{ number_format($pct, 1) }}%</span>
                                                 </div>
+                                            </td>
+
+                                            <td class="px-6 py-4 text-center border-b border-gray-100">
+                                                @if ($item['quantidade_disponivel'] <= 0)
+                                                    <span class="px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Esgotado</span>
+                                                @else
+                                                    <span class="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Disponível</span>
+                                                @endif
                                             </td>
                                         </tr>
                                     @endforeach
@@ -1012,21 +902,31 @@
                                             <div class="text-xs text-gray-500 mt-0.5">{{ Str::limit($item['descricao'], 70) }}</div>
                                             <div class="text-xs text-gray-400 mt-0.5">{{ $item['vencedor'] }}</div>
                                         </td>
-                                        <td class="px-6 py-4 text-right border-b border-gray-100">
-                                            <span class="font-medium text-gray-700">{{ number_format($item['quantidade_total'], 2, ',', '.') }}</span>
+
+                                        <td class="px-6 py-4 border-b border-gray-100">
+                                            <div class="font-medium text-gray-900">
+                                                {{ number_format($item['quantidade_total'], 2, ',', '.') }}
+                                                <span class="text-xs text-gray-400 font-normal ml-1">Licitado</span>
+                                            </div>
+                                            <div class="flex flex-col gap-0.5 mt-1">
+                                                <div class="text-xs text-blue-600 font-medium">
+                                                    Adquirido: {{ number_format($item['quantidade_utilizada'], 2, ',', '.') }}
+                                                </div>
+                                                <div class="text-xs text-gray-500">
+                                                    Saldo: {{ number_format($item['quantidade_disponivel'], 2, ',', '.') }}
+                                                </div>
+                                            </div>
                                         </td>
-                                        <td class="px-6 py-4 text-right border-b border-gray-100">
-                                            <span class="font-semibold {{ $item['quantidade_utilizada'] > 0 ? 'text-blue-700' : 'text-gray-400' }}">
-                                                {{ number_format($item['quantidade_utilizada'], 2, ',', '.') }}
-                                            </span>
+
+                                        <td class="px-6 py-4 border-b border-gray-100">
+                                            <div class="font-bold text-gray-900">
+                                                R$ {{ number_format($item['valor_total_item'], 2, ',', '.') }}
+                                            </div>
+                                            <div class="text-xs text-gray-500 mt-0.5">
+                                                Unit: R$ {{ number_format($item['valor_unitario'], 2, ',', '.') }}
+                                            </div>
                                         </td>
-                                        <td class="px-6 py-4 text-right border-b border-gray-100">
-                                            @if ($saldoZero)
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">Esgotado</span>
-                                            @else
-                                                <span class="font-bold text-green-700">{{ number_format($item['quantidade_disponivel'], 2, ',', '.') }}</span>
-                                            @endif
-                                        </td>
+
                                         <td class="px-6 py-4 border-b border-gray-100">
                                             <div class="flex items-center gap-3">
                                                 <div class="flex-1 bg-gray-200 rounded-full overflow-hidden" style="height:8px">
@@ -1035,6 +935,14 @@
                                                 </div>
                                                 <span class="text-xs text-gray-500 whitespace-nowrap" style="min-width:38px">{{ number_format($pct, 1) }}%</span>
                                             </div>
+                                        </td>
+
+                                        <td class="px-6 py-4 text-center border-b border-gray-100">
+                                            @if ($item['quantidade_disponivel'] <= 0)
+                                                <span class="px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Esgotado</span>
+                                            @else
+                                                <span class="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Disponível</span>
+                                            @endif
                                         </td>
                                     </tr>
                                 @endforeach
@@ -2621,33 +2529,59 @@
             }
 
             // Monta o array de dados
-            const dados = [['Item', 'Descrição', 'Vencedor', 'Licitado', 'Adquirido', 'Saldo']];
+            const dados = [['Item', 'Descrição', 'Vencedor', 'Licitado', 'Adquirido', 'Saldo', 'Valor Unit.', 'Valor Total']];
 
             rows.forEach(row => {
+                if (row.classList.contains('always-visible')) {
+                    // É um cabeçalho de lote - Adiciona uma linha de destaque
+                    const loteTexto = row.innerText.trim();
+                    dados.push([loteTexto, '', '', '', '', '', '', '']);
+                    return;
+                }
+
                 const celulas = row.querySelectorAll('td');
-                // td[0]: Item / Descrição / Vencedor  td[1]: Licitado  td[2]: Adquirido  td[3]: Saldo
-                const itemDiv     = celulas[0]?.querySelectorAll('div');
-                const item        = itemDiv?.[0]?.innerText?.trim() ?? '';
-                const descricao   = itemDiv?.[1]?.innerText?.trim() ?? '';
-                const vencedor    = itemDiv?.[2]?.innerText?.trim() ?? '';
+                
+                // Celula 0: Item / Descrição / Vencedor
+                const itemDivs    = celulas[0]?.querySelectorAll('div');
+                const item        = itemDivs?.[0]?.innerText?.trim() ?? '';
+                const descricao   = itemDivs?.[1]?.innerText?.trim() ?? '';
+                const vencedor    = itemDivs?.[2]?.innerText?.trim() ?? '';
+
+                // Celula 1: Quantidade (Licitado / Adquirido / Saldo)
+                const qtdDivs      = celulas[1]?.querySelectorAll('div');
+                const licitadoRaw  = qtdDivs?.[0]?.innerText?.replace('Licitado', '')?.trim() ?? '0';
+                
+                // Os detalhes de Adquirido/Saldo estão em uma div que contém duas outras divs
+                const innerQtdDivs = celulas[1]?.querySelectorAll('.flex.flex-col div');
+                const adquiridoRaw = innerQtdDivs?.[0]?.innerText?.replace('Adquirido:', '')?.trim() ?? '0';
+                const saldoRaw     = innerQtdDivs?.[1]?.innerText?.replace('Saldo:', '')?.trim() ?? '0';
+
+                // Celula 2: Valor (Total / Unit)
+                const valorDivs   = celulas[2]?.querySelectorAll('div');
+                const totalRaw    = valorDivs?.[0]?.innerText?.replace('R$', '')?.trim() ?? '0';
+                const unitRaw     = valorDivs?.[1]?.innerText?.replace('Unit: R$', '')?.trim() ?? '0';
 
                 // Converte formatação BR para número
                 const parseBR = txt => {
-                    const s = (txt || '').trim()
+                    if (!txt) return 0;
+                    const s = txt.trim()
                         .replace(/\./g, '')
-                        .replace(',', '.');
+                        .replace(',', '.')
+                        .trim();
                     const n = parseFloat(s);
                     return isNaN(n) ? 0 : n;
                 };
 
-                const licitado  = parseBR(celulas[1]?.innerText);
-                const adquirido = parseBR(celulas[2]?.innerText);
+                const licitado  = parseBR(licitadoRaw);
+                const adquirido = parseBR(adquiridoRaw);
+                const saldo     = parseBR(saldoRaw);
+                
+                // Formata como dinheiro (string) para garantir o R$ no Excel
+                const formatMoney = n => 'R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                const valorUnitString = formatMoney(parseBR(unitRaw));
+                const valorTotalString = formatMoney(totalRaw ? parseBR(totalRaw) : 0);
 
-                // Saldo pode ser "Esgotado" (badge) ou um número
-                const saldoText = celulas[3]?.innerText?.trim() ?? '';
-                const saldo = saldoText.toLowerCase() === 'esgotado' ? 0 : parseBR(saldoText);
-
-                dados.push([item, descricao, vencedor, licitado, adquirido, saldo]);
+                dados.push([item, descricao, vencedor, licitado, adquirido, saldo, valorUnitString, valorTotalString]);
             });
 
             // Cria workbook
@@ -2655,12 +2589,14 @@
 
             // Largura das colunas
             ws['!cols'] = [
-                { wch: 20 },  // Item
+                { wch: 15 },  // Item
                 { wch: 60 },  // Descrição
                 { wch: 35 },  // Vencedor
-                { wch: 14 },  // Licitado
-                { wch: 14 },  // Adquirido
-                { wch: 14 },  // Saldo
+                { wch: 12 },  // Licitado
+                { wch: 12 },  // Adquirido
+                { wch: 12 },  // Saldo
+                { wch: 14 },  // Valor Unit.
+                { wch: 16 },  // Valor Total
             ];
 
             const wb = XLSX.utils.book_new();

@@ -509,7 +509,7 @@ class ContratoProcessoController extends Controller
         // ==============================================
         // DADOS DA TABELA DE ITENS
         // ==============================================
-        $itensTabela = $this->prepararItensParaTabela($contratacoes);
+        $itensTabela = $this->prepararItensParaTabela($processo, $contratacoes);
         
         // Calcular totais
         $valorTotalContrato = $contratacoes->sum('valor_total');
@@ -649,24 +649,46 @@ class ContratoProcessoController extends Controller
     }
 
     // Novo método para preparar itens para a tabela
-    private function prepararItensParaTabela($contratacoes): array
+    private function prepararItensParaTabela($processo, $contratacoes): array
     {
         $itens = [];
         $itemNumero = 1;
-        
-        foreach ($contratacoes as $contratacao) {
+
+        // Ordenar contratações por lote e item (se houver)
+        $contratacoesOrdenadas = $contratacoes->sortBy(function($c) {
+            $loteNum = $c->lote->lote ?? '';
+            $itemNum = $c->lote->item ?? 0;
+            return sprintf('%05s-%010d', $loteNum, $itemNum);
+        });
+
+        $loteAtual = null;
+        $isLoteProcess = $processo->tipo_contratacao?->getDisplayName() === 'LOTE';
+
+        foreach ($contratacoesOrdenadas as $contratacao) {
             if ($contratacao->lote) {
+                // Se o lote mudou e é um processo por lote, adiciona o cabeçalho do lote
+                if ($isLoteProcess && $loteAtual !== $contratacao->lote->lote) {
+                    $loteAtual = $contratacao->lote->lote;
+                    $itens[] = [
+                        'is_lote_header' => true,
+                        'item' => $loteAtual,
+                        'especificacao' => "LOTE " . $loteAtual,
+                    ];
+                }
+
                 $itens[] = [
-                    'item' => $itemNumero++,
+                    'item' => $contratacao->lote->item ?? $itemNumero++,
                     'especificacao' => $contratacao->lote->descricao ?? 'Não especificado',
                     'unidade_medida' => $contratacao->lote->unidade ?? '',
                     'quantidade' => number_format($contratacao->quantidade_contratada, 2, ',', '.'),
                     'valor_unitario' => 'R$ ' . number_format($contratacao->valor_unitario, 2, ',', '.'),
                     'valor_total' => 'R$ ' . number_format($contratacao->valor_total, 2, ',', '.'),
+                    'marca' => $contratacao->lote->marca ?? '',
+                    'modelo' => $contratacao->lote->modelo ?? '',
                 ];
             }
         }
-        
+
         return $itens;
     }
 

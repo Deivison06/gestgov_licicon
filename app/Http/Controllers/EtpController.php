@@ -97,17 +97,18 @@ class EtpController extends Controller
             'should_redirect'     => 'nullable|in:0,1',
         ];
 
-        // Validação para itens (sem lote)
+        // Para itens sem lote
         $rules['itens']                   = 'required_if:tipo_contratacao,item|array';
         $rules['itens.*.item_id']         = 'required_if:tipo_contratacao,item|exists:etp_itens,id';
         $rules['itens.*.unidade']         = 'required_if:tipo_contratacao,item|string|max:100';
         $rules['itens.*.quantidade']      = 'required_if:tipo_contratacao,item|numeric|min:0.01';
 
-        // Validação para lotes
+        // Para lotes (O segredo é remover o índice fixo do item na regra se for usar IDs como chaves)
         $rules['lotes']                       = 'required_if:tipo_contratacao,lote|array';
         $rules['lotes.*.nome']                = 'required_if:tipo_contratacao,lote|string|max:255';
         $rules['lotes.*.itens']               = 'required_if:tipo_contratacao,lote|array';
-        $rules['lotes.*.itens.*.item_id']     = 'required_if:tipo_contratacao,lote|exists:etp_itens,id';
+        // Usamos '*' duas vezes para validar qualquer chave dentro de itens
+        $rules['lotes.*.itens.*.item_id']     = 'required_if:tipo_contratacao,lote';
         $rules['lotes.*.itens.*.unidade']     = 'required_if:tipo_contratacao,lote|string|max:100';
         $rules['lotes.*.itens.*.quantidade']  = 'required_if:tipo_contratacao,lote|numeric|min:0.01';
 
@@ -324,15 +325,18 @@ class EtpController extends Controller
             'should_redirect'     => 'nullable|in:0,1',
         ];
 
+        // Para itens sem lote
         $rules['itens']                   = 'required_if:tipo_contratacao,item|array';
         $rules['itens.*.item_id']         = 'required_if:tipo_contratacao,item|exists:etp_itens,id';
         $rules['itens.*.unidade']         = 'required_if:tipo_contratacao,item|string|max:100';
         $rules['itens.*.quantidade']      = 'required_if:tipo_contratacao,item|numeric|min:0.01';
 
+        // Para lotes (O segredo é remover o índice fixo do item na regra se for usar IDs como chaves)
         $rules['lotes']                       = 'required_if:tipo_contratacao,lote|array';
         $rules['lotes.*.nome']                = 'required_if:tipo_contratacao,lote|string|max:255';
         $rules['lotes.*.itens']               = 'required_if:tipo_contratacao,lote|array';
-        $rules['lotes.*.itens.*.item_id']     = 'required_if:tipo_contratacao,lote|exists:etp_itens,id';
+        // Usamos '*' duas vezes para validar qualquer chave dentro de itens
+        $rules['lotes.*.itens.*.item_id']     = 'required_if:tipo_contratacao,lote';
         $rules['lotes.*.itens.*.unidade']     = 'required_if:tipo_contratacao,lote|string|max:100';
         $rules['lotes.*.itens.*.quantidade']  = 'required_if:tipo_contratacao,lote|numeric|min:0.01';
 

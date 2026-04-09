@@ -152,7 +152,8 @@ class AtaContratacaoService
             ->where('tipo_documento', 'contrato')
             ->get()
             ->flatMap(function($doc) {
-                return $doc->contratacoes_selecionadas ?? [];
+                $ids = $doc->contratacoes_selecionadas ?? [];
+                return is_string($ids) ? json_decode($ids, true) : $ids;
             })
             ->unique()
             ->values()
@@ -429,6 +430,9 @@ class AtaContratacaoService
         }
 
         $contratacoesIds = $documento->contratacoes_selecionadas ?? [];
+        if (is_string($contratacoesIds)) {
+            $contratacoesIds = json_decode($contratacoesIds, true) ?? [];
+        }
 
         if (empty($contratacoesIds)) {
             throw new \Exception('Contrato não possui contratações vinculadas.');
