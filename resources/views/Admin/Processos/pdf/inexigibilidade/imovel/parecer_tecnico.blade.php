@@ -230,7 +230,7 @@
 
     <p>
         Ao(À) Exmo(a). Sr(a). <br>
-        XXXXXXXXXXXXXXXXXXXXX <br>
+        {{ $processo->detalhe->encaminhamento_parecer_juridico }} <br>
         Procurador Geral do Município<br>
         {{ $processo->prefeitura->cidade }}
     </p>
@@ -243,10 +243,7 @@
         Solicitamos parecer jurídico referente à {!! strip_tags($processo->objeto) !!} através do
         Processo Administrativo nº {{ $processo->numero_processo }}, Modalidade: Inexigibilidade de
         Licitação nº {{ $processo->numero_procedimento }}, informamos que as despesas correrão por conta
-        dos recursos do
-        XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-        XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-        XXXXXXXXXXXXXXXXXXXXXXX.
+        dos recursos do {!! strip_tags($processo->detalhe->dotacao_orcamentaria) !!}
     <p>
     <p style="text-align: justify; text-indent: 30px;">
         Anexamos a esta, propostas de preços apresentadas pelas

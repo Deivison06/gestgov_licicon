@@ -173,8 +173,7 @@
 <div id="cover-page">
     <img src="{{ public_path('icons/capa-documento.png') }}" alt="Martelo da Justiça" class="cover-image">
     <div class="cover-title">
-        TERMO DE REFERÊNCIAPARECER DO CONTROLE
-        INTERNO
+        PARECER DO CONTROLE INTERNO
     </div>
 </div>
 {{-- QUEBRA DE PÁGINA --}}

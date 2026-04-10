@@ -146,11 +146,30 @@
         <hr>
         <h4 style="text-align: center;">TERMO DE JUNTADA</h4>
         <hr>
+        @php
+             use Carbon\Carbon;
 
-        Aos XXX (xxxxxx) dias do mês de XXXX de 202X, procedi a juntada aos autos
+            // Verifica se há assinantes e usa o primeiro
+            $hasSelectedAssinantes = isset($assinantes) && count($assinantes) > 0;
+            $primeiroAssinante = $hasSelectedAssinantes ? $assinantes[0] : null;
+
+            if ($primeiroAssinante && isset($primeiroAssinante['data_portaria'])) {
+                $data = Carbon::parse($primeiroAssinante['data_portaria']);
+            } else {
+                $data = Carbon::parse($dataSelecionada);
+            }
+
+            $formatter = new \NumberFormatter('pt_BR', \NumberFormatter::SPELLOUT);
+
+            $dia = $data->day;
+            $mes = mb_strtoupper($data->translatedFormat('F')); // mês por extenso
+            $anoExtenso = $formatter->format($data->year);
+        @endphp
+
+        Aos {{ $dia }} dias do mês de {{ $mes }} de {{ $anoExtenso }}, procedi a juntada aos autos
         do processo administrativo {{ $processo->numero_processo }}, as propostas de preço referente a
-        {!! strip_tags($processo->objeto) !!}, e a documentação das empresas. Com
-        este fim e para constar, eu, XXXXXXXXXXXXXXXXXX, lavrei o presente termo
+        {!! strip_tags($processo->objeto) !!} e a documentação das empresas. Com
+        este fim e para constar, eu, @if($primeiroAssinante){{ $primeiroAssinante['responsavel'] }}@else XXXXXXXXXXXXXXXXXX @endif, {{ $primeiroAssinante ? 'Portaria nº ' . $primeiroAssinante['numero_portaria'] . ', da(o) ' . $primeiroAssinante['unidade_nome'] : '' }}, lavrei o presente termo
         que vai por mim assinado.
 
     </div>

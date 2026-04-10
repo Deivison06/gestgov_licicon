@@ -173,8 +173,7 @@
 <div id="cover-page">
     <img src="{{ public_path('icons/capa-documento.png') }}" alt="Martelo da Justiça" class="cover-image">
     <div class="cover-title">
-        TERMO DE REFERÊNCIAPARECER DO CONTROLE
-        INTERNO
+        PARECER DO CONTROLE INTERNO
     </div>
 </div>
 {{-- QUEBRA DE PÁGINA --}}
@@ -189,9 +188,7 @@
     </h4>
 
     <p style="text-align: justify">
-        Tratam os autos do processo de
-        {!! strip_tags($processo->objeto) !!}
-        (OBJETO) mediante Inexigibilidade de licitação em favor da
+        Tratam os autos do processo de {!! strip_tags($processo->objeto) !!} mediante Inexigibilidade de licitação em favor da
         empresa/profissional {{ $processo->detalhe->razao_social }},
         inscrita no CNPJ/CPF sob o nº {{ $processo->detalhe->cnpj_empresa_vencedora }}, no valor de R$ {{ $detalhe->valor_estimado }}. Ressalta-se que o Procedimento ocorreu
         dentro das formalidades legais, conforme detalhado no processo, baseado

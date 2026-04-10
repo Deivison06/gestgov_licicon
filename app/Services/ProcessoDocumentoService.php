@@ -55,6 +55,7 @@ class ProcessoDocumentoService
                 'encaminhamento_elaborar_projeto_basico',
                 'encaminhamento_pesquisa_preco',
                 'encaminhamento_doacao_orcamentaria',
+                'encaminhamento_elaborar_termo_referencia',
                 'itens_e_seus_quantitativos_xml',
             ],
         ],

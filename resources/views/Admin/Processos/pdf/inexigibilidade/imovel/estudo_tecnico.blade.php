@@ -306,7 +306,6 @@
     <p style=" text-indent: 30px; text-align: justify; font-size: 11pt;">
         A {{ $prefeitura->nome }} enfrenta um problema significativo relacionado à
         {!! strip_tags($processo->objeto) !!}  {!! strip_tags($detalhe->descricao_necessidade) !!}
-        expõe a fragilidade atual dos recursos disponíveis.
     </p>
 
     {!! str_replace('<p>', '<p style="text-indent:30px; text-align: justify; font-size: 11pt;">', $detalhe->justificativa) !!}
@@ -1836,7 +1835,7 @@
         direcionada à marca ou empresa e nem possui características de luxo determino:
     </p>
     <p>Encaminhe-se à {{ $detalhe->encaminhamento_doacao_orcamentaria }} para a VERIFICAÇÃO DE DOTACÃO ORÇAMENTÁRIA
-    <p> Encaminhe-se à {{ $detalhe->encaminhamento_termo_referencia }} para a ELABORAÇÃO DO TERMO DE REFERÊNCIA.</p>
+    <p> Encaminhe-se à {{ $detalhe->encaminhamento_elaborar_termo_referencia }} para a ELABORAÇÃO DO TERMO DE REFERÊNCIA.</p>
         EXISTENTE.
     </p>
     <table style="border-collapse: collapse; width: auto; border: 1px solid black; font-size: 10pt;">

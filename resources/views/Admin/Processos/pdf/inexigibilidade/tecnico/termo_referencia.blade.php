@@ -605,9 +605,6 @@
             <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 15. OBRIGAÇÕES DO(A) CONTRATADO(A) 
         </p>
         <p style="text-align: justify;">
-            Quando for contratação de assessorias ou consultorias técnicas e auditorias financeiras
-            ou tributárias (Art. 74, inc. III, alínea “c”, da Lei 14.133/21), manter o seguinte texto:
-
             15.1. O(A) CONTRATADO(A) obriga-se a:
             <br>
             15.1.1. executar os serviços conforme especificações do Termo de Referência e de sua

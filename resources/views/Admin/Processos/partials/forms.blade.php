@@ -301,7 +301,7 @@
         @endif
 
     @elseif($campo === 'encaminhamento_elaborar_termo_referencia')
-        <x-form-field name="encaminhamento_termo_referencia" label="Encaminhamento para ELABORAÇÃO DO TERMO DE REFERÊNCIA" type="select" :options="$processo->prefeitura->unidades->pluck('nome', 'nome')->toArray()" placeholder="Selecione uma unidade" />
+        <x-form-field name="encaminhamento_elaborar_termo_referencia" label="Encaminhamento para ELABORAÇÃO DO TERMO DE REFERÊNCIA" type="select" :options="$processo->prefeitura->unidades->pluck('nome', 'nome')->toArray()" placeholder="Selecione uma unidade" />
 
     @elseif($campo === 'encaminhamento_elaborar_projeto_basico')
         @if ($processo->modalidade === \App\Enums\ModalidadeEnum::CONCORRENCIA || $processo->modalidade === \App\Enums\ModalidadeEnum::DISPENSA)

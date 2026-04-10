@@ -292,66 +292,7 @@
            </div>
        @endif
    </div>
-    {{-- QUEBRA DE PÁGINA --}}
-    <div class="page-break"></div>
-    <div>
-        <h4>DESPACHO</h4>
 
-        <p>
-            Ao(À) Ilmo(a). Sr(a).<br>
-            <span>xxxxxxxxxxxxxxxx</span>
-            <br>
-            Controlador do Município
-        </p>
-
-        <p style="text-align: justify">Assunto: Encaminhamento de Processo de Inexigibilidade de Licitação</p>
-
-        <p style="text-align: justify; text-indent: 30px;">Senhor(a) Prefeito,</p>
-
-        <p style="text-align: justify; text-indent: 30px;">
-            Encaminho ao Exm. Senhor(a) o Processo de Inexigibilidade de
-            Licitação nº {{ $processo->numero_procedimento }}, {!! strip_tags($processo->objeto) !!},
-            para emissão de parecer do Contrato Interno acerca da
-            contratação.
-        </p>
-
-        {{-- Bloco de data e assinatura --}}
-        <div class="footer-signature">
-            {{ $processo->prefeitura->cidade }},
-            {{ \Carbon\Carbon::parse($dataSelecionada)->translatedFormat('d \d\e F \d\e Y') }}
-        </div>
-
-        @php
-            // Verifica se a variável $assinantes existe e tem itens
-            $hasSelectedAssinantes = isset($assinantes) && count($assinantes) > 0;
-        @endphp
-
-        @if ($hasSelectedAssinantes)
-            {{-- Renderiza APENAS O PRIMEIRO assinante da lista --}}
-            @php
-                $primeiroAssinante = $assinantes[0]; // Pega o segundo item
-            @endphp
-
-            <div style="margin-top: 40px; text-align: center;">
-                <div class="signature-block" style="display: inline-block; margin: 0 40px;">
-                    ___________________________________<br>
-                    <p style="line-height: 1.2;">
-                        {{ $primeiroAssinante['responsavel'] }} <br>
-                        <span>{{ $primeiroAssinante['unidade_nome'] }}</span>
-                    </p>
-                </div>
-            </div>
-        @else
-            {{-- Bloco Padrão (Fallback) --}}
-            <div class="signature-block" style="margin-top: 40px; text-align: center;">
-                ___________________________________<br>
-                <p style="line-height: 1.2;">
-                    {{ $processo->prefeitura->autoridade_competente }} <br>
-                    <span style="color: red;">[Cargo/Título Padrão - A ser ajustado]</span>
-                </p>
-            </div>
-        @endif
-    </div>
 
 </body>
 

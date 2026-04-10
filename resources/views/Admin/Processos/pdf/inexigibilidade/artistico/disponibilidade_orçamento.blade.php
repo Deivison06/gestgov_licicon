@@ -226,7 +226,7 @@
         </p>
         @endif
 
-        <p> Encaminhe-se à {{ $detalhe->encaminhamento_termo_referencia }} para a ELABORAÇÃO DO TERMO DE REFERÊNCIA.</p>
+        <p> Encaminhe-se à {{ $detalhe->encaminhamento_elaborar_termo_referencia }} para a ELABORAÇÃO DO TERMO DE REFERÊNCIA.</p>
 
         {{-- Bloco de data e assinatura --}}
         <div class="footer-signature">

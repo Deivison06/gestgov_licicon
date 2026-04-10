@@ -235,8 +235,6 @@
         </p>
 
         <p>MODALIDADE: {{ $processo->modalidade->getDisplayName() }}</p>
-        <p>MODO DE DISPUTA: ABERTO</p>
-        <p>TRATAMENTO DIFERENCIA A MEs e EPPs</p>
         <p>
             {!! $detalhe->tratamento_diferenciado_MEs_eEPPs !!}
         </p>
