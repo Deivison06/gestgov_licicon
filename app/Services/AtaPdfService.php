@@ -639,10 +639,11 @@ class AtaPdfService
                 // Se o lote mudou e é um processo por lote, adiciona o cabeçalho do lote
                 if ($isLoteProcess && $loteAtual !== $contratacao->lote->lote) {
                     $loteAtual = $contratacao->lote->lote;
+                    $loteNome = $contratacao->lote->lote_nome;
                     $itens[] = [
                         'is_lote_header' => true,
                         'item' => $loteAtual,
-                        'especificacao' => "LOTE " . $loteAtual,
+                        'especificacao' => "LOTE " . $loteAtual . ($loteNome ? " - " . $loteNome : ""),
                         'unidade_medida' => '',
                         'quantidade' => '',
                         'valor_unitario' => '',

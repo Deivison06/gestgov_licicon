@@ -57,6 +57,7 @@ class FinalizacaoVencedorService
                 Lote::create([
                     'vencedor_id' => $vencedor->id,
                     'lote' => $loteData['lote'] ?? null,
+                    'lote_nome' => $loteData['lote_nome'] ?? null,
                     'status' => $loteData['status'] ?? 'HOMOLOGADO',
                     'item' => $loteData['item'],
                     'descricao' => $loteData['descricao'],
@@ -170,6 +171,7 @@ class FinalizacaoVencedorService
                 Lote::create([
                     'vencedor_id' => $vencedor->id,
                     'lote' => $loteData['lote'] ?? null,
+                    'lote_nome' => $loteData['lote_nome'] ?? null,
                     'status' => $loteData['status'] ?? 'HOMOLOGADO',
                     'item' => $loteData['item'],
                     'descricao' => $loteData['descricao'],
@@ -194,6 +196,7 @@ class FinalizacaoVencedorService
     {
         $processados = [];
         $inicio = $this->detectarCabecalho($dados);
+        $loteNomeAtual = null;
 
         for ($i = $inicio; $i < count($dados); $i++) {
             $linha = $dados[$i];
@@ -202,8 +205,20 @@ class FinalizacaoVencedorService
                 continue;
             }
 
+            // Verificar se é uma linha de título de lote (ex: LOTE 1 - ADMINSTRAÇÃO)
+            $colunaA = $this->obterValorColuna($linha, 0, '');
+            if (is_string($colunaA) && str_starts_with(strtoupper($colunaA), 'LOTE ')) {
+                // Tenta extrair o nome após o hífen
+                $partes = explode('-', $colunaA);
+                if (count($partes) > 1) {
+                    $loteNomeAtual = trim($partes[1]);
+                }
+                continue; // Pula a linha de título
+            }
+
             $dado = [
                 'lote' => $this->obterValorColuna($linha, 2, ''),
+                'lote_nome' => $loteNomeAtual,
                 'status' => $this->obterValorColuna($linha, 3, 'HOMOLOGADO'),
                 'item' => $this->obterValorColuna($linha, 4, ''),
                 'descricao' => $this->obterValorColuna($linha, 5, ''),

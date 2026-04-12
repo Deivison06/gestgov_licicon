@@ -233,8 +233,8 @@
 
                             <!-- Cabeçalho do Lote -->
                             <tr>
-                                <td colspan="6" style="text-align:center; font-weight:bold; padding:8px; background-color:#f0f0f0;">
-                                    LOTE {{ $numeroLote ?? 'NÃO IDENTIFICADO' }}
+                                <td colspan="6" style="text-align:center; font-weight:bold; padding:8px; background-color:#f0f0f0; font-size: 14px;">
+                                    LOTE {{ $numeroLote ?? 'NÃO IDENTIFICADO' }} {{ !empty($itensLote->first()->lote_nome) ? ' - ' . $itensLote->first()->lote_nome : '' }}
                                 </td>
                             </tr>
 

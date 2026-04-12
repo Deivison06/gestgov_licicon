@@ -456,7 +456,7 @@
                                                         <div class="mb-6 border border-gray-200 rounded-lg">
                                                             <div class="px-4 py-3 bg-gray-100 border-b border-gray-200">
                                                                 <h5 class="font-semibold text-gray-800">
-                                                                    LOTE {{ $numeroLote }}
+                                                                    LOTE {{ $numeroLote }} {{ !empty($itensLote->first()->lote_nome) ? ' - ' . $itensLote->first()->lote_nome : '' }}
                                                                 </h5>
                                                             </div>
                                                             <div class="overflow-x-auto">
@@ -534,7 +534,7 @@
                                                                         <!-- Linha de totais do lote -->
                                                                         <tr class="font-semibold bg-gray-100">
                                                                             <td class="px-4 py-2 text-sm text-gray-900" colspan="6">
-                                                                                TOTAL DO LOTE {{ $numeroLote }}
+                                                                                TOTAL DO LOTE {{ $numeroLote }} {{ !empty($itensLote->first()->lote_nome) ? ' - ' . $itensLote->first()->lote_nome : '' }}
                                                                             </td>
                                                                             <td class="px-4 py-2 text-sm text-right text-gray-900">
                                                                                 {{ number_format($itensLote->sum('quantidade'), 0, ',', '.') }}
@@ -1560,7 +1560,7 @@
                                             <div class="mb-6 border border-gray-200 rounded-lg">
                                                 <div class="px-4 py-3 bg-gray-100 border-b border-gray-200">
                                                     <h5 class="font-semibold text-gray-800">
-                                                        LOTE ${numeroLote}
+                                                        LOTE ${numeroLote} ${itensLote[0].lote_nome ? ' - ' + itensLote[0].lote_nome : ''}
                                                     </h5>
                                                 </div>
                                                 <div class="overflow-x-auto">

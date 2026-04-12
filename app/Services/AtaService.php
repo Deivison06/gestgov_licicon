@@ -237,6 +237,7 @@ class AtaService
                 'vencedor' => $lote->vencedor?->razao_social ?? 'Não definido',
                 'id' => $lote->id,
                 'lote_num' => $lote->lote,
+                'lote_nome' => $lote->lote_nome,
                 'item' => $lote->item,
                 'descricao' => $lote->descricao,
                 'unidade' => $lote->unidade,

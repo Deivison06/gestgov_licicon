@@ -16,6 +16,7 @@ class Lote extends Model
     protected $fillable = [
         'vencedor_id',
         'lote',
+        'lote_nome',
         'status',
         'item',
         'descricao',

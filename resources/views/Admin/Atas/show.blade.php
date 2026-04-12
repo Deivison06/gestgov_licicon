@@ -825,7 +825,7 @@
                                 @foreach($itensAgrupados as $loteNum => $itensDoLote)
                                     <tr class="bg-gray-100 border-t border-b border-gray-200 saldo-row always-visible">
                                         <td colspan="5" class="px-6 py-2 text-sm font-bold text-gray-700">
-                                            LOTE {{ $loteNum ?: 'Único' }}
+                                            LOTE {{ $loteNum ?: 'Único' }} {{ !empty($itensDoLote->first()['lote_nome']) ? ' - ' . $itensDoLote->first()['lote_nome'] : '' }}
                                         </td>
                                     </tr>
                                     @foreach ($itensDoLote as $item)
