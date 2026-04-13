@@ -316,6 +316,11 @@ class ProcessoDocumentoService
                 if ($tipo === 'parecer_tecnico') {
                     $documentosOrdenados[$tipo]['campos'][] = 'encaminhamento_parecer_juridico';
                 }
+
+                // adiciona no parecer jurídico apenas para inexigibilidade
+                if ($tipo === 'parecer_juridico') {
+                    $documentosOrdenados[$tipo]['campos'][] = 'encaminhamento_controle_interno';
+                }
             }
 
             if ($tipo === 'formalizacao') {
@@ -461,7 +466,7 @@ class ProcessoDocumentoService
             'parecer_controle_interno',
             'ato_autorizacao',
             'contrato',
-            'publicacoes'
+            'publicacoes_avisos_licitacao'
         ];
     }
 

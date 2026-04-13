@@ -673,6 +673,12 @@ class ContratoProcessoController extends Controller
                         'is_lote_header' => true,
                         'item' => $loteAtual,
                         'especificacao' => "LOTE " . $loteAtual,
+                        'unidade_medida' => '',
+                        'quantidade' => '',
+                        'valor_unitario' => '',
+                        'valor_total' => '',
+                        'marca' => '',
+                        'modelo' => '',
                     ];
                 }
 

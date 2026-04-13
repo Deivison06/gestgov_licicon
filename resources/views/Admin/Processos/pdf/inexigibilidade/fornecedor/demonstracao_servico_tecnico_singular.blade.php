@@ -232,7 +232,7 @@
             especifico conhecimento para desenvolta atuação. Ante o exposto, considerando os fundamentos
             ao norte alinhados certificados que a empresa/pessoa física
             {{ $processo->detalhe->razao_social }}, inscrito no CNPJ/CPF sob o n°
-            {{ $processo->detalhe->cnpj_empresa_vencedora }}, com endereço na {{ $processo->detalhe->endereco }}, possui
+            {{ $processo->detalhe->cnpj_empresa_vencedora }}, com endereço na {{ $processo->detalhe->endereco_empresa_vencedora }}, possui
             SINGULAR E NOTÓRIA ESPECIALIZAÇÃO na {!! strip_tags($processo->objeto) !!}, com vasta experiencia
             de atuação no setor público, possuindo confiança absoluta desta Gestão Municipal.
         </p>

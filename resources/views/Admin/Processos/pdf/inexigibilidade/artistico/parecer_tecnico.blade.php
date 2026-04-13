@@ -250,7 +250,6 @@
     <p>
         Ao(À) Exmo(a). Sr(a). <br>
         {{ $processo->detalhe->encaminhamento_parecer_juridico }} <br>
-        Procurador Geral do Município<br>
         {{ $processo->prefeitura->cidade }} 
     </p>
 

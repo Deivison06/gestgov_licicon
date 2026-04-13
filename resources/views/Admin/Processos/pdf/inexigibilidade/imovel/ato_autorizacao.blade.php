@@ -253,7 +253,7 @@
                 VALOR TOTAL
             </td>
             <td style="border:1px solid #000; padding:6px;">
-                R$ {{ number_format($processo->detalhe->valor, 2, ',', '.') }}
+                R$ {{ $detalhe->valor_estimado }}
             </td>
         </tr>
         <tr>

@@ -303,14 +303,17 @@
     @elseif($campo === 'encaminhamento_elaborar_termo_referencia')
         <x-form-field name="encaminhamento_elaborar_termo_referencia" label="Encaminhamento para ELABORAÇÃO DO TERMO DE REFERÊNCIA" type="select" :options="$processo->prefeitura->unidades->pluck('nome', 'nome')->toArray()" placeholder="Selecione uma unidade" />
 
+    @elseif($campo === 'encaminhamento_controle_interno' && $processo->modalidade === \App\Enums\ModalidadeEnum::INEXIGIBILIDADE)
+        <x-form-field name="encaminhamento_controle_interno" label="Encaminhamento para CONTROLE INTERNO" type="select" :options="$processo->prefeitura->unidades->pluck('nome', 'nome')->toArray()" placeholder="Selecione uma unidade" />
+
     @elseif($campo === 'encaminhamento_elaborar_projeto_basico')
         @if ($processo->modalidade === \App\Enums\ModalidadeEnum::CONCORRENCIA || $processo->modalidade === \App\Enums\ModalidadeEnum::DISPENSA)
             <x-form-field name="encaminhamento_elaborar_projeto_basico" label="Encaminhamento para ELABORAÇÀO DE PROJETO BÁSICO" type="select" :options="$processo->prefeitura->unidades->pluck('nome', 'nome')->toArray()" placeholder="Selecione uma unidade" />
         @endif
 
     @elseif($campo === 'encaminhamento_parecer_juridico')
-    <x-form-field name="encaminhamento_parecer_juridico" label="Encaminhamento para ELABORAÇÃO DE PARECER JURÍDICO" type="select" :options="$processo->prefeitura->unidades->pluck('nome', 'nome')->toArray()" placeholder="Selecione uma unidade" />
-
+        <x-form-field name="encaminhamento_parecer_juridico" label="Encaminhamento para ELABORAÇÃO DE PARECER JURÍDICO" type="select" :options="$processo->prefeitura->unidades->pluck('nome', 'nome')->toArray()" placeholder="Selecione uma unidade" />
+    
     @elseif($campo === 'encaminhamento_autorizacao_abertura')
     <x-form-field name="encaminhamento_autorizacao_abertura" label="Encaminhamento para AUTORIZAÇÃO DE ABERTURA DE PROCEDIMENTO PELA AUTORIDADE COMPETENTE" type="select" :options="$processo->prefeitura->unidades->pluck('nome', 'nome')->toArray()" placeholder="Selecione uma unidade" />
 

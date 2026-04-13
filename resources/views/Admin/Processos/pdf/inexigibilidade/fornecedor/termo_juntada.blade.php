@@ -147,17 +147,9 @@
         <h4 style="text-align: center;">TERMO DE JUNTADA</h4>
         <hr>
         @php
-             use Carbon\Carbon;
+            use Carbon\Carbon;
 
-            // Verifica se há assinantes e usa o primeiro
-            $hasSelectedAssinantes = isset($assinantes) && count($assinantes) > 0;
-            $primeiroAssinante = $hasSelectedAssinantes ? $assinantes[0] : null;
-
-            if ($primeiroAssinante && isset($primeiroAssinante['data_portaria'])) {
-                $data = Carbon::parse($primeiroAssinante['data_portaria']);
-            } else {
-                $data = Carbon::parse($dataSelecionada);
-            }
+            $data = Carbon::parse($dataSelecionada);
 
             $formatter = new \NumberFormatter('pt_BR', \NumberFormatter::SPELLOUT);
 

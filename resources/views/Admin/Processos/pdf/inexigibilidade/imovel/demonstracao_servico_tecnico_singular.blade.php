@@ -150,8 +150,8 @@
         </h4>
         <p style="text-align: justify; text-indent: 30px;">
             CERTIFICO para devidos fins que o(a) empresa/pessoa física
-            XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX, inscrito no CNPJ/CPF sob o n°
-            XXXXXXXXXXXXXXXX, com endereço na XXXXXXXXXXXXXXXXXXXXXXXXXXXX, possui
+            {{ $processo->detalhe->razao_social }}, inscrito no CNPJ/CPF sob o n°
+            {{ $processo->detalhe->cnpj_empresa_vencedora }}, com endereço na {{ $processo->detalhe->endereco }}, possui
             SINGULAR E NOTÓRIA ESPECIALIZAÇÃO na {!! strip_tags($processo->objeto) !!}, como se
             demonstra por meio das razões de ordem técnica a seguir articuladas;
         </p>
@@ -231,9 +231,9 @@
             Administração, tecnologias, normatizações e programas governamentais que impõe profundo e
             especifico conhecimento para desenvolta atuação. Ante o exposto, considerando os fundamentos
             ao norte alinhados certificados que a empresa/pessoa física
-            XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX, inscrito no CNPJ/CPF sob o n°
-            XXXXXXXXXXXXXXXX, com endereço na XXXXXXXXXXXXXXXXXXXXXXXXXXXX, possui
-            SINGULAR E NOTÓRIA ESPECIALIZAÇÃO na XXXXXXXXXX (OBJETO), com vasta experiencia
+            {{ $processo->detalhe->razao_social }}, inscrito no CNPJ/CPF sob o n°
+            {{ $processo->detalhe->cnpj_empresa_vencedora }}, com endereço na {{ $processo->detalhe->endereco_empresa_vencedora }}, possui
+            SINGULAR E NOTÓRIA ESPECIALIZAÇÃO na {!! strip_tags($processo->objeto) !!}, com vasta experiencia
             de atuação no setor público, possuindo confiança absoluta desta Gestão Municipal.
         </p>
     </div>

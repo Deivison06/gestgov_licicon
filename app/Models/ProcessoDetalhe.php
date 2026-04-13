@@ -108,7 +108,8 @@ class ProcessoDetalhe extends Model
         'obrigacoes_contratado_extras',
         'obrigacoes_contratante_extras',
         'empresa_vencedora_pdf',
-        'encaminhamento_elaborar_termo_referencia'
+        'encaminhamento_elaborar_termo_referencia',
+        'encaminhamento_controle_interno'
     ];
 
     protected $casts = [

@@ -352,9 +352,7 @@
 
         <p>
             Ao(À) Ilmo(a). Sr(a).<br>
-            <span>xxxxxxxxxxxxxxxx</span>
-            <br>
-            Controlador do Município
+            <span>{{ $processo->detalhe->encaminhamento_controle_interno }}</span>
         </p>
 
         <p style="text-align: justify">Assunto: Encaminhamento de Processo de Inexigibilidade de Licitação</p>
@@ -363,8 +361,7 @@
 
         <p style="text-align: justify; text-indent: 30px;">
             Encaminho ao Exm. Senhor(a) o Processo de Inexigibilidade de
-            Licitação nº {{ $processo->numero_procedimento }}, {!! strip_tags($processo->objeto) !!} para emissão de parecer do Contrato Interno acerca da
-            contrataçã
+            Licitação nº {{ $processo->numero_procedimento }}, {!! strip_tags($processo->objeto) !!} para emissão de parecer do Controlador Interno acerca da contratação
         </p>
 
         {{-- Bloco de data e assinatura --}}
