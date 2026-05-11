@@ -337,8 +337,17 @@
             </thead>
             <tbody>
                 @if(count($itensTabela) > 0)
+                    @php $currentLoteTotal = 0; $hasLote = false; @endphp
                     @foreach($itensTabela as $item)
                         @if(isset($item['is_lote_header']) && $item['is_lote_header'])
+                            @if($hasLote)
+                                <tr>
+                                    <td colspan="5" style="border:1px solid #000; padding:10px; text-align:right; font-weight:bold;">TOTAL DO LOTE</td>
+                                    <td style="border:1px solid #000; padding:10px; text-align:right; font-weight:bold;">R$ {{ number_format($currentLoteTotal, 2, ',', '.') }}</td>
+                                </tr>
+                                @php $currentLoteTotal = 0; @endphp
+                            @endif
+                            @php $hasLote = true; @endphp
                             <tr>
                                 <td colspan="6" style="border:1px solid #000; padding:10px; background-color: #f2f2f2; font-weight:bold; text-align:left;">
                                     {{ $item['especificacao'] ?? $item['item'] }}
@@ -353,10 +362,19 @@
                                 <td style="border:1px solid #000; padding:14px; vertical-align:top; text-align:right;">{{ $item['valor_unitario'] }}</td>
                                 <td style="border:1px solid #000; padding:14px; vertical-align:top; text-align:right;">{{ $item['valor_total'] }}</td>
                             </tr>
+                            @php $currentLoteTotal += ($item['valor_total_raw'] ?? 0); @endphp
                         @endif
                     @endforeach
                     
-                    <!-- Linha de totalização -->
+                    {{-- Mostrar o total do último lote se houver lotes --}}
+                    @if($hasLote)
+                        <tr>
+                            <td colspan="5" style="border:1px solid #000; padding:10px; text-align:right; font-weight:bold;">TOTAL DO LOTE</td>
+                            <td style="border:1px solid #000; padding:10px; text-align:right; font-weight:bold;">R$ {{ number_format($currentLoteTotal, 2, ',', '.') }}</td>
+                        </tr>
+                    @endif
+
+                    <!-- Linha de totalização Geral -->
                     <tr>
                         <td colspan="3" style="border:1px solid #000; padding:14px; vertical-align:top; text-align:right; font-weight:bold;">TOTAL GERAL</td>
                         <td colspan="3" style="border:1px solid #000; padding:14px; vertical-align:top; text-align:right; font-weight:bold;">R$ {{ number_format($valorTotalContrato, 2, ',', '.') }}</td>

@@ -165,9 +165,30 @@ class FinalizacaoProcessoController extends Controller
 
     public function baixarTodosDocumentos(Processo $processo)
     {
-        set_time_limit(600);
-        ini_set('memory_limit', '512M');
+        try {
+            $token = \Illuminate\Support\Str::uuid()->toString();
+            
+            // Coloca a indicação inicial de "na fila"
+            \Illuminate\Support\Facades\Cache::put("doc_status_{$token}", ['status' => 'na_fila', 'fase' => 'finalizar'], now()->addHours(2));
+            
+            // Dispara na fila Default
+            \App\Jobs\GerarTodosDocumentosJob::dispatch($processo->id, 'finalizar', $token);
 
-        return $this->pdfService->baixarTodosDocumentos($processo);
+            return response()->json([
+                'success' => true,
+                'token'   => $token,
+                'message' => 'Processamento iniciado em segundo plano.'
+            ]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Erro ao colocar na fila todos os documentos (Finalizacao)', [
+                'processo_id' => $processo->id,
+                'erro' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao iniciar download: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

@@ -196,6 +196,14 @@ Route::prefix('admin')
             Route::delete('/{id}', [UnidadeController::class, 'destroyUnidade'])
                 ->name('unidades.destroy');
         });
+        // ========================================
+        // 4.5. POLLING ASSÍNCRONO DE DOCUMENTOS
+        // ========================================
+        Route::get('/documentos-async/status/{token}', [\App\Http\Controllers\ProcessoController::class, 'verificarStatusDownloadDocs'])
+            ->name('documentos.async.status');
+            
+        Route::get('/documentos-async/download/{token}', [\App\Http\Controllers\ProcessoController::class, 'finalizarDownloadDocs'])
+            ->name('documentos.async.download');
 
         // ========================================
         // 5. PROCESSOS

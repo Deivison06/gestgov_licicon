@@ -1027,14 +1027,12 @@
                 atividade e compatível com o objeto contratual;
             </p>
             <p style="text-align: justify;">
-                8.5.3. Prova de regularidade fiscal perante a Fazenda Nacional para pessoa física
-                e pessoa jurídica, mediante apresentação de certidão expedida conjuntamente
-                pela Secretaria da Receita Federal do Brasil (RFB) e pela Procuradoria-Geral da
-                Fazenda Nacional (PGFN), referente a todos os créditos tributários federais e à
-                Dívida Ativa da União (DAU) por elas administrados, inclusive aqueles relativos à
-                Seguridade Social, nos termos da Portaria Conjunta nº 1.751, de 02/10/2014, do
-                Secretário da Receita Federal do Brasil e da Procuradora-Geral da Fazenda
-                Nacional, relativo à Pessoa Física e Pessoa Jurídica.
+                8.5.3. Prova de regularidade fiscal perante a Fazenda Nacional para pessoa jurídica, 
+                mediante apresentação de certidão expedida conjuntamente pela Secretaria da Receita 
+                Federal do Brasil (RFB) e pela Procuradoria-Geral da Fazenda Nacional (PGFN), referente a 
+                todos os créditos tributários federais e à Dívida Ativa da União (DAU) por elas administrados, 
+                inclusive aqueles relativos à Seguridade Social, nos termos da Portaria Conjunta nº 1.751, de 02/10/2014, 
+                do Secretário da Receita Federal do Brasil e da Procuradora-Geral da Fazenda Nacional.
             </p>
             <p style="text-align: justify;">
                 8.5.4. Prova de regularidade com o Fundo de Garantia do Tempo de Serviço
@@ -1065,10 +1063,9 @@
             {!! preg_replace('/<\/?ul[^>]*>/', '', $detalhe->regularidade_fisica) !!}
             <p>8.6. <span style="font-weight: bold;">HABILITAÇÃO ECONÔMICO-FINANCEIRA.</span> </p>
             <p style="text-align: justify;">
-                8.6.1. Certidão Negativa de falência, de concordata, de recuperação judicial ou
-                extrajudicial (Lei nº 11.101/2005) pessoa física e pessoa jurídica, expedida pelo
-                distribuidor da sede da empresa e da pessoa física, datado dos últimos 30 (trinta)
-                dias, ou que esteja dentro do prazo de validade expresso na própria Certidão;
+                8.6.1. Certidão Negativa de falência, de concordata, de recuperação judicial ou extrajudicial 
+                (Lei nº 11.101/2005) pessoa jurídica, expedida pelo distribuidor da sede da empresa, datado dos 
+                últimos 30 (trinta) dias, ou que esteja dentro do prazo de validade expresso na própria Certidão; 
             </p>
             <p style="text-align: justify;">
                 8.6.2. No caso de certidão positiva de recuperação judicial ou extrajudicial, o

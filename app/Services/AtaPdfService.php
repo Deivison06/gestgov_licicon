@@ -167,6 +167,14 @@ class AtaPdfService
 
         $assinantesAta = $dadosAta ? ($dadosAta->assinantes ?? []) : [];
 
+        // Garante que sempre seja array, independente do cast ou estado do banco
+        if (is_string($assinantesAta)) {
+            $assinantesAta = json_decode($assinantesAta, true) ?? [];
+        }
+        if (!is_array($assinantesAta)) {
+            $assinantesAta = [];
+        }
+
         $dados = [
             'processo' => $processo,
             'prefeitura' => $processo->prefeitura,
@@ -648,6 +656,7 @@ class AtaPdfService
                         'quantidade' => '',
                         'valor_unitario' => '',
                         'valor_total' => '',
+                        'valor_total_raw' => 0,
                         'marca' => '',
                         'modelo' => '',
                     ];
@@ -660,6 +669,7 @@ class AtaPdfService
                     'quantidade' => number_format($contratacao->quantidade_contratada, 2, ',', '.'),
                     'valor_unitario' => 'R$ ' . number_format($contratacao->valor_unitario, 2, ',', '.'),
                     'valor_total' => 'R$ ' . number_format($contratacao->valor_total, 2, ',', '.'),
+                    'valor_total_raw' => $contratacao->valor_total,
                     'is_lote_header' => false,
                     'marca' => $contratacao->lote->marca ?? '',
                     'modelo' => $contratacao->lote->modelo ?? '',

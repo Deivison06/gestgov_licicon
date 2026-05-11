@@ -88,22 +88,20 @@
             <p style="text-align: center; font-size: 14pt;">
                 OBJETO:
             </p>
-            <div style="text-align: justify;">{!! strip_tags($processo->objeto) !!}</div>
+            <div style="text-align: justify; line-height: 1.2;">{!! strip_tags($processo->objeto) !!}</div>
             <p>
-                <span style="font-weight: bold;">VALOR TOTAL DA CONTRATAÇÃO</span> <br>
+                <span style="font-weight: bold; line-height: 0.8;">VALOR TOTAL DA CONTRATAÇÃO</span> <br>
                 R$ {{ $detalhe->valor_estimado }}<br>
                 <span style="font-weight: bold;">DATA LIMITE PARA ENVIO DE PROPOSTAS</span> <br>
                 DIA {{ $detalhe->data_hora_limite_edital->translatedFormat('d \d\e F \d\e Y') }}, às {{ $detalhe->data_hora_limite_edital->format('H:i') }}hs (Horário de Brasília)<br>
                 <span style="font-weight: bold;">DATA DA SESSÃO PÚBLICA E FASE DE LANCES</span> <br>
                 DIA {{ $detalhe->data_hora_fase_edital->translatedFormat('d \d\e F \d\e Y') }} às {{ $detalhe->data_hora_fase_edital->format('H:i') }}hs (Horário de Brasília)<br>
-                <span style="font-weight: bold;">CRITÉRIO DE JULGAMENTO:</span> <br> MENOR PREÇO GLOBAL <br>
+                <span style="font-weight: bold;">CRITÉRIO DE JULGAMENTO:</span> MENOR PREÇO GLOBAL <br>
                 <span style="font-weight: bold;">PORTAL UTILIZADO:</span> {{ $detalhe->portal }} <br>
                 <span style="font-weight: bold;">ENDEREÇO DO PORTAL:</span> https://comprasbr.com.br/<br>
                 <span style="font-weight: bold;">E-MAIL:</span> {{ $processo->prefeitura->email }}<br><br>
-                <span style="font-weight: bold;">AGENTE DE CONTRATAÇÃO</span><br>
-                {{ $detalhe->pregoeiro }}<br>
-                <span style="font-weight: bold;">AUTORIDADE COMPETENTE</span><br>
-                {{ $processo->prefeitura->autoridade_competente }}
+                <span style="font-weight: bold;">AGENTE DE CONTRATAÇÃO: </span>{{ $detalhe->pregoeiro }}<br>
+                <span style="font-weight: bold;">AUTORIDADE COMPETENTE: </span>{{ $processo->prefeitura->autoridade_competente }}
             </p>
 
         </div>

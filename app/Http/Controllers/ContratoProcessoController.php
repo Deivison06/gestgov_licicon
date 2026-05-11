@@ -672,11 +672,12 @@ class ContratoProcessoController extends Controller
                     $itens[] = [
                         'is_lote_header' => true,
                         'item' => $loteAtual,
-                        'especificacao' => "LOTE " . $loteAtual,
+                        'especificacao' => "LOTE " . $loteAtual . ($contratacao->lote->lote_nome ? " - " . $contratacao->lote->lote_nome : ""),
                         'unidade_medida' => '',
                         'quantidade' => '',
                         'valor_unitario' => '',
                         'valor_total' => '',
+                        'valor_total_raw' => 0,
                         'marca' => '',
                         'modelo' => '',
                     ];
@@ -689,6 +690,7 @@ class ContratoProcessoController extends Controller
                     'quantidade' => number_format($contratacao->quantidade_contratada, 2, ',', '.'),
                     'valor_unitario' => 'R$ ' . number_format($contratacao->valor_unitario, 2, ',', '.'),
                     'valor_total' => 'R$ ' . number_format($contratacao->valor_total, 2, ',', '.'),
+                    'valor_total_raw' => $contratacao->valor_total,
                     'marca' => $contratacao->lote->marca ?? '',
                     'modelo' => $contratacao->lote->modelo ?? '',
                 ];

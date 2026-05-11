@@ -322,11 +322,35 @@
                 </tbody>
             </table>
 
+
             <!-- Botão para Baixar Todos os PDFs -->
-            <div class="flex justify-center p-4 mt-6 border-t border-gray-200 bg-gray-50">
-                <a href="{{ route('admin.processo.finalizardocumento.dowload-all', ['processo' => $processo->id]) }}" class="px-6 py-3 text-sm font-semibold text-white transition-colors duration-200 bg-green-600 rounded-lg shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
-                    📥 Baixar Todos os PDFs
-                </a>
+            <div class="flex flex-col items-center gap-3 p-4 mt-6 border-t border-gray-200 bg-gray-50">
+                <button type="button"
+                        id="btn-baixar-todos-finalizar"
+                        onclick="iniciarDownloadTodos('{{ $processo->id }}', 'finalizar')"
+                        class="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white transition-colors duration-200 bg-green-600 rounded-lg shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                    <svg id="icon-download-finalizar" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                    </svg>
+                    <svg id="spinner-finalizar" xmlns="http://www.w3.org/2000/svg" class="hidden w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                    </svg>
+                    <span id="label-baixar-todos-finalizar">📥 Baixar Todos os PDFs</span>
+                </button>
+
+                {{-- Área de progresso --}}
+                <div id="progresso-finalizar" class="hidden w-full max-w-md">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-xs font-medium text-gray-600" id="msg-progresso-finalizar">Preparando arquivo...</span>
+                    </div>
+                    <div class="w-full h-2 overflow-hidden bg-gray-200 rounded-full">
+                        <div class="h-2 bg-green-500 rounded-full animate-pulse" style="width: 100%"></div>
+                    </div>
+                    <p class="mt-2 text-xs text-center text-gray-500">
+                        ⚠️ Arquivos com muitas páginas podem levar alguns minutos. Não feche esta aba.
+                    </p>
+                </div>
             </div>
         </div>
 
@@ -2406,6 +2430,223 @@
                     this.$el.submit();
                 }
             };
+        }
+    </script>
+
+    <script>
+        /**
+         * Inicia o download de todos os PDFs com feedback visual de progresso.
+         * Reutiliza as mesmas funções definidas em iniciar.blade.php caso ambas
+         * estejam na mesma sessão — caso contrário, as funções estão duplicadas aqui.
+         */
+        // Gestão do Loader Full Screen - Premium Redesign
+        function getOverlay() {
+            let overlay = document.getElementById('fs-download-overlay');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = 'fs-download-overlay';
+                overlay.className = 'fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-900/60 backdrop-blur-sm hidden transition-all duration-500 opacity-0';
+                overlay.innerHTML = `
+                    <!-- Glass modal -->
+                    <div class="relative flex flex-col items-center w-full max-w-md p-10 mx-4 overflow-hidden bg-white/95 shadow-2xl backdrop-blur-xl rounded-[2rem] border border-white/60 transform transition-all duration-500 translate-y-12 opacity-0" id="fs-download-modal">
+                        
+                        <!-- Decorative Glow -->
+                        <div class="absolute top-0 w-full h-32 opacity-60 bg-gradient-to-b from-blue-50 to-transparent"></div>
+                        
+                        <!-- Icon Container -->
+                        <div class="relative flex items-center justify-center w-28 h-28 mb-6">
+                            <!-- Pulsing background rings -->
+                            <div id="fs-ring-bounce" class="absolute inset-0 border-4 border-blue-100 rounded-full animate-ping opacity-60"></div>
+                            <div id="fs-ring-static" class="absolute inset-0 bg-gradient-to-tr from-blue-50 to-emerald-50 rounded-full animate-pulse shadow-inner"></div>
+                            
+                            <!-- Rotating dashed ring -->
+                            <svg id="fs-spinner-ring" class="absolute inset-0 w-full h-full text-blue-500 animate-[spin_4s_linear_infinite]" viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="46" fill="transparent" stroke="currentColor" stroke-width="2.5" stroke-dasharray="25 15" stroke-linecap="round"></circle>
+                            </svg>
+
+                            <!-- Center Icon (Document) -->
+                            <div class="relative z-10 text-blue-600 transition-colors duration-300" id="fs-center-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m6.75 12l-3-3m0 0l-3 3m3-3v6m-1.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"></path>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <h3 class="relative z-10 mb-2 text-2xl font-extrabold tracking-tight text-slate-800 text-center" id="fs-loader-title">Preparando Documentos</h3>
+                        
+                        <p class="relative z-10 w-full mb-6 text-[15px] font-medium text-center text-slate-500 min-h-[44px] flex items-center justify-center leading-tight" id="fs-loader-msg">Conectando à fila do servidor...</p>
+                        
+                        <!-- Progress Bar -->
+                        <div class="relative z-10 w-full h-2.5 mb-4 overflow-hidden bg-slate-100 rounded-full shadow-inner" id="progress-container">
+                            <div id="fs-progress-bar" class="h-full rounded-full bg-gradient-to-r from-blue-500 via-indigo-400 to-teal-400" style="width: 100%; background-size: 200% 100%; animation: fs-gradient-x 2s linear infinite;"></div>
+                        </div>
+                        
+                        <!-- Info Alert -->
+                        <div class="relative z-10 flex items-start p-4 mt-2 mb-2 rounded-xl bg-amber-50/80 border border-amber-200/60 text-amber-800 shadow-sm transition-opacity duration-300" id="fs-alert-box">
+                            <svg class="w-5 h-5 mr-3 flex-shrink-0 text-amber-500 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                            </svg>
+                            <p class="text-[13px] leading-relaxed font-medium">Por favor, mantenha esta aba aberta. O processamento de processos complexos pode demorar <strong>alguns minutos</strong>.</p>
+                        </div>
+                        
+                        <!-- Action Button -->
+                        <button id="fs-loader-close" class="relative z-10 hidden w-full px-6 py-3.5 mt-4 text-[15px] font-bold text-white transition-all transform shadow-md shadow-slate-200 bg-slate-800 rounded-xl hover:bg-slate-700 hover:-translate-y-0.5 active:translate-y-0 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2" onclick="fecharOverlay()">
+                            Voltar e Tentar Novamente
+                        </button>
+                    </div>
+                `;
+                
+                // Adiciona os keyframes de gradiente customizados
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes fs-gradient-x {
+                        0%, 100% { background-position: 0% 50%; }
+                        50% { background-position: 100% 50%; }
+                    }
+                `;
+                document.head.appendChild(style);
+                document.body.appendChild(overlay);
+            }
+            return overlay;
+        }
+
+        function mostrarOverlay() {
+            const overlay = getOverlay();
+            const modal = document.getElementById('fs-download-modal');
+            const closeBtn = document.getElementById('fs-loader-close');
+            
+            // Start state
+            closeBtn.classList.add('hidden');
+            document.getElementById('fs-alert-box').classList.remove('hidden', 'opacity-0');
+            document.getElementById('progress-container').classList.remove('hidden');
+            
+            document.getElementById('fs-loader-title').textContent = 'Processando em Lote';
+            document.getElementById('fs-loader-title').className = 'relative z-10 mb-2 text-2xl font-extrabold tracking-tight text-slate-800 text-center';
+            
+            document.getElementById('fs-center-icon').className = 'relative z-10 text-blue-600 transition-colors duration-300';
+            document.getElementById('fs-center-icon').innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m6.75 12l-3-3m0 0l-3 3m3-3v6m-1.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"></path>
+                </svg>
+            `;
+            
+            document.getElementById('fs-spinner-ring').classList.remove('hidden');
+            document.getElementById('fs-ring-bounce').classList.remove('hidden');
+            
+            // Show overlay
+            overlay.classList.remove('hidden');
+            
+            // Trigger animation
+            requestAnimationFrame(() => {
+                overlay.classList.remove('opacity-0');
+                overlay.classList.add('opacity-100');
+                
+                modal.classList.remove('translate-y-12', 'opacity-0');
+                modal.classList.add('translate-y-0', 'opacity-100');
+            });
+        }
+
+        function fecharOverlay() {
+            const overlay = document.getElementById('fs-download-overlay');
+            const modal = document.getElementById('fs-download-modal');
+            if (overlay) {
+                overlay.classList.remove('opacity-100');
+                overlay.classList.add('opacity-0');
+                
+                modal.classList.remove('translate-y-0', 'opacity-100');
+                modal.classList.add('translate-y-12', 'opacity-0');
+                
+                setTimeout(() => {
+                    overlay.classList.add('hidden');
+                }, 500); // Matches duration-500
+            }
+        }
+
+        function atualizarOverlayText(msg) {
+            const msgEl = document.getElementById('fs-loader-msg');
+            if (msgEl) msgEl.innerHTML = msg;
+        }
+
+        function erroOverlay(msg) {
+            document.getElementById('fs-loader-title').textContent = 'Ocorreu um Erro';
+            document.getElementById('fs-loader-title').className = 'relative z-10 mb-2 text-2xl font-extrabold tracking-tight text-rose-600 text-center';
+            document.getElementById('fs-loader-msg').innerHTML = `<span class="text-rose-600">${msg}</span>`;
+            
+            // Hide progress
+            document.getElementById('progress-container').classList.add('hidden');
+            document.getElementById('fs-alert-box').classList.add('hidden');
+            
+            // Update Icon
+            document.getElementById('fs-spinner-ring').classList.add('hidden');
+            document.getElementById('fs-ring-bounce').classList.add('hidden');
+            document.getElementById('fs-center-icon').className = 'relative z-10 text-rose-500';
+            document.getElementById('fs-center-icon').innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-14 h-14 drop-shadow-md" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+            `;
+            
+            document.getElementById('fs-loader-close').classList.remove('hidden');
+        }
+
+        if (typeof iniciarDownloadTodos === 'undefined') {
+            function iniciarDownloadTodos(processoId, fase) {
+                mostrarOverlay();
+                atualizarOverlayText('Enviando solicitação para a fila...');
+
+                const urlMap = {
+                    iniciar:   `/admin/processos/${processoId}/documentos/baixar-todos`,
+                    finalizar: `/admin/processos/${processoId}/finalizacao/documentos/baixar-todos`,
+                };
+                const url = urlMap[fase];
+
+                fetch(url)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success && data.token) {
+                            monitorarStatusDownload(data.token, fase);
+                        } else {
+                            throw new Error(data.message || 'Erro desconhecido ao iniciar processo.');
+                        }
+                    })
+                    .catch(err => {
+                         erroOverlay(err.message);
+                    });
+            }
+
+            function monitorarStatusDownload(token, fase) {
+                let tempoDecorrido = 0;
+                atualizarOverlayText('Aguardando servidor mesclar os arquivos...');
+
+                const intervalo = setInterval(() => {
+                    fetch(`/admin/documentos-async/status/${token}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            tempoDecorrido += 5;
+
+                            if (data.status === 'pronto') {
+                                clearInterval(intervalo);
+                                atualizarOverlayText('Pronto! Iniciando download...');
+                                
+                                setTimeout(() => {
+                                    fecharOverlay();
+                                    window.location.href = `/admin/documentos-async/download/${token}`;
+                                }, 1500);
+                            } else if (data.status === 'erro') {
+                                clearInterval(intervalo);
+                                erroOverlay(data.message || 'Erro no processamento em lote.');
+                            } else {
+                                const minutos = Math.floor(tempoDecorrido / 60);
+                                const segundos = tempoDecorrido % 60;
+                                const tempoFmt = minutos > 0 ? `${minutos}m ${segundos}s` : `${segundos}s`;
+                                
+                                const pontos = '.'.repeat((tempoDecorrido / 5) % 4);
+                                atualizarOverlayText(`Gerando PDF em Background${pontos} \n(${tempoFmt} decorridos)`);
+                            }
+                        })
+                        .catch(err => console.warn('Erro temporário no polling', err));
+                }, 5000);
+            }
         }
     </script>
 @endsection

@@ -60,7 +60,7 @@ class FinalizacaoPdfService
         return response()->download(public_path($documento->caminho));
     }
 
-    public function baixarTodosDocumentos(Processo $processo)
+    public function gerarCaminhoTodosDocumentos(Processo $processo): string
     {
         $ordem = $this->documentoService->getOrdemDocumentos($processo);
         $documentos = Documento::where('processo_id', $processo->id)->get()->keyBy('tipo_documento');
@@ -68,7 +68,13 @@ class FinalizacaoPdfService
         return $this->baixarTodosDocumentosComGhostscript($processo, $ordem, $documentos);
     }
 
-    private function baixarTodosDocumentosComGhostscript(Processo $processo, array $ordem, $documentos)
+    public function baixarTodosDocumentos(Processo $processo)
+    {
+        $caminho = $this->gerarCaminhoTodosDocumentos($processo);
+        return response()->download($caminho)->deleteFileAfterSend(true);
+    }
+
+    private function baixarTodosDocumentosComGhostscript(Processo $processo, array $ordem, $documentos): string
     {
         $arquivos = [];
         foreach ($ordem as $tipo) {
@@ -91,10 +97,10 @@ class FinalizacaoPdfService
             $caminhoCarimbado = $this->adicionarCarimboAoPdfComGhostscript($caminhoArquivo, $processo);
 
             if ($caminhoCarimbado) {
-                return response()->download($caminhoCarimbado)->deleteFileAfterSend(true);
+                return $caminhoCarimbado;
             } else {
                 Log::warning('PDF mesclado com Ghostscript sem carimbo - Finalização', ['processo_id' => $processo->id]);
-                return response()->download($caminhoArquivo)->deleteFileAfterSend(true);
+                return $caminhoArquivo;
             }
         } else {
             throw new \Exception('Erro ao mesclar documentos com Ghostscript');
@@ -615,8 +621,6 @@ class FinalizacaoPdfService
             $output = [];
             $returnCode = 0;
             exec($comando . ' 2>&1', $output, $returnCode);
-
-            sleep(2);
 
             $outputExiste = file_exists($outputPath);
             $outputTamanho = $outputExiste ? filesize($outputPath) : 0;

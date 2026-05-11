@@ -208,8 +208,8 @@ class FinalizacaoVencedorService
             // Verificar se é uma linha de título de lote (ex: LOTE 1 - ADMINSTRAÇÃO)
             $colunaA = $this->obterValorColuna($linha, 0, '');
             if (is_string($colunaA) && str_starts_with(strtoupper($colunaA), 'LOTE ')) {
-                // Tenta extrair o nome após o hífen
-                $partes = explode('-', $colunaA);
+                // Tenta extrair o nome após o hífen, limitando a 2 partes para evitar truncar se o nome tiver hífens
+                $partes = explode('-', $colunaA, 2);
                 if (count($partes) > 1) {
                     $loteNomeAtual = trim($partes[1]);
                 }

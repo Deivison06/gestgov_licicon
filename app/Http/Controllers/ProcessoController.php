@@ -304,28 +304,56 @@ class ProcessoController extends Controller
         return response()->download(public_path($documento->caminho));
     }
 
+    public function verificarStatusDownloadDocs($token)
+    {
+        $statusInfo = \Illuminate\Support\Facades\Cache::get("doc_status_{$token}");
+
+        if (!$statusInfo) {
+            return response()->json(['status' => 'processando']); // default se o Job ainda n gravou
+        }
+
+        return response()->json($statusInfo);
+    }
+
+    public function finalizarDownloadDocs($token)
+    {
+        $statusInfo = \Illuminate\Support\Facades\Cache::get("doc_status_{$token}");
+
+        if (!$statusInfo || $statusInfo['status'] !== 'pronto' || empty($statusInfo['caminho'])) {
+            abort(404, 'Arquivo não encontrado ou expirado.');
+        }
+
+        return response()
+            ->download($statusInfo['caminho'], $statusInfo['nome'])
+            ->deleteFileAfterSend(false); // Mantemos no cache por 2 horas, será limpado por cron OS se necessário, mas podemos manter pois o Nginx faz caching
+    }
+
     public function baixarTodosDocumentos(Processo $processo)
     {
         try {
-            return $this->pdfService->baixarTodosDocumentos($processo);
+            $token = \Illuminate\Support\Str::uuid()->toString();
+            
+            // Coloca a indicação inicial de "na fila"
+            \Illuminate\Support\Facades\Cache::put("doc_status_{$token}", ['status' => 'na_fila', 'fase' => 'iniciar'], now()->addHours(2));
+            
+            // Dispara na fila Default
+            \App\Jobs\GerarTodosDocumentosJob::dispatch($processo->id, 'iniciar', $token);
+
+            return response()->json([
+                'success' => true,
+                'token'   => $token,
+                'message' => 'Processamento iniciado em segundo plano.'
+            ]);
         } catch (\Exception $e) {
-            Log::error('Erro ao baixar todos os documentos', [
+            \Illuminate\Support\Facades\Log::error('Erro ao colocar na fila todos os documentos (Iniciar)', [
                 'processo_id' => $processo->id,
                 'erro' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
 
-            // Verificar se é o erro de instanciação do enum
-            if (str_contains($e->getMessage(), 'Cannot instantiate enum')) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Erro interno do sistema ao processar os documentos. Contate o suporte técnico.'
-                ], 500);
-            }
-
             return response()->json([
                 'success' => false,
-                'message' => 'Erro ao baixar documentos: ' . $e->getMessage()
+                'message' => 'Erro ao iniciar download: ' . $e->getMessage()
             ], 500);
         }
     }

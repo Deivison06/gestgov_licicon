@@ -154,7 +154,7 @@ class ProcessoPdfService
         return response()->download(public_path($documento->caminho));
     }
 
-    public function baixarTodosDocumentos(Processo $processo)
+    public function gerarCaminhoTodosDocumentos(Processo $processo): string
     {
         $ordem = $this->documentoService->getOrdemDocumentosParaDownload($processo);
         $documentos = Documento::where('processo_id', $processo->id)->get()->keyBy('tipo_documento');
@@ -162,7 +162,16 @@ class ProcessoPdfService
         return $this->baixarTodosDocumentosComGhostscript($processo, $ordem, $documentos);
     }
 
-    private function baixarTodosDocumentosComGhostscript(Processo $processo, array $ordem, $documentos)
+    public function baixarTodosDocumentos(Processo $processo)
+    {
+        $caminho = $this->gerarCaminhoTodosDocumentos($processo);
+        
+        return response()
+            ->download($caminho)
+            ->deleteFileAfterSend(true);
+    }
+
+    private function baixarTodosDocumentosComGhostscript(Processo $processo, array $ordem, $documentos): string
     {
         $arquivos = [];
 
@@ -223,9 +232,7 @@ class ProcessoPdfService
 
         $caminhoCarimbado = $this->adicionarCarimboAoPdfComGhostscript($caminhoArquivo, $processo);
 
-        return response()
-            ->download($caminhoCarimbado ?? $caminhoArquivo)
-            ->deleteFileAfterSend(true);
+        return $caminhoCarimbado ?? $caminhoArquivo;
     }
 
 
@@ -705,8 +712,6 @@ class ProcessoPdfService
             $returnCode = 0;
             exec($comando . ' 2>&1', $output, $returnCode);
 
-            sleep(2);
-
             $outputExiste = file_exists($outputPath);
             $outputTamanho = $outputExiste ? filesize($outputPath) : 0;
 
@@ -805,7 +810,7 @@ class ProcessoPdfService
 
     private function adicionarCarimboAoPdfComGhostscript(string $caminhoPdf, Processo $processo): ?string
     {
-        $paginasTemp = [];
+        $chunksTemp = [];
 
         try {
             $pageCount = $this->contarPaginasPdf($caminhoPdf);
@@ -816,29 +821,40 @@ class ProcessoPdfService
             }
 
             $caminhoCarimbado = str_replace('.pdf', '_carimbado.pdf', $caminhoPdf);
+            $chunkSize = 50; // Processar em blocos de 50 páginas para equilibrar memória e performance
 
-            for ($pagina = 1; $pagina <= $pageCount; $pagina++) {
-                $paginaAtual = $pagina;
-
+            for ($i = 1; $i <= $pageCount; $i += $chunkSize) {
                 $pdf = new Fpdi();
                 $this->configurarFonte($pdf);
-
                 $pdf->setSourceFile($caminhoPdf);
-                $tplId = $pdf->importPage($pagina);
-                $pdf->AddPage();
-                $pdf->useTemplate($tplId);
 
-                // Pula o carimbo apenas na primeira página (capa) da fase inicial
-                if ($pagina !== 1) {
-                    $this->adicionarCarimbo($pdf, $processo, $pagina, $pageCount, 0);
+                $fimChunk = min($i + $chunkSize - 1, $pageCount);
+
+                Log::info("Processando chunk de carimbo (Iniciar): {$i} até {$fimChunk}", [
+                    'processo_id' => $processo->id,
+                    'total_paginas' => $pageCount,
+                ]);
+
+                for ($pagina = $i; $pagina <= $fimChunk; $pagina++) {
+                    $tplId = $pdf->importPage($pagina);
+                    $pdf->AddPage();
+                    $pdf->useTemplate($tplId);
+
+                    // Pula o carimbo apenas na primeira página (capa) da fase inicial
+                    if ($pagina !== 1) {
+                        $this->adicionarCarimbo($pdf, $processo, $pagina, $pageCount, 0);
+                    }
                 }
 
-                $tempPath = sys_get_temp_dir() . "/pagina_{$pagina}_" . uniqid() . '.pdf';
+                $tempPath = sys_get_temp_dir() . "/chunk_iniciar_{$i}_" . uniqid() . '.pdf';
                 $pdf->Output($tempPath, 'F');
-                $paginasTemp[] = $tempPath;
+                $chunksTemp[] = $tempPath;
+
+                // Força limpeza de memória após cada chunk
+                unset($pdf);
             }
 
-            $sucesso = $this->mesclarPdfsComGhostscript($paginasTemp, $caminhoCarimbado);
+            $sucesso = $this->mesclarPdfsComGhostscript($chunksTemp, $caminhoCarimbado);
 
             if ($sucesso && file_exists($caminhoCarimbado) && filesize($caminhoCarimbado) > 0) {
                 if (file_exists($caminhoPdf)) {
@@ -847,24 +863,24 @@ class ProcessoPdfService
                 rename($caminhoCarimbado, $caminhoPdf);
                 return $caminhoPdf;
             } else {
-                Log::error('Falha ao mesclar páginas carimbadas', [
+                Log::error('Falha ao mesclar chunks carimbados (Iniciar)', [
                     'caminho_original' => $caminhoPdf,
                     'caminho_carimbado' => $caminhoCarimbado,
                     'sucesso' => $sucesso,
                     'arquivo_existe' => file_exists($caminhoCarimbado),
-                    'tamanho' => file_exists($caminhoCarimbado) ? filesize($caminhoCarimbado) : 0
+                    'tamanho' => file_exists($caminhoCarimbado) ? filesize($caminhoCarimbado) : 0,
                 ]);
                 return null;
             }
         } catch (\Exception $e) {
-            Log::error('Erro ao adicionar carimbo ao PDF com Ghostscript', [
+            Log::error('Erro ao adicionar carimbo ao PDF com Ghostscript (Iniciar)', [
                 'caminho' => $caminhoPdf,
                 'erro' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
             return null;
         } finally {
-            foreach ($paginasTemp as $tempFile) {
+            foreach ($chunksTemp as $tempFile) {
                 if (file_exists($tempFile)) {
                     unlink($tempFile);
                 }
