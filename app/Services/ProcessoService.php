@@ -100,6 +100,16 @@ class ProcessoService
         }
 
         foreach ($data as $field => $value) {
+            // Se o campo for uma data de documento (ex: data_doc_capa)
+            if (strpos($field, 'data_doc_') === 0) {
+                $tipoDocumento = substr($field, 9);
+                Documento::updateOrCreate(
+                    ['processo_id' => $processo->id, 'tipo_documento' => $tipoDocumento],
+                    ['data_selecionada' => $value]
+                );
+                continue;
+            }
+
             if (!in_array($field, $this->excludedFields)) {
                 $detalhe->{$field} = $value;
             }

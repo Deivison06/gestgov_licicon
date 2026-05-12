@@ -128,7 +128,12 @@
                         </th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
+                @php
+                    $allDocDates = $processo->documentos->pluck('data_selecionada', 'tipo_documento')
+                        ->mapWithKeys(fn($d, $t) => ["data_doc_$t" => $d])->toArray();
+                    $initialData = array_merge($processo->finalizacao?->toArray() ?? [], $allDocDates);
+                @endphp
+                <tbody class="bg-white divide-y divide-gray-200" x-data="formField({{ json_encode($initialData) }})">
                     @foreach ($documentos as $tipo => $doc)
                     @continue(
                     $processo->modalidade === \App\Enums\ModalidadeEnum::CONCORRENCIA
@@ -181,7 +186,12 @@
                         </td>
                         <td class="flex gap-2 px-6 py-4 text-center">
                             @if ($requerAssinatura)
-                            <input type="date" class="w-40 px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500" id="data_{{ $tipo }}" value="{{ $documentoGerado->data_selecionada ?? '' }}">
+                             <input type="date"
+                                    class="w-40 px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                                    id="data_{{ $tipo }}"
+                                    x-model="formData['data_doc_{{ $tipo }}']"
+                                    @blur="saveField('data_doc_{{ $tipo }}')"
+                                    value="{{ $documentoGerado->data_selecionada ?? '' }}">
 
                             {{-- Adicionar dropdown de parecer para documentos específicos --}}
                             @if ($tipo === 'parecer_controle_interno' && $processo->modalidade === \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO)
@@ -301,7 +311,7 @@
                                     @if (!empty($doc['campos']))
                                     <div>
                                         <h4 class="mb-3 text-sm font-semibold text-gray-700">Campos do Documento</h4>
-                                        <div x-data="formField({{ json_encode($processo->finalizacao ?? null) }})">
+                                        <div>
                                             <form action="{{ route('admin.processos.finalizacao.store', $processo) }}" method="POST" @submit.prevent="submitForm">
                                                 @csrf
                                                 <input type="hidden" name="processo_id" value="{{ $processo->id }}">

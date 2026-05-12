@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Processo;
 use App\Models\Finalizacao;
+use App\Models\Documento;
 use Illuminate\Support\Facades\Log;
 
 class FinalizacaoService
@@ -40,6 +41,16 @@ class FinalizacaoService
         $this->processarArquivos($data, $finalizacao);
 
         foreach ($data as $field => $value) {
+            // Se o campo for uma data de documento (ex: data_doc_capa)
+            if (strpos($field, 'data_doc_') === 0) {
+                $tipoDocumento = substr($field, 9);
+                Documento::updateOrCreate(
+                    ['processo_id' => $processo->id, 'tipo_documento' => $tipoDocumento],
+                    ['data_selecionada' => $value]
+                );
+                continue;
+            }
+
             if (!in_array($field, $this->excludedFields)) {
                 $finalizacao->{$field} = $value;
             }

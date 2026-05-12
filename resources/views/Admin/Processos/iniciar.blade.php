@@ -230,7 +230,12 @@
                     </th>
                 </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
+                @php
+                    $allDocDates = $processo->documentos->pluck('data_selecionada', 'tipo_documento')
+                        ->mapWithKeys(fn($d, $t) => ["data_doc_$t" => $d])->toArray();
+                    $initialData = array_merge($processo->detalhe?->toArray() ?? [], $allDocDates);
+                @endphp
+                <tbody class="bg-white divide-y divide-gray-200" x-data="formField({{ json_encode($initialData) }})">
                 @foreach ($documentos as $tipo => $doc)
                     @php
                         $pularConcorrencia = $isConcorrencia && in_array($tipo, ['termo_referencia', 'analise_mercado'], true);
@@ -286,6 +291,8 @@
                             <input type="date"
                                    class="w-40 px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                                    id="{{ $dataId }}"
+                                   x-model="formData['data_doc_{{ $tipo }}']"
+                                   @blur="saveField('data_doc_{{ $tipo }}')"
                                    value="{{ $dataSelecionada }}">
 
                             @if ($tipo === 'parecer_juridico' && $isPregaoEletronico)
@@ -415,7 +422,6 @@
                                             <h4 class="mb-3 text-sm font-semibold text-gray-700">Campos do Documento</h4>
                                             <form action="{{ route('admin.processos.detalhes.store', $processo) }}"
                                                   method="POST"
-                                                  x-data="formField({{ json_encode($processo->detalhe ?? null) }})"
                                                   @submit.prevent="submitForm">
                                                 @csrf
                                                 <input type="hidden" name="processo_id" value="{{ $processo->id }}">

@@ -67,6 +67,20 @@ class ContratoProcessoController extends Controller
                 'subcontratacao'
             ];
 
+            if (strpos($campo, 'data_doc_') === 0) {
+                $tipoDocumento = substr($campo, 9);
+                Documento::updateOrCreate(
+                    ['processo_id' => $processo->id, 'tipo_documento' => $tipoDocumento],
+                    ['data_selecionada' => $valor]
+                );
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Data do documento salva com sucesso.',
+                    'data' => [$campo => $valor]
+                ]);
+            }
+
             if (!in_array($campo, $camposPermitidos)) {
                 return response()->json([
                     'success' => false,

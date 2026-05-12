@@ -541,6 +541,7 @@
                                                     <input type="date"
                                                            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
                                                            id="data_contrato_{{ $tipo }}"
+                                                           onblur="salvarCampoContrato('data_doc_{{ $tipo }}', this.value)"
                                                            value="{{ $documentoGerado->data_selecionada ?? now()->format('Y-m-d') }}">
                                                 </div>
 
