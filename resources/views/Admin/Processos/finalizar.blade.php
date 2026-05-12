@@ -189,7 +189,7 @@
                              <input type="date"
                                     class="w-40 px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                                     id="data_{{ $tipo }}"
-                                    x-model="formData['data_doc_{{ $tipo }}']"
+                                    x-model="data_doc_{{ $tipo }}"
                                     @blur="saveField('data_doc_{{ $tipo }}')"
                                     value="{{ $documentoGerado->data_selecionada ?? '' }}">
 
@@ -2258,7 +2258,15 @@
 
         // Alpine.js Component
         function formField(existing = {}) {
+            const initialData = {};
+            Object.keys(existing || {}).forEach(key => {
+                if (key.startsWith('data_doc_')) {
+                    initialData[key] = existing[key];
+                }
+            });
+
             return {
+                ...initialData,
                 // Campos do formulário
                 anexo_atos_sessao: existing?.anexo_atos_sessao ?? '',
                 anexo_proposta: existing?.anexo_proposta ?? '',
@@ -2356,7 +2364,7 @@
                         'empresas_participantes',
                     ];
 
-                    if (!allowedFields.includes(field)) {
+                    if (!allowedFields.includes(field) && !field.startsWith('data_doc_')) {
                         console.error('Campo não permitido:', field);
                         showMessage('Campo não permitido: ' + field, 'error');
                         return;

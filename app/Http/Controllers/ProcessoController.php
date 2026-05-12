@@ -274,17 +274,13 @@ class ProcessoController extends Controller
 
     public function baixarDocumento(Processo $processo, $tipo)
     {
-        // Se for para baixar edital, verifique se existe republicação mais recente
-        if ($tipo === 'edital_republicado') {
-            $republicacaoRecente = Documento::where('processo_id', $processo->id)
-                ->where(function ($q) {
-                    $q->where('tipo_documento', 'republicacao_edital')
-                        ->orWhere('tipo_documento', 'edital_adiado');
-                })
-                ->latest('gerado_em')
+        // Download direto por ID do documento (usado para republicações individuais)
+        if (is_numeric($tipo)) {
+            $documento = Documento::where('processo_id', $processo->id)
+                ->where('id', $tipo)
                 ->firstOrFail();
 
-            return response()->download(public_path($republicacaoRecente->caminho));
+            return response()->download(public_path($documento->caminho));
         }
 
         // "Edital" (original) deve baixar o documento original, sem trocar pelo mais recente

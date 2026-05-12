@@ -114,8 +114,12 @@ class ProcessoDetalhe extends Model
 
     protected $casts = [
         'data_publicacao' => 'date',
-        // data_hora, data_hora_limite_edital, data_hora_fase_edital são strings locais
-        // (sem cast 'datetime' para evitar conversão UTC pelo Carbon que adicionava +3h)
+        // Formato explícito evita conversão UTC na serialização JSON (+3h)
+        'data_hora' => 'datetime:Y-m-d H:i:s',
+        'data_hora_limite_edital' => 'datetime:Y-m-d H:i:s',
+        'data_hora_fase_edital' => 'datetime:Y-m-d H:i:s',
+        'prazo_inicio_prestacao_servico' => 'datetime:Y-m-d H:i:s',
+        'prazo_final_prestacao_servico' => 'datetime:Y-m-d H:i:s',
         'instrumento_vinculativo' => 'array',
         'prazo_vigencia' => 'array',
         'itens_e_seus_quantitativos_xml' => 'array',
@@ -130,5 +134,14 @@ class ProcessoDetalhe extends Model
     public function processo()
     {
         return $this->belongsTo(Processo::class);
+    }
+
+    /**
+     * Serializa datas sem converter para UTC (mantém horário local de Brasília).
+     * Resolve o problema de +3h que ocorria ao passar dados via JSON para o frontend.
+     */
+    protected function serializeDate(\DateTimeInterface $date): string
+    {
+        return $date->format('Y-m-d H:i:s');
     }
 }

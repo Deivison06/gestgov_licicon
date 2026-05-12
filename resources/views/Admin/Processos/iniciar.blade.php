@@ -38,12 +38,10 @@
         // Coleção de documentos do processo (para consultas no loop)
         $documentosProcesso = $processo->documentos;
 
-        $getDocumentoGerado = function (string $tipo) use ($documentosProcesso) {
-            if ($tipo === 'edital_republicado') {
-                return $documentosProcesso
-                    ->whereIn('tipo_documento', ['republicacao_edital', 'edital_adiado'])
-                    ->sortByDesc('gerado_em')
-                    ->first();
+        $getDocumentoGerado = function (string $tipo) use ($documentosProcesso, $documentos) {
+            // Entradas dinâmicas de republicação carregam documento_id diretamente
+            if (isset($documentos[$tipo]['documento_id'])) {
+                return $documentosProcesso->firstWhere('id', $documentos[$tipo]['documento_id']);
             }
 
             return $documentosProcesso
@@ -244,6 +242,9 @@
                         // NÃO MOSTRAR minuta_cancelamento na tabela de documentos (sempre)
                         $pularMinutaCancelamento = $tipo === 'minuta_cancelamento';
 
+                        // Detectar se é uma entrada dinâmica de republicação
+                        $isRepublicacao = isset($doc['documento_id']);
+
                         // Define o ID do input de data
                         $dataId = $doc['data_id'] ?? 'data_' . $tipo;
 
@@ -288,10 +289,16 @@
                         </td>
 
                         <td class="flex gap-2 px-6 py-4 text-center">
+                            @if ($isRepublicacao)
+                                {{-- Republicações não precisam de input de data --}}
+                                <span class="text-sm text-gray-500">
+                                    {{ $documentoGerado ? \Carbon\Carbon::parse($documentoGerado->data_selecionada)->format('d/m/Y') : '' }}
+                                </span>
+                            @else
                             <input type="date"
                                    class="w-40 px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                                    id="{{ $dataId }}"
-                                   x-model="formData['data_doc_{{ $tipo }}']"
+                                   x-model="data_doc_{{ $tipo }}"
                                    @blur="saveField('data_doc_{{ $tipo }}')"
                                    value="{{ $dataSelecionada }}">
 
@@ -306,15 +313,18 @@
                                     <option value="parecer_3">Parecer 3</option>
                                 </select>
                             @endif
+                            @endif
                         </td>
 
                         <td class="px-6 py-4">
                             <div class="flex justify-center space-x-2">
+                                @if (!$isRepublicacao)
                                 <button type="button"
                                         onclick="gerarPdf('{{ $processo->id }}', '{{ $tipo }}', document.getElementById('{{ $dataId }}').value, event)"
                                         class="px-4 py-2 text-xs font-medium text-white transition-colors duration-200 bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
                                     Gerar PDF
                                 </button>
+                                @endif
 
                                 @if ($tipo === 'edital' && $documentoGerado)
                                     <button type="button"
@@ -326,6 +336,18 @@
                                 @endif
 
                                 @if ($documentoGerado)
+                                    @if ($isRepublicacao)
+                                        <a href="{{ route('admin.processo.documento.dowload', ['processo' => $processo->id, 'tipo' => $doc['documento_id']]) }}"
+                                           download
+                                           class="p-2 text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                                           aria-label="Baixar documento">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                                <polyline points="7 10 12 15 17 10"></polyline>
+                                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                                            </svg>
+                                        </a>
+                                    @else
                                     <a href="{{ route('admin.processo.documento.dowload', ['processo' => $processo->id, 'tipo' => $tipo]) }}"
                                        download
                                        class="p-2 text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
@@ -336,6 +358,7 @@
                                             <line x1="12" y1="15" x2="12" y2="3"></line>
                                         </svg>
                                     </a>
+                                    @endif
                                 @else
                                     <span class="p-2 text-gray-400 bg-gray-100 rounded-md cursor-not-allowed" aria-hidden="true" title="Aguardando geração">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1069,7 +1092,15 @@
                 initialData[field + '_time'] = parsed.time;
             });
 
+            // Incluir todos os campos de data de documento dinamicamente
+            Object.keys(existing || {}).forEach(key => {
+                if (key.startsWith('data_doc_')) {
+                    initialData[key] = existing[key];
+                }
+            });
+
             return {
+                ...initialData,
                 secretaria: existing?.secretaria ?? '',
                 unidade_setor: existing?.unidade_setor ?? '',
                 servidor_responsavel: existing?.servidor_responsavel ?? '',

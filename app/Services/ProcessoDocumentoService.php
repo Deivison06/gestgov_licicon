@@ -146,28 +146,7 @@ class ProcessoDocumentoService
                 'numero_items',
             ],
         ],
-        'edital_republicado' => [
-            'titulo' => 'EDITAL REPUBLICADO',
-            'cor' => '#7C3AED',
-            'data_id' => 'data_edital_republicado',
-            'campos' => [
-                'exige_atestado',
-                'data_hora_limite_edital',
-                'data_hora_fase_edital',
-                'pregoeiro',
-                'intervalo_lances',
-                'exigencia_garantia_proposta',
-                'exigencia_garantia_contrato',
-                'participacao_exclusiva_mei_epp',
-                'reserva_cotas_mei_epp',
-                'prioridade_contratacao_mei_epp',
-                'regularidade_fisica',
-                'qualificacao_economica',
-                'exigencias_tecnicas',
-                'anexo_pdf_minuta_contrato',
-                'numero_items',
-            ],
-        ],
+
         'minuta_cancelamento' => [
             'titulo' => 'MINUTA DE CANCELAMENTO',
             'cor' => '#EF4444',
@@ -266,18 +245,34 @@ class ProcessoDocumentoService
     {
         $ordemDocumentos = $this->getOrdemDocumentosParaView($processo);
 
-        // Exibir "Edital Republicado" somente quando houver adiamento/republicação
-        $temEditalRepublicado = $processo->relationLoaded('documentos')
-            ? $processo->documentos->whereIn('tipo_documento', ['republicacao_edital', 'edital_adiado'])->isNotEmpty()
-            : $processo->documentos()->whereIn('tipo_documento', ['republicacao_edital', 'edital_adiado'])->exists();
+        // Remove referências estáticas de edital_republicado (agora é dinâmico)
+        $ordemDocumentos = array_values(array_filter($ordemDocumentos, fn($t) => $t !== 'edital_republicado'));
 
-        if ($temEditalRepublicado) {
-            $pos = array_search('edital', $ordemDocumentos, true);
-            if ($pos !== false) {
-                array_splice($ordemDocumentos, $pos + 1, 0, ['edital_republicado']);
-            } else {
-                $ordemDocumentos[] = 'edital_republicado';
+        // Coletar TODAS as republicações do banco, ordenadas por data
+        $republicacoes = $processo->relationLoaded('documentos')
+            ? $processo->documentos->whereIn('tipo_documento', ['republicacao_edital', 'edital_adiado'])->sortBy('gerado_em')->values()
+            : $processo->documentos()->whereIn('tipo_documento', ['republicacao_edital', 'edital_adiado'])->orderBy('gerado_em')->get();
+
+        // Gerar entradas dinâmicas para cada republicação
+        $republicacaoEntries = [];
+        if ($republicacoes->isNotEmpty()) {
+            $i = 1;
+            foreach ($republicacoes as $repDoc) {
+                $key = "republicacao_edital_{$repDoc->id}";
+                $republicacaoEntries[$key] = [
+                    'titulo' => "EDITAL REPUBLICADO #{$i}",
+                    'cor' => '#7C3AED',
+                    'data_id' => "data_{$key}",
+                    'campos' => [],
+                    'documento_id' => $repDoc->id,
+                ];
+                $i++;
             }
+
+            // Inserir após publicacoes_avisos_licitacao
+            $posPublicacoes = array_search('publicacoes_avisos_licitacao', $ordemDocumentos, true);
+            $insertPos = $posPublicacoes !== false ? $posPublicacoes + 1 : count($ordemDocumentos);
+            array_splice($ordemDocumentos, $insertPos, 0, array_keys($republicacaoEntries));
         }
 
         // Exibir "Minuta de Cancelamento" acima de "Minutas" quando existir
@@ -294,14 +289,17 @@ class ProcessoDocumentoService
             }
         }
 
+        // Merge das entradas dinâmicas no lookup de documentos
+        $allDocumentos = array_merge($this->documentos, $republicacaoEntries);
+
         $documentosOrdenados = [];
 
         foreach ($ordemDocumentos as $tipo) {
-            if (!isset($this->documentos[$tipo])) {
+            if (!isset($allDocumentos[$tipo])) {
                 continue;
             }
 
-            $documentosOrdenados[$tipo] = $this->documentos[$tipo];
+            $documentosOrdenados[$tipo] = $allDocumentos[$tipo];
 
             if ($processo->modalidade === ModalidadeEnum::INEXIGIBILIDADE) {
                 // remove do termo de referência
@@ -389,7 +387,6 @@ class ProcessoDocumentoService
                 'abertura_fase_externa',
                 'avisos_licitacao',
                 'edital',
-                'edital_republicado',
                 'publicacoes_avisos_licitacao',
             ];
         }
@@ -404,7 +401,6 @@ class ProcessoDocumentoService
             'abertura_fase_externa',
             'avisos_licitacao',
             'edital',
-            'edital_republicado',
             'publicacoes_avisos_licitacao',
         ];
     }
@@ -424,7 +420,6 @@ class ProcessoDocumentoService
             'abertura_fase_externa',
             'avisos_licitacao',
             'edital',
-            'edital_republicado',
             'publicacoes_avisos_licitacao',
         ];
     }
@@ -443,7 +438,6 @@ class ProcessoDocumentoService
             'abertura_fase_externa',
             'avisos_licitacao',
             'edital',
-            'edital_republicado',
             'publicacoes_avisos_licitacao',
         ];
     }
@@ -552,7 +546,6 @@ class ProcessoDocumentoService
             'avisos_licitacao',
             'publicacoes_avisos_licitacao',
             'edital',
-            'edital_republicado',
         ];
     }
 
