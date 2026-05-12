@@ -114,9 +114,8 @@ class ProcessoDetalhe extends Model
 
     protected $casts = [
         'data_publicacao' => 'date',
-        'data_hora' => 'datetime',
-        'data_hora_limite_edital' => 'datetime',
-        'data_hora_fase_edital' => 'datetime',
+        // data_hora, data_hora_limite_edital, data_hora_fase_edital são strings locais
+        // (sem cast 'datetime' para evitar conversão UTC pelo Carbon que adicionava +3h)
         'instrumento_vinculativo' => 'array',
         'prazo_vigencia' => 'array',
         'itens_e_seus_quantitativos_xml' => 'array',
