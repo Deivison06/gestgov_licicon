@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'pncp' => [
+        'base_url' => env('PNCP_BASE_URL', 'https://pncp.gov.br/api/consulta/v1'),
+        'search_url' => env('PNCP_SEARCH_URL', 'https://pncp.gov.br/api/search/'),
+        'cache_ttl' => env('PNCP_CACHE_TTL', 3600),
+    ],
+
 ];

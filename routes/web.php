@@ -14,6 +14,7 @@ use App\Http\Controllers\AtaController;
 use App\Http\Controllers\ContratoManualController; // Adicionado
 use App\Http\Controllers\EtpController;
 use App\Http\Controllers\EtpItemController;
+use App\Http\Controllers\Api\PncpController;
 use App\Http\Controllers\AdminEtpController;
 use App\Http\Controllers\SolicitacaoController;
 use App\Http\Controllers\PcaController;
@@ -97,6 +98,10 @@ Route::prefix('admin/etps')->name('admin.etps.')->middleware(['auth', 'verified'
     Route::delete('/{id}', [EtpController::class, 'destroy'])->name('destroy');
     Route::get('/{id}/export-itens', [EtpController::class, 'exportItens'])->name('export-itens');
     Route::get('/{id}/pdf', [EtpController::class, 'gerarPdf'])->name('pdf');
+
+    // PNCP API Integration
+    Route::get('/pncp/search', [PncpController::class, 'search'])->name('pncp.search');
+    Route::get('/pncp/items/{cnpj}/{ano}/{sequencial}', [PncpController::class, 'getItems'])->name('pncp.items');
 });
 
 

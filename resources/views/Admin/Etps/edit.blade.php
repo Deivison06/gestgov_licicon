@@ -221,15 +221,16 @@
                         {{-- BOTÕES: IMPORTAR EXCEL + CRIAR ITEM RÁPIDO --}}
                         <div class="mb-4 flex justify-between items-center">
                             <div class="flex items-center gap-2">
-                                <button type="button" id="btnCriarItemRapido" onclick="abrirModalCriarItem()"
-                                    class="inline-flex items-center px-2.5 py-1 text-xs font-medium text-white bg-[#009496] rounded-lg hover:bg-[#007a7a] transition-all"
-                                    title="Criar novo item">
-                                    <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M12 4v16m8-8H4"></path>
-                                    </svg>
                                     Novo Item
+                                </button>
+                                <button type="button" id="btnConsultarPncp" onclick="abrirModalPncp()"
+                                    class="inline-flex items-center px-2.5 py-1 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-all"
+                                    title="Consultar preços de referência no PNCP">
+                                    <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
+                                    Consultar PNCP
                                 </button>
                             </div>
                             <button type="button" id="btnImportarItens"
@@ -350,6 +351,76 @@
         </div>
     </div>
 
+    {{-- ═══════════════════════════════════════════════════════
+         MODAL: CONSULTA PNCP
+    ════════════════════════════════════════════════════════ --}}
+    <div id="modalPncp" class="fixed inset-0 z-50 hidden flex items-center justify-center">
+        <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" onclick="fecharModalPncp()"></div>
+        <div class="relative bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl w-full max-w-4xl mx-4 overflow-hidden z-10 border border-white/20">
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-4 flex items-center justify-between text-white">
+                <div class="flex items-center gap-3">
+                    <div class="p-2 bg-white/20 rounded-lg">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold leading-tight">Consulta de Preços PNCP</h3>
+                        <p class="text-xs text-blue-100 opacity-80">Portal Nacional de Contratações Públicas</p>
+                    </div>
+                </div>
+                <button type="button" onclick="fecharModalPncp()" class="p-2 hover:bg-white/10 rounded-full transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="p-6">
+                <div class="mb-6">
+                    <div class="relative">
+                        <input type="text" id="pncp_busca_termo" 
+                            placeholder="Pesquise por item (ex: Ar condicionado, Caneta, Limpeza)..."
+                            class="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 shadow-inner text-lg transition-all"
+                            autocomplete="off">
+                        <div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="mt-2 text-[10px] text-gray-400 uppercase font-bold tracking-wider px-1">Dica: Use termos específicos para melhores resultados</p>
+                </div>
+
+                <div id="pncp_resultados" class="max-h-[50vh] overflow-y-auto custom-scrollbar px-1">
+                    <div class="flex flex-col items-center justify-center py-12 text-gray-400">
+                        <div class="p-4 bg-gray-50 rounded-full mb-4">
+                            <svg class="w-12 h-12 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                            </svg>
+                        </div>
+                        <p class="text-sm">Digite o que deseja pesquisar acima</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gray-50 px-6 py-4 flex justify-between items-center text-xs text-gray-500 border-t">
+                <span class="flex items-center gap-2">
+                    <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                    API Oficial PNCP Conectada
+                </span>
+                <span class="italic">Os preços são de caráter referencial para o ETP.</span>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+
     {{-- Modal: Importar Itens via Excel --}}
     @include('Admin.Etps.partials.modal-importar-itens')
 
@@ -401,6 +472,150 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
+            /* PNCP INTEGRATION */
+            const modalPncp = document.getElementById('modalPncp');
+            const inputBuscaPncp = document.getElementById('pncp_busca_termo');
+            const resultadosPncp = document.getElementById('pncp_resultados');
+            let timeoutPncp = null;
+
+            window.abrirModalPncp = function() {
+                modalPncp.classList.remove('hidden');
+                setTimeout(() => inputBuscaPncp.focus(), 100);
+            };
+
+            window.fecharModalPncp = function() {
+                modalPncp.classList.add('hidden');
+            };
+
+            inputBuscaPncp.addEventListener('input', () => {
+                clearTimeout(timeoutPncp);
+                const termo = inputBuscaPncp.value.trim();
+                if (termo.length >= 3) {
+                    timeoutPncp = setTimeout(executarBuscaPncp, 600);
+                }
+            });
+
+            window.executarBuscaPncp = function() {
+                const termo = inputBuscaPncp.value.trim();
+                if (termo.length < 3) return;
+
+                resultadosPncp.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-12">
+                        <div class="w-12 h-12 border-4 border-[var(--primary)]/20 border-t-[var(--primary)] rounded-full animate-spin mb-4"></div>
+                        <p class="text-sm text-gray-500 animate-pulse">Consultando base nacional...</p>
+                    </div>`;
+
+                fetch(`{{ route('admin.etps.pncp.search') }}?termo=${encodeURIComponent(termo)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            renderizarResultadosPncp(data.data);
+                        } else {
+                            resultadosPncp.innerHTML = `<div class="p-4 text-red-600 bg-red-50 rounded-2xl border border-red-100 text-sm text-center">${data.message}</div>`;
+                        }
+                    })
+                    .catch(err => {
+                        resultadosPncp.innerHTML = '<div class="p-4 text-red-600 bg-red-50 rounded-2xl border border-red-100 text-sm text-center">Erro ao conectar com o servidor.</div>';
+                    });
+            };
+
+            function renderizarResultadosPncp(data) {
+                if (!data.data || data.data.length === 0) {
+                    resultadosPncp.innerHTML = '<div class="p-12 text-center text-gray-500">Nenhum resultado encontrado no PNCP para este termo.</div>';
+                    return;
+                }
+
+                let html = '<div class="grid gap-3 mb-4">';
+                data.data.forEach(item => {
+                    html += `
+                    <div class="group p-4 bg-white border border-gray-100 rounded-2xl hover:border-[var(--primary)]/30 hover:shadow-md transition-all cursor-pointer relative overflow-hidden" 
+                        onclick="verItensPncp('${item.orgaoEntidade.cnpj}', '${item.anoCompra}', '${item.sequencialCompra}')">
+                        <div class="absolute left-0 top-0 bottom-0 w-1 bg-transparent group-hover:bg-[var(--primary)] transition-all"></div>
+                        <div class="flex justify-between items-start gap-4">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1.5">
+                                    <span class="px-2 py-0.5 bg-[var(--primary)]/10 text-[var(--primary)] text-[9px] font-bold rounded uppercase tracking-wider">${item.modalidadeNome}</span>
+                                    <span class="text-[10px] font-bold text-gray-400">#${item.sequencialCompra}/${item.anoCompra}</span>
+                                </div>
+                                <h5 class="font-bold text-gray-800 text-sm mb-1 group-hover:text-[var(--gradient-start)] transition-colors">${item.orgaoEntidade.razaoSocial}</h5>
+                                <p class="text-xs text-gray-500 line-clamp-2 leading-relaxed">${item.objeto}</p>
+                            </div>
+                            <div class="flex-shrink-0 flex flex-col items-end gap-1">
+                                <span class="text-[10px] text-gray-400">${new Date(item.dataPublicacaoPncp).toLocaleDateString()}</span>
+                                <div class="w-8 h-8 rounded-full bg-[var(--primary)]/10 flex items-center justify-center text-[var(--primary)] group-hover:bg-[var(--primary)] group-hover:text-white transition-all">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+                });
+                html += '</div>';
+                
+                // Paginação simples
+                if (data.totalPaginas > 1) {
+                    html += `<div class="flex justify-center py-4 text-xs text-gray-400">Página ${data.numeroPagina} de ${data.totalPaginas}</div>`;
+                }
+
+                resultadosPncp.innerHTML = html;
+            }
+
+            window.verItensPncp = function(cnpj, ano, sequencial) {
+                resultadosPncp.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-12">
+                        <div class="w-12 h-12 border-4 border-[var(--primary)]/20 border-t-[var(--primary)] rounded-full animate-spin mb-4"></div>
+                        <p class="text-sm text-gray-500 animate-pulse">Obtendo detalhes dos itens...</p>
+                    </div>`;
+
+                fetch(`/admin/etps/pncp/items/${cnpj}/${ano}/${sequencial}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            renderizarItensPncp(data.data);
+                        } else {
+                            alert(data.message);
+                            executarBuscaPncp();
+                        }
+                    });
+            };
+
+            function renderizarItensPncp(itens) {
+                if (!itens || itens.length === 0) {
+                    resultadosPncp.innerHTML = '<div class="p-8 text-center text-gray-500">Nenhum item encontrado nesta contratação.</div>';
+                    return;
+                }
+
+                let html = `
+                    <div class="flex items-center justify-between mb-4 px-1">
+                        <button onclick="executarBuscaPncp()" class="inline-flex items-center text-xs font-bold text-[var(--primary)] hover:text-[var(--gradient-start)] transition-colors uppercase tracking-wider">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                            Voltar
+                        </button>
+                        <span class="text-xs text-gray-400 font-medium">${itens.length} itens encontrados</span>
+                    </div>`;
+                
+                html += '<div class="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">';
+                html += '<div class="overflow-x-auto"><table class="w-full text-sm text-left">';
+                html += '<thead class="bg-gray-50/50 text-gray-500 font-bold uppercase text-[9px] border-b border-gray-100"><tr><th class="px-4 py-3">#</th><th class="px-4 py-3">Descrição</th><th class="px-4 py-3">Qtd</th><th class="px-4 py-3 text-right">Valor Unitário</th></tr></thead>';
+                html += '<tbody class="divide-y divide-gray-50">';
+                
+                itens.forEach(item => {
+                    const valorFormatado = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.valorUnitario || 0);
+                    html += `
+                    <tr class="hover:bg-[var(--primary)]/5 transition-colors group">
+                        <td class="px-4 py-4 font-bold text-gray-400 text-xs">${item.numeroItem}</td>
+                        <td class="px-4 py-4 font-medium text-gray-700 leading-tight">${item.descricao}</td>
+                        <td class="px-4 py-4 text-xs text-gray-500">${item.quantidade} <span class="opacity-60">${item.unidadeMedida}</span></td>
+                        <td class="px-4 py-4 text-right">
+                            <div class="font-bold text-green-600">${valorFormatado}</div>
+                            <div class="text-[9px] text-gray-400 font-bold uppercase">Total: ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format((item.valorUnitario || 0) * item.quantidade)}</div>
+                        </td>
+                    </tr>`;
+                });
+                
+                html += '</tbody></table></div></div>';
+                resultadosPncp.innerHTML = html;
+            }
+
             let loteCounter = {{ $etp->lotes->count() }};
 
             const secretariaSelect = document.getElementById('secretaria_id');
