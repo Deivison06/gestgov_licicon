@@ -222,7 +222,39 @@
     }
 
     // Event listener para mudança na prefeitura
-    prefeituraSelect.addEventListener('change', carregarUnidades);
+    prefeituraSelect.addEventListener('change', function() {
+        carregarUnidades();
+        carregarNumeroProcesso();
+    });
+
+    function carregarNumeroProcesso() {
+        const prefeituraId = prefeituraSelect.value;
+        const inputNumero = document.getElementById('numero_processo');
+
+        if (prefeituraId) {
+            // Se o campo estiver vazio ou for um valor que parece novo, buscamos o próximo
+            // Isso evita sobrescrever um valor que o usuário digitou manualmente e deu erro de validação
+            const valorAtual = inputNumero.value;
+            const ehValorPadrao = !valorAtual || valorAtual.includes('/');
+
+            if (ehValorPadrao) {
+                inputNumero.placeholder = 'Gerando número...';
+
+                fetch(`{{ route('admin.processos.gerar-numeros') }}?prefeitura_id=${prefeituraId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            inputNumero.value = data.numero_processo;
+                            inputNumero.placeholder = '';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro ao gerar número:', error);
+                        inputNumero.placeholder = '';
+                    });
+            }
+        }
+    }
 
     // Event listener para mudança na unidade
     unidadeSelect.addEventListener('change', function() {
@@ -236,6 +268,11 @@
     // Carregar unidades iniciais se já houver uma prefeitura selecionada
     if (prefeituraSelect.value) {
         carregarUnidades();
+        
+        // Se não houver erro de validação (valor antigo), carrega o número
+        if (!"{{ old('numero_processo') }}") {
+            carregarNumeroProcesso();
+        }
 
         // Se houver um valor antigo (old) para unidade, restaurá-lo
         const oldUnidade = "{{ old('unidade_numeracao') }}";

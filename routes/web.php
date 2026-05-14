@@ -210,6 +210,9 @@ Route::prefix('admin')
         Route::get('/documentos-async/download/{token}', [\App\Http\Controllers\ProcessoController::class, 'finalizarDownloadDocs'])
             ->name('documentos.async.download');
 
+        Route::get('processos/gerar-numeros', [ProcessoController::class, 'gerarNumeros'])
+            ->name('processos.gerar-numeros');
+
         // ========================================
         // 5. PROCESSOS
         // ========================================

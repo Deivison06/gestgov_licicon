@@ -65,6 +65,27 @@ class ProcessoService
         $processo->delete();
     }
 
+    public function gerarProximoNumeroProcesso(int $prefeituraId): string
+    {
+        $anoAtual = now()->year;
+
+        // Busca o último processo da prefeitura no ano atual que siga o padrão NNN/YYYY
+        $ultimoProcesso = Processo::where('prefeitura_id', $prefeituraId)
+            ->where('numero_processo', 'like', "%/{$anoAtual}")
+            ->orderByRaw('CAST(SUBSTRING_INDEX(numero_processo, "/", 1) AS UNSIGNED) DESC')
+            ->first();
+
+        $proximoNumero = 1;
+        if ($ultimoProcesso) {
+            $partes = explode('/', $ultimoProcesso->numero_processo);
+            if (count($partes) === 2 && is_numeric($partes[0])) {
+                $proximoNumero = (int) $partes[0] + 1;
+            }
+        }
+
+        return str_pad($proximoNumero, 3, '0', STR_PAD_LEFT) . '/' . $anoAtual;
+    }
+
     public function salvarDetalhe(Processo $processo, array $data): ProcessoDetalhe
     {
         $detalhe = $processo->detalhe ?? new ProcessoDetalhe();

@@ -128,6 +128,11 @@ class ProcessoController extends Controller
         $dados['user_id'] = auth()->id();
         $dados['status'] = ProcessoStatusEnum::EM_ANDAMENTO;
 
+        // Gerar número automático se estiver vazio
+        if (empty($dados['numero_processo'])) {
+            $dados['numero_processo'] = $this->processoService->gerarProximoNumeroProcesso((int)$dados['prefeitura_id']);
+        }
+
         $processo = $this->processoService->create($dados);
 
         return redirect()
@@ -957,5 +962,21 @@ class ProcessoController extends Controller
             ->get();
 
         return response()->json($processos);
+    }
+
+    public function gerarNumeros(Request $request)
+    {
+        $prefeituraId = $request->input('prefeitura_id');
+
+        if (!$prefeituraId) {
+            return response()->json(['error' => 'Prefeitura não informada.'], 400);
+        }
+
+        $proximoNumeroProcesso = $this->processoService->gerarProximoNumeroProcesso((int)$prefeituraId);
+
+        return response()->json([
+            'success' => true,
+            'numero_processo' => $proximoNumeroProcesso
+        ]);
     }
 }

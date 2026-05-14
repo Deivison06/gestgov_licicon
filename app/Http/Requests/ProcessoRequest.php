@@ -27,7 +27,7 @@ class ProcessoRequest extends FormRequest
         return [
             'prefeitura_id' => 'required|exists:prefeituras,id',
             'modalidade' => 'required|integer|in:' . implode(',', ModalidadeEnum::values()),
-            'numero_processo' => 'required|string|max:10',
+            'numero_processo' => 'nullable|string|max:10',
             'numero_procedimento' => 'required|string|max:10',
             'objeto' => 'required|string',
             'tipo_procedimento' => ['nullable', 'int' , new Enum(TipoProcedimentoEnum::class)], // 1 para SERVIÇOS, 2 para COMPRAS
@@ -48,7 +48,6 @@ class ProcessoRequest extends FormRequest
             'prefeitura_id.exists' => 'A prefeitura selecionada não existe.',
             'modalidade.required' => 'A modalidade é obrigatória.',
             'modalidade.in' => 'A modalidade selecionada é inválida.',
-            'numero_processo.required' => 'O número do processo é obrigatório.',
             'numero_processo.max' => 'O número do processo deve ter no máximo 10 caracteres.',
             'numero_procedimento.required' => 'O número do procedimento é obrigatório.',
             'numero_procedimento.max' => 'O número do procedimento deve ter no máximo 10 caracteres.',
