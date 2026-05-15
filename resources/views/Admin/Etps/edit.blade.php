@@ -394,6 +394,28 @@
 
 
     <script>
+        /* ── CSRF helpers (lê sempre do <meta>, evita token obsoleto) ── */
+        window.getCsrfToken = function () {
+            const meta = document.querySelector('meta[name="csrf-token"]');
+            const fallbackInput = document.querySelector('input[name="_token"]');
+            return (meta && meta.getAttribute('content'))
+                || (fallbackInput && fallbackInput.value)
+                || '';
+        };
+
+        window.handleCsrfExpirado = function (response) {
+            if (response && response.status === 419) {
+                if (typeof mostrarNotificacao === 'function') {
+                    mostrarNotificacao('error', 'Sua sessão expirou (CSRF). A página será recarregada para você continuar.');
+                } else {
+                    alert('Sua sessão expirou. A página será recarregada.');
+                }
+                setTimeout(() => window.location.reload(), 1800);
+                throw new Error('CSRF token expirado (419).');
+            }
+            return response;
+        };
+
         document.addEventListener("DOMContentLoaded", function() {
 
             let loteCounter = {{ $etp->lotes->count() }};
@@ -757,9 +779,11 @@
                         body: formData,
                         headers: {
                             'X-Requested-With': 'XMLHttpRequest',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': getCsrfToken()
                         }
                     })
+                    .then(handleCsrfExpirado)
                     .then(async response => {
                         const data = await response.json();
                         if (response.status === 422) {
@@ -928,12 +952,15 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': getCsrfToken()
                     },
                     body: JSON.stringify({
                         descricao_item: descricao
                     })
                 })
+                .then(handleCsrfExpirado)
                 .then(r => r.json())
                 .then(data => {
                     if (data.success) {
@@ -1081,10 +1108,13 @@
             fetch('{{ route('admin.etps.importar-itens') }}', {
                     method: 'POST',
                     headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': getCsrfToken()
                     },
                     body: formData
                 })
+                .then(handleCsrfExpirado)
                 .then(r => {
                     barraProgresso.style.width = '70%';
                     percentualProgresso.textContent = '70%';

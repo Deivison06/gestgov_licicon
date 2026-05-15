@@ -317,8 +317,77 @@
     </div>
 
 
+    {{-- Modal: Importar Itens via Excel --}}
+    @include('Admin.Etps.partials.modal-importar-itens')
+
+    {{-- ═══════════════════════════════════════════════════════
+     MODAL: CRIAR ITEM RÁPIDO
+════════════════════════════════════════════════════════ --}}
+    <div id="modalCriarItem" class="fixed inset-0 z-50 hidden flex items-center justify-center">
+        <div id="modal-criar-item-overlay" class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6 z-10">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">Criar Novo Item</h3>
+                <button type="button" onclick="fecharModalCriarItem()"
+                    class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Descrição do Item *</label>
+                <input type="text" id="novo_item_descricao" placeholder="Ex: Caneta esferográfica azul"
+                    class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent text-sm"
+                    autocomplete="off">
+                <p class="mt-1 text-xs text-gray-500">O item ficará disponível para seleção imediatamente após a criação.
+                </p>
+            </div>
+
+            <div id="criar-item-erro"
+                class="hidden mt-3 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700"></div>
+            <div id="criar-item-sucesso"
+                class="hidden mt-3 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700"></div>
+
+            <div class="mt-6 flex justify-end gap-3">
+                <button type="button" onclick="fecharModalCriarItem()"
+                    class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all">
+                    Cancelar
+                </button>
+                <button type="button" id="btnConfirmarCriarItem" onclick="confirmarCriarItem()"
+                    class="px-5 py-2 text-sm font-semibold text-white bg-[#009496] rounded-lg hover:bg-[#007a7a] transition-all">
+                    <i class="fas fa-plus mr-1"></i> Criar Item
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
     <script>
+        /* ── CSRF helpers (lê sempre do <meta>, evita token obsoleto) ── */
+        window.getCsrfToken = function () {
+            const meta = document.querySelector('meta[name="csrf-token"]');
+            const fallbackInput = document.querySelector('input[name="_token"]');
+            return (meta && meta.getAttribute('content'))
+                || (fallbackInput && fallbackInput.value)
+                || '';
+        };
+
+        window.handleCsrfExpirado = function (response) {
+            if (response && response.status === 419) {
+                if (typeof mostrarNotificacao === 'function') {
+                    mostrarNotificacao('error', 'Sua sessão expirou (CSRF). A página será recarregada para você continuar.');
+                } else {
+                    alert('Sua sessão expirou. A página será recarregada.');
+                }
+                setTimeout(() => window.location.reload(), 1800);
+                throw new Error('CSRF token expirado (419).');
+            }
+            return response;
+        };
+
         document.addEventListener("DOMContentLoaded", function() {
 
             let loteCounter = {{ old('lotes') ? count(old('lotes')) : 0 }};
@@ -700,9 +769,11 @@
                         body: formData,
                         headers: {
                             'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': getCsrfToken(),
                             'Accept': 'application/json'
                         }
                     })
+                    .then(handleCsrfExpirado)
                     .then(async response => {
                         if (response.status === 422) {
                             const data = await response.json();
@@ -876,12 +947,15 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': getCsrfToken()
                     },
                     body: JSON.stringify({
                         descricao_item: descricao
                     })
                 })
+                .then(handleCsrfExpirado)
                 .then(r => r.json())
                 .then(data => {
                     if (data.success) {
@@ -1037,10 +1111,13 @@
             fetch('{{ route('admin.etps.importar-itens') }}', {
                     method: 'POST',
                     headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': getCsrfToken()
                     },
                     body: formData
                 })
+                .then(handleCsrfExpirado)
                 .then(r => {
                     barraProgresso.style.width = '70%';
                     percentualProgresso.textContent = '70%';

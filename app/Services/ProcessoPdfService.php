@@ -242,6 +242,9 @@ class ProcessoPdfService
         $documento = $requestData['documento'] ?? 'capa';
         $dataSelecionada = $requestData['data'] ?? null;
         $parecerSelecionado = $requestData['parecer'] ?? null;
+        $documentoId = isset($requestData['documento_id']) && $requestData['documento_id'] !== ''
+            ? (int) $requestData['documento_id']
+            : null;
 
         if (empty($dataSelecionada)) {
             throw new \Exception('É necessário selecionar uma data antes de gerar o PDF.');
@@ -252,6 +255,7 @@ class ProcessoPdfService
 
         return [
             'documento' => $documento,
+            'documento_id' => $documentoId,
             'dataSelecionada' => $dataSelecionada,
             'parecerSelecionado' => $parecerSelecionado,
             'assinantes' => $assinantes
@@ -398,7 +402,13 @@ class ProcessoPdfService
 
         $pdf->save($caminhoCompleto);
 
-        $this->atualizarRegistroDocumento($processo, $tipoPersistencia, $validatedData['dataSelecionada'], $caminhoRelativo);
+        $this->atualizarRegistroDocumento(
+            $processo,
+            $tipoPersistencia,
+            $validatedData['dataSelecionada'],
+            $caminhoRelativo,
+            $validatedData['documento_id'] ?? null
+        );
 
         return $caminhoCompleto;
     }
@@ -432,11 +442,24 @@ class ProcessoPdfService
         return "{$modalidade}/{$documento}";
     }
 
-    private function atualizarRegistroDocumento(Processo $processo, string $documento, string $dataSelecionada, string $caminhoRelativo): void
-    {
-        $documentoExistente = Documento::where('processo_id', $processo->id)
-            ->where('tipo_documento', $documento)
-            ->first();
+    private function atualizarRegistroDocumento(
+        Processo $processo,
+        string $documento,
+        string $dataSelecionada,
+        string $caminhoRelativo,
+        ?int $documentoId = null
+    ): void {
+        // Quando o front envia documento_id (caso das republicações dinâmicas),
+        // atualizamos exatamente aquele registro em vez de "o primeiro do tipo".
+        if ($documentoId) {
+            $documentoExistente = Documento::where('processo_id', $processo->id)
+                ->where('id', $documentoId)
+                ->first();
+        } else {
+            $documentoExistente = Documento::where('processo_id', $processo->id)
+                ->where('tipo_documento', $documento)
+                ->first();
+        }
 
         if ($documentoExistente) {
             $caminhoAntigo = public_path($documentoExistente->caminho);

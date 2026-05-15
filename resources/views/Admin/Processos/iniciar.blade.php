@@ -289,12 +289,6 @@
                         </td>
 
                         <td class="flex gap-2 px-6 py-4 text-center">
-                            @if ($isRepublicacao)
-                                {{-- Republicações não precisam de input de data --}}
-                                <span class="text-sm text-gray-500">
-                                    {{ $documentoGerado ? \Carbon\Carbon::parse($documentoGerado->data_selecionada)->format('d/m/Y') : '' }}
-                                </span>
-                            @else
                             <input type="date"
                                    class="w-40 px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                                    id="{{ $dataId }}"
@@ -313,18 +307,21 @@
                                     <option value="parecer_3">Parecer 3</option>
                                 </select>
                             @endif
-                            @endif
                         </td>
 
                         <td class="px-6 py-4">
                             <div class="flex justify-center space-x-2">
-                                @if (!$isRepublicacao)
+                                @php
+                                    // Para republicações enviamos o $tipo dinâmico (ex.: republicacao_edital_5)
+                                    // para que o JS leia assinantes/parecer DESSE bloco; e passamos documento_id
+                                    // para o backend regenerar o PDF da republicação correta.
+                                    $documentoIdParam = $isRepublicacao ? $doc['documento_id'] : 'null';
+                                @endphp
                                 <button type="button"
-                                        onclick="gerarPdf('{{ $processo->id }}', '{{ $tipo }}', document.getElementById('{{ $dataId }}').value, event)"
+                                        onclick="gerarPdf('{{ $processo->id }}', '{{ $tipo }}', document.getElementById('{{ $dataId }}').value, event, {{ $documentoIdParam }})"
                                         class="px-4 py-2 text-xs font-medium text-white transition-colors duration-200 bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
                                     Gerar PDF
                                 </button>
-                                @endif
 
                                 @if ($tipo === 'edital' && $documentoGerado)
                                     <button type="button"
@@ -937,12 +934,16 @@
             return assinantes;
         }
 
-        function gerarPdf(processoId, documento, data, event) {
+        function gerarPdf(processoId, documento, data, event, documentoId = null) {
             // Encontrar o input de data correto
             let dataInput;
             let dataSelecionada;
 
-            if (documento === 'edital_republicado') {
+            // Para republicação específica a chave dinâmica vem como `republicacao_edital_{id}`
+            // — usamos a data passada por parâmetro (já lida do input daquela linha).
+            if (documentoId) {
+                dataSelecionada = data;
+            } else if (documento === 'edital_republicado') {
                 dataInput = document.getElementById('data_republicacao_edital');
             } else {
                 // Tenta encontrar pelo ID padrão
@@ -962,6 +963,8 @@
                 return;
             }
 
+            // Assinantes e parecer SEMPRE do bloco onde o botão foi clicado:
+            // para republicação isso é o accordion da própria linha "EDITAL REPUBLICADO #N".
             const parecer = document.getElementById('parecer_select_' + documento)?.value || '';
             const assinantes = getAssinantes(documento);
 
@@ -976,9 +979,14 @@
                 return;
             }
 
-            const assinantesEncoded = encodeURIComponent(JSON.stringify(assinantes));
-            let url = `/admin/processos/${processoId}/pdf?documento=${documento}&data=${dataSelecionada}`;
+            // Para chaves dinâmicas de republicação enviamos `edital_republicado` ao backend
+            // (já reconhecido pelo PdfService) acompanhado do documento_id da republicação.
+            const documentoBackend = documentoId ? 'edital_republicado' : documento;
 
+            const assinantesEncoded = encodeURIComponent(JSON.stringify(assinantes));
+            let url = `/admin/processos/${processoId}/pdf?documento=${documentoBackend}&data=${dataSelecionada}`;
+
+            if (documentoId) url += `&documento_id=${documentoId}`;
             if (parecer) url += `&parecer=${parecer}`;
             if (assinantes.length > 0) url += `&assinantes=${assinantesEncoded}`;
 

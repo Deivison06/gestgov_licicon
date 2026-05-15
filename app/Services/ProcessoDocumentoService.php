@@ -253,7 +253,10 @@ class ProcessoDocumentoService
             ? $processo->documentos->whereIn('tipo_documento', ['republicacao_edital', 'edital_adiado'])->sortBy('gerado_em')->values()
             : $processo->documentos()->whereIn('tipo_documento', ['republicacao_edital', 'edital_adiado'])->orderBy('gerado_em')->get();
 
-        // Gerar entradas dinâmicas para cada republicação
+        // Gerar entradas dinâmicas para cada republicação.
+        // Herdam os mesmos `campos` da seção EDITAL para que o usuário possa
+        // editar e gerar novamente o PDF da republicação (mesmos campos, assinantes etc.).
+        $camposEdital = $this->documentos['edital']['campos'] ?? [];
         $republicacaoEntries = [];
         if ($republicacoes->isNotEmpty()) {
             $i = 1;
@@ -263,7 +266,7 @@ class ProcessoDocumentoService
                     'titulo' => "EDITAL REPUBLICADO #{$i}",
                     'cor' => '#7C3AED',
                     'data_id' => "data_{$key}",
-                    'campos' => [],
+                    'campos' => $camposEdital,
                     'documento_id' => $repDoc->id,
                 ];
                 $i++;
