@@ -154,7 +154,7 @@ class PncpService
     /**
      * Busca itens de uma contratação para pesquisa de mercado.
      * Prioriza valorUnitarioHomologado (valor real pago); estimado como fallback.
-     * Inclui dados do vencedor quando disponíveis.
+     * Expõe todos os campos necessários para o card da Pesquisa de Preços.
      */
     public function buscarItensContratacaoMercado(string $cnpj, string $ano, string $sequencial): array
     {
@@ -172,17 +172,71 @@ class PncpService
                 }
 
                 return array_map(function ($item) {
+                    $homologado = $item['valorUnitarioHomologado'] ?? null;
+                    $estimado   = $item['valorUnitarioEstimado'] ?? null;
+
                     return array_merge($item, [
-                        // Para pesquisa de mercado: homologado tem prioridade (é o preço efetivamente pago)
-                        'valorUnitario'       => $item['valorUnitarioHomologado'] ?? $item['valorUnitarioEstimado'] ?? 0,
-                        'tipoValor'           => isset($item['valorUnitarioHomologado']) ? 'homologado' : 'estimado',
-                        'nomeVencedor'        => $item['nomeRazaoSocialFornecedor'] ?? null,
-                        'cnpjVencedor'        => $item['cnpjFornecedor'] ?? null,
-                        'situacaoItem'        => $item['situacaoCompraItem']['nome'] ?? null,
+                        'valorUnitario'      => $homologado ?? $estimado ?? 0,
+                        'tipoValor'          => $homologado !== null ? 'homologado' : 'estimado',
+                        'valorEstimado'      => $estimado,
+                        'valorHomologado'    => $homologado,
+                        'nomeFornecedor'     => $item['nomeRazaoSocialFornecedor'] ?? null,
+                        'cnpjFornecedorNorm' => $item['cnpjFornecedor'] ?? null,
+                        'situacaoItem'       => $item['situacaoCompraItem']['nome'] ?? null,
+                        'tipoItem'           => self::extrairMaterialOuServico($item),
+                        'categoriaItem'      => is_array($item['categoriaItem'] ?? null) ? ($item['categoriaItem']['nome'] ?? null) : null,
                     ]);
                 }, $response->json() ?? []);
             } catch (Exception $e) {
                 return ['error' => 'Erro ao processar itens de mercado: ' . $e->getMessage()];
+            }
+        });
+    }
+
+    /**
+     * Busca o detalhe completo de uma contratação específica.
+     * Retorna: numeroProcesso, valorTotalEstimado, valorTotalHomologado,
+     *          dataResultadoCompra, situacaoCompra, linkSistemaOrigem.
+     */
+    public function buscarDetalheContratacao(string $cnpj, string $ano, string $sequencial): array
+    {
+        $cacheKey = "pncp_compra_{$cnpj}_{$ano}_{$sequencial}";
+
+        return Cache::remember($cacheKey, $this->cacheTtl, function () use ($cnpj, $ano, $sequencial) {
+            try {
+                $url = "https://pncp.gov.br/api/pncp/v1/orgaos/{$cnpj}/compras/{$ano}/{$sequencial}";
+
+                $response = $this->httpClient(timeout: 10)->get($url);
+
+                if ($response->status() === 404) {
+                    return ['error' => 'Contratação não encontrada no PNCP.'];
+                }
+
+                if ($response->failed()) {
+                    return ['error' => 'Falha ao buscar detalhe da contratação (Status: ' . $response->status() . ')'];
+                }
+
+                $c = $response->json();
+
+                return [
+                    'numeroProcesso'       => $c['numeroProcesso'] ?? null,
+                    'valorTotalEstimado'   => $c['valorTotalEstimado'] ?? null,
+                    'valorTotalHomologado' => $c['valorTotalHomologado'] ?? null,
+                    'dataResultadoCompra'  => $c['dataResultadoCompra'] ?? null,
+                    'situacaoCompra'       => $c['situacaoCompra']['nome'] ?? null,
+                    'modalidadeNome'       => $c['modalidade']['nome'] ?? ($c['modalidadeNome'] ?? null),
+                    'objeto'               => $c['objetoCompra'] ?? ($c['objeto'] ?? null),
+                    'linkSistemaOrigem'    => $c['linkSistemaOrigem'] ?? null,
+                    'orgaoNome'            => $c['orgaoEntidade']['razaoSocial'] ?? null,
+                ];
+            } catch (Exception $e) {
+                Log::error('Exceção ao buscar detalhe contratação PNCP', [
+                    'message'    => $e->getMessage(),
+                    'cnpj'       => $cnpj,
+                    'ano'        => $ano,
+                    'sequencial' => $sequencial,
+                ]);
+                return ['error' => 'Erro ao processar detalhe da contratação: ' . $e->getMessage()];
             }
         });
     }
@@ -209,6 +263,14 @@ class PncpService
     // =========================================================================
     // UTILITÁRIOS PRIVADOS
     // =========================================================================
+
+    private static function extrairMaterialOuServico(array $item): ?string
+    {
+        $raw = $item['materialOuServico'] ?? null;
+        if (is_array($raw))   return $raw['nome'] ?? null;
+        if (is_string($raw))  return match(strtoupper(trim($raw))) { 'M' => 'Material', 'S' => 'Serviço', default => $raw };
+        return $item['tipoBeneficio']['nome'] ?? null;
+    }
 
     private function httpClient(int $timeout = 15): PendingRequest
     {

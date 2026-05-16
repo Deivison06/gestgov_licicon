@@ -1,13 +1,13 @@
 @extends('layouts.app')
 
 @section('page-title', 'Pesquisa de Preços')
-@section('page-subtitle', 'Consulte contratações públicas homologadas no PNCP para embasar sua pesquisa de mercado.')
+@section('page-subtitle', 'Consulte itens homologados no PNCP para embasar sua pesquisa de preço de mercado.')
 
 @section('content')
-<div class="px-6 pb-8">
+<div class="px-6 pb-10">
 
-    {{-- ── CABEÇALHO DA PÁGINA ─────────────────────────────────────── --}}
-    <div class="flex items-center justify-between mb-6">
+    {{-- ── CABEÇALHO ────────────────────────────────────────────────── --}}
+    <div class="flex items-center justify-between mb-5">
         <div>
             <h1 class="text-2xl font-bold text-gray-800">Análise de Mercado</h1>
             <p class="text-sm text-gray-500 mt-0.5">Pesquisa de Preços via PNCP — Portal Nacional de Contratações Públicas</p>
@@ -18,139 +18,247 @@
         </span>
     </div>
 
-    {{-- ── BARRA DE PESQUISA ───────────────────────────────────────── --}}
+    {{-- ── BARRA DE PESQUISA ─────────────────────────────────────────── --}}
     @include('Admin.PesquisaPreco.partials._barra-pesquisa')
 
-    {{-- ── FILTROS AVANÇADOS ──────────────────────────────────────── --}}
+    {{-- ── FILTROS AVANÇADOS ─────────────────────────────────────────── --}}
     @include('Admin.PesquisaPreco.partials._filtros-avancados')
 
-    {{-- ── ÁREA DE RESULTADOS ─────────────────────────────────────── --}}
-    <div id="pp_area_resultados">
+    {{-- ── ÁREA PRINCIPAL ────────────────────────────────────────────── --}}
+    <div id="pp_area">
 
         {{-- Estado inicial --}}
-        <div id="pp_estado_inicial" class="mt-8 flex flex-col items-center justify-center py-20 text-gray-400">
+        <div id="pp_estado_inicial" class="mt-10 flex flex-col items-center justify-center py-20 text-gray-400">
             <div class="p-5 bg-gray-50 rounded-full mb-4">
                 <svg class="w-14 h-14 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
             </div>
-            <p class="text-sm font-medium">Digite um item ou serviço na barra de pesquisa</p>
+            <p class="text-sm font-medium">Digite um item ou serviço para iniciar a pesquisa</p>
             <p class="text-xs mt-1 text-gray-300">Ex: Ar condicionado, Notebook, Serviço de limpeza</p>
         </div>
 
-        {{-- Estado de loading --}}
-        <div id="pp_loading" class="mt-8 hidden flex flex-col items-center justify-center py-20">
-            <div class="w-14 h-14 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin mb-4"></div>
-            <p class="text-sm text-gray-500 animate-pulse">Consultando base nacional do PNCP...</p>
+        {{-- Loading --}}
+        <div id="pp_loading" class="mt-10 hidden flex-col items-center justify-center py-20">
+            <div class="w-12 h-12 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin mb-4"></div>
+            <p class="text-sm text-gray-500 animate-pulse" id="pp_loading_msg">Consultando PNCP...</p>
         </div>
 
         {{-- Resultados --}}
-        <div id="pp_resultados" class="mt-6 hidden">
-
-            {{-- Sumário da busca --}}
-            <div class="flex items-center justify-between mb-4 px-1">
+        <div id="pp_resultados" class="mt-5 hidden">
+            <div class="flex items-center justify-between mb-3 px-1">
                 <p id="pp_sumario" class="text-xs text-gray-500 font-medium"></p>
                 <div id="pp_paginacao" class="flex items-center gap-2"></div>
             </div>
-
-            {{-- Cards de contratações --}}
-            <div id="pp_cards" class="grid gap-3"></div>
-
+            <div id="pp_lista_itens" class="flex flex-col gap-3"></div>
         </div>
 
-        {{-- Detalhe dos itens --}}
-        <div id="pp_detalhe_itens" class="mt-6 hidden">
-            @include('Admin.PesquisaPreco.partials._tabela-itens')
-        </div>
-
-        {{-- Estado de erro --}}
+        {{-- Erro --}}
         <div id="pp_erro" class="mt-8 hidden p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 text-sm text-center"></div>
 
     </div>
-
 </div>
+
+{{-- Template do card de item (invisível, clonado pelo JS) --}}
+<template id="tpl_item_card">
+    <div class="item-card bg-white border border-gray-200 rounded-xl overflow-hidden transition-all hover:border-blue-300 hover:shadow-sm">
+
+        {{-- Linha principal --}}
+        <div class="px-4 pt-3 pb-2">
+            <div class="flex items-start justify-between gap-3">
+                <h4 class="font-bold text-gray-800 text-sm leading-snug item-descricao flex-1"></h4>
+                <button class="btn-incluir flex-shrink-0 text-xs font-semibold px-3 py-1 border border-gray-200 rounded-full text-gray-400 cursor-not-allowed opacity-60" disabled title="Em breve">
+                    Incluir no relatório
+                </button>
+            </div>
+        </div>
+
+        {{-- Metadados --}}
+        <div class="px-4 pb-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-500">
+            <span class="badge-tipo px-2 py-0.5 rounded-full font-bold text-[10px] uppercase tracking-wide"></span>
+            <span class="item-orgao font-medium text-gray-700"></span>
+            <span class="text-gray-300">|</span>
+            <span class="item-uf font-semibold text-gray-600"></span>
+            <span class="item-municipio"></span>
+            <span class="text-gray-300">|</span>
+            <span class="item-qtd"></span>
+            <span class="text-gray-300 item-sep-hom hidden">|</span>
+            <span class="item-homologado-em hidden"></span>
+            <div class="ml-auto flex items-center gap-3">
+                <span class="item-estimado text-gray-400"></span>
+                <span class="item-homologado font-bold text-base" style="color:#059669"></span>
+            </div>
+        </div>
+
+        {{-- Fornecedor + botões --}}
+        <div class="px-4 pb-3 flex items-center justify-between gap-2">
+            <span class="item-fornecedor text-xs text-gray-500 truncate max-w-xs"></span>
+            <div class="flex items-center gap-2 flex-shrink-0">
+                <button class="btn-ver-objeto inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 border border-gray-300 rounded-lg hover:border-blue-400 hover:text-blue-700 transition-all text-gray-600">
+                    Ver objeto
+                    <svg class="w-3 h-3 chevron-icon transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+                <a class="link-ver-mais inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg hover:bg-blue-100 transition-all" target="_blank" rel="noopener">
+                    Ver mais
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+
+        {{-- Painel expandível --}}
+        <div class="painel-expandivel hidden border-t border-gray-100">
+            {{-- Loading do painel --}}
+            <div class="painel-loading flex items-center justify-center py-6 gap-2 text-xs text-gray-400">
+                <div class="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+                Carregando detalhes...
+            </div>
+            {{-- Conteúdo do painel (preenchido pelo JS) --}}
+            <div class="painel-conteudo hidden p-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                    {{-- Detalhes do item --}}
+                    <div class="bg-gray-50 rounded-lg p-3">
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Detalhes do Item</p>
+                        <div class="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs">
+                            <div>
+                                <p class="text-gray-400 text-[10px] uppercase font-semibold">Nº Item</p>
+                                <p class="font-bold text-gray-700 painel-num-item"></p>
+                            </div>
+                            <div>
+                                <p class="text-gray-400 text-[10px] uppercase font-semibold">CNPJ Fornecedor</p>
+                                <p class="font-mono text-gray-700 painel-cnpj-fornecedor"></p>
+                            </div>
+                            <div class="col-span-2">
+                                <p class="text-gray-400 text-[10px] uppercase font-semibold">Situação</p>
+                                <p class="text-gray-700 painel-situacao"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Contratação --}}
+                    <div class="bg-gray-50 rounded-lg p-3">
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Contratação</p>
+                        <div class="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs">
+                            <div class="col-span-2">
+                                <p class="text-gray-400 text-[10px] uppercase font-semibold">Objeto</p>
+                                <p class="font-medium text-gray-700 painel-objeto"></p>
+                            </div>
+                            <div>
+                                <p class="text-gray-400 text-[10px] uppercase font-semibold">Órgão</p>
+                                <p class="text-gray-700 painel-orgao"></p>
+                            </div>
+                            <div>
+                                <p class="text-gray-400 text-[10px] uppercase font-semibold">Modalidade</p>
+                                <p class="text-gray-700 painel-modalidade"></p>
+                            </div>
+                            <div>
+                                <p class="text-gray-400 text-[10px] uppercase font-semibold">Situação</p>
+                                <a class="painel-link-pncp text-blue-600 hover:underline" target="_blank" rel="noopener"></a>
+                            </div>
+                            <div>
+                                <p class="text-gray-400 text-[10px] uppercase font-semibold">Processo</p>
+                                <p class="font-mono text-gray-700 painel-processo"></p>
+                            </div>
+                            <div>
+                                <p class="text-gray-400 text-[10px] uppercase font-semibold">Publicação</p>
+                                <p class="text-gray-700 painel-publicacao"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                {{-- Valores globais --}}
+                <div class="grid grid-cols-2 gap-3 mt-3">
+                    <div class="border border-gray-200 rounded-lg p-3 text-center">
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Valor Global</p>
+                        <p class="text-lg font-bold text-gray-700 painel-valor-global"></p>
+                    </div>
+                    <div class="border border-green-200 bg-green-50 rounded-lg p-3 text-center">
+                        <p class="text-[10px] font-bold text-green-600 uppercase tracking-wider mb-1">Total Homologado</p>
+                        <p class="text-lg font-bold text-green-700 painel-valor-homologado"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</template>
 @endsection
 
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
-    // ── Referências DOM ─────────────────────────────────────────────
-    const inputTermo      = document.getElementById('pp_termo');
-    const btnBuscar       = document.getElementById('pp_btn_buscar');
-    const estadoInicial   = document.getElementById('pp_estado_inicial');
-    const loading         = document.getElementById('pp_loading');
-    const resultados      = document.getElementById('pp_resultados');
-    const detalheItens    = document.getElementById('pp_detalhe_itens');
-    const erro            = document.getElementById('pp_erro');
-    const cards           = document.getElementById('pp_cards');
-    const sumario         = document.getElementById('pp_sumario');
-    const paginacao       = document.getElementById('pp_paginacao');
-    const tabelaItens     = document.getElementById('pp_tabela_itens_body');
-    const btnVoltarLista  = document.getElementById('pp_btn_voltar');
-    const lblContratacao  = document.getElementById('pp_label_contratacao');
+    // ── Referências DOM ────────────────────────────────────────────
+    const inputTermo     = document.getElementById('pp_termo');
+    const btnBuscar      = document.getElementById('pp_btn_buscar');
+    const estadoInicial  = document.getElementById('pp_estado_inicial');
+    const loading        = document.getElementById('pp_loading');
+    const loadingMsg     = document.getElementById('pp_loading_msg');
+    const resultados     = document.getElementById('pp_resultados');
+    const listaItens     = document.getElementById('pp_lista_itens');
+    const sumario        = document.getElementById('pp_sumario');
+    const paginacao      = document.getElementById('pp_paginacao');
+    const erro           = document.getElementById('pp_erro');
+    const tplCard        = document.getElementById('tpl_item_card');
 
-    let debounceTimer     = null;
-    let paginaAtual       = 1;
-    let termoAtual        = '';
-    let filtrosAtual      = {};
+    let debounceTimer    = null;
+    let termoAtual       = '';
+    let paginaAtual      = 1;
 
-    // ── Debounce no input ───────────────────────────────────────────
-    inputTermo.addEventListener('input', function () {
-        clearTimeout(debounceTimer);
-        const termo = this.value.trim();
-        if (termo.length >= 3) {
-            debounceTimer = setTimeout(() => executarBusca(termo, 1), 600);
-        }
-    });
+    const fmt = v => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v ?? 0);
+    const fmtData = s => {
+        if (!s) return null;
+        // Aceita "2025-10-06", "2025-10-06T..." ou "06/10/2025"
+        const d = new Date(s.includes('T') ? s : s.replace(/(\d{4})-(\d{2})-(\d{2})/, '$1-$2-$3'));
+        return isNaN(d) ? s : d.toLocaleDateString('pt-BR');
+    };
+    const fmtCnpj = v => {
+        if (!v) return '—';
+        const s = String(v).replace(/\D/g,'').padStart(14,'0');
+        return s.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+    };
 
-    btnBuscar.addEventListener('click', function () {
-        const termo = inputTermo.value.trim();
-        if (termo.length >= 3) executarBusca(termo, 1);
-    });
+    // ── Highlight do termo buscado ─────────────────────────────────
+    function highlight(texto, termo) {
+        if (!termo || !texto) return texto || '';
+        const re = new RegExp(`(${termo.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+        return texto.replace(re, '<mark class="bg-yellow-200 text-yellow-900 rounded px-0.5">$1</mark>');
+    }
 
-    inputTermo.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter') {
-            clearTimeout(debounceTimer);
-            const termo = this.value.trim();
-            if (termo.length >= 3) executarBusca(termo, 1);
-        }
-    });
-
-    // ── Lógica de exibição de estados ───────────────────────────────
-    function mostrarLoading() {
+    // ── Estados de UI ──────────────────────────────────────────────
+    function mostrarLoading(msg = 'Consultando PNCP...') {
         estadoInicial.classList.add('hidden');
         resultados.classList.add('hidden');
-        detalheItens.classList.add('hidden');
         erro.classList.add('hidden');
+        loadingMsg.textContent = msg;
         loading.classList.remove('hidden');
+        loading.classList.add('flex');
     }
 
     function mostrarResultados() {
         loading.classList.add('hidden');
-        detalheItens.classList.add('hidden');
+        loading.classList.remove('flex');
         erro.classList.add('hidden');
         resultados.classList.remove('hidden');
     }
 
-    function mostrarDetalhe() {
-        loading.classList.add('hidden');
-        resultados.classList.add('hidden');
-        erro.classList.add('hidden');
-        detalheItens.classList.remove('hidden');
-    }
-
     function mostrarErro(msg) {
         loading.classList.add('hidden');
+        loading.classList.remove('flex');
         resultados.classList.add('hidden');
-        detalheItens.classList.add('hidden');
         estadoInicial.classList.add('hidden');
         erro.textContent = msg;
         erro.classList.remove('hidden');
     }
 
-    // ── Coleta filtros do formulário ─────────────────────────────────
+    // ── Coleta filtros ─────────────────────────────────────────────
     function coletarFiltros() {
         return {
             data_inicial: document.getElementById('pp_data_inicial')?.value || null,
@@ -161,167 +269,268 @@ document.addEventListener('DOMContentLoaded', function () {
         };
     }
 
-    // ── Busca principal ─────────────────────────────────────────────
-    function executarBusca(termo, pagina) {
+    // ── Eventos ────────────────────────────────────────────────────
+    inputTermo.addEventListener('input', function () {
+        clearTimeout(debounceTimer);
+        if (this.value.trim().length >= 3) {
+            debounceTimer = setTimeout(() => executarBusca(this.value.trim(), 1), 600);
+        }
+    });
+
+    inputTermo.addEventListener('keydown', e => {
+        if (e.key === 'Enter') { clearTimeout(debounceTimer); const t = inputTermo.value.trim(); if (t.length >= 3) executarBusca(t, 1); }
+    });
+
+    btnBuscar.addEventListener('click', () => {
+        const t = inputTermo.value.trim();
+        if (t.length >= 3) executarBusca(t, 1);
+    });
+
+    document.getElementById('pp_btn_aplicar_filtros')?.addEventListener('click', () => {
+        const t = inputTermo.value.trim();
+        if (t.length >= 3) executarBusca(t, 1);
+    });
+
+    document.getElementById('pp_btn_filtros')?.addEventListener('click', function () {
+        const p = document.getElementById('pp_painel_filtros');
+        p.classList.toggle('hidden');
+        this.querySelector('span').textContent = p.classList.contains('hidden') ? 'Filtros' : 'Ocultar';
+    });
+
+    // ── Busca principal ────────────────────────────────────────────
+    async function executarBusca(termo, pagina) {
         termoAtual  = termo;
         paginaAtual = pagina;
-        filtrosAtual = coletarFiltros();
 
-        mostrarLoading();
+        mostrarLoading('Buscando contratações no PNCP...');
 
-        const params = new URLSearchParams({ termo, pagina });
-        Object.entries(filtrosAtual).forEach(([k, v]) => { if (v) params.append(k, v); });
+        const filtros = coletarFiltros();
+        const params  = new URLSearchParams({ termo, pagina });
+        Object.entries(filtros).forEach(([k, v]) => { if (v) params.append(k, v); });
 
-        fetch(`{{ route('admin.pncp.mercado.search') }}?${params}`)
-            .then(r => r.json())
-            .then(resp => {
-                if (!resp.success) { mostrarErro(resp.message); return; }
-                renderizarCards(resp.data);
-            })
-            .catch(() => mostrarErro('Erro ao conectar com o servidor. Tente novamente.'));
-    }
+        let contratacoes;
+        try {
+            console.log('[PNCP] Buscando contratações:', { termo, pagina, filtros });
+            const resp = await fetch(`{{ route('admin.pncp.mercado.search') }}?${params}`);
+            const json = await resp.json();
+            if (!json.success) { mostrarErro(json.message); return; }
+            contratacoes = json.data;
+            console.log(`[PNCP] ${contratacoes.totalRegistros} contratação(ões) encontrada(s), exibindo ${contratacoes.data?.length ?? 0}`);
+        } catch (e) {
+            console.error('[PNCP] Erro na busca de contratações:', e);
+            mostrarErro('Erro ao conectar com o servidor. Tente novamente.'); return;
+        }
 
-    // ── Renderizar cards de contratações ────────────────────────────
-    function renderizarCards(data) {
-        if (!data.data || data.data.length === 0) {
-            mostrarErro('Nenhum resultado encontrado para este termo. Tente outros termos ou ajuste os filtros.');
+        if (!contratacoes.data || contratacoes.data.length === 0) {
+            mostrarErro('Nenhum resultado encontrado para "' + termo + '". Tente outros termos ou ajuste os filtros.');
             return;
         }
 
-        sumario.textContent = `${data.totalRegistros.toLocaleString('pt-BR')} contratação(ões) encontrada(s) — exibindo página ${data.paginaAtual ?? paginaAtual} de ${data.totalPaginas}`;
+        loadingMsg.textContent = `Carregando itens de ${contratacoes.data.length} contratação(ões)...`;
 
-        cards.innerHTML = '';
-        data.data.forEach(item => {
-            const dataPub = item.dataPublicacaoPncp
-                ? new Date(item.dataPublicacaoPncp).toLocaleDateString('pt-BR')
-                : '—';
-
-            const card = document.createElement('div');
-            card.className = 'group p-4 bg-white border border-gray-100 rounded-2xl hover:border-blue-200 hover:shadow-md transition-all cursor-pointer relative overflow-hidden';
-            card.innerHTML = `
-                <div class="absolute left-0 top-0 bottom-0 w-1 bg-transparent group-hover:bg-blue-600 transition-all rounded-l-2xl"></div>
-                <div class="flex justify-between items-start gap-4">
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-2 mb-1.5 flex-wrap">
-                            <span class="px-2 py-0.5 bg-blue-50 text-blue-600 text-[9px] font-bold rounded uppercase tracking-wider">${item.modalidadeNome || 'N/D'}</span>
-                            <span class="text-[10px] font-bold text-gray-400">#${item.sequencialCompra}/${item.anoCompra}</span>
-                            ${item.uf ? `<span class="px-2 py-0.5 bg-gray-100 text-gray-500 text-[9px] font-bold rounded uppercase">${item.uf}</span>` : ''}
-                        </div>
-                        <h5 class="font-bold text-gray-800 text-sm mb-1 group-hover:text-blue-700 transition-colors truncate">${item.orgaoEntidade.razaoSocial || 'Órgão não informado'}</h5>
-                        <p class="text-xs text-gray-500 line-clamp-2 leading-relaxed">${item.objeto || 'Objeto não informado'}</p>
-                        ${item.municipio ? `<p class="text-[10px] text-gray-400 mt-1">${item.municipio}${item.uf ? ' / ' + item.uf : ''}</p>` : ''}
-                    </div>
-                    <div class="flex-shrink-0 flex flex-col items-end gap-2">
-                        <span class="text-[10px] text-gray-400">${dataPub}</span>
-                        <div class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                            </svg>
-                        </div>
-                    </div>
-                </div>`;
-
-            card.addEventListener('click', () =>
-                verItens(item.orgaoEntidade.cnpj, item.anoCompra, item.sequencialCompra, item.orgaoEntidade.razaoSocial, item.objeto)
-            );
-            cards.appendChild(card);
+        // Busca itens de todas as contratações em paralelo (timeout 12s por request)
+        const itensRequests = contratacoes.data.map(c => {
+            const ctrl = new AbortController();
+            const tid  = setTimeout(() => ctrl.abort(), 12000);
+            return fetch(`/admin/pncp/items/${c.orgaoEntidade.cnpj}/${c.anoCompra}/${c.sequencialCompra}`, { signal: ctrl.signal })
+                .then(r => r.json())
+                .then(j => {
+                    clearTimeout(tid);
+                    const itens = j.success ? j.data : [];
+                    console.log(`[PNCP] ${c.orgaoEntidade.cnpj}/${c.anoCompra}/${c.sequencialCompra}: ${itens.length} item(ns)`);
+                    return { contratacao: c, itens };
+                })
+                .catch(err => {
+                    clearTimeout(tid);
+                    console.warn(`[PNCP] Falha ao buscar itens de ${c.sequencialCompra}:`, err.name === 'AbortError' ? 'timeout' : err);
+                    return { contratacao: c, itens: [] };
+                });
         });
 
-        renderizarPaginacao(data.totalPaginas, data.paginaAtual ?? paginaAtual);
+        const resultadosBatch = await Promise.allSettled(itensRequests);
+
+        // Achata: item-card por item, com parent embutido
+        // Promise.allSettled retorna [{status, value}] — extraímos apenas os fulfilled
+        const todosItens = [];
+        resultadosBatch.forEach(resultado => {
+            const { contratacao, itens } = resultado.status === 'fulfilled' ? resultado.value : resultado.reason ?? { contratacao: null, itens: [] };
+            if (!contratacao || !Array.isArray(itens)) return;
+            itens.forEach(item => {
+                todosItens.push({ item, contratacao });
+            });
+        });
+        console.log(`[PNCP] Total de itens prontos para renderizar: ${todosItens.length}`);
+
+        renderizarItens(todosItens, contratacoes);
+    }
+
+    // ── Renderização dos cards ─────────────────────────────────────
+    function renderizarItens(lista, meta) {
+        listaItens.innerHTML = '';
+
+        const total = lista.length;
+        sumario.textContent = `${(meta.totalRegistros || 0).toLocaleString('pt-BR')} contratação(ões) encontrada(s) · ${total} item(ns) carregado(s)`;
+
+        if (total === 0) {
+            mostrarErro('As contratações encontradas não possuem itens disponíveis no momento.');
+            return;
+        }
+
+        lista.forEach(({ item, contratacao: c }) => {
+            const card  = tplCard.content.cloneNode(true).firstElementChild;
+            const cnpj  = c.orgaoEntidade.cnpj;
+            const ano   = c.anoCompra;
+            const seq   = c.sequencialCompra;
+
+            // Armazena dados no dataset para uso posterior
+            card.dataset.cnpj  = cnpj;
+            card.dataset.ano   = ano;
+            card.dataset.seq   = seq;
+
+            // ── Descrição com highlight ──
+            card.querySelector('.item-descricao').innerHTML = highlight(item.descricao || '(sem descrição)', termoAtual);
+
+            // ── Badge tipo ──
+            const tipo = item.tipoItem || item.materialOuServico?.nome || item.categoriaItem || null;
+            const badgeEl = card.querySelector('.badge-tipo');
+            if (tipo) {
+                const isMaterial = tipo.toLowerCase().includes('material') || tipo === 'M';
+                badgeEl.textContent = tipo.length <= 2 ? (tipo === 'M' ? 'Material' : 'Serviço') : tipo;
+                badgeEl.classList.add(isMaterial ? 'bg-blue-100' : 'bg-purple-100', isMaterial ? 'text-blue-700' : 'text-purple-700');
+            } else {
+                badgeEl.classList.add('hidden');
+            }
+
+            // ── Metadados ──
+            card.querySelector('.item-orgao').textContent    = c.orgaoEntidade.razaoSocial || '—';
+            card.querySelector('.item-uf').textContent       = c.uf || '';
+            card.querySelector('.item-municipio').textContent = c.municipio || '';
+            card.querySelector('.item-qtd').textContent      = `Qtd: ${item.quantidade ?? '?'} ${item.unidadeMedida || ''}`.trim();
+
+            // ── Valores ──
+            const homVal  = item.valorUnitarioHomologado ?? item.valorHomologado ?? null;
+            const estVal  = item.valorUnitarioEstimado  ?? item.valorEstimado  ?? null;
+            const homEl   = card.querySelector('.item-homologado');
+            const estEl   = card.querySelector('.item-estimado');
+
+            if (homVal !== null && homVal > 0) {
+                homEl.textContent = fmt(homVal);
+                if (estVal !== null && Math.abs(estVal - homVal) > 0.001) {
+                    estEl.textContent = `Est: ${fmt(estVal)}`;
+                }
+            } else if (estVal !== null) {
+                homEl.textContent = fmt(estVal);
+                estEl.textContent = 'Estimado';
+                estEl.classList.add('text-yellow-600');
+            } else {
+                homEl.textContent = '—';
+            }
+
+            // ── Fornecedor ──
+            const forn = item.nomeFornecedor || item.nomeRazaoSocialFornecedor || null;
+            const fornEl = card.querySelector('.item-fornecedor');
+            fornEl.textContent = forn ? `Fornecedor: ${forn}` : '';
+
+            // ── Link Ver mais ──
+            card.querySelector('.link-ver-mais').href =
+                `https://pncp.gov.br/app/editais/${cnpj}/${ano}/${seq}`;
+
+            // ── Preenche dados fixos do painel (item + contratação já disponíveis) ──
+            card.querySelector('.painel-num-item').textContent     = item.numeroItem ?? '—';
+            card.querySelector('.painel-cnpj-fornecedor').textContent = fmtCnpj(item.cnpjFornecedorNorm || item.cnpjFornecedor);
+            card.querySelector('.painel-situacao').textContent     = item.situacaoItem || item.situacaoCompraItem?.nome || '—';
+            card.querySelector('.painel-objeto').textContent       = c.objeto || '—';
+            card.querySelector('.painel-orgao').textContent        = c.orgaoEntidade.razaoSocial || '—';
+            card.querySelector('.painel-modalidade').textContent   = c.modalidadeNome || '—';
+            const pubDate = fmtData(c.dataPublicacaoPncp);
+            card.querySelector('.painel-publicacao').textContent   = pubDate || '—';
+
+            // Link PNCP (situação expandida)
+            const linkPncp = card.querySelector('.painel-link-pncp');
+            linkPncp.textContent = 'Divulgada no PNCP';
+            linkPncp.href = `https://pncp.gov.br/app/editais/${cnpj}/${ano}/${seq}`;
+
+            // ── Botão "Ver objeto" — carrega detalhe lazily ──
+            let detalhesCarregados = false;
+            card.querySelector('.btn-ver-objeto').addEventListener('click', async function () {
+                const painel  = card.querySelector('.painel-expandivel');  // outer toggle div
+                const chevron = card.querySelector('.chevron-icon');
+                const aberto  = !painel.classList.contains('hidden');
+
+                if (aberto) {
+                    painel.classList.add('hidden');
+                    chevron.style.transform = '';
+                    return;
+                }
+
+                painel.classList.remove('hidden');
+                chevron.style.transform = 'rotate(180deg)';
+
+                if (detalhesCarregados) return;
+
+                // Carrega detalhe da contratação (proceso, valorTotal, dataResultado)
+                try {
+                    console.log(`[PNCP] Buscando detalhe: ${cnpj}/${ano}/${seq}`);
+                    const r   = await fetch(`/admin/pncp/contratacao/${cnpj}/${ano}/${seq}`);
+                    const j   = await r.json();
+                    const det = j.success ? j.data : null;
+                    console.log('[PNCP] Detalhe recebido:', det);
+
+                    if (det) {
+                        if (det.numeroProcesso)       card.querySelector('.painel-processo').textContent            = det.numeroProcesso;
+                        if (det.objeto)               card.querySelector('.painel-objeto').textContent              = det.objeto;
+                        if (det.modalidadeNome)       card.querySelector('.painel-modalidade').textContent          = det.modalidadeNome;
+                        if (det.situacaoCompra)       linkPncp.textContent                                          = det.situacaoCompra;
+                        if (det.valorTotalEstimado)   card.querySelector('.painel-valor-global').textContent        = fmt(det.valorTotalEstimado);
+                        if (det.valorTotalHomologado) card.querySelector('.painel-valor-homologado').textContent    = fmt(det.valorTotalHomologado);
+
+                        // Atualiza "Homologado em" no card
+                        if (det.dataResultadoCompra) {
+                            const dataFmt = fmtData(det.dataResultadoCompra);
+                            const sepEl   = card.querySelector('.item-sep-hom');
+                            const homEmEl = card.querySelector('.item-homologado-em');
+                            sepEl.classList.remove('hidden');
+                            homEmEl.textContent = `Homologado em: ${dataFmt}`;
+                            homEmEl.classList.remove('hidden');
+                        }
+                    }
+
+                    detalhesCarregados = true;
+                } catch (e) {
+                    console.warn('[PNCP] Erro ao buscar detalhe da contratação:', e);
+                } finally {
+                    card.querySelector('.painel-loading')?.classList.add('hidden');
+                    card.querySelector('.painel-conteudo')?.classList.remove('hidden');
+                }
+            });
+
+            listaItens.appendChild(card);
+        });
+
+        renderizarPaginacao(meta.totalPaginas, meta.paginaAtual ?? paginaAtual);
         mostrarResultados();
     }
 
-    // ── Paginação ───────────────────────────────────────────────────
+    // ── Paginação ──────────────────────────────────────────────────
     function renderizarPaginacao(totalPaginas, paginaCorrente) {
         paginacao.innerHTML = '';
         if (totalPaginas <= 1) return;
 
-        const criar = (label, pagina, desabilitado = false) => {
-            const btn = document.createElement('button');
-            btn.textContent = label;
-            btn.className = `px-3 py-1.5 text-xs font-bold rounded-lg border transition-all ${
-                desabilitado
-                    ? 'bg-blue-600 text-white border-blue-600 cursor-default'
-                    : 'bg-white text-gray-600 border-gray-200 hover:border-blue-400 hover:text-blue-600'
+        const btn = (label, pg, ativo = false) => {
+            const b = document.createElement('button');
+            b.innerHTML = label;
+            b.className = `px-3 py-1.5 text-xs font-bold rounded-lg border transition-all ${
+                ativo ? 'bg-blue-600 text-white border-blue-600 cursor-default'
+                      : 'bg-white text-gray-600 border-gray-200 hover:border-blue-400 hover:text-blue-600'
             }`;
-            if (!desabilitado) btn.addEventListener('click', () => executarBusca(termoAtual, pagina));
-            return btn;
+            if (!ativo) b.addEventListener('click', () => executarBusca(termoAtual, pg));
+            return b;
         };
 
-        if (paginaCorrente > 1)      paginacao.appendChild(criar('← Anterior', paginaCorrente - 1));
-        paginacao.appendChild(criar(`Pág. ${paginaCorrente}`, paginaCorrente, true));
-        if (paginaCorrente < totalPaginas) paginacao.appendChild(criar('Próxima →', paginaCorrente + 1));
+        if (paginaCorrente > 1)             paginacao.appendChild(btn('← Anterior', paginaCorrente - 1));
+        paginacao.appendChild(btn(`Pág. ${paginaCorrente} / ${totalPaginas}`, paginaCorrente, true));
+        if (paginaCorrente < totalPaginas)  paginacao.appendChild(btn('Próxima →', paginaCorrente + 1));
     }
-
-    // ── Detalhe dos itens ───────────────────────────────────────────
-    function verItens(cnpj, ano, sequencial, orgao, objeto) {
-        mostrarLoading();
-
-        fetch(`/admin/pncp/items/${cnpj}/${ano}/${sequencial}`)
-            .then(r => r.json())
-            .then(resp => {
-                if (!resp.success) { mostrarErro(resp.message); return; }
-                renderizarItens(resp.data, orgao, objeto, cnpj, ano, sequencial);
-            })
-            .catch(() => mostrarErro('Erro ao carregar itens. Tente novamente.'));
-    }
-
-    function renderizarItens(itens, orgao, objeto, cnpj, ano, sequencial) {
-        lblContratacao.innerHTML = `
-            <span class="font-bold text-gray-800">${orgao}</span>
-            <span class="text-gray-400 mx-1">·</span>
-            <span class="text-gray-500 text-sm">${objeto}</span>
-            <span class="ml-2 text-[10px] text-gray-400">#${sequencial}/${ano}</span>`;
-
-        if (!itens || itens.length === 0) {
-            tabelaItens.innerHTML = `<tr><td colspan="6" class="px-4 py-8 text-center text-gray-400 text-sm">Nenhum item encontrado nesta contratação.</td></tr>`;
-            mostrarDetalhe();
-            return;
-        }
-
-        const fmt = v => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
-
-        tabelaItens.innerHTML = itens.map(item => {
-            const valorUnit  = item.valorUnitarioHomologado ?? item.valorUnitarioEstimado ?? 0;
-            const valorTotal = valorUnit * (item.quantidade || 0);
-            const tipoLabel  = item.valorUnitarioHomologado
-                ? '<span class="px-1.5 py-0.5 bg-green-50 text-green-700 text-[9px] font-bold rounded">Homologado</span>'
-                : '<span class="px-1.5 py-0.5 bg-yellow-50 text-yellow-700 text-[9px] font-bold rounded">Estimado</span>';
-
-            return `
-            <tr class="hover:bg-blue-50/30 transition-colors">
-                <td class="px-4 py-3 text-xs font-bold text-gray-400">${item.numeroItem}</td>
-                <td class="px-4 py-3 text-sm text-gray-700 leading-tight max-w-xs">${item.descricao || '—'}</td>
-                <td class="px-4 py-3 text-xs text-gray-500">${item.quantidade} <span class="opacity-60">${item.unidadeMedida || ''}</span></td>
-                <td class="px-4 py-3 text-right">
-                    <div class="font-bold text-green-600 text-sm">${fmt(valorUnit)}</div>
-                    <div class="mt-0.5">${tipoLabel}</div>
-                </td>
-                <td class="px-4 py-3 text-right font-bold text-gray-700 text-sm">${fmt(valorTotal)}</td>
-                <td class="px-4 py-3 text-xs text-gray-400">${item.nomeRazaoSocialFornecedor || item.nomeVencedor || '—'}</td>
-            </tr>`;
-        }).join('');
-
-        mostrarDetalhe();
-    }
-
-    // ── Botão voltar ────────────────────────────────────────────────
-    btnVoltarLista.addEventListener('click', function () {
-        mostrarResultados();
-    });
-
-    // ── Botão aplicar filtros ────────────────────────────────────────
-    document.getElementById('pp_btn_aplicar_filtros')?.addEventListener('click', function () {
-        const termo = inputTermo.value.trim();
-        if (termo.length >= 3) executarBusca(termo, 1);
-    });
-
-    // ── Toggle filtros avançados ─────────────────────────────────────
-    document.getElementById('pp_btn_filtros')?.addEventListener('click', function () {
-        const painel = document.getElementById('pp_painel_filtros');
-        painel.classList.toggle('hidden');
-        this.querySelector('span').textContent = painel.classList.contains('hidden') ? 'Filtros' : 'Ocultar';
-    });
 
 });
 </script>

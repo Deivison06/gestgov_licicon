@@ -45,11 +45,11 @@ class PncpController extends Controller
     }
 
     /**
-     * Busca os itens de uma contratação — usada pelo modal do ETP.
+     * Busca os itens de uma contratação com campos completos para a Pesquisa de Preços.
      */
     public function getItems(Request $request, string $cnpj, string $ano, string $sequencial): JsonResponse
     {
-        $results = $this->pncpService->buscarItensContratacao($cnpj, $ano, $sequencial);
+        $results = $this->pncpService->buscarItensContratacaoMercado($cnpj, $ano, $sequencial);
 
         if (isset($results['error'])) {
             return response()->json(['success' => false, 'message' => $results['error']], 502);
@@ -87,6 +87,20 @@ class PncpController extends Controller
         }
 
         return response()->json(['success' => true, 'data' => $results]);
+    }
+
+    /**
+     * Retorna o detalhe completo de uma contratação — usado pelo painel "Ver objeto".
+     */
+    public function getContratacao(string $cnpj, string $ano, string $sequencial): JsonResponse
+    {
+        $result = $this->pncpService->buscarDetalheContratacao($cnpj, $ano, $sequencial);
+
+        if (isset($result['error'])) {
+            return response()->json(['success' => false, 'message' => $result['error']], 502);
+        }
+
+        return response()->json(['success' => true, 'data' => $result]);
     }
 
     /**
