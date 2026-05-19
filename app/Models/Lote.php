@@ -15,6 +15,7 @@ class Lote extends Model
 
     protected $fillable = [
         'vencedor_id',
+        'homologacao_id',
         'lote',
         'lote_nome',
         'status',
@@ -47,6 +48,21 @@ class Lote extends Model
     public function vencedor(): BelongsTo
     {
         return $this->belongsTo(Vencedor::class);
+    }
+
+    public function homologacao(): BelongsTo
+    {
+        return $this->belongsTo(Homologacao::class);
+    }
+
+    public function scopePendentesHomologacao($query)
+    {
+        return $query->whereNull('homologacao_id');
+    }
+
+    public function scopeHomologados($query)
+    {
+        return $query->whereNotNull('homologacao_id');
     }
 
     /**

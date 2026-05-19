@@ -13,6 +13,7 @@ class Documento extends Model
 
     protected $fillable = [
         'processo_id',
+        'homologacao_id',
         'tipo_documento',
         'data_selecionada',
         'caminho',
@@ -37,6 +38,11 @@ class Documento extends Model
     public function processo()
     {
         return $this->belongsTo(Processo::class);
+    }
+
+    public function homologacao()
+    {
+        return $this->belongsTo(Homologacao::class);
     }
 
     // Acessor para campos do contrato

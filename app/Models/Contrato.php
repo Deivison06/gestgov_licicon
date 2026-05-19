@@ -3,11 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Contrato extends Model
 {
     protected $fillable = [
         'processo_id',
+        'homologacao_id',
         'numero_contrato',
         'data_assinatura_contrato',
         'numero_extrato',
@@ -20,9 +22,14 @@ class Contrato extends Model
         'data_assinatura_contrato' => 'datetime',
     ];
 
-    public function processo()
+    public function processo(): BelongsTo
     {
         return $this->belongsTo(Processo::class, 'processo_id');
+    }
+
+    public function homologacao(): BelongsTo
+    {
+        return $this->belongsTo(Homologacao::class);
     }
 
     public function fiscalizacoes()

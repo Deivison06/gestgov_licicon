@@ -37,6 +37,23 @@
         const csrfToken = '{{ csrf_token() }}';
         let itensDisponiveis = [];
         let itensSelecionados = new Map();
+
+        // Homologação selecionada no painel de contrato.
+        // null = contrato legado (processos antigos sem homologação).
+        @php
+            $homologacaoInicial = ($homologacoesHomologadas ?? collect())->first()?->id;
+        @endphp
+        window.currentHomologacaoId = {!! $homologacaoInicial ? (int) $homologacaoInicial : 'null' !!};
+
+        function homologacaoQueryParam() {
+            return window.currentHomologacaoId ? `homologacao_id=${window.currentHomologacaoId}` : '';
+        }
+
+        function appendHomologacaoToUrl(url) {
+            const param = homologacaoQueryParam();
+            if (!param) return url;
+            return url + (url.includes('?') ? '&' : '?') + param;
+        }
     </script>
     {{-- Fim JSON --}}
 
@@ -486,6 +503,41 @@
                         </div>
                     </div>
 
+                    {{-- ====== Seletor de Homologação (uma aba por homologação concluída) ====== --}}
+                    @php
+                        $homologacoes = $homologacoesHomologadas ?? collect();
+                        $temHomologacoes = $homologacoes->isNotEmpty();
+                        $temLegado = isset($contratoLegado) && $contratoLegado;
+                    @endphp
+
+                    @if ($temHomologacoes)
+                        <div class="px-6 pt-4 pb-3 border-b border-gray-200 bg-gray-50">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span class="text-xs font-semibold text-gray-600 mr-2">Contrato de:</span>
+                                @foreach ($homologacoes as $idx => $homol)
+                                    <button type="button"
+                                            data-homologacao-id="{{ $homol->id }}"
+                                            data-numero-sequencial="{{ $homol->numero_sequencial }}"
+                                            onclick="selecionarHomologacaoContrato({{ $homol->id }}, {{ $homol->numero_sequencial }}, this)"
+                                            class="tab-homologacao px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors {{ $idx === 0 ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100' }}">
+                                        Homologação #{{ $homol->numero_sequencial }}
+                                    </button>
+                                @endforeach
+                                @if ($temLegado)
+                                    <button type="button"
+                                            data-homologacao-id=""
+                                            onclick="selecionarHomologacaoContrato(null, null, this)"
+                                            class="tab-homologacao px-3 py-1.5 text-xs font-medium rounded-lg border bg-white text-gray-700 border-gray-300 hover:bg-gray-100">
+                                        Contrato Legado
+                                    </button>
+                                @endif
+                            </div>
+                            <p class="mt-2 text-xs text-gray-500">
+                                Os campos abaixo se referem à homologação selecionada. Os assinantes precisam ser preenchidos para cada homologação.
+                            </p>
+                        </div>
+                    @endif
+
                     <!-- Área de Mensagens -->
                     <div id="message-container" class="p-4"></div>
 
@@ -496,8 +548,11 @@
 
                             @foreach ($documentos as $tipo => $doc)
                                 @php
+                                    // Pega o documento da homologação inicialmente selecionada
+                                    // (a aba renderiza link/data conforme troca via JS).
                                     $documentoGerado = $processo->documentos
                                         ->where('tipo_documento', $tipo)
+                                        ->where('homologacao_id', $homologacaoInicial ?? null)
                                         ->first();
                                     $accordionId = "accordion-{$tipo}";
                                 @endphp
@@ -555,8 +610,16 @@
                                                         Gerar
                                                     </button>
 
+                                                    @php
+                                                        $downloadBase = route('admin.processo.contrato.download', ['processo' => $processo->id, 'tipo' => $tipo]);
+                                                        $downloadHref = $homologacaoInicial
+                                                            ? $downloadBase . '?homologacao_id=' . $homologacaoInicial
+                                                            : $downloadBase;
+                                                    @endphp
                                                     @if ($documentoGerado)
-                                                        <a href="{{ route('admin.processo.contrato.download', ['processo' => $processo->id, 'tipo' => $tipo]) }}"
+                                                        <a href="{{ $downloadHref }}"
+                                                           data-download-contrato
+                                                           data-download-base="{{ $downloadBase }}"
                                                            download
                                                            class="flex items-center justify-center p-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                                                            title="Download">
@@ -564,6 +627,11 @@
                                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                                                             </svg>
                                                         </a>
+                                                    @else
+                                                        <a href="{{ $downloadBase }}"
+                                                           data-download-contrato
+                                                           data-download-base="{{ $downloadBase }}"
+                                                           class="hidden"></a>
                                                     @endif
                                                 </div>
                                             </div>
@@ -1677,16 +1745,58 @@
 
         async function carregarDadosContratoSalvos() {
             try {
-                const response = await fetch(`/admin/processos/${processoId}/contrato/dados`);
+                const url = appendHomologacaoToUrl(`/admin/processos/${processoId}/contrato/dados`);
+                const response = await fetch(url);
                 const data = await response.json();
 
                 if (data.success && data.dados) {
                     preencherCamposContrato(data.dados);
+                } else {
+                    // Limpa campos quando troca para uma homologação sem dados salvos.
+                    preencherCamposContrato({});
                 }
             } catch (error) {
                 console.error('Erro ao carregar dados do contrato:', error);
             }
         }
+
+        // Trocar de aba (homologação) no painel de contrato.
+        window.selecionarHomologacaoContrato = function (homologacaoId, numeroSequencial, botao) {
+            window.currentHomologacaoId = homologacaoId;
+
+            // Atualiza estilo das abas
+            document.querySelectorAll('.tab-homologacao').forEach(tab => {
+                tab.classList.remove('bg-green-600', 'text-white', 'border-green-600');
+                tab.classList.add('bg-white', 'text-gray-700', 'border-gray-300');
+            });
+            if (botao) {
+                botao.classList.remove('bg-white', 'text-gray-700', 'border-gray-300');
+                botao.classList.add('bg-green-600', 'text-white', 'border-green-600');
+            }
+
+            // Limpa assinantes (são específicos por homologação) e recarrega campos.
+            const containerAssinantes = document.getElementById('assinantes-container-contrato');
+            if (containerAssinantes) {
+                const primeiroAssinante = containerAssinantes.querySelector('.assinante-item');
+                containerAssinantes.innerHTML = '';
+                if (primeiroAssinante) {
+                    primeiroAssinante.querySelectorAll('select, input').forEach(el => {
+                        if (el.tagName === 'SELECT') el.selectedIndex = 0;
+                        else el.value = '';
+                    });
+                    containerAssinantes.appendChild(primeiroAssinante);
+                }
+            }
+
+            // Atualiza link de download para apontar para a homologação correta.
+            const linkDownload = document.querySelector('a[data-download-contrato]');
+            if (linkDownload) {
+                const base = linkDownload.getAttribute('data-download-base');
+                linkDownload.href = homologacaoId ? `${base}?homologacao_id=${homologacaoId}` : base;
+            }
+
+            carregarDadosContratoSalvos();
+        };
 
         function preencherCamposContrato(dados) {
             // Preencher campos do contrato
@@ -1762,7 +1872,8 @@
                     },
                     body: JSON.stringify({
                         campo: campo,
-                        valor: valor
+                        valor: valor,
+                        homologacao_id: window.currentHomologacaoId
                     })
                 });
 
@@ -1984,6 +2095,10 @@
             const camposContratoEncoded = encodeURIComponent(camposContratoJson);
 
             let url = `/admin/contrato/processos/${processoId}/pdf?data=${data}&tipo=${tipo}`;
+
+            if (window.currentHomologacaoId) {
+                url += `&homologacao_id=${window.currentHomologacaoId}`;
+            }
 
             if (assinantes.length > 0) {
                 url += `&assinantes=${assinantesEncoded}`;

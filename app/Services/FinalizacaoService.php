@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Models\Processo;
 use App\Models\Finalizacao;
 use App\Models\Documento;
+use App\Models\Homologacao;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
 
 class FinalizacaoService
@@ -23,6 +25,7 @@ class FinalizacaoService
     protected array $excludedFields = [
         '_token',
         'processo_id',
+        'homologacao_id',
         'anexo_atos_sessao',
         'anexo_proposta',
         'anexo_proposta_readequada',
@@ -33,7 +36,41 @@ class FinalizacaoService
         'anexo_parecer_juridico'
     ];
 
-    public function salvarFinalizacao(Processo $processo, array $data): Finalizacao
+    /**
+     * Salva campos de finalização. Se `homologacao_id` for informado, persiste na
+     * `Homologacao` correspondente; caso contrário, na `Finalizacao` do processo.
+     */
+    public function salvarFinalizacao(Processo $processo, array $data): Model
+    {
+        $homologacao = $this->resolverHomologacao($processo, $data);
+
+        if ($homologacao) {
+            return $this->salvarNaHomologacao($processo, $homologacao, $data);
+        }
+
+        return $this->salvarNaFinalizacao($processo, $data);
+    }
+
+    private function resolverHomologacao(Processo $processo, array $data): ?Homologacao
+    {
+        $homologacaoId = $data['homologacao_id'] ?? null;
+
+        if (!$homologacaoId) {
+            return null;
+        }
+
+        $homologacao = Homologacao::where('processo_id', $processo->id)
+            ->where('id', $homologacaoId)
+            ->first();
+
+        if (!$homologacao) {
+            throw new \DomainException('Homologação não pertence a este processo.');
+        }
+
+        return $homologacao;
+    }
+
+    private function salvarNaFinalizacao(Processo $processo, array $data): Finalizacao
     {
         $finalizacao = $processo->finalizacao ?? new Finalizacao();
         $finalizacao->processo_id = $processo->id;
@@ -41,11 +78,10 @@ class FinalizacaoService
         $this->processarArquivos($data, $finalizacao);
 
         foreach ($data as $field => $value) {
-            // Se o campo for uma data de documento (ex: data_doc_capa)
             if (strpos($field, 'data_doc_') === 0) {
                 $tipoDocumento = substr($field, 9);
                 Documento::updateOrCreate(
-                    ['processo_id' => $processo->id, 'tipo_documento' => $tipoDocumento],
+                    ['processo_id' => $processo->id, 'tipo_documento' => $tipoDocumento, 'homologacao_id' => null],
                     ['data_selecionada' => $value]
                 );
                 continue;
@@ -60,17 +96,48 @@ class FinalizacaoService
         return $finalizacao;
     }
 
-    private function processarArquivos(array $data, Finalizacao $finalizacao): void
+    private function salvarNaHomologacao(Processo $processo, Homologacao $homologacao, array $data): Homologacao
+    {
+        $this->processarArquivos($data, $homologacao);
+
+        foreach ($data as $field => $value) {
+            if (strpos($field, 'data_doc_') === 0) {
+                $tipoDocumento = substr($field, 9);
+                Documento::updateOrCreate(
+                    [
+                        'processo_id' => $processo->id,
+                        'homologacao_id' => $homologacao->id,
+                        'tipo_documento' => $tipoDocumento,
+                    ],
+                    ['data_selecionada' => $value]
+                );
+                continue;
+            }
+
+            if (!in_array($field, $this->excludedFields) && in_array($field, $homologacao->getFillable(), true)) {
+                $homologacao->{$field} = $value;
+            }
+        }
+
+        $homologacao->save();
+        return $homologacao;
+    }
+
+    private function processarArquivos(array $data, Model $alvo): void
     {
         foreach ($this->arquivosConfig as $campo => $metodo) {
             if (isset($data[$campo]) && $data[$campo] instanceof \Illuminate\Http\UploadedFile) {
-                $this->{$metodo}($data[$campo], $finalizacao, $campo);
+                $this->{$metodo}($data[$campo], $alvo, $campo);
             }
         }
     }
 
-    private function salvarAnexo($file, Finalizacao $finalizacao, string $campo): void
+    private function salvarAnexo($file, Model $alvo, string $campo): void
     {
+        if (!in_array($campo, $alvo->getFillable(), true)) {
+            return;
+        }
+
         $filename = $campo . '_' . time() . '.' . $file->getClientOriginalExtension();
         $destinationPath = public_path('uploads/anexos_finalizacao');
 
@@ -79,8 +146,8 @@ class FinalizacaoService
         }
 
         $file->move($destinationPath, $filename);
-        $finalizacao->{$campo} = 'uploads/anexos_finalizacao/' . $filename;
+        $alvo->{$campo} = 'uploads/anexos_finalizacao/' . $filename;
 
-        Log::info("Arquivo salvo - Finalização: {$finalizacao->{$campo}}");
+        Log::info("Arquivo salvo - Finalização: {$alvo->{$campo}}");
     }
 }

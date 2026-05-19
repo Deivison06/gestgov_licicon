@@ -71,6 +71,23 @@ class Processo extends Model
         return $this->hasOne(Finalizacao::class);
     }
 
+    public function homologacoes(): HasMany
+    {
+        return $this->hasMany(Homologacao::class)->orderBy('numero_sequencial');
+    }
+
+    public function lotesPendentesHomologacao()
+    {
+        return Lote::query()
+            ->whereIn('vencedor_id', $this->vencedores()->select('id'))
+            ->whereNull('homologacao_id');
+    }
+
+    public function temLotesPendentesHomologacao(): bool
+    {
+        return $this->lotesPendentesHomologacao()->exists();
+    }
+
     public function contrato()
     {
         return $this->hasOne(Contrato::class);

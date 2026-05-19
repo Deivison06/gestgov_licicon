@@ -6,28 +6,37 @@ use App\Models\Processo;
 use App\Models\Documento;
 use Barryvdh\DomPDF\Facade\Pdf;
 use setasign\Fpdi\Tcpdf\Fpdi;
+use App\Models\Homologacao;
 use App\Services\FinalizacaoDocumentoService;
+use App\Services\HomologacaoService;
 use Illuminate\Support\Facades\Log;
 
 class FinalizacaoPdfService
 {
     protected FinalizacaoDocumentoService $documentoService;
+    protected HomologacaoService $homologacaoService;
 
-    public function __construct(FinalizacaoDocumentoService $documentoService)
-    {
+    public function __construct(
+        FinalizacaoDocumentoService $documentoService,
+        HomologacaoService $homologacaoService
+    ) {
         $this->documentoService = $documentoService;
+        $this->homologacaoService = $homologacaoService;
     }
 
     public function gerarPdf(Processo $processo, array $requestData): array
     {
         set_time_limit(300);
-        
+
         Log::info('Iniciando geração de PDF - Finalização', [
             'processo_id' => $processo->id,
             'documento' => $requestData['documento'] ?? null,
+            'homologacao_id' => $requestData['homologacao_id'] ?? null,
         ]);
 
+        $homologacao = $this->resolverHomologacao($processo, $requestData);
         $validatedData = $this->validarRequisicaoPdf($requestData, $processo);
+        $validatedData['homologacao'] = $homologacao;
         $data = $this->prepararDadosPdf($processo, $validatedData);
         $view = $this->determinarViewPdf($processo, $validatedData['documento']);
 
@@ -36,7 +45,7 @@ class FinalizacaoPdfService
         $pdf = Pdf::loadView($view, $data)->setPaper('a4', 'portrait');
         $caminhoCompleto = $this->salvarDocumento($processo, $pdf, $validatedData);
 
-        $this->processarAnexos($processo, $validatedData['documento'], $caminhoCompleto);
+        $this->processarAnexos($processo, $validatedData['documento'], $caminhoCompleto, $homologacao);
 
         Log::info('PDF gerado com sucesso - Finalização', [
             'processo_id' => $processo->id,
@@ -51,11 +60,18 @@ class FinalizacaoPdfService
         ];
     }
 
-    public function baixarDocumento(Processo $processo, string $tipo)
+    public function baixarDocumento(Processo $processo, string $tipo, ?int $homologacaoId = null)
     {
-        $documento = Documento::where('processo_id', $processo->id)
-            ->where('tipo_documento', $tipo)
-            ->firstOrFail();
+        $query = Documento::where('processo_id', $processo->id)
+            ->where('tipo_documento', $tipo);
+
+        if ($homologacaoId !== null) {
+            $query->where('homologacao_id', $homologacaoId);
+        } else {
+            $query->whereNull('homologacao_id');
+        }
+
+        $documento = $query->firstOrFail();
 
         return response()->download(public_path($documento->caminho));
     }
@@ -107,6 +123,43 @@ class FinalizacaoPdfService
         }
     }
 
+    private function resolverHomologacao(Processo $processo, array $requestData): ?Homologacao
+    {
+        $documento = $requestData['documento'] ?? null;
+        $homologacaoId = $requestData['homologacao_id'] ?? null;
+
+        if (!$documento || !$this->homologacaoService->ehTipoPorHomologacao($documento)) {
+            return null;
+        }
+
+        if (!$homologacaoId) {
+            // Quando ainda não existe nenhuma homologação, criamos a primeira
+            // automaticamente para que os documentos do bloco placeholder
+            // possam ser gerados diretamente.
+            if (!$this->homologacaoService->temHomologacao($processo)) {
+                $homologacao = $this->homologacaoService->criarNovaHomologacao($processo);
+                Log::info('Primeira homologação criada automaticamente ao gerar PDF', [
+                    'processo_id' => $processo->id,
+                    'homologacao_id' => $homologacao->id,
+                    'documento' => $documento,
+                ]);
+                return $homologacao;
+            }
+
+            throw new \DomainException('homologacao_id é obrigatório para gerar este tipo de documento.');
+        }
+
+        $homologacao = Homologacao::where('processo_id', $processo->id)
+            ->where('id', $homologacaoId)
+            ->first();
+
+        if (!$homologacao) {
+            throw new \DomainException('Homologação não pertence a este processo.');
+        }
+
+        return $homologacao;
+    }
+
     private function validarRequisicaoPdf(array $requestData, Processo $processo): array
     {
         $documento = $requestData['documento'] ?? 'atos_sessao';
@@ -147,12 +200,26 @@ class FinalizacaoPdfService
         $processo->load(['finalizacao', 'prefeitura', 'vencedores.lotes']);
 
         $hasSelectedAssinantes = !empty($validatedData['assinantes']);
+        $homologacao = $validatedData['homologacao'] ?? null;
+
+        // Para tipos por-homologação, exibir apenas os lotes daquela homologação;
+        // os dados de cabeçalho (orgão/empresa) também vêm da homologação.
+        $vencedores = $processo->vencedores;
+        if ($homologacao) {
+            $homologacao->loadMissing('lotes');
+            $loteIds = $homologacao->lotes->pluck('id');
+            $vencedores = $processo->vencedores->map(function ($vencedor) use ($loteIds) {
+                $vencedor->setRelation('lotes', $vencedor->lotes->whereIn('id', $loteIds)->values());
+                return $vencedor;
+            })->filter(fn($v) => $v->lotes->isNotEmpty())->values();
+        }
 
         return [
             'processo' => $processo,
             'prefeitura' => $processo->prefeitura,
-            'finalizacao' => $processo->finalizacao,
-            'vencedores' => $processo->vencedores,
+            'finalizacao' => $homologacao ?: $processo->finalizacao,
+            'homologacao' => $homologacao,
+            'vencedores' => $vencedores,
             'dataGeracao' => now()->format('d/m/Y H:i:s'),
             'dataSelecionada' => $validatedData['dataSelecionada'],
             'assinantes' => $validatedData['assinantes'],
@@ -187,42 +254,68 @@ class FinalizacaoPdfService
     private function salvarDocumento(Processo $processo, $pdf, array $validatedData): string
     {
         $numeroProcessoLimpo = str_replace(['/', '\\'], '_', $processo->numero_processo);
-        $subpasta = $this->gerarSubpasta($processo, $validatedData['documento']);
+        $homologacao = $validatedData['homologacao'] ?? null;
+        $subpasta = $this->gerarSubpasta($processo, $validatedData['documento'], $homologacao);
 
         $diretorio = public_path("uploads/documentos_finalizacao/{$subpasta}");
         if (!file_exists($diretorio)) {
             mkdir($diretorio, 0777, true);
         }
 
-        $nomeArquivo = "processo_finalizacao_{$numeroProcessoLimpo}_{$validatedData['documento']}_" . now()->format('Ymd_His') . '.pdf';
+        $sufixoHomologacao = $homologacao ? "_homol{$homologacao->numero_sequencial}" : '';
+        $nomeArquivo = "processo_finalizacao_{$numeroProcessoLimpo}_{$validatedData['documento']}{$sufixoHomologacao}_" . now()->format('Ymd_His') . '.pdf';
         $caminhoRelativo = "uploads/documentos_finalizacao/{$subpasta}/{$nomeArquivo}";
         $caminhoCompleto = "{$diretorio}/{$nomeArquivo}";
 
         $pdf->save($caminhoCompleto);
-        $this->atualizarRegistroDocumento($processo, $validatedData['documento'], $validatedData['dataSelecionada'], $caminhoRelativo);
+        $this->atualizarRegistroDocumento(
+            $processo,
+            $validatedData['documento'],
+            $validatedData['dataSelecionada'],
+            $caminhoRelativo,
+            $homologacao
+        );
 
         return $caminhoCompleto;
     }
 
-    private function gerarSubpasta(Processo $processo, string $documento): string
+    private function gerarSubpasta(Processo $processo, string $documento, ?Homologacao $homologacao = null): string
     {
+        $base = 'finalizacao';
+
         if ($processo->modalidade === \App\Enums\ModalidadeEnum::DISPENSA) {
             $tipoProcedimento = $processo->tipo_procedimento ?? null;
             if ($tipoProcedimento == \App\Enums\TipoProcedimentoEnum::OBRA->value) {
-                return "finalizacao/dispensa_obra/{$documento}";
+                $base = 'finalizacao/dispensa_obra';
             } else {
-                return "finalizacao/dispensa_compras_servicos/{$documento}";
+                $base = 'finalizacao/dispensa_compras_servicos';
             }
         }
 
-        return "finalizacao/{$documento}";
+        if ($homologacao) {
+            return "{$base}/homologacao_{$homologacao->numero_sequencial}/{$documento}";
+        }
+
+        return "{$base}/{$documento}";
     }
 
-    private function atualizarRegistroDocumento(Processo $processo, string $documento, string $dataSelecionada, string $caminhoRelativo): void
-    {
-        $documentoExistente = Documento::where('processo_id', $processo->id)
-            ->where('tipo_documento', $documento)
-            ->first();
+    private function atualizarRegistroDocumento(
+        Processo $processo,
+        string $documento,
+        string $dataSelecionada,
+        string $caminhoRelativo,
+        ?Homologacao $homologacao = null
+    ): void {
+        $query = Documento::where('processo_id', $processo->id)
+            ->where('tipo_documento', $documento);
+
+        if ($homologacao) {
+            $query->where('homologacao_id', $homologacao->id);
+        } else {
+            $query->whereNull('homologacao_id');
+        }
+
+        $documentoExistente = $query->first();
 
         if ($documentoExistente) {
             $caminhoAntigo = public_path($documentoExistente->caminho);
@@ -238,6 +331,7 @@ class FinalizacaoPdfService
         } else {
             Documento::create([
                 'processo_id' => $processo->id,
+                'homologacao_id' => $homologacao?->id,
                 'tipo_documento' => $documento,
                 'data_selecionada' => $dataSelecionada,
                 'caminho' => $caminhoRelativo,
@@ -246,14 +340,14 @@ class FinalizacaoPdfService
         }
     }
 
-    private function processarAnexos(Processo $processo, string $documento, string $caminhoPrincipal): void
+    private function processarAnexos(Processo $processo, string $documento, string $caminhoPrincipal, ?Homologacao $homologacao = null): void
     {
         Log::info("🔍 INICIANDO PROCESSAMENTO DE ANEXOS - Finalização: {$documento}", [
             'caminho_principal' => $caminhoPrincipal,
             'tamanho_inicial' => file_exists($caminhoPrincipal) ? filesize($caminhoPrincipal) : 0
         ]);
 
-        $anexos = $this->obterAnexos($processo, $documento);
+        $anexos = $this->obterAnexos($processo, $documento, $homologacao);
 
         if (!empty($anexos)) {
             Log::info("📎 Anexos encontrados para documento: {$documento}", [
@@ -376,7 +470,7 @@ class FinalizacaoPdfService
         }
     }
 
-    private function obterAnexos(Processo $processo, string $documento): array
+    private function obterAnexos(Processo $processo, string $documento, ?Homologacao $homologacao = null): array
     {
         $anexos = [];
         $mapeamentoAnexos = $this->documentoService->getMapeamentoAnexos();
@@ -387,8 +481,13 @@ class FinalizacaoPdfService
             return $anexos;
         }
 
-        if (!empty($processo->finalizacao->$campoAnexo)) {
-            $caminhoRelativo = $processo->finalizacao->$campoAnexo;
+        // Para tipos por-homologação cujo anexo é da Homologação, lê de lá; caso contrário, da Finalizacao.
+        $fonteAnexo = $homologacao && isset($homologacao->{$campoAnexo})
+            ? $homologacao
+            : $processo->finalizacao;
+
+        if (!empty($fonteAnexo?->$campoAnexo)) {
+            $caminhoRelativo = $fonteAnexo->$campoAnexo;
             $caminho = public_path($caminhoRelativo);
 
             if (file_exists($caminho)) {

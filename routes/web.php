@@ -300,6 +300,10 @@ Route::prefix('admin')
             Route::get('/reservas', [ReservaController::class, 'getReservas'])
                 ->name('reservas.get');
 
+            // Homologação parcial — criar nova homologação para os lotes pendentes
+            Route::post('/homologacoes', [FinalizacaoProcessoController::class, 'gerarNovaHomologacao'])
+                ->name('homologacoes.store');
+
             // Gerar PDF da finalização
             Route::get('/pdf', [FinalizacaoProcessoController::class, 'gerarPdf'])
                 ->name('pdf');

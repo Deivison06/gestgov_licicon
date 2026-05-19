@@ -133,6 +133,34 @@ class FinalizacaoDocumentoService
         return array_keys($documentosOrganizados);
     }
 
+    /**
+     * Filtra os documentos retornados por getDocumentosOrganizados em dois grupos:
+     *  - 'processo': documentos únicos do processo (atos_sessao, proposta etc.).
+     *  - 'homologacao': documentos gerados por homologação (recursos, adjudicação, parecer,
+     *    homologação, ata RP, publicações).
+     */
+    public function separarDocumentosPorEscopo(Processo $processo): array
+    {
+        $documentos = $this->getDocumentosOrganizados($processo);
+        $tiposPorHomologacao = HomologacaoService::TIPOS_POR_HOMOLOGACAO;
+
+        $processoDocs = [];
+        $homologacaoDocs = [];
+
+        foreach ($documentos as $tipo => $config) {
+            if (in_array($tipo, $tiposPorHomologacao, true)) {
+                $homologacaoDocs[$tipo] = $config;
+            } else {
+                $processoDocs[$tipo] = $config;
+            }
+        }
+
+        return [
+            'processo' => $processoDocs,
+            'homologacao' => $homologacaoDocs,
+        ];
+    }
+
     public function getMapeamentoAnexos(): array
     {
         return $this->mapeamentoAnexos;

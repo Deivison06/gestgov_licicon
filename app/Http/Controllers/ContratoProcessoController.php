@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Contrato;
+use App\Models\Homologacao;
 use App\Models\Processo;
 use App\Models\Documento;
 use Illuminate\Http\Request;
@@ -27,20 +28,80 @@ class ContratoProcessoController extends Controller
 
     public function contrato(Processo $processo)
     {
-        $processo->load(['prefeitura.unidades', 'detalhe', 'vencedores.lotes.contratados']);
+        $processo->load([
+            'prefeitura.unidades',
+            'detalhe',
+            'vencedores.lotes.contratados',
+            'homologacoes.lotes.contratados',
+            'homologacoes.contrato',
+            'finalizacao',
+        ]);
 
-        // Carregar dados do contrato se existirem
-        $contrato = Contrato::where('processo_id', $processo->id)->first();
+        // Homologações já concluídas — únicas que liberam o painel de contrato.
+        $homologacoesHomologadas = $processo->homologacoes
+            ->where('status', Homologacao::STATUS_HOMOLOGADA)
+            ->values();
 
-        // Carregar contratações
+        // Contrato legado: registro sem vínculo a homologação (processos antigos).
+        $contratoLegado = Contrato::where('processo_id', $processo->id)
+            ->whereNull('homologacao_id')
+            ->first();
+
+        // Contratações agrupadas por vencedor — modo legado / topo da tela.
         $contratacoes = LoteContratado::where('processo_id', $processo->id)
             ->with(['lote', 'vencedor'])
             ->get()
             ->groupBy('vencedor_id');
 
+        // Para cada homologação concluída, prepara a lista de contratações
+        // restringida aos lotes daquela homologação.
+        $contratacoesPorHomologacao = [];
+        foreach ($homologacoesHomologadas as $homol) {
+            $loteIds = $homol->lotes->pluck('id');
+            $contratacoesPorHomologacao[$homol->id] = LoteContratado::where('processo_id', $processo->id)
+                ->whereIn('lote_id', $loteIds)
+                ->with(['lote', 'vencedor'])
+                ->get()
+                ->groupBy('vencedor_id');
+        }
+
         $documentos = $this->documentoConfig;
 
-        return view('Admin.Processos.contrato', compact('processo', 'documentos', 'contrato', 'contratacoes'));
+        return view('Admin.Processos.contrato', compact(
+            'processo',
+            'documentos',
+            'contratoLegado',
+            'contratacoes',
+            'homologacoesHomologadas',
+            'contratacoesPorHomologacao'
+        ));
+    }
+
+    /**
+     * Resolve a homologação alvo a partir da request (query string
+     * `?homologacao_id=N`). Valida que pertence ao processo informado.
+     */
+    private function resolverHomologacao(Processo $processo, Request $request): ?Homologacao
+    {
+        $homologacaoId = $request->input('homologacao_id') ?: $request->query('homologacao_id');
+
+        if (!$homologacaoId) {
+            return null;
+        }
+
+        $homologacao = Homologacao::where('processo_id', $processo->id)
+            ->where('id', $homologacaoId)
+            ->first();
+
+        if (!$homologacao) {
+            throw new \DomainException('Homologação não pertence a este processo.');
+        }
+
+        if ($homologacao->status !== Homologacao::STATUS_HOMOLOGADA) {
+            throw new \DomainException('Só é possível gerar contrato de uma homologação já HOMOLOGADA.');
+        }
+
+        return $homologacao;
     }
 
     /**
@@ -56,12 +117,14 @@ class ContratoProcessoController extends Controller
 
             $campo = $request->input('campo');
             $valor = $request->input('valor');
+            $homologacao = $this->resolverHomologacao($processo, $request);
+            $homologacaoId = $homologacao?->id;
 
             // Verificar se o campo é válido
             $camposPermitidos = [
                 'numero_contrato',
                 'data_assinatura_contrato',
-                'numero_extrato', 
+                'numero_extrato',
                 'comarca',
                 'fonte_recurso',
                 'subcontratacao'
@@ -70,7 +133,11 @@ class ContratoProcessoController extends Controller
             if (strpos($campo, 'data_doc_') === 0) {
                 $tipoDocumento = substr($campo, 9);
                 Documento::updateOrCreate(
-                    ['processo_id' => $processo->id, 'tipo_documento' => $tipoDocumento],
+                    [
+                        'processo_id' => $processo->id,
+                        'tipo_documento' => $tipoDocumento,
+                        'homologacao_id' => $homologacaoId,
+                    ],
                     ['data_selecionada' => $valor]
                 );
 
@@ -88,12 +155,15 @@ class ContratoProcessoController extends Controller
                 ], 400);
             }
 
-            // Verificar se já existe um contrato para este processo
-            $contrato = Contrato::where('processo_id', $processo->id)->first();
+            // Verificar se já existe um contrato para este processo+homologação
+            $contrato = Contrato::where('processo_id', $processo->id)
+                ->where('homologacao_id', $homologacaoId)
+                ->first();
 
             if (!$contrato) {
                 $contrato = Contrato::create([
-                    'processo_id' => $processo->id
+                    'processo_id' => $processo->id,
+                    'homologacao_id' => $homologacaoId,
                 ]);
             }
 
@@ -134,10 +204,15 @@ class ContratoProcessoController extends Controller
     /**
      * Obter dados salvos do contrato
      */
-    public function obterDadosContrato(Processo $processo)
+    public function obterDadosContrato(Request $request, Processo $processo)
     {
         try {
-            $contrato = Contrato::where('processo_id', $processo->id)->first();
+            $homologacao = $this->resolverHomologacao($processo, $request);
+            $homologacaoId = $homologacao?->id;
+
+            $contrato = Contrato::where('processo_id', $processo->id)
+                ->where('homologacao_id', $homologacaoId)
+                ->first();
 
             if (!$contrato) {
                 return response()->json([
@@ -182,11 +257,13 @@ class ContratoProcessoController extends Controller
                 'request_data' => $request->all()
             ]);
 
-            $validatedData = $this->validarRequisicaoPdf($request, $processo);
+            $homologacao = $this->resolverHomologacao($processo, $request);
+            $validatedData = $this->validarRequisicaoPdf($request, $processo, $homologacao);
+            $validatedData['homologacao'] = $homologacao;
             $data = $this->prepararDadosPdf($processo, $validatedData);
 
             // SALVAR OS CAMPOS DO CONTRATO NO BANCO DE DADOS
-            $this->salvarCamposContrato($processo->id, $validatedData['campos']);
+            $this->salvarCamposContrato($processo->id, $validatedData['campos'], $homologacao?->id);
 
             $view = $this->determinarViewContrato($processo);
 
@@ -198,6 +275,7 @@ class ContratoProcessoController extends Controller
 
             Log::info('Contrato gerado com sucesso', [
                 'processo_id' => $processo->id,
+                'homologacao_id' => $homologacao?->id,
                 'caminho' => $caminhoCompleto
             ]);
 
@@ -207,6 +285,15 @@ class ContratoProcessoController extends Controller
                 'documento' => 'contrato'
             ]);
 
+        } catch (\DomainException $e) {
+            Log::warning('Geração de contrato bloqueada', [
+                'processo_id' => $processo->id,
+                'motivo' => $e->getMessage(),
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 422);
         } catch (\Throwable $e) {
             Log::error('Erro ao gerar contrato', [
                 'processo_id' => $processo->id,
@@ -224,17 +311,19 @@ class ContratoProcessoController extends Controller
     }
 
     /**
-     * Salva ou atualiza os campos do contrato no banco de dados
+     * Salva ou atualiza os campos do contrato no banco de dados.
+     * Quando $homologacaoId é informado, o upsert é feito por (processo, homologação).
      */
-    private function salvarCamposContrato($processoId, array $campos): void
+    private function salvarCamposContrato($processoId, array $campos, ?int $homologacaoId = null): void
     {
         try {
-            // Verificar se já existe um registro para este processo
-            $contrato = Contrato::where('processo_id', $processoId)->first();
+            $contrato = Contrato::where('processo_id', $processoId)
+                ->where('homologacao_id', $homologacaoId)
+                ->first();
 
-            // Preparar dados para salvar
             $dadosContrato = [
                 'processo_id' => $processoId,
+                'homologacao_id' => $homologacaoId,
                 'numero_contrato' => $campos['numero_contrato'] ?? null,
                 'data_assinatura_contrato' => !empty($campos['data_assinatura_contrato'])
                     ? \Carbon\Carbon::parse($campos['data_assinatura_contrato'])->format('Y-m-d')
@@ -246,17 +335,17 @@ class ContratoProcessoController extends Controller
             ];
 
             if ($contrato) {
-                // Atualizar registro existente
                 $contrato->update($dadosContrato);
                 Log::info('Contrato atualizado com sucesso', [
                     'processo_id' => $processoId,
+                    'homologacao_id' => $homologacaoId,
                     'campos' => $dadosContrato
                 ]);
             } else {
-                // Criar novo registro
                 Contrato::create($dadosContrato);
                 Log::info('Contrato criado com sucesso', [
                     'processo_id' => $processoId,
+                    'homologacao_id' => $homologacaoId,
                     'campos' => $dadosContrato
                 ]);
             }
@@ -264,6 +353,7 @@ class ContratoProcessoController extends Controller
         } catch (\Exception $e) {
             Log::error('Erro ao salvar campos do contrato', [
                 'processo_id' => $processoId,
+                'homologacao_id' => $homologacaoId,
                 'erro' => $e->getMessage(),
                 'campos' => $campos
             ]);
@@ -274,12 +364,21 @@ class ContratoProcessoController extends Controller
     /**
      * Download do contrato COM CARIMBO
      */
-    public function baixarContrato(Processo $processo)
+    public function baixarContrato(Request $request, Processo $processo)
     {
         try {
-            $documento = Documento::where('processo_id', $processo->id)
-                ->where('tipo_documento', 'contrato')
-                ->firstOrFail();
+            $homologacao = $this->resolverHomologacao($processo, $request);
+
+            $query = Documento::where('processo_id', $processo->id)
+                ->where('tipo_documento', 'contrato');
+
+            if ($homologacao) {
+                $query->where('homologacao_id', $homologacao->id);
+            } else {
+                $query->whereNull('homologacao_id');
+            }
+
+            $documento = $query->firstOrFail();
 
             $caminhoOriginal = public_path($documento->caminho);
 
@@ -414,7 +513,7 @@ class ContratoProcessoController extends Controller
     // MÉTODOS PRIVADOS - GERAÇÃO DE PDF
     // =========================================================
 
-    private function validarRequisicaoPdf(Request $request, Processo $processo): array
+    private function validarRequisicaoPdf(Request $request, Processo $processo, ?Homologacao $homologacao = null): array
     {
         // Data não é mais obrigatória - usa data atual se não for fornecida
         $dataSelecionada = $request->query('data', now()->format('Y-m-d'));
@@ -422,8 +521,8 @@ class ContratoProcessoController extends Controller
         // Assinantes não são mais obrigatórios - processa se existirem
         $assinantes = $this->processarAssinantes($request);
 
-        // Campos do contrato
-        $campos = $this->processarCamposContrato($request);
+        // Campos do contrato (busca persistido por processo+homologação se não vier na request)
+        $campos = $this->processarCamposContrato($request, $processo, $homologacao);
 
         return [
             'documento' => 'contrato',
@@ -433,14 +532,16 @@ class ContratoProcessoController extends Controller
         ];
     }
 
-    private function processarCamposContrato(Request $request): array
+    private function processarCamposContrato(Request $request, ?Processo $processo = null, ?Homologacao $homologacao = null): array
     {
         $camposJson = $request->query('campos');
 
         if (!$camposJson) {
-            // Se não vier campos na requisição, buscar do banco de dados
-            $contrato = Contrato::where('processo_id', $request->route('processo')->id)->first();
-            
+            $processoId = $processo?->id ?? $request->route('processo')?->id;
+            $contrato = Contrato::where('processo_id', $processoId)
+                ->where('homologacao_id', $homologacao?->id)
+                ->first();
+
             if ($contrato) {
                 return [
                     'numero_contrato' => $contrato->numero_contrato,
@@ -451,7 +552,7 @@ class ContratoProcessoController extends Controller
                     'subcontratacao' => $contrato->subcontratacao,
                 ];
             }
-            
+
             return [];
         }
 
@@ -489,24 +590,35 @@ class ContratoProcessoController extends Controller
     {
         $processo->load(['prefeitura', 'vencedores.lotes.contratados', 'finalizacao']);
 
-        // Carregar todas as contratações
-        $contratacoes = LoteContratado::where('processo_id', $processo->id)
+        $homologacao = $validatedData['homologacao'] ?? null;
+
+        // Carregar contratações — quando há homologação, restringe aos seus lotes.
+        $contratacoesQuery = LoteContratado::where('processo_id', $processo->id)
             ->with(['lote', 'vencedor'])
-            ->whereIn('status', ['PENDENTE', 'CONTRATADO'])
-            ->get();
-        
+            ->whereIn('status', ['PENDENTE', 'CONTRATADO']);
+
+        if ($homologacao) {
+            $homologacao->loadMissing('lotes');
+            $contratacoesQuery->whereIn('lote_id', $homologacao->lotes->pluck('id'));
+        }
+
+        $contratacoes = $contratacoesQuery->get();
+
+        // Quando temos homologação, os dados de cabeçalho vêm dela (já herdaram da finalização).
+        $fonteCabecalho = $homologacao ?: $processo->finalizacao;
+
         // ==============================================
         // DADOS DO CONTRATANTE (PREFEITURA)
         // ==============================================
         $dadosContratante = [
-            'orgao' => $processo->finalizacao->orgao_responsavel ?? $processo->prefeitura->cidade,
+            'orgao' => $fonteCabecalho->orgao_responsavel ?? $processo->prefeitura->cidade,
             'cidade' => $processo->prefeitura->cidade,
             'uf' => $processo->prefeitura->uf,
             'endereco' => $processo->prefeitura->endereco,
-            'cnpj' => $processo->finalizacao->cnpj ?? $processo->prefeitura->cnpj,
-            'responsavel' => $processo->finalizacao->responsavel ?? $processo->prefeitura->autoridade_competente,
-            'cargo_responsavel' => $processo->finalizacao->cargo_responsavel ?? 'Prefeito Municipal',
-            'cpf_responsavel' => $processo->finalizacao->cpf_responsavel ?? null,
+            'cnpj' => $fonteCabecalho->cnpj ?? $processo->prefeitura->cnpj,
+            'responsavel' => $fonteCabecalho->responsavel ?? $processo->prefeitura->autoridade_competente,
+            'cargo_responsavel' => $fonteCabecalho->cargo_responsavel ?? 'Prefeito Municipal',
+            'cpf_responsavel' => $fonteCabecalho->cpf_responsavel ?? null,
         ];
         
         // Formatando CNPJ e CPF
@@ -518,19 +630,21 @@ class ContratoProcessoController extends Controller
         // ==============================================
         // DADOS DO CONTRATADO (EMPRESA VENCEDORA)
         // ==============================================
-        $dadosContratado = $this->prepararDadosContratado($processo, $contratacoes);
+        $dadosContratado = $this->prepararDadosContratado($processo, $contratacoes, $homologacao);
 
         // ==============================================
         // DADOS DA TABELA DE ITENS
         // ==============================================
         $itensTabela = $this->prepararItensParaTabela($processo, $contratacoes);
-        
+
         // Calcular totais
         $valorTotalContrato = $contratacoes->sum('valor_total');
         $quantidadeTotalContrato = $contratacoes->sum('quantidade_contratada');
 
-        // Carregar dados salvos do contrato
-        $contratoSalvo = Contrato::where('processo_id', $processo->id)->first();
+        // Carregar dados salvos do contrato (mesmo escopo do upsert)
+        $contratoSalvo = Contrato::where('processo_id', $processo->id)
+            ->where('homologacao_id', $homologacao?->id)
+            ->first();
 
         return [
             'processo' => $processo,
@@ -582,8 +696,27 @@ class ContratoProcessoController extends Controller
     // ==============================================
     // MÉTODO PARA PREPARAR DADOS DO CONTRATADO
     // ==============================================
-    private function prepararDadosContratado(Processo $processo, $contratacoes): array
+    private function prepararDadosContratado(Processo $processo, $contratacoes, ?Homologacao $homologacao = null): array
     {
+        // Para contratos por homologação, os dados da empresa vencedora vêm da própria
+        // Homologacao (que já herdou da Finalizacao quando foi criada).
+        if ($homologacao && $homologacao->cnpj_empresa_vencedora) {
+            return [
+                'razao_social' => $homologacao->razao_social ?? 'XXXXXXXXXXXXX',
+                'cnpj' => $homologacao->cnpj_empresa_vencedora,
+                'cnpj_formatado' => $this->formatarCNPJ($homologacao->cnpj_empresa_vencedora),
+                'endereco' => $homologacao->endereco_empresa_vencedora
+                    ?? $homologacao->endereco
+                    ?? 'Endereço não informado',
+                'representante' => $homologacao->representante_legal_empresa ?? 'Representante não informado',
+                'cpf_representante' => $homologacao->cpf_representante ?? null,
+                'cpf_representante_formatado' => $homologacao->cpf_representante
+                    ? $this->formatarCPF($homologacao->cpf_representante)
+                    : null,
+                'fonte_dados' => 'homologacao',
+            ];
+        }
+
         // Se houver dados na finalização, usa eles
         if ($processo->finalizacao && $processo->finalizacao->cnpj_empresa_vencedora) {
             return [
@@ -593,7 +726,7 @@ class ContratoProcessoController extends Controller
                 'endereco' => $processo->finalizacao->endereco ?? 'Endereço não informado',
                 'representante' => $processo->finalizacao->representante_legal_empresa ?? 'Representante não informado',
                 'cpf_representante' => $processo->finalizacao->cpf_representante ?? null,
-                'cpf_representante_formatado' => $processo->finalizacao->cpf_representante 
+                'cpf_representante_formatado' => $processo->finalizacao->cpf_representante
                     ? $this->formatarCPF($processo->finalizacao->cpf_representante)
                     : null,
                 'fonte_dados' => 'finalizacao',
@@ -748,34 +881,56 @@ class ContratoProcessoController extends Controller
 
     private function salvarDocumento(Processo $processo, $pdf, array $validatedData): string
     {
+        $homologacao = $validatedData['homologacao'] ?? null;
         $numeroProcessoLimpo = str_replace(['/', '\\'], '_', $processo->numero_processo);
-        $subpasta = $this->gerarSubpasta($processo);
+        $subpasta = $this->gerarSubpasta($processo, $homologacao);
 
         $diretorio = public_path("uploads/contratos/{$subpasta}");
         if (!file_exists($diretorio)) {
             mkdir($diretorio, 0777, true);
         }
 
-        $nomeArquivo = "contrato_{$numeroProcessoLimpo}_" . now()->format('Ymd_His') . '.pdf';
+        $sufixoHomologacao = $homologacao ? "_h{$homologacao->numero_sequencial}" : '';
+        $nomeArquivo = "contrato_{$numeroProcessoLimpo}{$sufixoHomologacao}_" . now()->format('Ymd_His') . '.pdf';
         $caminhoRelativo = "uploads/contratos/{$subpasta}/{$nomeArquivo}";
         $caminhoCompleto = "{$diretorio}/{$nomeArquivo}";
 
         $pdf->save($caminhoCompleto);
-        $this->atualizarRegistroDocumento($processo, $validatedData['dataSelecionada'], $caminhoRelativo);
+        $this->atualizarRegistroDocumento(
+            $processo,
+            $validatedData['dataSelecionada'],
+            $caminhoRelativo,
+            $homologacao?->id
+        );
 
         return $caminhoCompleto;
     }
 
-    private function gerarSubpasta(Processo $processo): string
+    private function gerarSubpasta(Processo $processo, ?Homologacao $homologacao = null): string
     {
+        if ($homologacao) {
+            return "contratos/{$processo->id}/homologacao_{$homologacao->numero_sequencial}";
+        }
+
         return "contratos/{$processo->id}";
     }
 
-    private function atualizarRegistroDocumento(Processo $processo, string $dataSelecionada, string $caminhoRelativo): void
-    {
-        $documentoExistente = Documento::where('processo_id', $processo->id)
-            ->where('tipo_documento', 'contrato')
-            ->first();
+    private function atualizarRegistroDocumento(
+        Processo $processo,
+        string $dataSelecionada,
+        string $caminhoRelativo,
+        ?int $homologacaoId = null
+    ): void {
+        $query = Documento::where('processo_id', $processo->id)
+            ->where('tipo_documento', 'contrato');
+
+        if ($homologacaoId !== null) {
+            $query->where('homologacao_id', $homologacaoId);
+        } else {
+            $query->whereNull('homologacao_id');
+        }
+
+        $documentoExistente = $query->first();
 
         if ($documentoExistente) {
             $caminhoAntigo = public_path($documentoExistente->caminho);
@@ -791,6 +946,7 @@ class ContratoProcessoController extends Controller
         } else {
             Documento::create([
                 'processo_id' => $processo->id,
+                'homologacao_id' => $homologacaoId,
                 'tipo_documento' => 'contrato',
                 'data_selecionada' => $dataSelecionada,
                 'caminho' => $caminhoRelativo,

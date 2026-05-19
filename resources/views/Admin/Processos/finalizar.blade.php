@@ -109,258 +109,280 @@
             </div>
         </div>
 
-        <!-- Tabela de Documentos -->
-        <div class="overflow-x-auto rounded-lg shadow-sm">
-            <!-- Área de Mensagens -->
-            <div id="message-container" class="p-4"></div>
+        <!-- Área de Mensagens -->
+        <div id="message-container" class="p-4"></div>
 
-            <table class="min-w-full bg-white divide-y divide-gray-200">
-                <thead class="bg-gray-100">
-                    <tr>
-                        <th class="px-6 py-4 text-xs font-semibold tracking-wider text-left text-gray-700 uppercase">
-                            Documentos
-                        </th>
-                        <th class="w-40 px-6 py-4 text-xs font-semibold tracking-wider text-center text-gray-700 uppercase">
-                            Data
-                        </th>
-                        <th class="w-48 px-6 py-4 text-xs font-semibold tracking-wider text-center text-gray-700 uppercase">
-                            Ações
-                        </th>
-                    </tr>
-                </thead>
-                @php
-                    $allDocDates = $processo->documentos->pluck('data_selecionada', 'tipo_documento')
-                        ->mapWithKeys(fn($d, $t) => ["data_doc_$t" => $d])->toArray();
-                    $initialData = array_merge($processo->finalizacao?->toArray() ?? [], $allDocDates);
-                @endphp
-                <tbody class="bg-white divide-y divide-gray-200" x-data="formField({{ json_encode($initialData) }})">
-                    @foreach ($documentos as $tipo => $doc)
-                    @continue(
-                    $processo->modalidade === \App\Enums\ModalidadeEnum::CONCORRENCIA
-                    && ($tipo === 'termo_referencia' || $tipo === 'analise_mercado')
-                    )
-                    @continue(
-                    $processo->modalidade === \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO
-                    && ($tipo === 'projeto_basico')
-                    )
+        @php
+            $documentosProcessoCount = is_countable($documentosProcesso ?? null) ? count($documentosProcesso) : 0;
+            $homologacoesList = $processo->homologacoes ?? collect();
+            $documentosLegadosList = $documentosLegados ?? collect();
+        @endphp
 
-                    @php
-                    $documentoGerado = $processo->documentos
-                    ->where('tipo_documento', $tipo)
-                    ->first();
-                    $accordionId = "accordion-collapse-{$tipo}";
-                    $requerAssinatura = $doc['requer_assinatura'] ?? false;
-                    $temCampos = !empty($doc['campos']);
-                    @endphp
+        {{-- ====== BLOCO 1: Documentos do Processo (atos da sessão, propostas, habilitação) ====== --}}
+        @if ($documentosProcessoCount > 0)
+            <div class="mb-8 overflow-hidden bg-white border border-gray-200 shadow-sm rounded-2xl">
+                <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
+                    <h3 class="text-lg font-semibold text-gray-800">Documentos do Processo</h3>
+                    <p class="mt-1 text-xs text-gray-500">Documentos únicos do processo (sessão pública, propostas, habilitação).</p>
+                </div>
+                <div class="overflow-x-auto">
+                    @include('Admin.Processos.partials.bloco-documentos', [
+                        'processo' => $processo,
+                        'documentos' => $documentosProcesso,
+                        'documentosGerados' => $processo->documentos->whereNull('homologacao_id'),
+                        'homologacao' => null,
+                    ])
+                </div>
+            </div>
+        @endif
 
-                    {{-- Linha principal do documento --}}
-                    <tr class="transition-colors duration-150 hover:bg-gray-50">
-                        <td class="px-6 py-4">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0 w-2 h-2 mr-3 {{ $doc['cor'] }} rounded-full">
-                                </div>
-                                <div class="text-sm font-semibold text-gray-900">
-                                    {{ $doc['titulo'] }}
-                                    @if ($documentoGerado)
-                                    <span class="ml-2 text-xs font-normal text-green-600">
-                                        ✓ Gerado em
-                                        {{ \Carbon\Carbon::parse($documentoGerado->gerado_em)->format('d/m/Y H:i') }}
-                                    </span>
-                                    @endif
-                                </div>
-                            </div>
-                            {{-- Botão para expandir/colapsar o acordeão --}}
-                            @if ($temCampos || $requerAssinatura)
-                            <button type="button" class="mt-2 text-xs font-medium text-red-600 hover:text-red-800" data-collapse-toggle="{{ $accordionId }}" aria-expanded="false" aria-controls="{{ $accordionId }}">
-                                <span class="collapse-text">
-                                    @if($requerAssinatura && $temCampos)
-                                    Definir Assinantes e Campos
-                                    @elseif($requerAssinatura)
-                                    Definir Assinantes
-                                    @else
-                                    Definir Campos
-                                    @endif
-                                </span>
-                            </button>
-                            @endif
-                        </td>
-                        <td class="flex gap-2 px-6 py-4 text-center">
-                            @if ($requerAssinatura)
-                             <input type="date"
-                                    class="w-40 px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                                    id="data_{{ $tipo }}"
-                                    x-model="data_doc_{{ $tipo }}"
-                                    @blur="saveField('data_doc_{{ $tipo }}')"
-                                    value="{{ $documentoGerado->data_selecionada ?? '' }}">
+        {{-- ====== BLOCO 2a: Placeholder da primeira homologação (quando ainda não existe nenhuma) ====== --}}
+        @if ($homologacoesList->isEmpty() && $temVencedores && !empty($documentosHomologacao))
+            <div class="mb-8 overflow-hidden bg-white border border-emerald-200 shadow-sm rounded-2xl">
+                <div class="px-6 py-4 border-b border-emerald-200 bg-gradient-to-r from-emerald-50 to-teal-50">
+                    <div class="flex flex-col items-start justify-between gap-2 lg:flex-row lg:items-center">
+                        <div>
+                            <h3 class="text-lg font-semibold text-emerald-900">
+                                Documentos da Primeira Homologação
+                                <span class="ml-2 px-2 py-0.5 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">Aguardando criação</span>
+                            </h3>
+                            <p class="mt-1 text-xs text-emerald-700">
+                                Ao gerar qualquer um destes PDFs (ou clicar em “Gerar Nova Homologação”), o sistema cria automaticamente a primeira homologação vinculando todos os lotes pendentes.
+                            </p>
+                        </div>
+                    </div>
+                </div>
 
-                            {{-- Adicionar dropdown de parecer para documentos específicos --}}
-                            @if ($tipo === 'parecer_controle_interno' && $processo->modalidade === \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO)
-                            <!-- Dropdown de Parecer -->
-                            <select id="parecer_select_{{ $tipo }}" name="parecer_select_{{ $tipo }}" class="block w-40 px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm">
-                                <option value="">Selecione o Parecer</option>
-                                <option value="parecer_1">Parecer 1</option>
-                                <option value="parecer_2">Parecer 2</option>
-                            </select>
-                            @endif
+                <div class="overflow-x-auto">
+                    @include('Admin.Processos.partials.bloco-documentos', [
+                        'processo' => $processo,
+                        'documentos' => $documentosHomologacao,
+                        'documentosGerados' => collect(),
+                        'homologacao' => null,
+                    ])
+                </div>
+            </div>
+        @endif
 
-                            @else
-                            <span class="text-sm text-gray-500">-</span>
-                            @endif
-                        </td>
-                        <td class="px-6 py-4">
-                            <div class="flex justify-center space-x-2">
-                                @if ($requerAssinatura)
-                                <button type="button" onclick="gerarPdf('{{ $processo->id }}', '{{ $tipo }}', document.getElementById('data_{{ $tipo }}').value, event)" class="px-4 py-2 text-xs font-medium text-white transition-colors duration-200 bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
-                                    Gerar PDF
-                                </button>
+        {{-- ====== BLOCO 2: Cada Homologação ====== --}}
+        @foreach ($homologacoesList as $homologacao)
+            <div class="mb-8 overflow-hidden bg-white border border-emerald-200 shadow-sm rounded-2xl">
+                <div class="px-6 py-4 border-b border-emerald-200 bg-gradient-to-r from-emerald-50 to-teal-50">
+                    <div class="flex flex-col items-start justify-between gap-2 lg:flex-row lg:items-center">
+                        <div>
+                            <h3 class="text-lg font-semibold text-emerald-900">
+                                Homologação #{{ $homologacao->numero_sequencial }}
+                                @if ($homologacao->status === \App\Models\Homologacao::STATUS_HOMOLOGADA)
+                                    <span class="ml-2 px-2 py-0.5 text-xs font-medium bg-green-100 text-green-800 rounded-full">Homologada</span>
+                                @elseif ($homologacao->status === \App\Models\Homologacao::STATUS_CANCELADA)
+                                    <span class="ml-2 px-2 py-0.5 text-xs font-medium bg-red-100 text-red-800 rounded-full">Cancelada</span>
                                 @else
-                                <button type="button" onclick="gerarPdfSemAssinatura('{{ $processo->id }}', '{{ $tipo }}', event)" class="px-4 py-2 text-xs font-medium text-white transition-colors duration-200 bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
-                                    Gerar PDF
-                                </button>
+                                    <span class="ml-2 px-2 py-0.5 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">Em edição</span>
                                 @endif
+                            </h3>
+                            @if ($homologacao->data_homologacao)
+                                <p class="mt-1 text-xs text-emerald-700">
+                                    Data de homologação: {{ \Carbon\Carbon::parse($homologacao->data_homologacao)->format('d/m/Y') }}
+                                </p>
+                            @endif
+                        </div>
+                        <div class="text-right text-xs text-emerald-700">
+                            {{ $homologacao->lotes->count() }} lote(s) vinculado(s)
+                        </div>
+                    </div>
+                </div>
 
-                                @if ($documentoGerado)
-                                <a href="{{ route('admin.processo.finalizardocumento.dowload', ['processo' => $processo->id, 'tipo' => $tipo]) }}" download class="p-2 text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2" aria-label="Baixar documento">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                        <polyline points="7 10 12 15 17 10"></polyline>
-                                        <line x1="12" y1="15" x2="12" y2="3"></line>
-                                    </svg>
-                                </a>
-                                @else
-                                <span class="p-2 text-gray-400 bg-gray-100 rounded-md cursor-not-allowed" aria-hidden="true" title="Aguardando geração">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                        <polyline points="7 10 12 15 17 10"></polyline>
-                                        <line x1="12" y1="15" x2="12" y2="3"></line>
-                                    </svg>
-                                </span>
-                                @endif
-                            </div>
-                        </td>
-                    </tr>
-
-                    {{-- Linha do Acordeão (Collapse) - Apenas se tem campos OU requer assinatura --}}
-                    @if ($temCampos || $requerAssinatura)
-                    <tr>
-                        <td colspan="3" class="p-0">
-                            <div id="{{ $accordionId }}" class="hidden">
-                                <div class="p-4 border-t border-gray-200 bg-gray-50" id="accordion-content-{{ $tipo }}">
-
-                                    <!-- Seção de Assinantes - Apenas se requer assinatura -->
-                                    @if ($requerAssinatura)
-                                    <div class="pb-4 mb-6 border-b border-gray-200">
-                                        <h4 class="mb-4 text-sm font-semibold text-gray-700">Seleção de Assinantes</h4>
-
-                                        <div id="assinantes-container-{{ $tipo }}" class="space-y-3">
-                                            <div class="flex flex-col gap-3 p-4 bg-white border border-gray-200 rounded-lg assinante-item">
-                                                <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-                                                    {{-- Select da Unidade --}}
-                                                    <div class="flex-1 min-w-[180px]">
-                                                        <label for="assinante_unidade_{{ $tipo }}" class="block mb-1 text-xs font-medium text-gray-600">
-                                                            Unidade
-                                                        </label>
-                                                        <select name="assinante_unidade[]" id="assinante_unidade_{{ $tipo }}" class="block w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 unidade-select" onchange="updateResponsavel(this, '{{ $tipo }}')">
-                                                            <option value="">Selecione a Unidade</option>
-                                                            @foreach ($processo->prefeitura->unidades as $unidade)
-                                                            <option value="{{ $unidade->id }}">{{ $unidade->nome }}</option>
-                                                            @endforeach
-                                                        </select>
-                                                    </div>
-
-                                                    {{-- Campos do Responsável e Portaria --}}
-                                                    <div class="flex flex-col flex-1 gap-2 sm:flex-row sm:items-center sm:gap-3">
-                                                        {{-- Nome do Responsável --}}
-                                                        <div class="flex-1 min-w-[200px]">
-                                                            <label class="block mb-1 text-xs font-medium text-gray-600">
-                                                                Responsável
-                                                            </label>
-                                                            <input type="text" name="assinante_responsavel[]" placeholder="Nome do Responsável" readonly class="block w-full px-3 py-2 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded-md shadow-sm responsavel-input">
-                                                        </div>
-
-                                                        {{-- Número da Portaria --}}
-                                                        <div class="flex-1 min-w-[150px]">
-                                                            <label class="block mb-1 text-xs font-medium text-gray-600">
-                                                                Nº Portaria
-                                                            </label>
-                                                            <input type="text" name="assinante_portaria[]" placeholder="Número da Portaria" readonly class="block w-full px-3 py-2 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded-md shadow-sm portaria-input">
-                                                        </div>
-
-                                                        {{-- Data da Portaria --}}
-                                                        <div class="flex-1 min-w-[150px]">
-                                                            <label class="block mb-1 text-xs font-medium text-gray-600">
-                                                                Data Portaria
-                                                            </label>
-                                                            <input type="text" name="assinante_data_portaria[]" placeholder="Data da Portaria" readonly class="block w-full px-3 py-2 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded-md shadow-sm data-portaria-input">
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {{-- Botão de adicionar assinante --}}
-                                        <div class="mt-4">
-                                            <button type="button" onclick="adicionarAssinante('{{ $tipo }}')" class="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-blue-500 rounded-md shadow hover:bg-blue-600 focus:ring-2 focus:ring-blue-300">
-                                                + Adicionar Assinante
-                                            </button>
-                                        </div>
-                                    </div>
-                                    @endif
-
-                                    <!-- Seção de Campos do Formulário (se houver campos) -->
-                                    @if (!empty($doc['campos']))
-                                    <div>
-                                        <h4 class="mb-3 text-sm font-semibold text-gray-700">Campos do Documento</h4>
-                                        <div>
-                                            <form action="{{ route('admin.processos.finalizacao.store', $processo) }}" method="POST" @submit.prevent="submitForm">
-                                                @csrf
-                                                <input type="hidden" name="processo_id" value="{{ $processo->id }}">
-
-                                                @foreach ($doc['campos'] as $campo)
-                                                    @include('Admin.Processos.partials.forms-finalizacao')
-                                                @endforeach
-                                            </form>
-                                        </div>
-                                    </div>
-                                    @endif
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
+                {{-- Lotes desta homologação --}}
+                <div class="px-6 py-4 bg-emerald-50/30 border-b border-emerald-100">
+                    <h4 class="mb-3 text-sm font-semibold text-emerald-900">Lotes desta homologação</h4>
+                    @if ($homologacao->lotes->isEmpty())
+                        <p class="text-sm text-gray-500">Nenhum lote vinculado.</p>
+                    @else
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm divide-y divide-gray-200 bg-white border border-gray-200 rounded">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-600 uppercase">Vencedor</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-600 uppercase">Lote</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-600 uppercase">Item</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-600 uppercase">Descrição</th>
+                                        <th class="px-3 py-2 text-right text-xs font-medium text-gray-600 uppercase">Qtd</th>
+                                        <th class="px-3 py-2 text-right text-xs font-medium text-gray-600 uppercase">Vl. Unit</th>
+                                        <th class="px-3 py-2 text-right text-xs font-medium text-gray-600 uppercase">Vl. Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    @foreach ($homologacao->lotes as $lote)
+                                        <tr>
+                                            <td class="px-3 py-2 text-gray-700">{{ $lote->vencedor->razao_social ?? '—' }}</td>
+                                            <td class="px-3 py-2 text-gray-700">{{ $lote->lote ?? '—' }}{{ $lote->lote_nome ? ' — ' . $lote->lote_nome : '' }}</td>
+                                            <td class="px-3 py-2 text-gray-700">{{ $lote->item }}</td>
+                                            <td class="px-3 py-2 text-gray-700">
+                                                <div class="max-w-xs truncate" title="{{ $lote->descricao }}">{{ $lote->descricao }}</div>
+                                            </td>
+                                            <td class="px-3 py-2 text-right text-gray-700">{{ number_format($lote->quantidade, 2, ',', '.') }}</td>
+                                            <td class="px-3 py-2 text-right text-gray-700">R$ {{ number_format($lote->vl_unit, 2, ',', '.') }}</td>
+                                            <td class="px-3 py-2 text-right font-semibold text-gray-900">R$ {{ number_format($lote->vl_total, 2, ',', '.') }}</td>
+                                        </tr>
+                                    @endforeach
+                                    <tr class="bg-emerald-50 font-semibold">
+                                        <td colspan="6" class="px-3 py-2 text-right text-emerald-900">Total da Homologação</td>
+                                        <td class="px-3 py-2 text-right text-emerald-900">R$ {{ number_format($homologacao->lotes->sum('vl_total'), 2, ',', '.') }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     @endif
-                    @endforeach
-                </tbody>
-            </table>
+                </div>
 
+                {{-- Documentos desta homologação --}}
+                <div class="overflow-x-auto">
+                    @include('Admin.Processos.partials.bloco-documentos', [
+                        'processo' => $processo,
+                        'documentos' => $documentosHomologacao,
+                        'documentosGerados' => $homologacao->documentos,
+                        'homologacao' => $homologacao,
+                    ])
+                </div>
+            </div>
+        @endforeach
 
-            <!-- Botão para Baixar Todos os PDFs -->
-            <div class="flex flex-col items-center gap-3 p-4 mt-6 border-t border-gray-200 bg-gray-50">
-                <button type="button"
-                        id="btn-baixar-todos-finalizar"
-                        onclick="iniciarDownloadTodos('{{ $processo->id }}', 'finalizar')"
-                        class="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white transition-colors duration-200 bg-green-600 rounded-lg shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
-                    <svg id="icon-download-finalizar" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                    </svg>
-                    <svg id="spinner-finalizar" xmlns="http://www.w3.org/2000/svg" class="hidden w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                    </svg>
-                    <span id="label-baixar-todos-finalizar">📥 Baixar Todos os PDFs</span>
-                </button>
-
-                {{-- Área de progresso --}}
-                <div id="progresso-finalizar" class="hidden w-full max-w-md">
-                    <div class="flex items-center justify-between mb-1">
-                        <span class="text-xs font-medium text-gray-600" id="msg-progresso-finalizar">Preparando arquivo...</span>
+        {{-- ====== BLOCO 3: Lotes pendentes + botão "Gerar Nova Homologação" ====== --}}
+        @if ($temVencedores)
+            <div class="mb-8 overflow-hidden bg-white border border-amber-200 shadow-sm rounded-2xl">
+                <div class="px-6 py-4 border-b border-amber-200 bg-gradient-to-r from-amber-50 to-yellow-50">
+                    <div class="flex flex-col items-start justify-between gap-3 lg:flex-row lg:items-center">
+                        <div>
+                            <h3 class="text-lg font-semibold text-amber-900">Lotes pendentes de homologação</h3>
+                            <p class="mt-1 text-xs text-amber-700">
+                                @if ($temLotesPendentes)
+                                    {{ $lotesPendentes->count() }} lote(s) ainda não vinculado(s) a uma homologação.
+                                @elseif (!$temHomologacao)
+                                    Nenhuma homologação cadastrada. Crie a primeira para vincular os lotes.
+                                @else
+                                    Todos os lotes deste processo já foram homologados.
+                                @endif
+                            </p>
+                        </div>
+                        @if ($podeCriarNovaHomologacao && $temLotesPendentes)
+                            <button type="button"
+                                    id="btn-gerar-nova-homologacao"
+                                    onclick="gerarNovaHomologacao('{{ $processo->id }}')"
+                                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-emerald-600 rounded-md shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
+                                @if (!$temHomologacao)
+                                    ➕ Gerar Primeira Homologação
+                                @else
+                                    ➕ Gerar Nova Homologação
+                                @endif
+                            </button>
+                        @endif
                     </div>
-                    <div class="w-full h-2 overflow-hidden bg-gray-200 rounded-full">
-                        <div class="h-2 bg-green-500 rounded-full animate-pulse" style="width: 100%"></div>
+                </div>
+
+                @if ($temLotesPendentes)
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-600 uppercase">Vencedor</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-600 uppercase">Lote</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-600 uppercase">Item</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-600 uppercase">Descrição</th>
+                                    <th class="px-3 py-2 text-right text-xs font-medium text-gray-600 uppercase">Qtd</th>
+                                    <th class="px-3 py-2 text-right text-xs font-medium text-gray-600 uppercase">Vl. Total</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100">
+                                @foreach ($lotesPendentes as $lote)
+                                    <tr>
+                                        <td class="px-3 py-2 text-gray-700">{{ $lote->vencedor->razao_social ?? '—' }}</td>
+                                        <td class="px-3 py-2 text-gray-700">{{ $lote->lote ?? '—' }}{{ $lote->lote_nome ? ' — ' . $lote->lote_nome : '' }}</td>
+                                        <td class="px-3 py-2 text-gray-700">{{ $lote->item }}</td>
+                                        <td class="px-3 py-2 text-gray-700">
+                                            <div class="max-w-xs truncate" title="{{ $lote->descricao }}">{{ $lote->descricao }}</div>
+                                        </td>
+                                        <td class="px-3 py-2 text-right text-gray-700">{{ number_format($lote->quantidade, 2, ',', '.') }}</td>
+                                        <td class="px-3 py-2 text-right text-gray-700">R$ {{ number_format($lote->vl_total, 2, ',', '.') }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
                     </div>
-                    <p class="mt-2 text-xs text-center text-gray-500">
-                        ⚠️ Arquivos com muitas páginas podem levar alguns minutos. Não feche esta aba.
+                @endif
+            </div>
+        @endif
+
+        {{-- ====== BLOCO 4: Documentos legados (sem vínculo a homologação, dos 6 tipos) ====== --}}
+        @if ($documentosLegadosList->isNotEmpty())
+            <div class="mb-8 overflow-hidden bg-white border border-gray-300 shadow-sm rounded-2xl">
+                <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                    <h3 class="text-lg font-semibold text-gray-700">Documentos antigos do processo (legado)</h3>
+                    <p class="mt-1 text-xs text-gray-500">
+                        Documentos gerados antes da introdução de homologação parcial. Mantidos apenas para consulta/download.
                     </p>
                 </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm bg-white divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Tipo</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Gerado em</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-600 uppercase">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            @foreach ($documentosLegadosList as $docLegado)
+                                <tr>
+                                    <td class="px-6 py-3 text-gray-800">{{ $docLegado->tipo_documento }}</td>
+                                    <td class="px-6 py-3 text-gray-600">
+                                        {{ $docLegado->gerado_em ? \Carbon\Carbon::parse($docLegado->gerado_em)->format('d/m/Y H:i') : '—' }}
+                                    </td>
+                                    <td class="px-6 py-3 text-center">
+                                        <a href="{{ route('admin.processos.finalizacao.documento.dowload', ['processo' => $processo->id, 'tipo' => $docLegado->tipo_documento]) }}"
+                                           download
+                                           class="inline-block p-2 text-white bg-green-600 rounded-md hover:bg-green-700">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                                <polyline points="7 10 12 15 17 10"></polyline>
+                                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                                            </svg>
+                                        </a>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        @endif
+
+<!-- Botão para Baixar Todos os PDFs -->
+        <div class="flex flex-col items-center gap-3 p-4 mt-6 border-t border-gray-200 bg-gray-50 rounded-lg">
+            <button type="button"
+                    id="btn-baixar-todos-finalizar"
+                    onclick="iniciarDownloadTodos('{{ $processo->id }}', 'finalizar')"
+                    class="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white transition-colors duration-200 bg-green-600 rounded-lg shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                <svg id="icon-download-finalizar" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                </svg>
+                <svg id="spinner-finalizar" xmlns="http://www.w3.org/2000/svg" class="hidden w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                </svg>
+                <span id="label-baixar-todos-finalizar">📥 Baixar Todos os PDFs</span>
+            </button>
+
+            {{-- Área de progresso --}}
+            <div id="progresso-finalizar" class="hidden w-full max-w-md">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs font-medium text-gray-600" id="msg-progresso-finalizar">Preparando arquivo...</span>
+                </div>
+                <div class="w-full h-2 overflow-hidden bg-gray-200 rounded-full">
+                    <div class="h-2 bg-green-500 rounded-full animate-pulse" style="width: 100%"></div>
+                </div>
+                <p class="mt-2 text-xs text-center text-gray-500">
+                    ⚠️ Arquivos com muitas páginas podem levar alguns minutos. Não feche esta aba.
+                </p>
             </div>
         </div>
 
@@ -2099,6 +2121,7 @@
         // Função auxiliar para obter os dados dos assinantes
         function getAssinantes(tipoDocumento) {
             const container = document.getElementById(`assinantes-container-${tipoDocumento}`);
+            if (!container) return [];
             const selects = container.querySelectorAll('select[name="assinante_unidade[]"]');
             const assinantes = [];
 
@@ -2127,7 +2150,7 @@
         }
 
         // Função para gerar PDF sem assinatura (para documentos que não requerem assinatura)
-        function gerarPdfSemAssinatura(processoId, documento, event) {
+        function gerarPdfSemAssinatura(processoId, documento, event, homologacaoId) {
             const button = event.currentTarget;
             const originalText = button.textContent;
 
@@ -2135,6 +2158,9 @@
             button.disabled = true;
 
             let url = `/admin/finalizacao/processos/${processoId}/pdf?documento=${documento}`;
+            if (homologacaoId) {
+                url += `&homologacao_id=${homologacaoId}`;
+            }
 
             fetch(url, {
                     headers: {
@@ -2163,14 +2189,18 @@
         }
 
         // Modificar a função gerarPdf existente para incluir validação de assinantes
-        function gerarPdf(processoId, documento, data, event) {
+        function gerarPdf(processoId, documento, data, event, idSuffix, homologacaoId) {
             if (!data) {
                 showMessage('Por favor, selecione uma data antes de gerar o PDF.', 'error');
                 return;
             }
 
-            const parecer = document.getElementById('parecer_select_' + documento)?.value || '';
-            const assinantes = getAssinantes(documento);
+            const sufixo = idSuffix || '';
+            const containerKey = documento + sufixo;
+            const parecer = document.getElementById('parecer_select_' + containerKey)?.value
+                || document.getElementById('parecer_select_' + documento)?.value
+                || '';
+            const assinantes = getAssinantes(containerKey);
 
             // Verificar se há pelo menos um assinante
             if (assinantes.length < 1) {
@@ -2188,6 +2218,9 @@
             }
             if (assinantes.length > 0) {
                 url += `&assinantes=${assinantesEncoded}`;
+            }
+            if (homologacaoId) {
+                url += `&homologacao_id=${homologacaoId}`;
             }
 
             const button = event.currentTarget;
@@ -2219,6 +2252,48 @@
                 .finally(() => {
                     button.textContent = originalText;
                     button.disabled = false;
+                });
+        }
+
+        // Gerar nova homologação para os lotes pendentes
+        function gerarNovaHomologacao(processoId) {
+            if (!confirm('Confirma a criação de uma nova homologação com todos os lotes pendentes?')) {
+                return;
+            }
+
+            const button = document.getElementById('btn-gerar-nova-homologacao');
+            if (button) {
+                button.disabled = true;
+                button.textContent = 'Criando...';
+            }
+
+            fetch(`/admin/processos/${processoId}/finalizacao/homologacoes`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}',
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(r => r.json().then(data => ({ ok: r.ok, data })))
+                .then(({ ok, data }) => {
+                    if (ok && data.success) {
+                        showMessage(data.message || 'Homologação criada.', 'success');
+                        setTimeout(() => window.location.reload(), 1200);
+                    } else {
+                        showMessage(data.message || 'Erro ao criar homologação.', 'error');
+                        if (button) {
+                            button.disabled = false;
+                            button.textContent = '➕ Gerar Nova Homologação';
+                        }
+                    }
+                })
+                .catch(err => {
+                    showMessage('Erro de rede ao criar homologação: ' + err.message, 'error');
+                    if (button) {
+                        button.disabled = false;
+                        button.textContent = '➕ Gerar Nova Homologação';
+                    }
                 });
         }
 
@@ -2267,6 +2342,7 @@
 
             return {
                 ...initialData,
+                homologacao_id: existing?.homologacao_id ?? null,
                 // Campos do formulário
                 anexo_atos_sessao: existing?.anexo_atos_sessao ?? '',
                 anexo_proposta: existing?.anexo_proposta ?? '',
@@ -2372,6 +2448,9 @@
 
                     const formData = new FormData();
                     formData.append('processo_id', {{ $processo->id }});
+                    if (this.homologacao_id) {
+                        formData.append('homologacao_id', this.homologacao_id);
+                    }
                     formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
 
                     // Verificar se é um campo de arquivo ou texto
