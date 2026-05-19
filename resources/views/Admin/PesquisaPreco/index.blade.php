@@ -258,16 +258,36 @@ document.addEventListener('DOMContentLoaded', function () {
         erro.classList.remove('hidden');
     }
 
-    // ── Coleta filtros ─────────────────────────────────────────────
+    // ── Coleta filtros e atualiza badge de modo ────────────────────
     function coletarFiltros() {
-        return {
+        const filtros = {
             data_inicial: document.getElementById('pp_data_inicial')?.value || null,
             data_final:   document.getElementById('pp_data_final')?.value   || null,
             uf:           document.getElementById('pp_uf')?.value           || null,
-            codigo_ibge:  document.getElementById('pp_codigo_ibge')?.value  || null,
-            cnpj_orgao:   document.getElementById('pp_cnpj_orgao')?.value   || null,
+            modalidade:   document.getElementById('pp_modalidade')?.value   || null,
         };
+        atualizarBadgeModo(filtros);
+        return filtros;
     }
+
+    function atualizarBadgeModo(filtros) {
+        const badge = document.getElementById('pp_badge_modo');
+        const nota  = document.getElementById('pp_filtro_nota');
+        if (!badge) return;
+        const modoFiltrado = filtros.modalidade && filtros.data_inicial && filtros.data_final;
+        badge.textContent  = modoFiltrado ? 'Filtros avançados ativos' : 'Busca textual';
+        badge.className    = modoFiltrado
+            ? 'text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200'
+            : 'text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider bg-gray-100 text-gray-400 border border-gray-200';
+        if (nota) nota.className = modoFiltrado
+            ? 'mt-3 text-[11px] text-blue-600'
+            : 'mt-3 text-[11px] text-gray-400';
+    }
+
+    // Atualiza badge ao alterar qualquer filtro
+    document.querySelectorAll('.pp-filtro-watch').forEach(el => {
+        el.addEventListener('change', () => coletarFiltros());
+    });
 
     // ── Eventos ────────────────────────────────────────────────────
     inputTermo.addEventListener('input', function () {
@@ -289,6 +309,12 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('pp_btn_aplicar_filtros')?.addEventListener('click', () => {
         const t = inputTermo.value.trim();
         if (t.length >= 3) executarBusca(t, 1);
+    });
+
+    document.getElementById('pp_btn_limpar_filtros')?.addEventListener('click', () => {
+        document.querySelectorAll('#pp_painel_filtros input, #pp_painel_filtros select')
+            .forEach(el => { el.value = ''; });
+        coletarFiltros(); // atualiza badge
     });
 
     document.getElementById('pp_btn_filtros')?.addEventListener('click', function () {
@@ -369,11 +395,25 @@ document.addEventListener('DOMContentLoaded', function () {
         listaItens.innerHTML = '';
 
         const total = lista.length;
-        sumario.textContent = `${(meta.totalRegistros || 0).toLocaleString('pt-BR')} contratação(ões) encontrada(s) · ${total} item(ns) carregado(s)`;
+        const modoLabel = meta.modoFiltrado ? ' · Filtros avançados' : ' · Busca textual';
+        sumario.textContent = `${(meta.totalRegistros || 0).toLocaleString('pt-BR')} contratação(ões)${modoLabel} · ${total} item(ns)`;
 
         if (total === 0) {
             mostrarErro('As contratações encontradas não possuem itens disponíveis no momento.');
             return;
+        }
+
+        // Log diagnóstico: mostra estrutura real do primeiro item para verificar campos da API
+        if (lista.length > 0) {
+            const { item: amostra } = lista[0];
+            console.log('[PNCP] Estrutura bruta do item (amostra):', {
+                cnpjFornecedor:      amostra.cnpjFornecedor,
+                cnpjFornecedorNorm:  amostra.cnpjFornecedorNorm,
+                situacaoCompraItem:  amostra.situacaoCompraItem,
+                situacaoItem:        amostra.situacaoItem,
+                nomeFornecedor:      amostra.nomeFornecedor,
+                valorHomologado:     amostra.valorUnitarioHomologado ?? amostra.valorHomologado,
+            });
         }
 
         lista.forEach(({ item, contratacao: c }) => {
@@ -436,14 +476,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 `https://pncp.gov.br/app/editais/${cnpj}/${ano}/${seq}`;
 
             // ── Preenche dados fixos do painel (item + contratação já disponíveis) ──
-            card.querySelector('.painel-num-item').textContent     = item.numeroItem ?? '—';
+            card.querySelector('.painel-num-item').textContent        = item.numeroItem ?? '—';
             card.querySelector('.painel-cnpj-fornecedor').textContent = fmtCnpj(item.cnpjFornecedorNorm || item.cnpjFornecedor);
-            card.querySelector('.painel-situacao').textContent     = item.situacaoItem || item.situacaoCompraItem?.nome || '—';
-            card.querySelector('.painel-objeto').textContent       = c.objeto || '—';
-            card.querySelector('.painel-orgao').textContent        = c.orgaoEntidade.razaoSocial || '—';
-            card.querySelector('.painel-modalidade').textContent   = c.modalidadeNome || '—';
+            card.querySelector('.painel-situacao').textContent        = item.situacaoItem || item.situacaoCompraItem?.nome || '—';
+            card.querySelector('.painel-objeto').textContent          = c.objeto || '—';
+            card.querySelector('.painel-orgao').textContent           = c.orgaoEntidade.razaoSocial || '—';
+            card.querySelector('.painel-modalidade').textContent      = c.modalidadeNome || '—';
+            card.querySelector('.painel-processo').textContent        = '—';   // sobrescrito pelo detalhe se API retornar
             const pubDate = fmtData(c.dataPublicacaoPncp);
-            card.querySelector('.painel-publicacao').textContent   = pubDate || '—';
+            card.querySelector('.painel-publicacao').textContent      = pubDate || '—';
 
             // Link PNCP (situação expandida)
             const linkPncp = card.querySelector('.painel-link-pncp');

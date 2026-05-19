@@ -59,8 +59,9 @@ class PncpController extends Controller
     }
 
     /**
-     * Busca contratações para Pesquisa de Preço de Mercado (sem filtro de status).
-     * Aceita filtros de período, UF, código IBGE e CNPJ do órgão.
+     * Busca contratações para Pesquisa de Preço de Mercado.
+     * Modo textual (/api/search/): quando modalidade ou período estão ausentes.
+     * Modo filtrado (/consulta/v1): quando modalidade + data_inicial + data_final estão presentes.
      */
     public function buscarMercado(Request $request): JsonResponse
     {
@@ -70,17 +71,26 @@ class PncpController extends Controller
             'data_inicial' => 'nullable|date_format:Y-m-d',
             'data_final'   => 'nullable|date_format:Y-m-d|after_or_equal:data_inicial',
             'uf'           => 'nullable|string|size:2',
-            'codigo_ibge'  => 'nullable|string',
-            'cnpj_orgao'   => 'nullable|string',
+            'modalidade'   => 'nullable|integer|min:1|max:12',
         ]);
 
         $termo   = $request->input('termo');
-        $filtros = $request->only(['data_inicial', 'data_final', 'uf', 'codigo_ibge', 'cnpj_orgao']);
+        $filtros = $request->only(['data_inicial', 'data_final', 'uf', 'modalidade']);
         $pagina  = $request->integer('pagina', 1);
 
-        Log::info('Busca PNCP Mercado iniciada', ['termo' => $termo, 'user_id' => auth()->id()]);
+        $modoFiltrado = !empty($filtros['modalidade'])
+            && !empty($filtros['data_inicial'])
+            && !empty($filtros['data_final']);
 
-        $results = $this->pncpService->buscarContratacoesMercado($termo, $filtros, $pagina);
+        Log::info('Busca PNCP Mercado', [
+            'termo'  => $termo,
+            'modo'   => $modoFiltrado ? 'filtrado' : 'textual',
+            'user_id' => auth()->id(),
+        ]);
+
+        $results = $modoFiltrado
+            ? $this->pncpService->buscarContratacoesFiltradas($termo, $filtros, $pagina)
+            : $this->pncpService->buscarContratacoesMercado($termo, $filtros, $pagina);
 
         if (isset($results['error'])) {
             return response()->json(['success' => false, 'message' => $results['error']], 502);

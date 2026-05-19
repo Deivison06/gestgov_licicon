@@ -105,7 +105,7 @@ class PncpService
 
     /**
      * Busca contratações para pesquisa de preço de mercado — sem filtro de status.
-     * Suporta filtros por período, UF, código IBGE e CNPJ do órgão.
+     * Usa /api/search/ para busca textual (sem filtros estruturados).
      */
     public function buscarContratacoesMercado(string $termo, array $filtros = [], int $pagina = 1, int $tamanho = 10): array
     {
@@ -118,11 +118,6 @@ class PncpService
                     'tipos_documento' => 'edital',
                     'pagina'          => $pagina,
                     'tam_pagina'      => $tamanho,
-                    'data_inicio'     => $filtros['data_inicial'] ?? null,
-                    'data_fim'        => $filtros['data_final'] ?? null,
-                    'uf'              => $filtros['uf'] ?? null,
-                    'municipio_ibge'  => $filtros['codigo_ibge'] ?? null,
-                    'orgao_cnpj'      => $filtros['cnpj_orgao'] ?? null,
                 ]);
 
                 $response = $this->httpClient()->get($this->searchUrl, $params);
@@ -147,6 +142,58 @@ class PncpService
             } catch (Exception $e) {
                 Log::error('Exceção ao consultar PNCP Mercado', ['message' => $e->getMessage(), 'termo' => $termo]);
                 return ['error' => 'Erro interno ao processar busca de mercado no PNCP'];
+            }
+        });
+    }
+
+    /**
+     * Busca contratações via /consulta/v1 — requer modalidade + período.
+     * Filtros reais server-side: UF, modalidade, datas. Paginação nativa do endpoint.
+     */
+    public function buscarContratacoesFiltradas(string $termo, array $filtros, int $pagina = 1, int $tamanho = 10): array
+    {
+        $cacheKey = 'pncp_filtrado_' . md5($termo . serialize($filtros) . $pagina . $tamanho);
+
+        return Cache::remember($cacheKey, $this->cacheTtl, function () use ($termo, $filtros, $pagina, $tamanho) {
+            try {
+                $tamanhoApi = max(10, $tamanho);
+
+                $params = array_filter([
+                    'dataInicial'                 => str_replace('-', '', $filtros['data_inicial'] ?? ''),
+                    'dataFinal'                   => str_replace('-', '', $filtros['data_final'] ?? ''),
+                    'codigoModalidadeContratacao' => (int) ($filtros['modalidade'] ?? 0),
+                    'pagina'                      => $pagina,
+                    'tamanhoPagina'               => $tamanhoApi,
+                    'uf'                          => $filtros['uf'] ?? null,
+                ]);
+
+                $url      = $this->baseUrl . '/contratacoes/publicacao';
+                $response = $this->httpClient(timeout: 20)->get($url, $params);
+
+                if ($response->status() === 400) {
+                    $msg = $response->json()['message'] ?? 'Parâmetros inválidos.';
+                    return ['error' => "Filtro inválido: {$msg}"];
+                }
+
+                if ($response->failed()) {
+                    Log::error('Erro ao consultar PNCP Filtrado', ['status' => $response->status()]);
+                    return ['error' => 'Falha na consulta estruturada do PNCP (Status: ' . $response->status() . ')'];
+                }
+
+                $json    = $response->json();
+                $total   = $json['totalRegistros'] ?? 0;
+                $paginas = $json['totalPaginas'] ?? (int) ceil($total / $tamanhoApi);
+
+                return [
+                    'data'           => $this->normalizarContratacoesFiltradas($json['data'] ?? []),
+                    'totalRegistros' => $total,
+                    'totalPaginas'   => $paginas,
+                    'paginaAtual'    => $pagina,
+                    'modoFiltrado'   => true,
+                ];
+            } catch (Exception $e) {
+                Log::error('Exceção ao consultar PNCP Filtrado', ['message' => $e->getMessage()]);
+                return ['error' => 'Erro interno na consulta estruturada: ' . $e->getMessage()];
             }
         });
     }
@@ -182,8 +229,8 @@ class PncpService
                         'valorHomologado'    => $homologado,
                         'nomeFornecedor'     => $item['nomeRazaoSocialFornecedor'] ?? null,
                         'cnpjFornecedorNorm' => $item['cnpjFornecedor'] ?? null,
-                        'situacaoItem'       => $item['situacaoCompraItem']['nome'] ?? null,
-                        'tipoItem'           => self::extrairMaterialOuServico($item),
+                        'situacaoItem'       => $item['situacaoCompraItemNome'] ?? null,
+                        'tipoItem'           => $item['materialOuServicoNome'] ?? self::extrairMaterialOuServico($item),
                         'categoriaItem'      => is_array($item['categoriaItem'] ?? null) ? ($item['categoriaItem']['nome'] ?? null) : null,
                     ]);
                 }, $response->json() ?? []);
@@ -289,7 +336,7 @@ class PncpService
         return array_map(function ($item) {
             return [
                 'orgaoEntidade' => [
-                    'cnpj'       => $item['orgao_cnpj'] ?? '',
+                    'cnpj'        => $item['orgao_cnpj'] ?? '',
                     'razaoSocial' => $item['orgao_nome'] ?? '',
                 ],
                 'anoCompra'          => $item['ano'] ?? '',
@@ -297,8 +344,27 @@ class PncpService
                 'modalidadeNome'     => $item['modalidade_licitacao_nome'] ?? '',
                 'objeto'             => $item['description'] ?? '',
                 'dataPublicacaoPncp' => $item['data_publicacao_pncp'] ?? '',
-                'uf'                 => $item['uf_nome'] ?? '',
+                'uf'                 => $item['uf'] ?? '',         // API retorna 'uf', não 'uf_nome'
                 'municipio'          => $item['municipio_nome'] ?? '',
+            ];
+        }, $items);
+    }
+
+    private function normalizarContratacoesFiltradas(array $items): array
+    {
+        return array_map(function ($item) {
+            return [
+                'orgaoEntidade' => [
+                    'cnpj'        => $item['orgaoEntidade']['cnpj'] ?? '',
+                    'razaoSocial' => $item['orgaoEntidade']['razaoSocial'] ?? '',
+                ],
+                'anoCompra'          => $item['anoCompra'] ?? '',
+                'sequencialCompra'   => $item['sequencialCompra'] ?? '',
+                'modalidadeNome'     => $item['modalidadeNome'] ?? '',
+                'objeto'             => $item['objetoCompra'] ?? '',
+                'dataPublicacaoPncp' => $item['dataPublicacaoPncp'] ?? '',
+                'uf'                 => $item['unidadeOrgao']['ufSigla'] ?? '',
+                'municipio'          => $item['unidadeOrgao']['municipioNome'] ?? '',
             ];
         }, $items);
     }
