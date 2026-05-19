@@ -6,6 +6,33 @@
 @section('content')
 <div class="px-6 pb-10">
 
+    {{-- ── BANNER CONTEXTUAL (só aparece quando vinculado a um processo) ── --}}
+    @if($processo)
+    <div id="pp_banner_processo"
+        class="mb-4 flex items-center justify-between gap-4 px-4 py-3 bg-blue-600 text-white rounded-xl shadow-md">
+        <div class="flex items-center gap-3">
+            <svg class="w-5 h-5 flex-shrink-0 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            <div>
+                <p class="text-xs font-bold uppercase tracking-wider opacity-75">Vinculado ao Processo</p>
+                <p class="text-sm font-bold">{{ $processo->numero_processo }}</p>
+            </div>
+            <div class="ml-2 pl-3 border-l border-white/30">
+                <p class="text-xs opacity-75">Itens adicionados ao relatório</p>
+                <p class="text-lg font-extrabold leading-none">
+                    <span id="pp_contador_itens">{{ $processo->pesquisaPrecoItens()->count() }}</span>
+                </p>
+            </div>
+        </div>
+        <a href="{{ url()->previous() }}"
+            class="flex-shrink-0 px-4 py-2 bg-white/20 hover:bg-white/30 text-white text-xs font-bold rounded-lg border border-white/30 transition-all">
+            ← Voltar ao Processo
+        </a>
+    </div>
+    @endif
+
     {{-- ── CABEÇALHO ────────────────────────────────────────────────── --}}
     <div class="flex items-center justify-between mb-5">
         <div>
@@ -68,7 +95,13 @@
         <div class="px-4 pt-3 pb-2">
             <div class="flex items-start justify-between gap-3">
                 <h4 class="font-bold text-gray-800 text-sm leading-snug item-descricao flex-1"></h4>
-                <button class="btn-incluir flex-shrink-0 text-xs font-semibold px-3 py-1 border border-gray-200 rounded-full text-gray-400 cursor-not-allowed opacity-60" disabled title="Em breve">
+                <button class="btn-incluir flex-shrink-0 text-xs font-semibold px-3 py-1 border rounded-full transition-all
+                    @if($processo)
+                        border-green-300 text-green-700 bg-green-50 hover:bg-green-100 cursor-pointer
+                    @else
+                        border-gray-200 text-gray-400 cursor-not-allowed opacity-60
+                    @endif"
+                    @if(!$processo) disabled @endif>
                     Incluir no relatório
                 </button>
             </div>
@@ -193,6 +226,12 @@
 
 @push('scripts')
 <script>
+// Contexto do processo (null quando acessado sem vinculação)
+const PP_PROCESSO_ID   = @json($processo?->id);
+const PP_STORE_URL     = '{{ route('admin.pesquisa_preco.itens.store') }}';
+const PP_DESTROY_URL   = '{{ url('admin/pesquisa-preco/itens') }}'; // + /{id}
+const PP_CSRF          = '{{ csrf_token() }}';
+
 document.addEventListener('DOMContentLoaded', function () {
 
     // ── Referências DOM ────────────────────────────────────────────
@@ -230,6 +269,13 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!termo || !texto) return texto || '';
         const re = new RegExp(`(${termo.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
         return texto.replace(re, '<mark class="bg-yellow-200 text-yellow-900 rounded px-0.5">$1</mark>');
+    }
+
+    // ── Contador de itens incluídos no relatório ──────────────────
+    function atualizarContador(delta) {
+        const el = document.getElementById('pp_contador_itens');
+        if (!el) return;
+        el.textContent = Math.max(0, parseInt(el.textContent || '0') + delta);
     }
 
     // ── Estados de UI ──────────────────────────────────────────────
@@ -472,8 +518,85 @@ document.addEventListener('DOMContentLoaded', function () {
             fornEl.textContent = forn ? `Fornecedor: ${forn}` : '';
 
             // ── Link Ver mais ──
-            card.querySelector('.link-ver-mais').href =
-                `https://pncp.gov.br/app/editais/${cnpj}/${ano}/${seq}`;
+            const linkVerMais = card.querySelector('.link-ver-mais');
+            linkVerMais.href = `https://pncp.gov.br/app/editais/${cnpj}/${ano}/${seq}`;
+
+            // ── Botão "Incluir no relatório" ──
+            const btnIncluir = card.querySelector('.btn-incluir');
+            if (PP_PROCESSO_ID && btnIncluir && !btnIncluir.disabled) {
+                btnIncluir.addEventListener('click', async function () {
+                    // Toggle: se já incluído, remove
+                    if (this.dataset.savedId) {
+                        try {
+                            await fetch(`${PP_DESTROY_URL}/${this.dataset.savedId}`, {
+                                method: 'DELETE',
+                                headers: { 'X-CSRF-TOKEN': PP_CSRF, 'Accept': 'application/json' },
+                            });
+                            delete this.dataset.savedId;
+                            this.textContent = 'Incluir no relatório';
+                            this.className = this.className
+                                .replace(/bg-green-\d00|text-green-\d00|border-green-\d00/g, '')
+                                + ' border-green-300 text-green-700 bg-green-50 hover:bg-green-100';
+                            atualizarContador(-1);
+                        } catch { /* silencioso */ }
+                        return;
+                    }
+
+                    this.textContent = 'Salvando...';
+                    this.disabled = true;
+
+                    const homVal = item.valorUnitarioHomologado ?? item.valorHomologado ?? null;
+                    const estVal = item.valorUnitarioEstimado  ?? item.valorEstimado   ?? null;
+
+                    const payload = {
+                        processo_id:       PP_PROCESSO_ID,
+                        numero_item:       item.numeroItem != null ? String(item.numeroItem) : null,
+                        ano_compra:        String(ano),
+                        sequencial_compra: String(seq),
+                        orgao_cnpj:        String(cnpj),
+                        orgao_nome:        c.orgaoEntidade?.razaoSocial || '(órgão não identificado)',
+                        uf:                c.uf || null,
+                        municipio:         c.municipio || null,
+                        data_publicacao:   c.dataPublicacaoPncp ? c.dataPublicacaoPncp.substring(0, 10) : null,
+                        modalidade:        c.modalidadeNome || null,
+                        descricao:         item.descricao || '(sem descrição)',
+                        quantidade:        item.quantidade ?? null,
+                        unidade_medida:    item.unidadeMedida || null,
+                        valor_unitario:    homVal ?? estVal ?? 0,
+                        tipo_valor:        homVal !== null ? 'homologado' : 'estimado',
+                        fornecedor_nome:   item.nomeFornecedor || item.nomeRazaoSocialFornecedor || null,
+                        fornecedor_cnpj:   item.cnpjFornecedorNorm || item.cnpjFornecedor || null,
+                        link_pncp:         `https://pncp.gov.br/app/editais/${cnpj}/${ano}/${seq}`,
+                    };
+
+                    try {
+                        const resp = await fetch(PP_STORE_URL, {
+                            method:  'POST',
+                            headers: {
+                                'Content-Type':  'application/json',
+                                'Accept':        'application/json',
+                                'X-CSRF-TOKEN':  PP_CSRF,
+                            },
+                            body: JSON.stringify(payload),
+                        });
+                        const json = await resp.json();
+
+                        if (json.success) {
+                            this.dataset.savedId = json.id;
+                            this.innerHTML = '✓ Incluído — remover';
+                            this.className = 'btn-incluir flex-shrink-0 text-xs font-semibold px-3 py-1 border rounded-full transition-all border-green-500 text-green-700 bg-green-100 hover:bg-red-50 hover:text-red-600 hover:border-red-300 cursor-pointer';
+                            this.disabled = false;
+                            atualizarContador(+1);
+                        } else {
+                            this.textContent = 'Erro — tente novamente';
+                            this.disabled = false;
+                        }
+                    } catch {
+                        this.textContent = 'Erro — tente novamente';
+                        this.disabled = false;
+                    }
+                });
+            }
 
             // ── Preenche dados fixos do painel (item + contratação já disponíveis) ──
             card.querySelector('.painel-num-item').textContent        = item.numeroItem ?? '—';

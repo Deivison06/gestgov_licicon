@@ -508,6 +508,9 @@ Route::prefix('admin/pncp')->name('admin.pncp.')->middleware(['auth', 'verified'
 // ================================================
 Route::prefix('admin/pesquisa-preco')->name('admin.pesquisa_preco.')->middleware(['auth', 'verified'])->group(function () {
     Route::get('/', [PesquisaPrecoController::class, 'index'])->name('index');
+    Route::post('/itens', [PesquisaPrecoController::class, 'store'])->name('itens.store');
+    Route::delete('/itens/{id}', [PesquisaPrecoController::class, 'destroy'])->name('itens.destroy');
+    Route::get('/itens/processo/{processoId}', [PesquisaPrecoController::class, 'listarPorProcesso'])->name('itens.processo');
 });
 
 require __DIR__ . '/auth.php';

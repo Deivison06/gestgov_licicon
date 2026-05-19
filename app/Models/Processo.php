@@ -98,6 +98,11 @@ class Processo extends Model
         return $this->hasMany(Documento::class);
     }
 
+    public function pesquisaPrecoItens(): HasMany
+    {
+        return $this->hasMany(PesquisaPrecoItem::class)->orderBy('id');
+    }
+
     public function getTipoContratacaoNomeAttribute(): string
     {
         return $this->tipo_contratacao?->getDisplayName() ?? '—';

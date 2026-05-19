@@ -250,7 +250,32 @@
     <x-form-field name="info_extras" label="Informações Extras" type="textarea" rows="5" />
 
     @elseif($campo === 'painel_preco_tce')
-    <x-form-field name="painel_preco_tce" label="📊 Painel de Preço TCE" type="file" accept=".xlsx, .xls, .csv" />
+    <div class="space-y-2">
+        <x-form-field name="painel_preco_tce" label="📊 Painel de Preço TCE" type="file" accept=".xlsx, .xls, .csv" />
+
+        {{-- Alternativa: pesquisa via PNCP --}}
+        <div class="flex items-center gap-3 pt-1">
+            <span class="text-xs text-gray-400">ou</span>
+            <a href="{{ route('admin.pesquisa_preco.index', ['processo_id' => $processo->id]) }}"
+               target="_blank"
+               class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-all">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                Pesquisar no PNCP
+            </a>
+            @php $countPncp = $processo->pesquisaPrecoItens()->count(); @endphp
+            @if($countPncp > 0)
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-green-50 text-green-700 text-xs font-bold rounded-full border border-green-200">
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+                {{ $countPncp }} {{ Str::plural('item', $countPncp) }} do PNCP
+            </span>
+            @endif
+        </div>
+    </div>
 
     @elseif($campo === 'anexo_pdf_analise_mercado')
     <x-form-field name="anexo_pdf_analise_mercado" label="📎 Anexar PDF à Análise de Mercado" type="file" accept="application/pdf" />

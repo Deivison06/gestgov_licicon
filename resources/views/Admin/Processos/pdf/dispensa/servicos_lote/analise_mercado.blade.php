@@ -183,35 +183,105 @@
             </tbody>
         </table>
 
-        <p style="text-indent: 30px">
+        @php
+            $itensPncp = $processo->pesquisaPrecoItens;
+            $usarPncp  = $itensPncp->isNotEmpty();
+
+            // Fallback: dados da planilha TCE
+            $painelTce = null;
+            if (!$usarPncp) {
+                $painelTce = is_array($detalhe->painel_preco_tce)
+                    ? $detalhe->painel_preco_tce
+                    : json_decode($detalhe->painel_preco_tce, true);
+            }
+        @endphp
+
+        @if($usarPncp)
+
+        {{-- ── TABELA PNCP ─────────────────────────────────────── --}}
+        <p style=”text-indent: 30px”>
             A {{ $detalhe->unidade_setor }}, encaminhou para esta unidade a necessidade
-            de realização de Cotação referente a itens relacionados ao objeto
-            <span style="font-weight: bold;">“{!! strip_tags($processo->objeto) !!}”</span>, ato seguido, foi realizado a cotação
-            junto ao Painel de Preços
-            do TCE-PI, conforme tabela abaixo:
+            de realização de Pesquisa de Preços referente ao objeto
+            <span style=”font-weight: bold;”>”{!! strip_tags($processo->objeto) !!}”</span>.
+            Foi realizada pesquisa de mercado junto ao Portal Nacional de Contratações Públicas (PNCP),
+            conforme tabela abaixo:
         </p>
 
-        <table border="1" cellspacing="0" cellpadding="4"
-            style="border-collapse: collapse; width: 100%; text-align: center; font-size: 8pt;">
+        <table border=”1” cellspacing=”0” cellpadding=”4”
+            style=”border-collapse: collapse; width: 100%; text-align: center; font-size: 7.5pt;”>
             <thead>
-                <tr>
-                    <th style="width: 25%;">ITEM</th>
-                    <th style="width: 15%;">VALOR TCE</th>
-                    <th style="width: 15%;">VALOR TCE</th>
-                    <th style="width: 15%;">VALOR TCE</th>
-                    <th style="width: 15%;">FORNECEDOR </th>
-                    <th style="width: 15%;">MÉDIA</th>
+                <tr style=”background-color: #f0f0f0; font-weight: bold;”>
+                    <th style=”width: 4%; padding: 5px;”>Nº</th>
+                    <th style=”width: 22%; padding: 5px; text-align: left;”>Órgão / UF</th>
+                    <th style=”width: 8%; padding: 5px;”>Data</th>
+                    <th style=”width: 24%; padding: 5px; text-align: left;”>Descrição</th>
+                    <th style=”width: 6%; padding: 5px;”>Qtd</th>
+                    <th style=”width: 10%; padding: 5px;”>Valor Unit. (R$)</th>
+                    <th style=”width: 10%; padding: 5px;”>Valor Total (R$)</th>
+                    <th style=”width: 16%; padding: 5px; text-align: left;”>Fornecedor / CNPJ</th>
                 </tr>
             </thead>
             <tbody>
-                @php
-                    $painel = is_array($detalhe->painel_preco_tce)
-                        ? $detalhe->painel_preco_tce
-                        : json_decode($detalhe->painel_preco_tce, true);
-                @endphp
+                @foreach ($itensPncp as $idx => $it)
+                <tr>
+                    <td style=”padding: 4px;”>{{ $idx + 1 }}</td>
+                    <td style=”padding: 4px; text-align: left;”>
+                        {{ $it->orgao_nome }}<br>
+                        <span style=”color: #555;”>{{ $it->uf }}{{ $it->municipio ? ' — ' . $it->municipio : '' }}</span>
+                    </td>
+                    <td style=”padding: 4px;”>
+                        {{ $it->data_publicacao ? $it->data_publicacao->format('d/m/Y') : '—' }}
+                    </td>
+                    <td style=”padding: 4px; text-align: left;”>{{ $it->descricao }}</td>
+                    <td style=”padding: 4px;”>
+                        {{ $it->quantidade ? number_format($it->quantidade, 2, ',', '.') : '—' }}
+                        {{ $it->unidade_medida }}
+                    </td>
+                    <td style=”padding: 4px;”>
+                        R$ {{ number_format($it->valor_unitario, 2, ',', '.') }}
+                        @if($it->tipo_valor === 'estimado')
+                            <br><span style=”color: #888; font-size: 6.5pt;”>(estimado)</span>
+                        @endif
+                    </td>
+                    <td style=”padding: 4px;”>
+                        {{ $it->valor_total ? 'R$ ' . number_format($it->valor_total, 2, ',', '.') : '—' }}
+                    </td>
+                    <td style=”padding: 4px; text-align: left;”>
+                        {{ $it->fornecedor_nome ?? '—' }}
+                        @if($it->fornecedor_cnpj)
+                            <br><span style=”color: #555; font-size: 6.5pt;”>{{ $it->fornecedor_cnpj }}</span>
+                        @endif
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
 
-                @if ($painel && count($painel) > 0)
-                    @foreach ($painel as $item)
+        @else
+
+        {{-- ── TABELA TCE (fallback / processos antigos) ───────── --}}
+        <p style=”text-indent: 30px”>
+            A {{ $detalhe->unidade_setor }}, encaminhou para esta unidade a necessidade
+            de realização de Cotação referente a itens relacionados ao objeto
+            <span style=”font-weight: bold;”>”{!! strip_tags($processo->objeto) !!}”</span>, ato seguido, foi realizado a cotação
+            junto ao Painel de Preços do TCE-PI, conforme tabela abaixo:
+        </p>
+
+        <table border=”1” cellspacing=”0” cellpadding=”4”
+            style=”border-collapse: collapse; width: 100%; text-align: center; font-size: 8pt;”>
+            <thead>
+                <tr>
+                    <th style=”width: 25%;”>ITEM</th>
+                    <th style=”width: 15%;”>VALOR TCE</th>
+                    <th style=”width: 15%;”>VALOR TCE</th>
+                    <th style=”width: 15%;”>VALOR TCE</th>
+                    <th style=”width: 15%;”>FORNECEDOR</th>
+                    <th style=”width: 15%;”>MÉDIA</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if ($painelTce && count($painelTce) > 0)
+                    @foreach ($painelTce as $item)
                         <tr>
                             <td>{{ $item['item'] ?? '' }}</td>
                             <td>{{ $item['valor_tce_1'] ?? '' }}</td>
@@ -223,11 +293,14 @@
                     @endforeach
                 @else
                     <tr>
-                        <td colspan="6">Nenhum dado disponível</td>
+                        <td colspan=”6”>Nenhum dado disponível</td>
                     </tr>
                 @endif
             </tbody>
         </table>
+
+        @endif
+
         <p>Segue em anexo arquivos referentes à cotação realizada.</p>
         <p>Encaminhe-se à {{ $detalhe->encaminhamento_doacao_orcamentaria }} para a VERIFICAÇÃO DE DOTACÃO ORÇAMENTÁRIA EXISTENTE.</p>
 

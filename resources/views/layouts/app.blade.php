@@ -1019,11 +1019,11 @@
                         <span>PCA</span>
                     </a>
 
-                    <a href="{{ route('admin.pesquisa_preco.index') }}"
+                    <!-- <a href="{{ route('admin.pesquisa_preco.index') }}"
                         class="nav-item {{ request()->routeIs('admin.pesquisa_preco.*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-search-dollar"></i>
                         <span>PESQUISA DE PREÇOS</span>
-                    </a>
+                    </a> -->
                     @endif
 
                     {{-- Contratos visível para todos --}}

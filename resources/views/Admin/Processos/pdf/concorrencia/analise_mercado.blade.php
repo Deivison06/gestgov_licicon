@@ -183,35 +183,34 @@
             </tbody>
         </table>
 
-        <p style="text-indent: 30px">
+        <p style=”text-indent: 30px”>
             A {{ $detalhe->unidade_setor }}, encaminhou para esta unidade a necessidade
             de realização de Cotação referente a itens relacionados ao objeto
-            <span style="font-weight: bold;">“{!! strip_tags($processo->objeto) !!}”</span>, ato seguido, foi realizado a cotação
-            junto ao Painel de Preços
-            do TCE-PI, conforme tabela abaixo:
+            <span style=”font-weight: bold;”>”{!! strip_tags($processo->objeto) !!}”</span>, ato seguido, foi realizado a cotação
+            junto ao Painel de Preços do TCE-PI, conforme tabela abaixo:
         </p>
 
-        <table border="1" cellspacing="0" cellpadding="4"
-            style="border-collapse: collapse; width: 100%; text-align: center; font-size: 8pt;">
+        @php
+            $painelTce = is_array($detalhe->painel_preco_tce)
+                ? $detalhe->painel_preco_tce
+                : json_decode($detalhe->painel_preco_tce, true);
+        @endphp
+
+        <table border=”1” cellspacing=”0” cellpadding=”4”
+            style=”border-collapse: collapse; width: 100%; text-align: center; font-size: 8pt;”>
             <thead>
                 <tr>
-                    <th style="width: 5%;">ITEM</th>
-                    <th style="width: 30%;">VALOR TCE</th>
-                    <th style="width: 15%;">VALOR TCE</th>
-                    <th style="width: 15%;">VALOR TCE</th>
-                    <th style="width: 15%;">FORNECEDOR </th>
-                    <th style="width: 15%;">MÉDIA</th>
+                    <th style=”width: 5%;”>ITEM</th>
+                    <th style=”width: 30%;”>VALOR TCE</th>
+                    <th style=”width: 15%;”>VALOR TCE</th>
+                    <th style=”width: 15%;”>VALOR TCE</th>
+                    <th style=”width: 15%;”>FORNECEDOR</th>
+                    <th style=”width: 15%;”>MÉDIA</th>
                 </tr>
             </thead>
             <tbody>
-                @php
-                    $painel = is_array($detalhe->painel_preco_tce)
-                        ? $detalhe->painel_preco_tce
-                        : json_decode($detalhe->painel_preco_tce, true);
-                @endphp
-
-                @if ($painel && count($painel) > 0)
-                    @foreach ($painel as $item)
+                @if ($painelTce && count($painelTce) > 0)
+                    @foreach ($painelTce as $item)
                         <tr>
                             <td>{{ $item['item'] ?? '' }}</td>
                             <td>{{ $item['valor_tce_1'] ?? '' }}</td>
@@ -223,11 +222,12 @@
                     @endforeach
                 @else
                     <tr>
-                        <td colspan="6">Nenhum dado disponível</td>
+                        <td colspan=”6”>Nenhum dado disponível</td>
                     </tr>
                 @endif
             </tbody>
         </table>
+
         <p>Segue em anexo arquivos referentes à cotação realizada.</p>
         <p>Encaminhe-se à {{ $detalhe->encaminhamento_doacao_orcamentaria }} para a VERIFICAÇÃO DE DOTACÃO ORÇAMENTÁRIA EXISTENTE.</p>
 
