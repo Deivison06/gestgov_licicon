@@ -10,6 +10,7 @@ class EtpItem extends Model
 
     protected $fillable = [
         'descricao_item',
+        'unidade_medida',
     ];
 
     public function etps()

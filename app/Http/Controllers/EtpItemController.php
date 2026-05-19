@@ -27,7 +27,8 @@ class EtpItemController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'descricao_item' => 'required|string'
+            'descricao_item' => 'required|string',
+            'unidade_medida' => 'nullable|string'
         ]);
 
         try {
@@ -64,7 +65,8 @@ class EtpItemController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'descricao_item' => 'required|string'
+            'descricao_item' => 'required|string',
+            'unidade_medida' => 'nullable|string'
         ]);
 
         try {
