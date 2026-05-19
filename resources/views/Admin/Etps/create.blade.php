@@ -208,21 +208,13 @@
                             </div>
                         </div>
 
-                        {{-- BOTÕES: IMPORTAR EXCEL + CRIAR ITEM RÁPIDO --}}
+                        {{-- BOTÕES: CRIAR ITEM E PNCP --}}
                         <div class="mb-4 flex justify-between items-center">
                             <div class="flex items-center gap-2">
-                                    Novo Item
+                                <button type="button" onclick="openModalPncp()" class="inline-flex items-center px-4 py-2 text-sm font-bold text-white bg-[#009496] hover:bg-[#007a7a] rounded-lg transition-all shadow-sm">
+                                    <i class="fas fa-search mr-2"></i> Novo Item (PNCP)
                                 </button>
-
                             </div>
-                            <button type="button" id="btnImportarItens"
-                                class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-all">
-                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
-                                </svg>
-                                Importar Itens via Excel
-                            </button>
                         </div>
 
                         {{-- ÁREA DE ITENS (sem lote / compras) --}}
@@ -317,8 +309,8 @@
     </div>
 
 
-    {{-- Modal: Importar Itens via Excel --}}
-    @include('Admin.Etps.partials.modal-importar-itens')
+    {{-- Modal: Buscar no PNCP --}}
+    @include('Admin.Etps.partials.modal-pncp-search')
 
     {{-- ═══════════════════════════════════════════════════════
      MODAL: CRIAR ITEM RÁPIDO
@@ -636,24 +628,47 @@
                 if (checkbox.checked) {
                     const namePrefix = loteIndex !== null ? `lotes[${loteIndex}][itens]` : 'itens';
                     container.insertAdjacentHTML('beforeend', `
-                    <div class="flex items-center justify-between bg-white border rounded-lg p-3 shadow-sm" id="item-${containerId}-${id}">
-                        <div class="flex items-center gap-3 flex-1">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:border-[#009496]/30 transition gap-4" id="item-${containerId}-${id}">
+                        <div class="flex items-center gap-3 flex-1 min-w-0">
                             <span class="item-numero inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#009496]/10 text-[#009496] text-xs font-bold flex-shrink-0 border border-[#009496]/20">0</span>
-                            <div class="flex-1">
-                                <p class="text-sm font-medium text-gray-800 mb-2">${descricao}</p>
-                                <div class="flex gap-3">
-                                    <input type="hidden" name="${namePrefix}[${id}][item_id]" value="${id}">
-                                    <input type="text"
-                                        name="${namePrefix}[${id}][unidade]"
-                                        placeholder="Ex: Unidade, Pacote, Caixa..."
-                                        value=""
-                                        class="px-2 py-1 border border-gray-300 rounded text-sm w-24"
-                                        required>
-                                    <input type="number" name="${namePrefix}[${id}][quantidade]" placeholder="Qtd" min="1" required class="px-2 py-1 border border-gray-300 rounded text-sm w-20">
-                                </div>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-sm font-semibold text-gray-800 leading-relaxed truncate" title="${descricao}">${descricao}</p>
                             </div>
                         </div>
-                        <button type="button" class="ml-4 text-red-500 hover:text-red-700 font-bold flex-shrink-0" onclick="removerItemSelecionado(${id}, ${loteIndex})">✕</button>
+                        
+                        <div class="flex items-center gap-3 flex-shrink-0">
+                            <div class="flex flex-col gap-1">
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Unidade</span>
+                                <select name="${namePrefix}[${id}][unidade]" required class="rounded-lg border-gray-300 text-xs py-1.5 focus:border-[#009496] focus:ring-[#009496] w-32 bg-gray-50/50 hover:bg-gray-50 transition">
+                                    <option value="UN">UN (Unidade)</option>
+                                    <option value="KG">KG (Quilograma)</option>
+                                    <option value="CX">CX (Caixa)</option>
+                                    <option value="PCT">PCT (Pacote)</option>
+                                    <option value="L">L (Litro)</option>
+                                    <option value="M">M (Metro)</option>
+                                    <option value="RES">RES (Resma)</option>
+                                    <option value="SAC">SAC (Saco)</option>
+                                    <option value="FR">FR (Frasco)</option>
+                                    <option value="KIT">KIT (Kit)</option>
+                                    <option value="JG">JG (Jogo)</option>
+                                    <option value="FD">FD (Fardo)</option>
+                                    <option value="GL">GL (Galão)</option>
+                                    <option value="RL">RL (Rolo)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="flex flex-col gap-1">
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Quantidade</span>
+                                <input type="number" name="${namePrefix}[${id}][quantidade]" placeholder="Qtd" min="1" required class="rounded-lg border-gray-300 text-xs py-1.5 focus:border-[#009496] focus:ring-[#009496] w-20 bg-gray-50/50 hover:bg-gray-50 transition">
+                            </div>
+
+                            <div class="flex items-end self-end pb-0.5">
+                                <input type="hidden" name="${namePrefix}[${id}][item_id]" value="${id}">
+                                <button type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-red-600 hover:bg-red-50 focus:outline-none transition" onclick="removerItemSelecionado(${id}, ${loteIndex})" title="Excluir Item">
+                                    <i class="fas fa-trash-alt text-sm"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>`);
                 } else {
                     removerItemSelecionado(id, loteIndex);
@@ -1038,74 +1053,75 @@
         let itensImportados = [];
         let tipoContratacaoAtual = null;
 
-        btnImportar.addEventListener('click', function() {
-            tipoContratacaoAtual = document.querySelector('input[name="tipo_contratacao"]:checked')?.value;
-            if (!tipoContratacaoAtual) {
-                alert('Selecione o tipo de contratação primeiro.');
-                return;
-            }
-            resetarModal();
-            modalImportar.classList.remove('hidden');
-            setTimeout(() => modalImportar.classList.add('show'), 10);
-        });
-
-        function fecharModal() {
-            modalImportar.classList.remove('show');
-            setTimeout(() => {
-                modalImportar.classList.add('hidden');
+        if (btnImportar) {
+            btnImportar.addEventListener('click', function() {
+                tipoContratacaoAtual = document.querySelector('input[name="tipo_contratacao"]:checked')?.value;
+                if (!tipoContratacaoAtual) {
+                    alert('Selecione o tipo de contratação primeiro.');
+                    return;
+                }
                 resetarModal();
-            }, 300);
+                modalImportar.classList.remove('hidden');
+                setTimeout(() => modalImportar.classList.add('show'), 10);
+            });
         }
 
-        btnCancelar.addEventListener('click', fecharModal);
-        overlay.addEventListener('click', fecharModal);
+        function fecharModal() {
+            if (modalImportar) {
+                modalImportar.classList.remove('show');
+                setTimeout(() => {
+                    modalImportar.classList.add('hidden');
+                    resetarModal();
+                }, 300);
+            }
+        }
+
+        if (btnCancelar) btnCancelar.addEventListener('click', fecharModal);
+        if (overlay) overlay.addEventListener('click', fecharModal);
 
         function resetarModal() {
-            arquivoInput.value = '';
-            nomeArquivoSpan.classList.add('hidden');
-            areaProgresso.classList.add('hidden');
-            mensagemErro.classList.add('hidden');
-            previaItens.classList.add('hidden');
-            btnConfirmar.disabled = true;
+            if (arquivoInput) arquivoInput.value = '';
+            if (nomeArquivoSpan) nomeArquivoSpan.classList.add('hidden');
+            if (areaProgresso) areaProgresso.classList.add('hidden');
+            if (mensagemErro) mensagemErro.classList.add('hidden');
+            if (previaItens) previaItens.classList.add('hidden');
+            if (btnConfirmar) btnConfirmar.disabled = true;
             itensImportados = [];
         }
 
-        btnBaixarModelo.addEventListener('click', function() {
+        if (btnBaixarModelo) {
+            btnBaixarModelo.addEventListener('click', function() {
+                const dados = [
+                    ["Descricao", "Unidade", "Quantidade"],
+                    ["Caneta Azul", "UN", 50]
+                ];
+                const ws = XLSX.utils.aoa_to_sheet(dados);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Modelo");
+                XLSX.writeFile(wb, "modelo_importacao_itens.xlsx");
+            });
+        }
 
-            // Dados da planilha
-            const dados = [
-                ["Descricao", "Unidade", "Quantidade"],
-                ["Caneta Azul", "UN", 50]
-            ];
-
-            // Cria worksheet
-            const ws = XLSX.utils.aoa_to_sheet(dados);
-
-            // Cria workbook
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Modelo");
-
-            // Faz download como Excel
-            XLSX.writeFile(wb, "modelo_importacao_itens.xlsx");
-        });
-
-
-        arquivoInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            if (file.size > 10 * 1024 * 1024) {
-                mostrarErro('Arquivo muito grande. Máximo 10MB.');
-                return;
-            }
-            nomeArquivoSpan.textContent = `Arquivo selecionado: ${file.name}`;
-            nomeArquivoSpan.classList.remove('hidden');
-            enviarArquivo(file);
-        });
+        if (arquivoInput) {
+            arquivoInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                if (file.size > 10 * 1024 * 1024) {
+                    mostrarErro('Arquivo muito grande. Máximo 10MB.');
+                    return;
+                }
+                if (nomeArquivoSpan) {
+                    nomeArquivoSpan.textContent = `Arquivo selecionado: ${file.name}`;
+                    nomeArquivoSpan.classList.remove('hidden');
+                }
+                enviarArquivo(file);
+            });
+        }
 
         function enviarArquivo(file) {
-            areaProgresso.classList.remove('hidden');
-            barraProgresso.style.width = '30%';
-            percentualProgresso.textContent = '30%';
+            if (areaProgresso) areaProgresso.classList.remove('hidden');
+            if (barraProgresso) barraProgresso.style.width = '30%';
+            if (percentualProgresso) percentualProgresso.textContent = '30%';
             const formData = new FormData();
             formData.append('arquivo_excel', file);
             fetch('{{ route('admin.etps.importar-itens') }}', {
@@ -1119,35 +1135,38 @@
                 })
                 .then(handleCsrfExpirado)
                 .then(r => {
-                    barraProgresso.style.width = '70%';
-                    percentualProgresso.textContent = '70%';
+                    if (barraProgresso) barraProgresso.style.width = '70%';
+                    if (percentualProgresso) percentualProgresso.textContent = '70%';
                     return r.json();
                 })
                 .then(data => {
-                    barraProgresso.style.width = '100%';
-                    percentualProgresso.textContent = '100%';
+                    if (barraProgresso) barraProgresso.style.width = '100%';
+                    if (percentualProgresso) percentualProgresso.textContent = '100%';
                     setTimeout(() => {
                         if (data.success) {
                             itensImportados = data.itens;
                             mostrarPrevia(itensImportados);
-                            btnConfirmar.disabled = false;
+                            if (btnConfirmar) btnConfirmar.disabled = false;
                         } else mostrarErro(data.message);
-                        areaProgresso.classList.add('hidden');
+                        if (areaProgresso) areaProgresso.classList.add('hidden');
                     }, 500);
                 })
                 .catch(err => {
                     mostrarErro('Erro ao enviar arquivo: ' + err.message);
-                    areaProgresso.classList.add('hidden');
+                    if (areaProgresso) areaProgresso.classList.add('hidden');
                 });
         }
 
         function mostrarErro(msg) {
-            mensagemErro.textContent = msg;
-            mensagemErro.classList.remove('hidden');
-            previaItens.classList.add('hidden');
+            if (mensagemErro) {
+                mensagemErro.textContent = msg;
+                mensagemErro.classList.remove('hidden');
+            }
+            if (previaItens) previaItens.classList.add('hidden');
         }
 
         function mostrarPrevia(itens) {
+            if (!listaIitensImportados) return;
             listaIitensImportados.innerHTML = '';
             itens.forEach(item => {
                 const li = document.createElement('li');
@@ -1156,15 +1175,17 @@
                     `<span class="font-medium">${item.descricao}</span><span class="text-gray-600">${item.quantidade} ${item.unidade}</span>`;
                 listaIitensImportados.appendChild(li);
             });
-            previaItens.classList.remove('hidden');
+            if (previaItens) previaItens.classList.remove('hidden');
         }
 
-        btnConfirmar.addEventListener('click', function() {
-            if (!itensImportados.length) return;
-            if (tipoContratacaoAtual === 'lote') importarItensComLote(itensImportados);
-            else importarItensSemLote(itensImportados);
-            fecharModal();
-        });
+        if (btnConfirmar) {
+            btnConfirmar.addEventListener('click', function() {
+                if (!itensImportados.length) return;
+                if (tipoContratacaoAtual === 'lote') importarItensComLote(itensImportados);
+                else importarItensSemLote(itensImportados);
+                fecharModal();
+            });
+        }
 
         function importarItensSemLote(itens) {
             const container = document.getElementById('itens-selecionados-sem-lote');

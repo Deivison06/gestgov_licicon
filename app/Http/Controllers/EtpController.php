@@ -497,6 +497,7 @@ class EtpController extends Controller
         try {
             $request->validate([
                 'descricao_item' => 'required|string|max:500',
+                'unidade_medida' => 'nullable|string|max:100',
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             Log::warning('Validação falhou na criação rápida de item', [
@@ -527,6 +528,7 @@ class EtpController extends Controller
 
             $item = EtpItem::create([
                 'descricao_item' => trim($request->descricao_item),
+                'unidade_medida' => $request->unidade_medida ? trim($request->unidade_medida) : null,
             ]);
 
             Log::info('Novo item criado com sucesso', [

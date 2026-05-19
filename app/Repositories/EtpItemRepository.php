@@ -15,7 +15,7 @@ class EtpItemRepository
 
     public function getAll($perPage = 15, $descricao = null)
     {
-        $query = $this->model->orderBy('descricao_item', 'asc');
+        $query = $this->model->orderBy('id', 'desc');
 
         if (!empty($descricao)) {
             $query->where('descricao_item', 'like', '%' . $descricao . '%');
