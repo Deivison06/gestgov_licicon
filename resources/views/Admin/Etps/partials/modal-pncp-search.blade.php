@@ -61,8 +61,10 @@
     let pncpDescriptionsCache = [];
     let currentPncpTerm = '';
     let currentPncpPage = 1;
+    let activeLoteIndex = null;
 
-    function openModalPncp() {
+    function openModalPncp(loteIndex = null) {
+        activeLoteIndex = loteIndex;
         document.getElementById('modal-pncp-search').classList.remove('hidden');
         document.getElementById('pncp-modal-search-input').focus();
     }
@@ -76,6 +78,7 @@
         document.getElementById('pncp-modal-loading').classList.add('hidden');
         document.getElementById('pncp-modal-alert').classList.add('hidden');
         pncpDescriptionsCache = [];
+        activeLoteIndex = null;
     }
 
     function highlightText(text, term) {
@@ -302,45 +305,11 @@
                 // Add the item to the checkbox list options
                 adicionarItemAosListas(item);
                 
-                // Get contract type
-                const selectedTipo = document.querySelector('input[name="tipo_contratacao"]:checked')?.value || 'item';
-
-                if (selectedTipo === 'lote' || selectedTipo === 'obras') {
-                    const loteCards = document.querySelectorAll('.lote-card');
-                    if (loteCards.length === 0) {
-                        alert('Por favor, crie um lote antes de adicionar itens.');
-                        return;
-                    }
-
-                    let targetIdx = null;
-                    if (loteCards.length === 1) {
-                        targetIdx = loteCards[0].id.replace('lote-', '');
-                    } else {
-                        let optionsText = '';
-                        const parsedLotes = [];
-                        loteCards.forEach((loteCard, idx) => {
-                            const actualIdx = loteCard.id.replace('lote-', '');
-                            const nomeInput = loteCard.querySelector('input[name^="lotes["][name$="[nome]"]');
-                            const nome = nomeInput ? nomeInput.value.trim() : `Lote ${parseInt(actualIdx) + 1}`;
-                            optionsText += `${idx + 1} - ${nome}\n`;
-                            parsedLotes.push(actualIdx);
-                        });
-                        const choice = prompt(`Em qual lote deseja adicionar o item "${item.descricao_item}"?\n\n${optionsText}\nDigite o número do lote (1 a ${loteCards.length}):`);
-                        if (!choice) return; // User cancelled
-                        const choiceIdx = parseInt(choice) - 1;
-                        if (isNaN(choiceIdx) || choiceIdx < 0 || choiceIdx >= loteCards.length) {
-                            alert('Número de lote inválido.');
-                            return;
-                        }
-                        targetIdx = parsedLotes[choiceIdx];
-                    }
-
-                    if (targetIdx !== null) {
-                        const loteCheckbox = document.querySelector(`#lista_itens_lote_${targetIdx} .item-checkbox[value="${item.id}"]`);
-                        if (loteCheckbox) {
-                            loteCheckbox.checked = true;
-                            toggleItemSelecionado(loteCheckbox, parseInt(targetIdx));
-                        }
+                if (activeLoteIndex !== null) {
+                    const loteCheckbox = document.querySelector(`#lista_itens_lote_${activeLoteIndex} .item-checkbox[value="${item.id}"]`);
+                    if (loteCheckbox) {
+                        loteCheckbox.checked = true;
+                        toggleItemSelecionado(loteCheckbox, activeLoteIndex);
                     }
                 } else {
                     // Automatically select (check) this newly created item globally

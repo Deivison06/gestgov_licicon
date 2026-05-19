@@ -208,14 +208,7 @@
                             </div>
                         </div>
 
-                        {{-- BOTÕES: CRIAR ITEM E PNCP --}}
-                        <div class="mb-4 flex justify-between items-center">
-                            <div class="flex items-center gap-2">
-                                <button type="button" onclick="openModalPncp()" class="inline-flex items-center px-4 py-2 text-sm font-bold text-white bg-[#009496] hover:bg-[#007a7a] rounded-lg transition-all shadow-sm">
-                                    <i class="fas fa-search mr-2"></i> Novo Item (PNCP)
-                                </button>
-                            </div>
-                        </div>
+
 
                         {{-- ÁREA DE ITENS (sem lote / compras) --}}
                         <div id="area-itens-sem-lote"
@@ -592,11 +585,20 @@
 
                 return `
                 <div class="mb-4 itens-selector" data-lote-index="${loteIndex}">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Selecionar Itens *</label>
-                    <div class="mb-3">
-                        <input type="text" id="${buscaId}" placeholder="Buscar item..."
-                            class="buscar-item w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496]"
-                            data-lista="${listaId}">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Selecionar Itens *</label>
+                    <div class="flex flex-col sm:flex-row gap-2.5 mb-3">
+                        <div class="relative flex-1">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                <i class="fas fa-search text-xs"></i>
+                            </span>
+                            <input type="text" id="${buscaId}" placeholder="Buscar item já cadastrado no sistema..."
+                                class="buscar-item w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#009496] focus:border-[#009496] transition"
+                                data-lista="${listaId}">
+                        </div>
+                        <button type="button" onclick="openModalPncp(${loteIndex})" 
+                            class="inline-flex items-center justify-center px-4 py-2 text-sm font-bold text-white bg-[#009496] hover:bg-[#007a7a] rounded-lg transition shadow-sm whitespace-nowrap gap-2">
+                            <i class="fas fa-globe"></i> Novo Item (PNCP)
+                        </button>
                     </div>
                     <div id="${listaId}" class="hidden border border-gray-200 rounded-lg p-4 max-h-60 overflow-y-auto space-y-2 bg-gray-50">
                         ${itensOptions}
