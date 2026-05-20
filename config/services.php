@@ -41,4 +41,13 @@ return [
         'cache_ttl' => env('PNCP_CACHE_TTL', 3600),
     ],
 
+    'openai' => [
+        'api_key'     => env('OPENAI_API_KEY'),
+        'base_url'    => env('OPENAI_BASE_URL', 'https://api.openai.com/v1'),
+        'model'       => env('OPENAI_MODEL', 'gpt-4o-mini'),
+        'timeout'     => (int) env('OPENAI_TIMEOUT', 30),
+        'max_tokens'  => (int) env('OPENAI_MAX_TOKENS', 1200),
+        'temperature' => (float) env('OPENAI_TEMPERATURE', 0.3),
+    ],
+
 ];

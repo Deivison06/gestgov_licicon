@@ -40,25 +40,25 @@
 
     {{-- Campos de Texto Simples --}}
     @elseif($campo === 'justificativa')
-    <x-form-field name="justificativa" label="Justificativa da Necessidade da Contratação" type="textarea" rows="5" />
+    <x-form-field name="justificativa" label="Justificativa da Necessidade da Contratação" type="textarea" rows="5" :ia="true" :iaProcessoId="$processo->id" />
 
     @elseif($campo === 'descricao_necessidade')
-    <x-form-field name="descricao_necessidade" label="DESCRIÇÃO DA NECESSIDADE" type="textarea" rows="5" />
+    <x-form-field name="descricao_necessidade" label="DESCRIÇÃO DA NECESSIDADE" type="textarea" rows="5" :ia="true" :iaProcessoId="$processo->id" />
 
     @elseif($campo === 'descricao_necessidade_autorizacao')
-    <x-form-field name="descricao_necessidade_autorizacao" label="DESCRIÇÃO DA NECESSIDADE DE AUTORIZAÇÃO" type="textarea" rows="5" />
+    <x-form-field name="descricao_necessidade_autorizacao" label="DESCRIÇÃO DA NECESSIDADE DE AUTORIZAÇÃO" type="textarea" rows="5" :ia="true" :iaProcessoId="$processo->id" />
 
     @elseif($campo === 'incluir_requisito_cada_caso_concreto')
-    <x-form-field name="incluir_requisito_cada_caso_concreto" label="REQUISITOS REFERENTES A CADA CASO CONCRETO" type="textarea" rows="5" />
+    <x-form-field name="incluir_requisito_cada_caso_concreto" label="REQUISITOS REFERENTES A CADA CASO CONCRETO" type="textarea" rows="5" :ia="true" :iaProcessoId="$processo->id" />
 
     @elseif($campo === 'solucoes_disponivel_mercado')
-    <x-form-field name="solucoes_disponivel_mercado" label="SOLUÇÕES DISPONÍVEIS NO MERCADO" type="textarea" rows="5" />
+    <x-form-field name="solucoes_disponivel_mercado" label="SOLUÇÕES DISPONÍVEIS NO MERCADO" type="textarea" rows="5" :ia="true" :iaProcessoId="$processo->id" />
 
     @elseif($campo === 'solucao_escolhida')
     <x-form-field name="solucao_escolhida" label="SOLUÇÃO ESCOLHIDA" />
 
     @elseif($campo === 'justificativa_solucao_escolhida')
-    <x-form-field name="justificativa_solucao_escolhida" label="JUSTIFICATIVA DA SOLUÇÃO ESCOLHIDA" type="textarea" rows="5" />
+    <x-form-field name="justificativa_solucao_escolhida" label="JUSTIFICATIVA DA SOLUÇÃO ESCOLHIDA" type="textarea" rows="5" :ia="true" :iaProcessoId="$processo->id" />
 
     @elseif($campo === 'especificacao_servicos_imovel')
         @if ($processo->modalidade === \App\Enums\ModalidadeEnum::INEXIGIBILIDADE && $processo->tipo_contratacao === \App\Enums\TipoContratacaoEnum::IMOVEL)
@@ -77,16 +77,16 @@
     <x-form-field name="obrigacoes_contratante_extras" label="OBRIGAÇÕES DO CONTRATANTE EXTRAS" type="textarea" rows="5" />
 
     @elseif($campo === 'resultado_pretendidos')
-    <x-form-field name="resultado_pretendidos" label="RESULTADOS PRETENDIDOS" type="textarea" rows="5" />
+    <x-form-field name="resultado_pretendidos" label="RESULTADOS PRETENDIDOS" type="textarea" rows="5" :ia="true" :iaProcessoId="$processo->id" />
 
     @elseif($campo === 'impacto_ambiental')
-    <x-form-field name="impacto_ambiental" label="IMPACTOS AMBIENTAIS" type="textarea" rows="5" />
+    <x-form-field name="impacto_ambiental" label="IMPACTOS AMBIENTAIS" type="textarea" rows="5" :ia="true" :iaProcessoId="$processo->id" />
 
     @elseif($campo === 'riscos_extra')
     <x-form-field name="riscos_extra" label="RISCOS EXTRAS" type="textarea" rows="5" />
 
     @elseif($campo === 'problema_resolvido')
-    <x-form-field name="problema_resolvido" label="Problema Resumido" type="textarea" rows="5" />
+    <x-form-field name="problema_resolvido" label="Problema Resumido" type="textarea" rows="5" :ia="true" :iaProcessoId="$processo->id" />
 
     @elseif($campo === 'nome_equipe_planejamento')
     <x-form-field name="nome_equipe_planejamento" label="EQUIPE DE PLANEJAMENTO" />

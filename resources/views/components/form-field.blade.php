@@ -8,6 +8,8 @@
     'accept' => '', // Para file inputs
     'placeholder' => '',
     'rows' => 3, // Para textarea
+    'ia' => false, // Quando true, exibe botão "✨ IA" ao lado do label (gera conteúdo via OpenAI)
+    'iaProcessoId' => null, // Opcional: id do processo para contexto da IA
 ])
 
 @php
@@ -28,9 +30,15 @@
 
 <div class="flex items-start mb-4 space-x-2">
     <div class="flex-1">
-        <label for="{{ $name }}" class="block mb-1 text-sm font-medium text-gray-700">
-            {{ $label }}
-        </label>
+        <div class="flex items-center justify-between mb-1">
+            <label for="{{ $name }}" class="block text-sm font-medium text-gray-700">
+                {{ $label }}
+            </label>
+            @if ($ia)
+                @include('partials.ia-helper-script')
+                <x-ia-popover :name="$name" :processoId="$iaProcessoId" />
+            @endif
+        </div>
 
         {{-- Campo DateTime CORRIGIDO --}}
         @if ($type === 'datetime')

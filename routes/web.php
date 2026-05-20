@@ -20,6 +20,7 @@ use App\Http\Controllers\AdminEtpController;
 use App\Http\Controllers\SolicitacaoController;
 use App\Http\Controllers\PcaController;
 use App\Http\Controllers\FiscalizacaoController;
+use App\Http\Controllers\IAController;
 
 // ================================================
 // FISCALIZAÇÃO DE CONTRATOS
@@ -73,6 +74,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+// ================================================
+// IA — Geração de conteúdo nos textareas (DFD/ETP)
+// ================================================
+Route::middleware(['auth', 'throttle:ia-write'])->group(function () {
+    Route::post('/admin/ia/gerar-conteudo', [IAController::class, 'gerarConteudo'])
+        ->name('admin.ia.gerar');
 });
 
 // Rota inicial -> Dashboard

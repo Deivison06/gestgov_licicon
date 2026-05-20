@@ -65,6 +65,14 @@ return [
             'replace_placeholders' => true,
         ],
 
+        'ia' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/ia.log'),
+            'level' => env('LOG_LEVEL', 'info'),
+            'days' => 30,
+            'replace_placeholders' => true,
+        ],
+
         'daily' => [
             'driver' => 'daily',
             'path' => storage_path('logs/laravel.log'),
