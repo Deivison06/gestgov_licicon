@@ -171,7 +171,7 @@
         @if ($processo->detalhe->tipo_srp == 'sim')
         <p style="font-weight: bold; text-align: center;">ATA DE REGISTRO DE PREÇOS</p>
         <p style="font-weight: bold;">
-            ATA DE REGISTRO DE PREÇOS Nº {{ $processo->finalizacao->numero_ata_registro_precos }}<br>
+            ATA DE REGISTRO DE PREÇOS Nº {{ ($ataRegistroPreco?->numero_ata_registro_precos) ?? ($homologacao?->numero_ata_registro_precos) ?? $processo->finalizacao->numero_ata_registro_precos }}<br>
             PREGÃO ELETRÔNICO SRP Nº {{ $processo->numero_procedimento }}<br>
             PROCESSO ADMINISTRATIVO Nº {{ $processo->numero_processo }}– {{ $processo->prefeitura->cidade }}<br>
             VALIDADE: 12 (DOZE) MESES.
@@ -195,7 +195,7 @@
             representado por {{ $processo->finalizacao->responsavel }}, inscrito no CPF sob nº
             {{ $processo->finalizacao->cpf_responsavel }}, {{ $processo->finalizacao->cargo_responsavel }} e as empresas qualificadas abaixo,
             jurídicos e legais, considerando o julgamento do PREGÃO ELETRÕNICO Nº {{ $processo->numero_procedimento }},
-            para o <span style="font-weight: bold;">REGISTRO DE PREÇO</span>, Nº {{ $processo->finalizacao->numero_ata_registro_precos }},
+            para o <span style="font-weight: bold;">REGISTRO DE PREÇO</span>, Nº {{ ($ataRegistroPreco?->numero_ata_registro_precos) ?? ($homologacao?->numero_ata_registro_precos) ?? $processo->finalizacao->numero_ata_registro_precos }},
             <span style="font-weight: bold;"> PROCESSO ADMINISTRATIVO Nº
                 {{ $processo->numero_processo }}, RESOLVE REGISTRAR </span> os preços da empresa e quantidade cotada,
             atendendo as condições do edital, sujeitando-se as partes às normas constantes

@@ -166,6 +166,58 @@ class FinalizacaoDocumentoService
         return $this->mapeamentoAnexos;
     }
 
+    /**
+     * Expande a entrada estática `ata_registro_precos` em N entradas — uma por vencedor
+     * da homologação. Cada entrada nova é chaveada como `ata_registro_precos_v{vencedor_id}`
+     * e tem o título "ATA DE REGISTRO DE PREÇOS — {razão social}".
+     *
+     * Quando a homologação não tem vencedores vinculados, a entrada original é mantida.
+     *
+     * @param array $documentosHomologacao  mapa tipo => config (já filtrado para escopo de homologação)
+     * @param \App\Models\Homologacao $homologacao
+     * @return array
+     */
+    public function expandirAtaPorVencedor(array $documentosHomologacao, \App\Models\Homologacao $homologacao): array
+    {
+        if (!isset($documentosHomologacao['ata_registro_precos'])) {
+            return $documentosHomologacao;
+        }
+
+        // Vencedores únicos com base nos lotes vinculados à homologação.
+        $homologacao->loadMissing(['lotes.vencedor']);
+        $vencedores = $homologacao->lotes
+            ->map(fn($lote) => $lote->vencedor)
+            ->filter()
+            ->unique('id')
+            ->values();
+
+        if ($vencedores->isEmpty()) {
+            return $documentosHomologacao;
+        }
+
+        $configBase = $documentosHomologacao['ata_registro_precos'];
+        $expandido = [];
+
+        foreach ($documentosHomologacao as $tipo => $config) {
+            if ($tipo !== 'ata_registro_precos') {
+                $expandido[$tipo] = $config;
+                continue;
+            }
+
+            // Substitui a entrada única por uma por vencedor.
+            foreach ($vencedores as $vencedor) {
+                $key = "ata_registro_precos_v{$vencedor->id}";
+                $expandido[$key] = array_merge($configBase, [
+                    'titulo' => 'ATA DE REGISTRO DE PREÇOS — ' . ($vencedor->razao_social ?? 'Vencedor #' . $vencedor->id),
+                    'vencedor_id' => $vencedor->id,
+                    'tipo_base' => 'ata_registro_precos',
+                ]);
+            }
+        }
+
+        return $expandido;
+    }
+
     public function getDocumentoConfig(string $tipo): ?array
     {
         return $this->documentosBase[$tipo] ?? null;

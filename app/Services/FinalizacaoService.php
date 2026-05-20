@@ -6,6 +6,8 @@ use App\Models\Processo;
 use App\Models\Finalizacao;
 use App\Models\Documento;
 use App\Models\Homologacao;
+use App\Models\Vencedor;
+use App\Models\AtaRegistroPreco;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
 
@@ -26,6 +28,7 @@ class FinalizacaoService
         '_token',
         'processo_id',
         'homologacao_id',
+        'vencedor_id',
         'anexo_atos_sessao',
         'anexo_proposta',
         'anexo_proposta_readequada',
@@ -37,18 +40,80 @@ class FinalizacaoService
     ];
 
     /**
-     * Salva campos de finalização. Se `homologacao_id` for informado, persiste na
-     * `Homologacao` correspondente; caso contrário, na `Finalizacao` do processo.
+     * Campos que pertencem à Ata por vencedor (e portanto vão para AtaRegistroPreco
+     * em vez de Homologacao) quando a request inclui vencedor_id.
+     */
+    protected array $camposDaAta = [
+        'numero_ata_registro_precos',
+        'cargo_controle_interno',
+    ];
+
+    /**
+     * Salva campos de finalização.
+     *  - Se vier `vencedor_id` + `homologacao_id`, os campos da Ata (número e cargo)
+     *    e a data_doc_ata_registro_precos vão para AtaRegistroPreco. Demais campos
+     *    seguem a regra padrão (Homologacao).
+     *  - Se vier só `homologacao_id`, persiste na Homologacao.
+     *  - Caso contrário, persiste na Finalizacao do processo.
      */
     public function salvarFinalizacao(Processo $processo, array $data): Model
     {
         $homologacao = $this->resolverHomologacao($processo, $data);
+        $vencedor = $this->resolverVencedor($processo, $data);
+
+        // Quando o front envia vencedor_id, salvamos primeiro os campos específicos da Ata
+        // (número, cargo, data) — o restante (se houver) continua indo para Homologacao.
+        if ($homologacao && $vencedor) {
+            $this->salvarNaAtaRegistroPreco($processo, $homologacao, $vencedor, $data);
+        }
 
         if ($homologacao) {
             return $this->salvarNaHomologacao($processo, $homologacao, $data);
         }
 
         return $this->salvarNaFinalizacao($processo, $data);
+    }
+
+    private function resolverVencedor(Processo $processo, array $data): ?Vencedor
+    {
+        $vencedorId = $data['vencedor_id'] ?? null;
+        if (!$vencedorId) {
+            return null;
+        }
+
+        return Vencedor::where('processo_id', $processo->id)
+            ->where('id', $vencedorId)
+            ->first();
+    }
+
+    /**
+     * Upsert dos campos da Ata na tabela AtaRegistroPreco. Recebe o mesmo $data da
+     * request, extrai os campos pertinentes e salva por (homologacao_id, vencedor_id).
+     */
+    private function salvarNaAtaRegistroPreco(
+        Processo $processo,
+        Homologacao $homologacao,
+        Vencedor $vencedor,
+        array $data
+    ): void {
+        $ata = AtaRegistroPreco::firstOrNew([
+            'homologacao_id' => $homologacao->id,
+            'vencedor_id' => $vencedor->id,
+        ]);
+        $ata->processo_id = $processo->id;
+
+        foreach ($this->camposDaAta as $campo) {
+            if (array_key_exists($campo, $data)) {
+                $ata->{$campo} = $data[$campo];
+            }
+        }
+
+        // Data específica do tipo `ata_registro_precos` enviada via data_doc_*.
+        if (array_key_exists('data_doc_ata_registro_precos', $data)) {
+            $ata->data_selecionada = $data['data_doc_ata_registro_precos'];
+        }
+
+        $ata->save();
     }
 
     private function resolverHomologacao(Processo $processo, array $data): ?Homologacao

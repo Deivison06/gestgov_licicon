@@ -4,6 +4,9 @@
 @section('page-subtitle', 'Cadastrar/Editar detalhes do processo')
 
 @section('content')
+    {{-- Evita "flash" do conteúdo dos cards colapsados antes do Alpine inicializar --}}
+    <style>[x-cloak] { display: none !important; }</style>
+
     <script src="https://cdn.jsdelivr.net/npm/tinymce@6/tinymce.min.js" referrerpolicy="origin"></script>
 
     {{-- JSON com as unidades para o JS --}}
@@ -116,7 +119,84 @@
             $documentosProcessoCount = is_countable($documentosProcesso ?? null) ? count($documentosProcesso) : 0;
             $homologacoesList = $processo->homologacoes ?? collect();
             $documentosLegadosList = $documentosLegados ?? collect();
+
+            // ---- Métricas para o resumo do topo + cards ---------------------
+            $totalHomologacoes      = $homologacoesList->count();
+            $totalHomologadas       = $homologacoesList->where('status', \App\Models\Homologacao::STATUS_HOMOLOGADA)->count();
+            $totalEmEdicao          = $homologacoesList->where('status', \App\Models\Homologacao::STATUS_EM_EDICAO)->count();
+            $totalCanceladas        = $homologacoesList->where('status', \App\Models\Homologacao::STATUS_CANCELADA)->count();
+            $totalLotesPendentes    = $temLotesPendentes ? $lotesPendentes->count() : 0;
+            $totalDocsProcessoFeitos = $processo->documentos->whereNull('homologacao_id')->whereNotNull('caminho')->count();
+
+            // Helper: progresso da homologação (docs + atas gerados vs esperados)
+            $progressoHomologacao = function ($homol) use ($documentosPorHomologacao, $documentosHomologacao) {
+                $esperados = $documentosPorHomologacao[$homol->id] ?? $documentosHomologacao ?? [];
+                $totalEsperados = is_countable($esperados) ? count($esperados) : 0;
+                if ($totalEsperados === 0) {
+                    return ['gerados' => 0, 'total' => 0, 'percent' => 0];
+                }
+                $gerados = 0;
+                foreach ($esperados as $tipo => $cfg) {
+                    if (isset($cfg['vencedor_id'])) {
+                        $ata = ($homol->atasRegistroPreco ?? collect())->firstWhere('vencedor_id', $cfg['vencedor_id']);
+                        if ($ata && !empty($ata->caminho)) { $gerados++; }
+                    } else {
+                        $doc = $homol->documentos->firstWhere('tipo_documento', $tipo);
+                        if ($doc && !empty($doc->caminho)) { $gerados++; }
+                    }
+                }
+                return [
+                    'gerados' => $gerados,
+                    'total'   => $totalEsperados,
+                    'percent' => (int) round(($gerados / $totalEsperados) * 100),
+                ];
+            };
         @endphp
+
+        {{-- ====== RESUMO NUMÉRICO (banner no topo) ============================ --}}
+        @if ($temVencedores || $totalHomologacoes > 0)
+            <div class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <div class="p-4 bg-white border border-gray-200 rounded-xl shadow-sm">
+                    <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Homologações</p>
+                    <p class="mt-1 text-2xl font-bold text-gray-900">{{ $totalHomologacoes }}</p>
+                    <p class="mt-1 text-xs text-gray-500">
+                        @if ($totalHomologacoes > 0)
+                            <span class="text-green-700 font-medium">{{ $totalHomologadas }} homologada(s)</span>
+                            @if ($totalEmEdicao > 0) · <span class="text-amber-700 font-medium">{{ $totalEmEdicao }} em edição</span>@endif
+                            @if ($totalCanceladas > 0) · <span class="text-red-700 font-medium">{{ $totalCanceladas }} cancelada(s)</span>@endif
+                        @else
+                            Nenhuma cadastrada ainda
+                        @endif
+                    </p>
+                </div>
+
+                <div class="p-4 bg-white border border-gray-200 rounded-xl shadow-sm">
+                    <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Lotes pendentes</p>
+                    <p class="mt-1 text-2xl font-bold {{ $totalLotesPendentes > 0 ? 'text-amber-700' : 'text-gray-400' }}">
+                        {{ $totalLotesPendentes }}
+                    </p>
+                    <p class="mt-1 text-xs text-gray-500">
+                        @if ($totalLotesPendentes > 0)
+                            Aguardando vinculação a uma homologação
+                        @else
+                            Todos os lotes estão vinculados
+                        @endif
+                    </p>
+                </div>
+
+                <div class="p-4 bg-white border border-gray-200 rounded-xl shadow-sm">
+                    <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Documentos do processo</p>
+                    <p class="mt-1 text-2xl font-bold text-gray-900">{{ $totalDocsProcessoFeitos }}</p>
+                    <p class="mt-1 text-xs text-gray-500">PDFs gerados (atos, propostas, habilitação)</p>
+                </div>
+
+                <div class="p-4 bg-white border border-gray-200 rounded-xl shadow-sm">
+                    <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Vencedores</p>
+                    <p class="mt-1 text-2xl font-bold text-gray-900">{{ $processo->vencedores->count() }}</p>
+                    <p class="mt-1 text-xs text-gray-500">Empresas declaradas vencedoras</p>
+                </div>
+            </div>
+        @endif
 
         {{-- ====== BLOCO 1: Documentos do Processo (atos da sessão, propostas, habilitação) ====== --}}
         @if ($documentosProcessoCount > 0)
@@ -164,85 +244,145 @@
             </div>
         @endif
 
-        {{-- ====== BLOCO 2: Cada Homologação ====== --}}
+        {{-- ====== BLOCO 2: Cada Homologação (card colapsável) ====== --}}
         @foreach ($homologacoesList as $homologacao)
-            <div class="mb-8 overflow-hidden bg-white border border-emerald-200 shadow-sm rounded-2xl">
-                <div class="px-6 py-4 border-b border-emerald-200 bg-gradient-to-r from-emerald-50 to-teal-50">
-                    <div class="flex flex-col items-start justify-between gap-2 lg:flex-row lg:items-center">
-                        <div>
-                            <h3 class="text-lg font-semibold text-emerald-900">
-                                Homologação #{{ $homologacao->numero_sequencial }}
-                                @if ($homologacao->status === \App\Models\Homologacao::STATUS_HOMOLOGADA)
-                                    <span class="ml-2 px-2 py-0.5 text-xs font-medium bg-green-100 text-green-800 rounded-full">Homologada</span>
-                                @elseif ($homologacao->status === \App\Models\Homologacao::STATUS_CANCELADA)
-                                    <span class="ml-2 px-2 py-0.5 text-xs font-medium bg-red-100 text-red-800 rounded-full">Cancelada</span>
-                                @else
-                                    <span class="ml-2 px-2 py-0.5 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">Em edição</span>
+            @php
+                $isHomologada = $homologacao->status === \App\Models\Homologacao::STATUS_HOMOLOGADA;
+                $isCancelada  = $homologacao->status === \App\Models\Homologacao::STATUS_CANCELADA;
+                $isEmEdicao   = !$isHomologada && !$isCancelada;
+
+                // Borda lateral colorida (verde / amber / red)
+                $borderClass = $isHomologada ? 'border-l-green-500'
+                              : ($isCancelada ? 'border-l-red-500' : 'border-l-amber-500');
+
+                // Badge de status
+                $badgeClass = $isHomologada ? 'bg-green-100 text-green-800'
+                             : ($isCancelada ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800');
+                $badgeLabel = $isHomologada ? 'Homologada' : ($isCancelada ? 'Cancelada' : 'Em edição');
+
+                $progresso = $progressoHomologacao($homologacao);
+                $valorTotalHomol = $homologacao->lotes->sum('vl_total');
+
+                // Primeira homologação inicia aberta; demais ficam colapsadas pra não inundar a tela.
+                $iniciaAberta = $loop->first;
+            @endphp
+
+            <div x-data="{ aberto: {{ $iniciaAberta ? 'true' : 'false' }}, lotesAbertos: false }"
+                 class="mb-6 overflow-hidden bg-white border border-gray-200 border-l-4 {{ $borderClass }} shadow-sm rounded-2xl">
+
+                {{-- Header sempre visível (compacto) --}}
+                <button type="button"
+                        @click="aberto = !aberto"
+                        class="w-full text-left px-5 py-4 hover:bg-gray-50 transition-colors focus:outline-none">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <h3 class="text-base font-semibold text-gray-900">
+                                    Homologação #{{ $homologacao->numero_sequencial }}
+                                </h3>
+                                <span class="px-2 py-0.5 text-xs font-medium {{ $badgeClass }} rounded-full">
+                                    {{ $badgeLabel }}
+                                </span>
+                            </div>
+
+                            <div class="mt-2 flex items-center flex-wrap gap-x-4 gap-y-1 text-xs text-gray-600">
+                                @if ($homologacao->data_homologacao)
+                                    <span>📅 {{ \Carbon\Carbon::parse($homologacao->data_homologacao)->format('d/m/Y') }}</span>
                                 @endif
-                            </h3>
-                            @if ($homologacao->data_homologacao)
-                                <p class="mt-1 text-xs text-emerald-700">
-                                    Data de homologação: {{ \Carbon\Carbon::parse($homologacao->data_homologacao)->format('d/m/Y') }}
-                                </p>
+                                <span>📦 {{ $homologacao->lotes->count() }} lote(s)</span>
+                                <span>💰 R$ {{ number_format($valorTotalHomol, 2, ',', '.') }}</span>
+                                <span class="font-medium {{ $progresso['percent'] === 100 ? 'text-green-700' : 'text-gray-700' }}">
+                                    ✓ {{ $progresso['gerados'] }}/{{ $progresso['total'] }} documentos
+                                </span>
+                            </div>
+
+                            {{-- Barra de progresso --}}
+                            @if ($progresso['total'] > 0)
+                                <div class="mt-2 w-full max-w-md h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                    <div class="h-full transition-all duration-300 {{ $progresso['percent'] === 100 ? 'bg-green-500' : 'bg-amber-500' }}"
+                                         style="width: {{ $progresso['percent'] }}%"></div>
+                                </div>
                             @endif
                         </div>
-                        <div class="text-right text-xs text-emerald-700">
-                            {{ $homologacao->lotes->count() }} lote(s) vinculado(s)
+
+                        {{-- Chevron expandir/recolher --}}
+                        <div class="flex-shrink-0 mt-1">
+                            <svg :class="aberto ? 'rotate-180' : ''"
+                                 class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
                         </div>
                     </div>
-                </div>
+                </button>
 
-                {{-- Lotes desta homologação --}}
-                <div class="px-6 py-4 bg-emerald-50/30 border-b border-emerald-100">
-                    <h4 class="mb-3 text-sm font-semibold text-emerald-900">Lotes desta homologação</h4>
-                    @if ($homologacao->lotes->isEmpty())
-                        <p class="text-sm text-gray-500">Nenhum lote vinculado.</p>
-                    @else
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full text-sm divide-y divide-gray-200 bg-white border border-gray-200 rounded">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-600 uppercase">Vencedor</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-600 uppercase">Lote</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-600 uppercase">Item</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-600 uppercase">Descrição</th>
-                                        <th class="px-3 py-2 text-right text-xs font-medium text-gray-600 uppercase">Qtd</th>
-                                        <th class="px-3 py-2 text-right text-xs font-medium text-gray-600 uppercase">Vl. Unit</th>
-                                        <th class="px-3 py-2 text-right text-xs font-medium text-gray-600 uppercase">Vl. Total</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-gray-100">
-                                    @foreach ($homologacao->lotes as $lote)
-                                        <tr>
-                                            <td class="px-3 py-2 text-gray-700">{{ $lote->vencedor->razao_social ?? '—' }}</td>
-                                            <td class="px-3 py-2 text-gray-700">{{ $lote->lote ?? '—' }}{{ $lote->lote_nome ? ' — ' . $lote->lote_nome : '' }}</td>
-                                            <td class="px-3 py-2 text-gray-700">{{ $lote->item }}</td>
-                                            <td class="px-3 py-2 text-gray-700">
-                                                <div class="max-w-xs truncate" title="{{ $lote->descricao }}">{{ $lote->descricao }}</div>
-                                            </td>
-                                            <td class="px-3 py-2 text-right text-gray-700">{{ number_format($lote->quantidade, 2, ',', '.') }}</td>
-                                            <td class="px-3 py-2 text-right text-gray-700">R$ {{ number_format($lote->vl_unit, 2, ',', '.') }}</td>
-                                            <td class="px-3 py-2 text-right font-semibold text-gray-900">R$ {{ number_format($lote->vl_total, 2, ',', '.') }}</td>
-                                        </tr>
-                                    @endforeach
-                                    <tr class="bg-emerald-50 font-semibold">
-                                        <td colspan="6" class="px-3 py-2 text-right text-emerald-900">Total da Homologação</td>
-                                        <td class="px-3 py-2 text-right text-emerald-900">R$ {{ number_format($homologacao->lotes->sum('vl_total'), 2, ',', '.') }}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                {{-- Conteúdo expansível --}}
+                <div x-show="aberto" x-cloak x-transition.duration.200ms class="border-t border-gray-200">
+                    {{-- Lotes desta homologação (colapsado por padrão) --}}
+                    <div class="px-5 py-3 bg-gray-50/50 border-b border-gray-100">
+                        <button type="button"
+                                @click="lotesAbertos = !lotesAbertos"
+                                class="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900">
+                            <svg :class="lotesAbertos ? 'rotate-90' : ''"
+                                 class="w-4 h-4 text-gray-400 transition-transform duration-150"
+                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                            <span>Lotes desta homologação ({{ $homologacao->lotes->count() }})</span>
+                        </button>
+
+                        <div x-show="lotesAbertos" x-cloak x-transition.duration.150ms class="mt-3">
+                            @if ($homologacao->lotes->isEmpty())
+                                <p class="text-sm text-gray-500">Nenhum lote vinculado.</p>
+                            @else
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full text-sm divide-y divide-gray-200 bg-white border border-gray-200 rounded">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-600 uppercase">Vencedor</th>
+                                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-600 uppercase">Lote</th>
+                                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-600 uppercase">Item</th>
+                                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-600 uppercase">Descrição</th>
+                                                <th class="px-3 py-2 text-right text-xs font-medium text-gray-600 uppercase">Qtd</th>
+                                                <th class="px-3 py-2 text-right text-xs font-medium text-gray-600 uppercase">Vl. Unit</th>
+                                                <th class="px-3 py-2 text-right text-xs font-medium text-gray-600 uppercase">Vl. Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-gray-100">
+                                            @foreach ($homologacao->lotes as $lote)
+                                                <tr>
+                                                    <td class="px-3 py-2 text-gray-700">{{ $lote->vencedor->razao_social ?? '—' }}</td>
+                                                    <td class="px-3 py-2 text-gray-700">{{ $lote->lote ?? '—' }}{{ $lote->lote_nome ? ' — ' . $lote->lote_nome : '' }}</td>
+                                                    <td class="px-3 py-2 text-gray-700">{{ $lote->item }}</td>
+                                                    <td class="px-3 py-2 text-gray-700">
+                                                        <div class="max-w-xs truncate" title="{{ $lote->descricao }}">{{ $lote->descricao }}</div>
+                                                    </td>
+                                                    <td class="px-3 py-2 text-right text-gray-700">{{ number_format($lote->quantidade, 2, ',', '.') }}</td>
+                                                    <td class="px-3 py-2 text-right text-gray-700">R$ {{ number_format($lote->vl_unit, 2, ',', '.') }}</td>
+                                                    <td class="px-3 py-2 text-right font-semibold text-gray-900">R$ {{ number_format($lote->vl_total, 2, ',', '.') }}</td>
+                                                </tr>
+                                            @endforeach
+                                            <tr class="bg-gray-50 font-semibold">
+                                                <td colspan="6" class="px-3 py-2 text-right text-gray-700">Total da Homologação</td>
+                                                <td class="px-3 py-2 text-right text-gray-900">R$ {{ number_format($valorTotalHomol, 2, ',', '.') }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @endif
                         </div>
-                    @endif
-                </div>
+                    </div>
 
-                {{-- Documentos desta homologação --}}
-                <div class="overflow-x-auto">
-                    @include('Admin.Processos.partials.bloco-documentos', [
-                        'processo' => $processo,
-                        'documentos' => $documentosHomologacao,
-                        'documentosGerados' => $homologacao->documentos,
-                        'homologacao' => $homologacao,
-                    ])
+                    {{-- Documentos desta homologação --}}
+                    <div class="overflow-x-auto">
+                        @include('Admin.Processos.partials.bloco-documentos', [
+                            'processo' => $processo,
+                            'documentos' => $documentosPorHomologacao[$homologacao->id] ?? $documentosHomologacao,
+                            'documentosGerados' => $homologacao->documentos,
+                            'homologacao' => $homologacao,
+                            'atasRegistroPreco' => $homologacao->atasRegistroPreco ?? collect(),
+                        ])
+                    </div>
                 </div>
             </div>
         @endforeach
@@ -312,16 +452,52 @@
             </div>
         @endif
 
-        {{-- ====== BLOCO 4: Documentos legados (sem vínculo a homologação, dos 6 tipos) ====== --}}
-        @if ($documentosLegadosList->isNotEmpty())
-            <div class="mb-8 overflow-hidden bg-white border border-gray-300 shadow-sm rounded-2xl">
-                <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-                    <h3 class="text-lg font-semibold text-gray-700">Documentos antigos do processo (legado)</h3>
-                    <p class="mt-1 text-xs text-gray-500">
-                        Documentos gerados antes da introdução de homologação parcial. Mantidos apenas para consulta/download.
-                    </p>
+<!-- Botão para Baixar Todos os PDFs -->
+        <div class="flex flex-col items-center gap-3 p-4 mt-6 border-t border-gray-200 bg-gray-50 rounded-lg">
+            <button type="button"
+                    id="btn-baixar-todos-finalizar"
+                    onclick="iniciarDownloadTodos('{{ $processo->id }}', 'finalizar')"
+                    class="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white transition-colors duration-200 bg-green-600 rounded-lg shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                <svg id="icon-download-finalizar" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                </svg>
+                <svg id="spinner-finalizar" xmlns="http://www.w3.org/2000/svg" class="hidden w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                </svg>
+                <span id="label-baixar-todos-finalizar">📥 Baixar Todos os PDFs</span>
+            </button>
+
+            {{-- Área de progresso --}}
+            <div id="progresso-finalizar" class="hidden w-full max-w-md">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs font-medium text-gray-600" id="msg-progresso-finalizar">Preparando arquivo...</span>
                 </div>
-                <div class="overflow-x-auto">
+                <div class="w-full h-2 overflow-hidden bg-gray-200 rounded-full">
+                    <div class="h-2 bg-green-500 rounded-full animate-pulse" style="width: 100%"></div>
+                </div>
+                <p class="mt-2 text-xs text-center text-gray-500">
+                    ⚠️ Arquivos com muitas páginas podem levar alguns minutos. Não feche esta aba.
+                </p>
+            </div>
+        </div>
+
+        {{-- ====== Documentos antigos do processo (legado) — discreto, colapsado por padrão ====== --}}
+        @if ($documentosLegadosList->isNotEmpty())
+            <details class="mt-6 group bg-white border border-gray-200 rounded-xl">
+                <summary class="px-5 py-3 cursor-pointer text-sm font-medium text-gray-600 hover:text-gray-900 flex items-center justify-between list-none">
+                    <span class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-gray-400 transition-transform group-open:rotate-90"
+                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                        Documentos antigos do processo (legado)
+                        <span class="px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-600 rounded-full">{{ $documentosLegadosList->count() }}</span>
+                    </span>
+                    <span class="text-xs text-gray-400 hidden sm:inline">gerados antes da homologação parcial</span>
+                </summary>
+
+                <div class="border-t border-gray-200 overflow-x-auto">
                     <table class="min-w-full text-sm bg-white divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
@@ -353,38 +529,8 @@
                         </tbody>
                     </table>
                 </div>
-            </div>
+            </details>
         @endif
-
-<!-- Botão para Baixar Todos os PDFs -->
-        <div class="flex flex-col items-center gap-3 p-4 mt-6 border-t border-gray-200 bg-gray-50 rounded-lg">
-            <button type="button"
-                    id="btn-baixar-todos-finalizar"
-                    onclick="iniciarDownloadTodos('{{ $processo->id }}', 'finalizar')"
-                    class="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white transition-colors duration-200 bg-green-600 rounded-lg shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
-                <svg id="icon-download-finalizar" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                </svg>
-                <svg id="spinner-finalizar" xmlns="http://www.w3.org/2000/svg" class="hidden w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                </svg>
-                <span id="label-baixar-todos-finalizar">📥 Baixar Todos os PDFs</span>
-            </button>
-
-            {{-- Área de progresso --}}
-            <div id="progresso-finalizar" class="hidden w-full max-w-md">
-                <div class="flex items-center justify-between mb-1">
-                    <span class="text-xs font-medium text-gray-600" id="msg-progresso-finalizar">Preparando arquivo...</span>
-                </div>
-                <div class="w-full h-2 overflow-hidden bg-gray-200 rounded-full">
-                    <div class="h-2 bg-green-500 rounded-full animate-pulse" style="width: 100%"></div>
-                </div>
-                <p class="mt-2 text-xs text-center text-gray-500">
-                    ⚠️ Arquivos com muitas páginas podem levar alguns minutos. Não feche esta aba.
-                </p>
-            </div>
-        </div>
 
         @if(
             in_array(
@@ -2150,7 +2296,36 @@
         }
 
         // Função para gerar PDF sem assinatura (para documentos que não requerem assinatura)
-        function gerarPdfSemAssinatura(processoId, documento, event, homologacaoId) {
+        // Salva um campo da Ata por vencedor (numero_ata_registro_precos, cargo_controle_interno
+        // ou data_doc_ata_registro_precos). Bypass do Alpine state para não conflitar com
+        // múltiplas linhas (uma por vencedor) renderizadas na mesma homologação.
+        async function saveCampoAta(campo, valor, homologacaoId, vencedorId) {
+            try {
+                const formData = new FormData();
+                formData.append('processo_id', {{ $processo->id }});
+                formData.append('homologacao_id', homologacaoId);
+                formData.append('vencedor_id', vencedorId);
+                formData.append(campo, valor ?? '');
+                formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+
+                const response = await fetch("{{ route('admin.processos.finalizacao.store', $processo) }}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json',
+                    },
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    console.warn('Falha ao salvar campo da Ata', campo, response.status);
+                }
+            } catch (err) {
+                console.error('Erro ao salvar campo da Ata', err);
+            }
+        }
+
+        function gerarPdfSemAssinatura(processoId, documento, event, homologacaoId, vencedorId = null) {
             const button = event.currentTarget;
             const originalText = button.textContent;
 
@@ -2160,6 +2335,9 @@
             let url = `/admin/finalizacao/processos/${processoId}/pdf?documento=${documento}`;
             if (homologacaoId) {
                 url += `&homologacao_id=${homologacaoId}`;
+            }
+            if (vencedorId) {
+                url += `&vencedor_id=${vencedorId}`;
             }
 
             fetch(url, {
@@ -2189,7 +2367,7 @@
         }
 
         // Modificar a função gerarPdf existente para incluir validação de assinantes
-        function gerarPdf(processoId, documento, data, event, idSuffix, homologacaoId) {
+        function gerarPdf(processoId, documento, data, event, idSuffix, homologacaoId, vencedorId = null) {
             if (!data) {
                 showMessage('Por favor, selecione uma data antes de gerar o PDF.', 'error');
                 return;
@@ -2221,6 +2399,9 @@
             }
             if (homologacaoId) {
                 url += `&homologacao_id=${homologacaoId}`;
+            }
+            if (vencedorId) {
+                url += `&vencedor_id=${vencedorId}`;
             }
 
             const button = event.currentTarget;

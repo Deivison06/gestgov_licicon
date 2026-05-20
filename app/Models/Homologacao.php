@@ -70,6 +70,11 @@ class Homologacao extends Model
         return $this->hasOne(Contrato::class);
     }
 
+    public function atasRegistroPreco(): HasMany
+    {
+        return $this->hasMany(AtaRegistroPreco::class);
+    }
+
     public function getValorTotalLotesAttribute(): float
     {
         return (float) $this->lotes->sum('vl_total');

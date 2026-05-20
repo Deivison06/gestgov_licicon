@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Models\Processo;
 use App\Models\Documento;
+use App\Models\Vencedor;
+use App\Models\AtaRegistroPreco;
 use Barryvdh\DomPDF\Facade\Pdf;
 use setasign\Fpdi\Tcpdf\Fpdi;
 use App\Models\Homologacao;
@@ -32,11 +34,26 @@ class FinalizacaoPdfService
             'processo_id' => $processo->id,
             'documento' => $requestData['documento'] ?? null,
             'homologacao_id' => $requestData['homologacao_id'] ?? null,
+            'vencedor_id' => $requestData['vencedor_id'] ?? null,
         ]);
 
+        // Normaliza a chave dinâmica `ata_registro_precos_v{id}` em (documento, vencedor_id).
+        [$documentoNormalizado, $vencedorIdInferido] = $this->normalizarDocumentoAta(
+            $requestData['documento'] ?? null
+        );
+        if ($documentoNormalizado !== null) {
+            $requestData['documento'] = $documentoNormalizado;
+        }
+        if ($vencedorIdInferido !== null && empty($requestData['vencedor_id'])) {
+            $requestData['vencedor_id'] = $vencedorIdInferido;
+        }
+
         $homologacao = $this->resolverHomologacao($processo, $requestData);
+        $vencedor = $this->resolverVencedor($processo, $requestData);
+
         $validatedData = $this->validarRequisicaoPdf($requestData, $processo);
         $validatedData['homologacao'] = $homologacao;
+        $validatedData['vencedor'] = $vencedor;
         $data = $this->prepararDadosPdf($processo, $validatedData);
         $view = $this->determinarViewPdf($processo, $validatedData['documento']);
 
@@ -60,8 +77,60 @@ class FinalizacaoPdfService
         ];
     }
 
-    public function baixarDocumento(Processo $processo, string $tipo, ?int $homologacaoId = null)
+    /**
+     * Quando a request vem com chave dinâmica `ata_registro_precos_v{id}`, retorna
+     * ['ata_registro_precos', $vencedorId]. Caso contrário retorna [null, null].
+     */
+    private function normalizarDocumentoAta(?string $documento): array
     {
+        if (!$documento || strpos($documento, 'ata_registro_precos_v') !== 0) {
+            return [null, null];
+        }
+
+        $vencedorId = (int) substr($documento, strlen('ata_registro_precos_v'));
+        if ($vencedorId <= 0) {
+            return [null, null];
+        }
+
+        return ['ata_registro_precos', $vencedorId];
+    }
+
+    private function resolverVencedor(Processo $processo, array $requestData): ?Vencedor
+    {
+        $vencedorId = $requestData['vencedor_id'] ?? null;
+        if (!$vencedorId) {
+            return null;
+        }
+
+        $vencedor = Vencedor::where('processo_id', $processo->id)
+            ->where('id', $vencedorId)
+            ->first();
+
+        if (!$vencedor) {
+            throw new \DomainException('Vencedor não pertence a este processo.');
+        }
+
+        return $vencedor;
+    }
+
+    public function baixarDocumento(Processo $processo, string $tipo, ?int $homologacaoId = null, ?int $vencedorId = null)
+    {
+        // Chave dinâmica ata_registro_precos_v{id} — extrai vencedor_id
+        if (strpos($tipo, 'ata_registro_precos_v') === 0) {
+            $vencedorId = $vencedorId ?: (int) substr($tipo, strlen('ata_registro_precos_v'));
+            $tipo = 'ata_registro_precos';
+        }
+
+        // Ata por vencedor: baixa direto da tabela própria.
+        if ($tipo === 'ata_registro_precos' && $homologacaoId && $vencedorId) {
+            $ata = AtaRegistroPreco::where('processo_id', $processo->id)
+                ->where('homologacao_id', $homologacaoId)
+                ->where('vencedor_id', $vencedorId)
+                ->firstOrFail();
+
+            return response()->download(public_path($ata->caminho));
+        }
+
         $query = Documento::where('processo_id', $processo->id)
             ->where('tipo_documento', $tipo);
 
@@ -92,8 +161,34 @@ class FinalizacaoPdfService
 
     private function baixarTodosDocumentosComGhostscript(Processo $processo, array $ordem, $documentos): string
     {
+        // Pré-carrega TODAS as Atas por vencedor (homologação × vencedor) já geradas.
+        // Inclui ordenado por (homologacao_id, vencedor_id) pra dar ordem estável.
+        $atasPorVencedor = AtaRegistroPreco::where('processo_id', $processo->id)
+            ->whereNotNull('caminho')
+            ->orderBy('homologacao_id')
+            ->orderBy('vencedor_id')
+            ->get();
+
         $arquivos = [];
         foreach ($ordem as $tipo) {
+            // Quando bate em `ata_registro_precos`, expande para todas as Atas por vencedor.
+            if ($tipo === 'ata_registro_precos') {
+                foreach ($atasPorVencedor as $ata) {
+                    $caminho = public_path($ata->caminho);
+                    if (file_exists($caminho)) {
+                        $arquivos[] = $caminho;
+                    }
+                }
+                // Mantém também a Ata antiga (legado em `documentos`) se ainda existir.
+                if (isset($documentos[$tipo])) {
+                    $caminho = public_path($documentos[$tipo]->caminho);
+                    if (file_exists($caminho)) {
+                        $arquivos[] = $caminho;
+                    }
+                }
+                continue;
+            }
+
             if (!isset($documentos[$tipo])) continue;
             $caminho = public_path($documentos[$tipo]->caminho);
             if (!file_exists($caminho)) continue;
@@ -201,6 +296,7 @@ class FinalizacaoPdfService
 
         $hasSelectedAssinantes = !empty($validatedData['assinantes']);
         $homologacao = $validatedData['homologacao'] ?? null;
+        $vencedor = $validatedData['vencedor'] ?? null;
 
         // Para tipos por-homologação, exibir apenas os lotes daquela homologação;
         // os dados de cabeçalho (orgão/empresa) também vêm da homologação.
@@ -208,10 +304,23 @@ class FinalizacaoPdfService
         if ($homologacao) {
             $homologacao->loadMissing('lotes');
             $loteIds = $homologacao->lotes->pluck('id');
-            $vencedores = $processo->vencedores->map(function ($vencedor) use ($loteIds) {
-                $vencedor->setRelation('lotes', $vencedor->lotes->whereIn('id', $loteIds)->values());
-                return $vencedor;
+            $vencedores = $processo->vencedores->map(function ($v) use ($loteIds) {
+                $v->setRelation('lotes', $v->lotes->whereIn('id', $loteIds)->values());
+                return $v;
             })->filter(fn($v) => $v->lotes->isNotEmpty())->values();
+        }
+
+        // Ata por vencedor: filtra para 1 vencedor só.
+        if ($validatedData['documento'] === 'ata_registro_precos' && $vencedor) {
+            $vencedores = $vencedores->filter(fn($v) => $v->id === $vencedor->id)->values();
+        }
+
+        // Resgata Ata persistida (para puxar número/cargo no template).
+        $ataRegistroPreco = null;
+        if ($validatedData['documento'] === 'ata_registro_precos' && $homologacao && $vencedor) {
+            $ataRegistroPreco = AtaRegistroPreco::where('homologacao_id', $homologacao->id)
+                ->where('vencedor_id', $vencedor->id)
+                ->first();
         }
 
         return [
@@ -219,6 +328,8 @@ class FinalizacaoPdfService
             'prefeitura' => $processo->prefeitura,
             'finalizacao' => $homologacao ?: $processo->finalizacao,
             'homologacao' => $homologacao,
+            'vencedor' => $vencedor,
+            'ataRegistroPreco' => $ataRegistroPreco,
             'vencedores' => $vencedores,
             'dataGeracao' => now()->format('d/m/Y H:i:s'),
             'dataSelecionada' => $validatedData['dataSelecionada'],
@@ -255,6 +366,7 @@ class FinalizacaoPdfService
     {
         $numeroProcessoLimpo = str_replace(['/', '\\'], '_', $processo->numero_processo);
         $homologacao = $validatedData['homologacao'] ?? null;
+        $vencedor = $validatedData['vencedor'] ?? null;
         $subpasta = $this->gerarSubpasta($processo, $validatedData['documento'], $homologacao);
 
         $diretorio = public_path("uploads/documentos_finalizacao/{$subpasta}");
@@ -263,20 +375,73 @@ class FinalizacaoPdfService
         }
 
         $sufixoHomologacao = $homologacao ? "_homol{$homologacao->numero_sequencial}" : '';
-        $nomeArquivo = "processo_finalizacao_{$numeroProcessoLimpo}_{$validatedData['documento']}{$sufixoHomologacao}_" . now()->format('Ymd_His') . '.pdf';
+        $sufixoVencedor = ($validatedData['documento'] === 'ata_registro_precos' && $vencedor)
+            ? "_v{$vencedor->id}"
+            : '';
+        $nomeArquivo = "processo_finalizacao_{$numeroProcessoLimpo}_{$validatedData['documento']}{$sufixoHomologacao}{$sufixoVencedor}_" . now()->format('Ymd_His') . '.pdf';
         $caminhoRelativo = "uploads/documentos_finalizacao/{$subpasta}/{$nomeArquivo}";
         $caminhoCompleto = "{$diretorio}/{$nomeArquivo}";
 
         $pdf->save($caminhoCompleto);
-        $this->atualizarRegistroDocumento(
-            $processo,
-            $validatedData['documento'],
-            $validatedData['dataSelecionada'],
-            $caminhoRelativo,
-            $homologacao
-        );
+
+        // Ata por vencedor: persiste na tabela própria.
+        if ($validatedData['documento'] === 'ata_registro_precos' && $homologacao && $vencedor) {
+            $this->atualizarAtaRegistroPreco(
+                $processo,
+                $homologacao,
+                $vencedor,
+                $validatedData['dataSelecionada'],
+                $caminhoRelativo,
+                $validatedData['assinantes'] ?? []
+            );
+        } else {
+            $this->atualizarRegistroDocumento(
+                $processo,
+                $validatedData['documento'],
+                $validatedData['dataSelecionada'],
+                $caminhoRelativo,
+                $homologacao
+            );
+        }
 
         return $caminhoCompleto;
+    }
+
+    private function atualizarAtaRegistroPreco(
+        Processo $processo,
+        Homologacao $homologacao,
+        Vencedor $vencedor,
+        string $dataSelecionada,
+        string $caminhoRelativo,
+        array $assinantes
+    ): void {
+        $ata = AtaRegistroPreco::where('homologacao_id', $homologacao->id)
+            ->where('vencedor_id', $vencedor->id)
+            ->first();
+
+        if ($ata) {
+            $caminhoAntigo = public_path($ata->caminho);
+            if ($ata->caminho && file_exists($caminhoAntigo)) {
+                unlink($caminhoAntigo);
+            }
+
+            $ata->update([
+                'data_selecionada' => $dataSelecionada,
+                'caminho' => $caminhoRelativo,
+                'assinantes' => $assinantes,
+                'gerado_em' => now(),
+            ]);
+        } else {
+            AtaRegistroPreco::create([
+                'processo_id' => $processo->id,
+                'homologacao_id' => $homologacao->id,
+                'vencedor_id' => $vencedor->id,
+                'data_selecionada' => $dataSelecionada,
+                'caminho' => $caminhoRelativo,
+                'assinantes' => $assinantes,
+                'gerado_em' => now(),
+            ]);
+        }
     }
 
     private function gerarSubpasta(Processo $processo, string $documento, ?Homologacao $homologacao = null): string

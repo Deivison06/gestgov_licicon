@@ -47,8 +47,25 @@
             )
 
             @php
-                $documentoGerado = $documentosGerados->firstWhere('tipo_documento', $tipo);
+                // Ata por vencedor: chave dinâmica `ata_registro_precos_v{id}` traz
+                // `vencedor_id` e `tipo_base` no $doc (preenchidos pelo DocumentoService).
+                $isAtaDinamica = ($doc['tipo_base'] ?? null) === 'ata_registro_precos'
+                    && !empty($doc['vencedor_id']);
+                $vencedorIdDoc = $doc['vencedor_id'] ?? null;
+                $tipoBaseDoc = $doc['tipo_base'] ?? $tipo;
+
+                if ($isAtaDinamica) {
+                    // Documento gerado vem de atasRegistroPreco (tabela própria), não de documentos.
+                    $atasColl = $atasRegistroPreco ?? collect();
+                    $documentoGerado = $atasColl->firstWhere('vencedor_id', $vencedorIdDoc);
+                } else {
+                    $documentoGerado = $documentosGerados->firstWhere('tipo_documento', $tipo);
+                }
+
                 $accordionSuffix = $homologacaoId ? "-h{$homologacaoId}" : '-p';
+                if ($isAtaDinamica) {
+                    $accordionSuffix .= "-v{$vencedorIdDoc}";
+                }
                 $accordionId = "accordion-collapse-{$tipo}{$accordionSuffix}";
                 $requerAssinatura = $doc['requer_assinatura'] ?? false;
                 $temCampos = !empty($doc['campos']);
@@ -90,12 +107,21 @@
                 </td>
                 <td class="flex gap-2 px-6 py-4 text-center">
                     @if ($requerAssinatura)
-                        <input type="date"
-                               class="w-40 px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                               id="data_{{ $tipo }}{{ $idSuffix }}"
-                               x-model="data_doc_{{ $tipo }}"
-                               @blur="saveField('data_doc_{{ $tipo }}')"
-                               value="{{ $documentoGerado->data_selecionada ?? '' }}">
+                        @if ($isAtaDinamica)
+                            {{-- Ata por vencedor: bypass do Alpine state pra não conflitar com várias linhas. --}}
+                            <input type="date"
+                                   class="w-40 px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                                   id="data_{{ $tipo }}{{ $idSuffix }}"
+                                   onblur="saveCampoAta('data_doc_ata_registro_precos', this.value, {{ $homologacaoId ?? 'null' }}, {{ $vencedorIdDoc }})"
+                                   value="{{ optional($documentoGerado)->data_selecionada ? \Carbon\Carbon::parse($documentoGerado->data_selecionada)->format('Y-m-d') : '' }}">
+                        @else
+                            <input type="date"
+                                   class="w-40 px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                                   id="data_{{ $tipo }}{{ $idSuffix }}"
+                                   x-model="data_doc_{{ $tipo }}"
+                                   @blur="saveField('data_doc_{{ $tipo }}')"
+                                   value="{{ $documentoGerado->data_selecionada ?? '' }}">
+                        @endif
 
                         @if ($tipo === 'parecer_controle_interno' && $processo->modalidade === \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO)
                             <select id="parecer_select_{{ $tipo }}{{ $idSuffix }}"
@@ -112,22 +138,37 @@
                 </td>
                 <td class="px-6 py-4">
                     <div class="flex justify-center space-x-2">
+                        @php
+                            $vencedorIdParam = $vencedorIdDoc ?? 'null';
+                            $downloadUrl = route('admin.processos.finalizacao.documento.dowload', [
+                                'processo' => $processo->id,
+                                'tipo' => $tipo,
+                            ]);
+                            $downloadQuery = [];
+                            if ($homologacaoId) {
+                                $downloadQuery[] = 'homologacao_id=' . $homologacaoId;
+                            }
+                            if ($vencedorIdDoc) {
+                                $downloadQuery[] = 'vencedor_id=' . $vencedorIdDoc;
+                            }
+                            $downloadFull = $downloadUrl . (empty($downloadQuery) ? '' : '?' . implode('&', $downloadQuery));
+                        @endphp
                         @if ($requerAssinatura)
                             <button type="button"
-                                    onclick="gerarPdf('{{ $processo->id }}', '{{ $tipo }}', document.getElementById('data_{{ $tipo }}{{ $idSuffix }}').value, event, '{{ $idSuffix }}', {{ $homologacaoId ?? 'null' }})"
+                                    onclick="gerarPdf('{{ $processo->id }}', '{{ $tipo }}', document.getElementById('data_{{ $tipo }}{{ $idSuffix }}').value, event, '{{ $idSuffix }}', {{ $homologacaoId ?? 'null' }}, {{ $vencedorIdParam }})"
                                     class="px-4 py-2 text-xs font-medium text-white transition-colors duration-200 bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
                                 Gerar PDF
                             </button>
                         @else
                             <button type="button"
-                                    onclick="gerarPdfSemAssinatura('{{ $processo->id }}', '{{ $tipo }}', event, {{ $homologacaoId ?? 'null' }})"
+                                    onclick="gerarPdfSemAssinatura('{{ $processo->id }}', '{{ $tipo }}', event, {{ $homologacaoId ?? 'null' }}, {{ $vencedorIdParam }})"
                                     class="px-4 py-2 text-xs font-medium text-white transition-colors duration-200 bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
                                 Gerar PDF
                             </button>
                         @endif
 
                         @if ($documentoGerado)
-                            <a href="{{ route('admin.processos.finalizacao.documento.dowload', ['processo' => $processo->id, 'tipo' => $tipo]) }}{{ $homologacaoId ? '?homologacao_id=' . $homologacaoId : '' }}"
+                            <a href="{{ $downloadFull }}"
                                download
                                class="p-2 text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                                aria-label="Baixar documento">
@@ -205,17 +246,49 @@
                                 @if (!empty($doc['campos']))
                                     <div>
                                         <h4 class="mb-3 text-sm font-semibold text-gray-700">Campos do Documento</h4>
-                                        <form action="{{ route('admin.processos.finalizacao.store', $processo) }}" method="POST" @submit.prevent="submitForm">
-                                            @csrf
-                                            <input type="hidden" name="processo_id" value="{{ $processo->id }}">
-                                            @if ($homologacaoId)
-                                                <input type="hidden" name="homologacao_id" value="{{ $homologacaoId }}">
-                                            @endif
 
-                                            @foreach ($doc['campos'] as $campo)
-                                                @include('Admin.Processos.partials.forms-finalizacao')
-                                            @endforeach
-                                        </form>
+                                        @if ($isAtaDinamica)
+                                            {{-- Ata por vencedor: campos isolados, sem Alpine state (cada vencedor tem sua Ata). --}}
+                                            @php
+                                                $unidadesPrefeitura = $processo->prefeitura->unidades;
+                                            @endphp
+                                            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                                <div>
+                                                    <label class="block mb-1 text-sm font-medium text-gray-700">Número ATA</label>
+                                                    <input type="text"
+                                                           id="numero_ata_{{ $vencedorIdDoc }}"
+                                                           class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                                                           value="{{ optional($documentoGerado)->numero_ata_registro_precos }}"
+                                                           onblur="saveCampoAta('numero_ata_registro_precos', this.value, {{ $homologacaoId ?? 'null' }}, {{ $vencedorIdDoc }})">
+                                                </div>
+                                                <div>
+                                                    <label class="block mb-1 text-sm font-medium text-gray-700">Cargo controle interno</label>
+                                                    <select id="cargo_controle_interno_{{ $vencedorIdDoc }}"
+                                                            class="block w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                                                            onchange="saveCampoAta('cargo_controle_interno', this.value, {{ $homologacaoId ?? 'null' }}, {{ $vencedorIdDoc }})">
+                                                        <option value="">Selecione um Responsável</option>
+                                                        @foreach ($unidadesPrefeitura as $unidade)
+                                                            <option value="{{ $unidade->servidor_responsavel }}"
+                                                                {{ optional($documentoGerado)->cargo_controle_interno === $unidade->servidor_responsavel ? 'selected' : '' }}>
+                                                                {{ $unidade->nome }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        @else
+                                            <form action="{{ route('admin.processos.finalizacao.store', $processo) }}" method="POST" @submit.prevent="submitForm">
+                                                @csrf
+                                                <input type="hidden" name="processo_id" value="{{ $processo->id }}">
+                                                @if ($homologacaoId)
+                                                    <input type="hidden" name="homologacao_id" value="{{ $homologacaoId }}">
+                                                @endif
+
+                                                @foreach ($doc['campos'] as $campo)
+                                                    @include('Admin.Processos.partials.forms-finalizacao')
+                                                @endforeach
+                                            </form>
+                                        @endif
                                     </div>
                                 @endif
                             </div>

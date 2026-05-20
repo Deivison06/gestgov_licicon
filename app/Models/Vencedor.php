@@ -48,6 +48,11 @@ class Vencedor extends Model
         return $this->hasMany(Lote::class)->orderBy('ordem');
     }
 
+    public function atasRegistroPreco(): HasMany
+    {
+        return $this->hasMany(AtaRegistroPreco::class);
+    }
+
     /**
      * Scope a query to only include vencedores from a specific processo.
      */

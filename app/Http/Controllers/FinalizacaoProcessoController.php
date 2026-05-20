@@ -40,6 +40,7 @@ class FinalizacaoProcessoController extends Controller
             'vencedores.lotes',
             'homologacoes.lotes.vencedor',
             'homologacoes.documentos',
+            'homologacoes.atasRegistroPreco',
             'documentos',
         ]);
 
@@ -61,6 +62,15 @@ class FinalizacaoProcessoController extends Controller
         // Sobrescreve com a versão que recebeu camposExtras (mantém termo_adjudicacao etc. já enriquecidos):
         $documentosHomologacao = array_intersect_key($documentos, $escopos['homologacao']);
 
+        // Para cada homologação, expandimos a entrada `ata_registro_precos` em N entradas
+        // (uma por vencedor da homologação). Assim o usuário pode gerar/baixar a Ata
+        // de cada vencedor independentemente.
+        $documentosPorHomologacao = [];
+        foreach ($processo->homologacoes as $homol) {
+            $documentosPorHomologacao[$homol->id] = $this->documentoService
+                ->expandirAtaPorVencedor($documentosHomologacao, $homol);
+        }
+
         $lotesPendentes = $this->homologacaoService->lotesPendentes($processo);
         $temLotesPendentes = $lotesPendentes->isNotEmpty();
         $temVencedores = $processo->vencedores->isNotEmpty();
@@ -78,6 +88,7 @@ class FinalizacaoProcessoController extends Controller
             'documentos',
             'documentosProcesso',
             'documentosHomologacao',
+            'documentosPorHomologacao',
             'lotesPendentes',
             'temLotesPendentes',
             'temVencedores',
@@ -226,9 +237,17 @@ class FinalizacaoProcessoController extends Controller
         }
     }
 
-    public function baixarDocumento(Processo $processo, $tipo)
+    public function baixarDocumento(Request $request, Processo $processo, $tipo)
     {
-        return $this->pdfService->baixarDocumento($processo, $tipo);
+        $homologacaoId = $request->query('homologacao_id') ?: null;
+        $vencedorId = $request->query('vencedor_id') ?: null;
+
+        return $this->pdfService->baixarDocumento(
+            $processo,
+            $tipo,
+            $homologacaoId ? (int) $homologacaoId : null,
+            $vencedorId ? (int) $vencedorId : null
+        );
     }
 
     public function baixarTodosDocumentos(Processo $processo)
