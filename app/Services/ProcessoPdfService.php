@@ -860,7 +860,9 @@ class ProcessoPdfService
 
                 for ($pagina = $i; $pagina <= $fimChunk; $pagina++) {
                     $tplId = $pdf->importPage($pagina);
-                    $pdf->AddPage();
+                    $size = $pdf->getTemplateSize($tplId);
+                    $orientation = $size['width'] > $size['height'] ? 'L' : 'P';
+                    $pdf->AddPage($orientation, [$size['width'], $size['height']]);
                     $pdf->useTemplate($tplId);
 
                     // Pula o carimbo apenas na primeira página (capa) da fase inicial

@@ -944,7 +944,9 @@ class FinalizacaoPdfService
 
                 for ($pagina = $i; $pagina <= $fimChunk; $pagina++) {
                     $tplId = $pdf->importPage($pagina);
-                    $pdf->AddPage();
+                    $size = $pdf->getTemplateSize($tplId);
+                    $orientation = $size['width'] > $size['height'] ? 'L' : 'P';
+                    $pdf->AddPage($orientation, [$size['width'], $size['height']]);
                     $pdf->useTemplate($tplId);
 
                     // Aplica o carimbo em todas as páginas
