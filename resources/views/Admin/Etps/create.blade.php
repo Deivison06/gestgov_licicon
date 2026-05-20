@@ -305,6 +305,9 @@
     {{-- Modal: Buscar no PNCP --}}
     @include('Admin.Etps.partials.modal-pncp-search')
 
+    {{-- Modal: Edição Rápida de Item --}}
+    @include('Admin.Etps.partials.modal-item-quick-edit')
+
     {{-- ═══════════════════════════════════════════════════════
      MODAL: CRIAR ITEM RÁPIDO
 ════════════════════════════════════════════════════════ --}}
@@ -349,6 +352,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.3/Sortable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
     <script>
         /* ── CSRF helpers (lê sempre do <meta>, evita token obsoleto) ── */
@@ -534,33 +538,47 @@
                 });
             }
 
-            /* ── LOTES (CORRIGIDO) ── */
+            /* ── LOTES ── */
             window.adicionarLote = function() {
+                const idx = loteCounter;
                 const container = document.getElementById('lotes-container');
                 const loteDiv = document.createElement('div');
-                loteDiv.className = 'lote-card border border-gray-200 rounded-xl p-6 bg-gray-50 relative';
-                loteDiv.id = `lote-${loteCounter}`;
+                loteDiv.className = 'lote-card border border-gray-200 rounded-xl bg-white shadow-sm overflow-hidden';
+                loteDiv.id = `lote-${idx}`;
 
                 loteDiv.innerHTML = `
-                <button type="button" onclick="removerLote(this)"
-                    class="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-                <div class="mb-4 pr-8">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Nome do Lote *</label>
-                    <input type="text" name="lotes[${loteCounter}][nome]"
-                        placeholder="Ex: Lote ${loteCounter + 1} - Materiais de Escritório"
-                        class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496]" required>
+                <div class="flex items-center justify-between px-5 py-3.5 bg-gray-50 border-b border-gray-200">
+                    <button type="button" class="flex items-center gap-2 flex-1 text-left min-w-0" onclick="toggleLote(${idx})">
+                        <i class="fas fa-chevron-down text-gray-400 transition-transform duration-200" id="chevron-lote-${idx}"></i>
+                        <span class="text-sm font-semibold text-gray-700 truncate" id="label-lote-${idx}">Lote ${idx + 1}</span>
+                    </button>
+                    <div class="flex items-center gap-1 flex-shrink-0 ml-3">
+                        <button type="button" onclick="duplicarLote(${idx})" title="Duplicar este lote"
+                            class="inline-flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-[#009496] hover:bg-[#009496]/10 transition">
+                            <i class="fas fa-copy text-sm"></i>
+                        </button>
+                        <button type="button" onclick="removerLote(this)" title="Remover lote"
+                            class="inline-flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition">
+                            <i class="fas fa-times text-sm"></i>
+                        </button>
+                    </div>
                 </div>
-                ${gerarItensSelector(loteCounter)}
-            `;
+                <div class="px-6 py-5" id="body-lote-${idx}">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Nome do Lote *</label>
+                        <input type="text" name="lotes[${idx}][nome]"
+                            placeholder="Ex: Lote ${idx + 1} - Materiais de Escritório"
+                            oninput="atualizarLabelLote(${idx}, this.value)"
+                            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496]" required>
+                    </div>
+                    ${gerarItensSelector(idx)}
+                </div>`;
 
                 container.appendChild(loteDiv);
-                // CORREÇÃO: Inicializar a busca para o novo lote
-                inicializarBuscaLote(loteCounter);
+                inicializarBuscaLote(idx);
+                initSortable(`itens-selecionados-lote-${idx}`);
                 loteCounter++;
+                return idx;
             };
 
             /* ── GERADOR DE ITENS SELECTOR (CORRIGIDO) ── */
@@ -632,9 +650,13 @@
                     container.insertAdjacentHTML('beforeend', `
                     <div class="flex flex-col md:flex-row md:items-center justify-between bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:border-[#009496]/30 transition gap-4" id="item-${containerId}-${id}">
                         <div class="flex items-center gap-3 flex-1 min-w-0">
+                            <i class="fas fa-grip-vertical text-gray-300 hover:text-gray-500 cursor-grab px-1 drag-handle" title="Arrastar para reordenar"></i>
                             <span class="item-numero inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#009496]/10 text-[#009496] text-xs font-bold flex-shrink-0 border border-[#009496]/20">0</span>
-                            <div class="min-w-0 flex-1">
-                                <p class="text-sm font-semibold text-gray-800 leading-relaxed truncate" title="${descricao}">${descricao}</p>
+                            <div class="min-w-0 flex-1 flex items-center gap-2">
+                                <p class="desc-item-${id} text-sm font-semibold text-gray-800 leading-relaxed truncate" title="${descricao}">${descricao}</p>
+                                <button type="button" onclick="openModalItemQuickEdit(${id}, document.querySelector('.desc-item-${id}').getAttribute('title'))" class="btn-edit-item-${id} text-[#009496] hover:text-[#007a7a] focus:outline-none flex-shrink-0 transition-transform hover:scale-110" title="Ver/Editar Descrição Completa">
+                                    <i class="fas fa-edit"></i>
+                                </button>
                             </div>
                         </div>
                         
@@ -699,6 +721,130 @@
                 container.querySelectorAll('.item-numero').forEach((badge, idx) => {
                     badge.textContent = idx + 1;
                 });
+            };
+
+            window.initSortable = function(containerId) {
+                if (typeof Sortable === 'undefined') return;
+                const el = document.getElementById(containerId);
+                if (!el) return;
+                if (el._sortable) el._sortable.destroy();
+                el._sortable = new Sortable(el, {
+                    handle: '.drag-handle',
+                    animation: 150,
+                    ghostClass: 'opacity-50',
+                    onEnd: function() { renumerarItens(containerId); }
+                });
+            };
+
+            window.toggleLote = function(loteIndex) {
+                const body = document.getElementById(`body-lote-${loteIndex}`);
+                const chevron = document.getElementById(`chevron-lote-${loteIndex}`);
+                if (!body) return;
+                body.classList.toggle('hidden');
+                if (chevron) chevron.classList.toggle('rotate-180');
+            };
+
+            window.toggleSemLote = function() {
+                const body = document.getElementById('itens-selecionados-sem-lote');
+                const chevron = document.getElementById('chevron-sem-lote');
+                if (!body) return;
+                body.classList.toggle('hidden');
+                if (chevron) chevron.classList.toggle('rotate-180');
+            };
+
+            window.atualizarLabelLote = function(loteIndex, value) {
+                const label = document.getElementById(`label-lote-${loteIndex}`);
+                if (label) label.textContent = value.trim() || `Lote ${loteIndex + 1}`;
+            };
+
+            window.duplicarLote = function(sourceIndex) {
+                const nomeOriginal = document.querySelector(`input[name="lotes[${sourceIndex}][nome]"]`)?.value || '';
+                const sourceContainer = document.getElementById(`itens-selecionados-lote-${sourceIndex}`);
+
+                const itensDuplicar = [];
+                if (sourceContainer) {
+                    Array.from(sourceContainer.children).forEach(div => {
+                        const match = div.id.match(/item-itens-selecionados-lote-\d+-(\d+)$/);
+                        if (!match) return;
+                        const itemId = match[1];
+                        const descEl = div.querySelector(`.desc-item-${itemId}`);
+                        const descricao = descEl ? (descEl.getAttribute('title') || descEl.textContent.trim()) : '';
+                        const unidadeEl = div.querySelector(`select[name="lotes[${sourceIndex}][itens][${itemId}][unidade]"]`);
+                        const qtdEl = div.querySelector(`input[name="lotes[${sourceIndex}][itens][${itemId}][quantidade]"]`);
+                        itensDuplicar.push({
+                            id: itemId,
+                            descricao,
+                            unidade: unidadeEl?.value || 'UN',
+                            quantidade: qtdEl?.value || '1'
+                        });
+                    });
+                }
+
+                const newIndex = adicionarLote();
+
+                const nomeInput = document.querySelector(`input[name="lotes[${newIndex}][nome]"]`);
+                if (nomeInput) {
+                    nomeInput.value = nomeOriginal ? `Cópia de ${nomeOriginal}` : `Cópia de Lote ${sourceIndex + 1}`;
+                    atualizarLabelLote(newIndex, nomeInput.value);
+                }
+
+                if (!itensDuplicar.length) return;
+
+                const newContainer = document.getElementById(`itens-selecionados-lote-${newIndex}`);
+                if (!newContainer) return;
+
+                const namePrefix = `lotes[${newIndex}][itens]`;
+                const unidades = ['UN','KG','CX','PCT','L','M','RES','SAC','FR','KIT','JG','FD','GL','RL'];
+                const unidadeLabels = {
+                    UN:'UN (Unidade)',KG:'KG (Quilograma)',CX:'CX (Caixa)',PCT:'PCT (Pacote)',
+                    L:'L (Litro)',M:'M (Metro)',RES:'RES (Resma)',SAC:'SAC (Saco)',
+                    FR:'FR (Frasco)',KIT:'KIT (Kit)',JG:'JG (Jogo)',FD:'FD (Fardo)',
+                    GL:'GL (Galão)',RL:'RL (Rolo)'
+                };
+
+                itensDuplicar.forEach(({ id, descricao, unidade, quantidade }) => {
+                    const opcoesUnidade = unidades.map(u =>
+                        `<option value="${u}" ${unidade === u ? 'selected' : ''}>${unidadeLabels[u]}</option>`
+                    ).join('');
+
+                    newContainer.insertAdjacentHTML('beforeend', `
+                    <div class="flex flex-col md:flex-row md:items-center justify-between bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:border-[#009496]/30 transition gap-4" id="item-itens-selecionados-lote-${newIndex}-${id}">
+                        <div class="flex items-center gap-3 flex-1 min-w-0">
+                            <i class="fas fa-grip-vertical text-gray-300 hover:text-gray-500 cursor-grab px-1 drag-handle" title="Arrastar para reordenar"></i>
+                            <span class="item-numero inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#009496]/10 text-[#009496] text-xs font-bold flex-shrink-0 border border-[#009496]/20">0</span>
+                            <div class="min-w-0 flex-1 flex items-center gap-2">
+                                <p class="desc-item-${id} text-sm font-semibold text-gray-800 leading-relaxed truncate" title="${descricao}">${descricao}</p>
+                                <button type="button" onclick="openModalItemQuickEdit(${id}, document.querySelector('.desc-item-${id}').getAttribute('title'))" class="btn-edit-item-${id} text-[#009496] hover:text-[#007a7a] focus:outline-none flex-shrink-0 transition-transform hover:scale-110" title="Ver/Editar Descrição Completa">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 flex-shrink-0">
+                            <div class="flex flex-col gap-1">
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Unidade</span>
+                                <select name="${namePrefix}[${id}][unidade]" required class="rounded-lg border-gray-300 text-xs py-1.5 focus:border-[#009496] focus:ring-[#009496] w-32 bg-gray-50/50 hover:bg-gray-50 transition">
+                                    ${opcoesUnidade}
+                                </select>
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Quantidade</span>
+                                <input type="number" name="${namePrefix}[${id}][quantidade]" value="${quantidade}" placeholder="Qtd" min="1" required class="rounded-lg border-gray-300 text-xs py-1.5 focus:border-[#009496] focus:ring-[#009496] w-20 bg-gray-50/50 hover:bg-gray-50 transition">
+                            </div>
+                            <div class="flex items-end self-end pb-0.5">
+                                <input type="hidden" name="${namePrefix}[${id}][item_id]" value="${id}">
+                                <button type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-red-600 hover:bg-red-50 focus:outline-none transition" onclick="removerItemSelecionado(${id}, ${newIndex})" title="Excluir Item">
+                                    <i class="fas fa-trash-alt text-sm"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>`);
+
+                    const cb = document.querySelector(`.item-checkbox[value="${id}"][data-lote-index="${newIndex}"]`);
+                    if (cb) cb.checked = true;
+                });
+
+                renumerarItens(`itens-selecionados-lote-${newIndex}`);
+                initSortable(`itens-selecionados-lote-${newIndex}`);
             };
 
             /* ── STEPS ── */
@@ -913,8 +1059,12 @@
                 toggleContratacaoTipo();
             }
 
-            // CORREÇÃO: Inicializar todas as buscas ao carregar a página
             inicializarTodasBuscas();
+            initSortable('itens-selecionados-sem-lote');
+            document.querySelectorAll('.lote-card').forEach((card) => {
+                const match = card.id.match(/lote-(\d+)/);
+                if (match) initSortable(`itens-selecionados-lote-${match[1]}`);
+            });
         });
 
         /* ══════════════════════════════════════════════════════════

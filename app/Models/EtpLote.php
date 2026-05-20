@@ -20,7 +20,8 @@ class EtpLote extends Model
             'etp_lote_item',
             'etp_lote_id',
             'etp_item_id'
-        )->withPivot(['unidade','quantidade'])
+        )->withPivot(['id', 'unidade','quantidade'])
+         ->orderByPivot('id', 'asc')
          ->withTimestamps();
     }
 }
