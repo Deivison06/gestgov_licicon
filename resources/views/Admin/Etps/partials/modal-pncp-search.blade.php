@@ -297,14 +297,17 @@
             })
         })
         .then(handleCsrfExpirado)
-        .then(r => r.ok ? r.json() : Promise.reject('Falha ao cadastrar item.'))
+        .then(async r => {
+            if (r.ok) return r.json();
+            const errData = await r.json().catch(() => ({}));
+            throw new Error(errData.message || `Erro ${r.status} ao cadastrar item.`);
+        })
         .then(data => {
             if (data.success) {
                 const item = data.item;
-                
-                // Add the item to the checkbox list options
+
                 adicionarItemAosListas(item);
-                
+
                 if (activeLoteIndex !== null) {
                     const loteCheckbox = document.querySelector(`#lista_itens_lote_${activeLoteIndex} .item-checkbox[value="${item.id}"]`);
                     if (loteCheckbox) {
@@ -312,7 +315,6 @@
                         toggleItemSelecionado(loteCheckbox, activeLoteIndex);
                     }
                 } else {
-                    // Automatically select (check) this newly created item globally
                     const globalCheckbox = document.querySelector(`#lista_itens_global .item-checkbox[value="${item.id}"]`);
                     if (globalCheckbox) {
                         globalCheckbox.checked = true;
@@ -322,11 +324,11 @@
 
                 closeModalPncp();
             } else {
-                alert('Erro ao importar item: ' + (data.message || 'Erro desconhecido.'));
+                throw new Error(data.message || 'Erro desconhecido.');
             }
         })
         .catch(err => {
-            alert('Erro na integração do PNCP: ' + err.message);
+            alert('Erro na integração do PNCP: ' + (err.message || err));
         })
         .finally(() => {
             selectBtn.disabled = false;

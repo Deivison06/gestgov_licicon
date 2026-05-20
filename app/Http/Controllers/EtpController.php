@@ -113,7 +113,7 @@ class EtpController extends Controller
         $rules['lotes.*.itens.*.quantidade']  = 'required_if:tipo_contratacao,lote|numeric|min:0.01';
 
         try {
-            $request->validate($rules);
+            $request->validate($rules, $this->etpValidationMessages());
             Log::info('Validação do ETP passou', ['user_id' => auth()->id()]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             Log::warning('Falha na validação do ETP', [
@@ -341,7 +341,7 @@ class EtpController extends Controller
         $rules['lotes.*.itens.*.quantidade']  = 'required_if:tipo_contratacao,lote|numeric|min:0.01';
 
         try {
-            $request->validate($rules);
+            $request->validate($rules, $this->etpValidationMessages());
             Log::info('Validação da atualização passou', [
                 'user_id' => auth()->id(),
                 'etp_id' => $id
@@ -496,7 +496,7 @@ class EtpController extends Controller
 
         try {
             $request->validate([
-                'descricao_item' => 'required|string|max:500',
+                'descricao_item' => 'required|string|max:5000',
                 'unidade_medida' => 'nullable|string|max:100',
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -819,5 +819,36 @@ class EtpController extends Controller
         }, $filename, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ]);
+    }
+
+    private function etpValidationMessages(): array
+    {
+        return [
+            'secretaria_id.required'                     => 'Selecione a secretaria.',
+            'secretaria_id.exists'                       => 'A secretaria selecionada é inválida.',
+            'servidor_responsavel.required'              => 'Informe o nome do servidor responsável.',
+            'objeto_licitacao.required'                  => 'Descreva o objeto da licitação.',
+            'justificativa_necessidade.required'         => 'Informe a justificativa da necessidade.',
+            'modalidade.required'                        => 'Selecione a modalidade da licitação.',
+            'modalidade.in'                              => 'Modalidade inválida.',
+            'tipo_contratacao.required_if'               => 'Selecione o tipo de contratação.',
+            'tipo_contratacao.in'                        => 'Tipo de contratação inválido.',
+            'dotacao_orcamentaria.required'              => 'Informe a dotação orçamentária.',
+            'prazo_entrega.required'                     => 'Informe o prazo de entrega.',
+            'cotacao_path.file'                          => 'O anexo deve ser um arquivo válido.',
+            'cotacao_path.max'                           => 'O arquivo anexado não pode exceder 90 MB.',
+            'itens.required_if'                          => 'Adicione pelo menos um item antes de salvar.',
+            'itens.*.unidade.required_if'                => 'Informe a unidade de um dos itens selecionados.',
+            'itens.*.quantidade.required_if'             => 'Informe a quantidade de um dos itens selecionados.',
+            'itens.*.quantidade.numeric'                 => 'A quantidade dos itens deve ser um número.',
+            'itens.*.quantidade.min'                     => 'A quantidade dos itens deve ser maior que zero.',
+            'lotes.required_if'                          => 'Adicione pelo menos um lote antes de salvar.',
+            'lotes.*.nome.required_if'                   => 'Informe o nome de todos os lotes.',
+            'lotes.*.itens.required_if'                  => 'Adicione pelo menos um item em cada lote.',
+            'lotes.*.itens.*.unidade.required_if'        => 'Informe a unidade de todos os itens nos lotes.',
+            'lotes.*.itens.*.quantidade.required_if'     => 'Informe a quantidade de todos os itens nos lotes.',
+            'lotes.*.itens.*.quantidade.numeric'         => 'A quantidade dos itens deve ser um número.',
+            'lotes.*.itens.*.quantidade.min'             => 'A quantidade dos itens deve ser maior que zero.',
+        ];
     }
 }

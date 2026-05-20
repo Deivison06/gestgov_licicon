@@ -302,6 +302,29 @@
     </div>
 
 
+    {{-- Modal: Validação / Confirmação antes de concluir ETP --}}
+    <div id="modal-concluir-etp" class="fixed inset-0 z-[80] flex items-center justify-center hidden bg-black bg-opacity-50">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 overflow-hidden">
+            <div class="p-5 border-b border-gray-200 bg-gray-50 flex justify-between items-center rounded-t-2xl">
+                <h3 id="modal-concluir-titulo" class="text-lg font-bold text-gray-800"></h3>
+                <button type="button" onclick="fecharModalConcluir()" class="text-gray-400 hover:text-red-500 transition-colors">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+            <div id="modal-concluir-body" class="p-6"></div>
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
+                <button type="button" onclick="fecharModalConcluir()"
+                    class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition">
+                    Fechar
+                </button>
+                <button type="button" id="btn-confirmar-concluir" onclick="confirmarConcluirEtp()"
+                    class="hidden px-5 py-2 text-sm font-bold text-white bg-green-600 rounded-lg hover:bg-green-700 transition shadow-sm">
+                    <i class="fas fa-check-circle mr-1"></i> Confirmar e Enviar
+                </button>
+            </div>
+        </div>
+    </div>
+
     {{-- Modal: Buscar no PNCP --}}
     @include('Admin.Etps.partials.modal-pncp-search')
 
@@ -899,20 +922,145 @@
                 }
             };
 
+            /* ── VALIDAÇÃO CLIENT-SIDE ── */
+            function validarFormularioEtp() {
+                const erros = [];
+                const modalidade = document.getElementById('modalidade').value;
+
+                if (!document.getElementById('secretaria_id').value)
+                    erros.push('Selecione a secretaria (Passo 1).');
+                if (!document.getElementById('servidor_responsavel').value.trim())
+                    erros.push('Informe o servidor responsável (Passo 1).');
+                if (!modalidade)
+                    erros.push('Selecione a modalidade da licitação (Passo 1).');
+                if (!document.getElementById('objeto_licitacao').value.trim())
+                    erros.push('Descreva o objeto da licitação (Passo 2).');
+                if (!document.getElementById('justificativa_necessidade').value.trim())
+                    erros.push('Informe a justificativa da necessidade (Passo 2).');
+                if (!document.getElementById('prazo_entrega').value.trim())
+                    erros.push('Informe o prazo de entrega (Passo 3).');
+                if (!document.getElementById('dotacao_orcamentaria').value.trim())
+                    erros.push('Informe a dotação orçamentária (Passo 3).');
+
+                if (modalidade === 'concorrencia' || modalidade === 'inexigibilidade') {
+                    const f = document.getElementById('cotacao_path');
+                    if (f && !f.files.length) erros.push('Anexe o Projeto Básico (Passo 3).');
+                    return erros;
+                }
+
+                const tipoEl = document.querySelector('input[name="tipo_contratacao"]:checked');
+                if (!tipoEl) {
+                    erros.push('Selecione o tipo de contratação (Passo 3).');
+                    return erros;
+                }
+
+                const tipo = tipoEl.value;
+
+                if (tipo === 'obras') {
+                    const f = document.getElementById('cotacao_path');
+                    if (f && !f.files.length) erros.push('Anexe o Projeto Básico (Passo 3).');
+                    return erros;
+                }
+
+                if (tipo === 'lote') {
+                    const loteCards = document.querySelectorAll('.lote-card');
+                    if (!loteCards.length) {
+                        erros.push('Adicione pelo menos um lote (Passo 3).');
+                    } else {
+                        loteCards.forEach((card, i) => {
+                            const match = card.id.match(/lote-(\d+)/);
+                            if (!match) return;
+                            const idx = match[1];
+                            const nomeInput = card.querySelector(`input[name="lotes[${idx}][nome]"]`);
+                            if (!nomeInput?.value.trim())
+                                erros.push(`Lote ${i + 1}: informe o nome do lote.`);
+                            const container = document.getElementById(`itens-selecionados-lote-${idx}`);
+                            if (!container || !container.children.length) {
+                                erros.push(`Lote ${i + 1}: adicione pelo menos um item.`);
+                            } else {
+                                let semQtd = false;
+                                container.querySelectorAll('input[type="number"]').forEach(el => {
+                                    if (!el.value || parseFloat(el.value) <= 0) semQtd = true;
+                                });
+                                if (semQtd) erros.push(`Lote ${i + 1}: preencha a quantidade de todos os itens.`);
+                            }
+                        });
+                    }
+                } else {
+                    const container = document.getElementById('itens-selecionados-sem-lote');
+                    if (!container || !container.children.length) {
+                        erros.push('Adicione pelo menos um item (Passo 3).');
+                    } else {
+                        let semQtd = false;
+                        container.querySelectorAll('input[type="number"]').forEach(el => {
+                            if (!el.value || parseFloat(el.value) <= 0) semQtd = true;
+                        });
+                        if (semQtd) erros.push('Preencha a quantidade de todos os itens selecionados.');
+                    }
+                }
+
+                return erros;
+            }
+
+            /* ── MODAIS DE VALIDAÇÃO / CONFIRMAÇÃO ── */
+            window.fecharModalConcluir = function() {
+                document.getElementById('modal-concluir-etp').classList.add('hidden');
+            };
+
+            window.confirmarConcluirEtp = function() {
+                fecharModalConcluir();
+                document.getElementById('should_redirect').value = '1';
+                document.getElementById('etpForm').submit();
+            };
+
+            function abrirModalErrosEtp(erros) {
+                document.getElementById('modal-concluir-titulo').textContent = 'Verifique os campos obrigatórios';
+                document.getElementById('modal-concluir-titulo').className = 'text-lg font-bold text-red-700';
+                const items = erros.map(e =>
+                    `<li class="flex items-start gap-2 text-sm text-gray-800">
+                        <i class="fas fa-exclamation-circle text-red-500 mt-0.5 flex-shrink-0"></i>
+                        <span>${e}</span>
+                    </li>`
+                ).join('');
+                document.getElementById('modal-concluir-body').innerHTML = `
+                    <p class="text-sm text-gray-600 mb-3">Corrija os itens abaixo antes de concluir o ETP:</p>
+                    <ul class="space-y-2">${items}</ul>`;
+                document.getElementById('btn-confirmar-concluir').classList.add('hidden');
+                document.getElementById('modal-concluir-etp').classList.remove('hidden');
+            }
+
+            function abrirModalConfirmacaoEtp() {
+                document.getElementById('modal-concluir-titulo').textContent = 'Confirmar conclusão do ETP';
+                document.getElementById('modal-concluir-titulo').className = 'text-lg font-bold text-gray-800';
+                document.getElementById('modal-concluir-body').innerHTML = `
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-paper-plane text-green-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800 mb-1">Tudo certo! O ETP está pronto para envio.</p>
+                            <p class="text-sm text-gray-500">Após confirmar, o ETP será enviado para análise. Deseja continuar?</p>
+                        </div>
+                    </div>`;
+                document.getElementById('btn-confirmar-concluir').classList.remove('hidden');
+                document.getElementById('modal-concluir-etp').classList.remove('hidden');
+            }
+
             /* ── SUBMETER ETP (salvar ou concluir) ── */
             window.submeterEtp = function(tipo) {
                 document.getElementById('action_type').value = tipo;
 
-                // Se for "salvar" (rascunho), não redireciona
-                // Se for "concluir", redireciona
                 if (tipo === 'salvar') {
                     document.getElementById('should_redirect').value = '0';
-
-                    // Envia o formulário via AJAX para não redirecionar
                     enviarFormularioAjax();
+                    return;
+                }
+
+                const erros = validarFormularioEtp();
+                if (erros.length > 0) {
+                    abrirModalErrosEtp(erros);
                 } else {
-                    document.getElementById('should_redirect').value = '1';
-                    document.getElementById('etpForm').submit();
+                    abrirModalConfirmacaoEtp();
                 }
             };
 
