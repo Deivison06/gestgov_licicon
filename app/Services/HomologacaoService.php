@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\ModalidadeEnum;
 use App\Models\Homologacao;
 use App\Models\Lote;
 use App\Models\Processo;
@@ -81,15 +82,35 @@ class HomologacaoService
     }
 
     /**
+     * Modalidades que admitem homologação parcial (várias homologações para
+     * lotes diferentes do mesmo processo). Concorrência e Inexigibilidade têm
+     * sempre uma única homologação completa.
+     */
+    public function permiteHomologacaoParcial(Processo $processo): bool
+    {
+        return in_array(
+            $processo->modalidade,
+            [ModalidadeEnum::PREGAO_ELETRONICO, ModalidadeEnum::DISPENSA],
+            true
+        );
+    }
+
+    /**
      * Regra de liberação do botão "Gerar Nova Homologação":
-     *  - Permite quando ainda não existe nenhuma homologação OU
-     *  - Quando há pendência (lotes não vinculados OU homologação em edição).
-     *  - Bloqueia somente quando já existe homologação E está tudo concluído.
+     *  - Permite quando ainda não existe nenhuma homologação (1ª é sempre liberada).
+     *  - Em CONCORRÊNCIA e INEXIGIBILIDADE, bloqueia qualquer nova após a primeira
+     *    (só admitem homologação única e completa).
+     *  - Em PREGÃO ELETRÔNICO e DISPENSA, libera enquanto houver pendência
+     *    (lotes não vinculados OU homologação em edição).
      */
     public function podeCriarNovaHomologacao(Processo $processo): bool
     {
         if (!$this->temHomologacao($processo)) {
             return true;
+        }
+
+        if (!$this->permiteHomologacaoParcial($processo)) {
+            return false;
         }
 
         return $this->temLotesPendentes($processo)
@@ -108,6 +129,13 @@ class HomologacaoService
     public function criarNovaHomologacao(Processo $processo): Homologacao
     {
         return DB::transaction(function () use ($processo) {
+            if ($this->temHomologacao($processo) && !$this->permiteHomologacaoParcial($processo)) {
+                throw new \DomainException(
+                    'Esta modalidade admite apenas uma homologação completa. '
+                    . 'Edite a homologação existente em vez de criar uma nova.'
+                );
+            }
+
             $lotesPendentesIds = $processo->lotesPendentesHomologacao()->pluck('id');
 
             if ($lotesPendentesIds->isEmpty()) {

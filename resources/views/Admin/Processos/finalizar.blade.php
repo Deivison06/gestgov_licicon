@@ -119,6 +119,8 @@
             $documentosProcessoCount = is_countable($documentosProcesso ?? null) ? count($documentosProcesso) : 0;
             $homologacoesList = $processo->homologacoes ?? collect();
             $documentosLegadosList = $documentosLegados ?? collect();
+            $ehHomologacaoUnica = $ehHomologacaoUnica ?? false;
+            $homologacaoUnica   = $homologacaoUnica ?? null;
 
             // ---- Métricas para o resumo do topo + cards ---------------------
             $totalHomologacoes      = $homologacoesList->count();
@@ -203,21 +205,34 @@
             <div class="mb-8 overflow-hidden bg-white border border-gray-200 shadow-sm rounded-2xl">
                 <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
                     <h3 class="text-lg font-semibold text-gray-800">Documentos do Processo</h3>
-                    <p class="mt-1 text-xs text-gray-500">Documentos únicos do processo (sessão pública, propostas, habilitação).</p>
+                    <p class="mt-1 text-xs text-gray-500">
+                        @if ($ehHomologacaoUnica)
+                            Todos os documentos do processo (sessão pública, propostas, habilitação, termo de homologação, publicações).
+                        @else
+                            Documentos únicos do processo (sessão pública, propostas, habilitação).
+                        @endif
+                    </p>
                 </div>
                 <div class="overflow-x-auto">
                     @include('Admin.Processos.partials.bloco-documentos', [
                         'processo' => $processo,
                         'documentos' => $documentosProcesso,
-                        'documentosGerados' => $processo->documentos->whereNull('homologacao_id'),
-                        'homologacao' => null,
+                        'documentosGerados' => $ehHomologacaoUnica
+                            ? ($homologacaoUnica
+                                ? $processo->documentos->filter(fn ($d) => $d->homologacao_id === null || $d->homologacao_id === $homologacaoUnica->id)
+                                : $processo->documentos->whereNull('homologacao_id'))
+                            : $processo->documentos->whereNull('homologacao_id'),
+                        'homologacao' => $ehHomologacaoUnica ? $homologacaoUnica : null,
+                        'atasRegistroPreco' => $ehHomologacaoUnica && $homologacaoUnica
+                            ? ($homologacaoUnica->atasRegistroPreco ?? collect())
+                            : collect(),
                     ])
                 </div>
             </div>
         @endif
 
         {{-- ====== BLOCO 2a: Placeholder da primeira homologação (quando ainda não existe nenhuma) ====== --}}
-        @if ($homologacoesList->isEmpty() && $temVencedores && !empty($documentosHomologacao))
+        @if (!$ehHomologacaoUnica && $homologacoesList->isEmpty() && $temVencedores && !empty($documentosHomologacao))
             <div class="mb-8 overflow-hidden bg-white border border-emerald-200 shadow-sm rounded-2xl">
                 <div class="px-6 py-4 border-b border-emerald-200 bg-gradient-to-r from-emerald-50 to-teal-50">
                     <div class="flex flex-col items-start justify-between gap-2 lg:flex-row lg:items-center">
@@ -245,6 +260,7 @@
         @endif
 
         {{-- ====== BLOCO 2: Cada Homologação (card colapsável) ====== --}}
+        @if (!$ehHomologacaoUnica)
         @foreach ($homologacoesList as $homologacao)
             @php
                 $isHomologada = $homologacao->status === \App\Models\Homologacao::STATUS_HOMOLOGADA;
@@ -386,9 +402,10 @@
                 </div>
             </div>
         @endforeach
+        @endif
 
         {{-- ====== BLOCO 3: Lotes pendentes + botão "Gerar Nova Homologação" ====== --}}
-        @if ($temVencedores)
+        @if (!$ehHomologacaoUnica && $temVencedores)
             <div class="mb-8 overflow-hidden bg-white border border-amber-200 shadow-sm rounded-2xl">
                 <div class="px-6 py-4 border-b border-amber-200 bg-gradient-to-r from-amber-50 to-yellow-50">
                     <div class="flex flex-col items-start justify-between gap-3 lg:flex-row lg:items-center">
@@ -483,7 +500,7 @@
         </div>
 
         {{-- ====== Documentos antigos do processo (legado) — discreto, colapsado por padrão ====== --}}
-        @if ($documentosLegadosList->isNotEmpty())
+        @if (!$ehHomologacaoUnica && $documentosLegadosList->isNotEmpty())
             <details class="mt-6 group bg-white border border-gray-200 rounded-xl">
                 <summary class="px-5 py-3 cursor-pointer text-sm font-medium text-gray-600 hover:text-gray-900 flex items-center justify-between list-none">
                     <span class="flex items-center gap-2">

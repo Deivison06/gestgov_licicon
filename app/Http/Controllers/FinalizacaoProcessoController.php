@@ -77,6 +77,23 @@ class FinalizacaoProcessoController extends Controller
         $temHomologacao = $this->homologacaoService->temHomologacao($processo);
         $podeCriarNovaHomologacao = $this->homologacaoService->podeCriarNovaHomologacao($processo);
 
+        // Concorrência e Inexigibilidade: homologação única, sem cards separados.
+        // Mescla os documentos por-homologação na seção "Documentos do Processo".
+        $ehHomologacaoUnica = !$this->homologacaoService->permiteHomologacaoParcial($processo);
+        $homologacaoUnica   = $ehHomologacaoUnica
+            ? $processo->homologacoes->sortBy('id')->first()
+            : null;
+
+        if ($ehHomologacaoUnica) {
+            $documentosProcesso = array_merge($documentosProcesso, $documentosHomologacao);
+            if ($homologacaoUnica) {
+                $documentosProcesso = $this->documentoService
+                    ->expandirAtaPorVencedor($documentosProcesso, $homologacaoUnica);
+            }
+            // Esvazia para BLOCO 2a/2 não renderizarem
+            $documentosHomologacao = [];
+        }
+
         // Documentos legados: tipos por-homologação criados antes da feature, sem homologacao_id.
         $tiposPorHomologacao = $this->homologacaoService->tiposPorHomologacao();
         $documentosLegados = $processo->documentos
@@ -94,7 +111,9 @@ class FinalizacaoProcessoController extends Controller
             'temVencedores',
             'temHomologacao',
             'podeCriarNovaHomologacao',
-            'documentosLegados'
+            'documentosLegados',
+            'ehHomologacaoUnica',
+            'homologacaoUnica'
         ));
     }
 
