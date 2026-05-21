@@ -210,6 +210,15 @@
 
 
 
+                        {{-- BOTÃO: IMPORTAR VIA EXCEL --}}
+                        <div class="mb-6 flex justify-end">
+                            <button type="button" id="btnImportarItens"
+                                class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-all shadow-sm gap-2">
+                                <i class="fas fa-file-excel"></i>
+                                Importar Itens via Excel
+                            </button>
+                        </div>
+
                         {{-- ÁREA DE ITENS (sem lote / compras) --}}
                         <div id="area-itens-sem-lote"
                             class="{{ in_array(old('tipo_contratacao'), ['lote']) ? 'hidden' : 'block' }}">
@@ -331,6 +340,9 @@
     {{-- Modal: Edição Rápida de Item --}}
     @include('Admin.Etps.partials.modal-item-quick-edit')
 
+    {{-- Modal: Importar Itens via Excel --}}
+    @include('Admin.Etps.partials.modal-importar-itens')
+
     {{-- ═══════════════════════════════════════════════════════
      MODAL: CRIAR ITEM RÁPIDO
 ════════════════════════════════════════════════════════ --}}
@@ -420,6 +432,15 @@
             preencherServidor();
             secretariaSelect.addEventListener('change', preencherServidor);
 
+            function toggleInputs(container, enable) {
+                if (!container) return;
+                container.querySelectorAll('input, select, textarea').forEach(el => {
+                    if (el.name !== '_token' && el.name !== '_method') {
+                        el.disabled = !enable;
+                    }
+                });
+            }
+
             /* ── MODALIDADE ── */
             window.toggleModalidadeFields = function() {
                 const modalidade = modalidadeSelect.value;
@@ -439,13 +460,18 @@
                 opcoesPregao.classList.add('hidden');
                 opcoesDisp.classList.add('hidden');
                 camposItens.classList.remove('hidden');
+                toggleInputs(camposItens, true);
+
                 labelPdf.innerText = 'Anexar Cotação do Fornecedor Local';
                 cotacaoInput.removeAttribute('required');
 
                 if (modalidade === 'concorrencia' || modalidade === 'inexigibilidade') {
                     camposItens.classList.add('hidden');
+                    toggleInputs(camposItens, false);
                     areaItensSemLote.classList.add('hidden');
+                    toggleInputs(areaItensSemLote, false);
                     areaLotes.classList.add('hidden');
+                    toggleInputs(areaLotes, false);
                     labelPdf.innerText = 'Anexar Projeto Básico *';
                     cotacaoInput.setAttribute('required', 'required');
 
@@ -453,22 +479,24 @@
                     opcoesDisp.classList.remove('hidden');
                     const valorSalvo = '{{ old('tipo_contratacao') }}';
                     if (valorSalvo === 'servicos' || valorSalvo === 'compras' || valorSalvo === 'obras') {
-                        document.querySelector(`input[name="tipo_contratacao"][value="${valorSalvo}"]`)
-                            .checked = true;
+                        const radioEl = document.querySelector(`input[name="tipo_contratacao"][value="${valorSalvo}"]`);
+                        if (radioEl) radioEl.checked = true;
                     }
                     opcoesDisp.querySelectorAll('input[type="radio"]').forEach(el => {
                         el.required = true;
                     });
                     areaItensSemLote.classList.remove('hidden');
+                    toggleInputs(areaItensSemLote, true);
                     areaLotes.classList.add('hidden');
+                    toggleInputs(areaLotes, false);
                     toggleContratacaoTipo();
 
                 } else if (modalidade === 'pregao') {
                     opcoesPregao.classList.remove('hidden');
                     const valorSalvo = '{{ old('tipo_contratacao') }}';
                     if (valorSalvo === 'item' || valorSalvo === 'lote') {
-                        document.querySelector(`input[name="tipo_contratacao"][value="${valorSalvo}"]`)
-                            .checked = true;
+                        const radioEl = document.querySelector(`input[name="tipo_contratacao"][value="${valorSalvo}"]`);
+                        if (radioEl) radioEl.checked = true;
                     }
                     opcoesPregao.querySelectorAll('input[type="radio"]').forEach(el => {
                         el.required = true;
@@ -477,8 +505,11 @@
 
                 } else {
                     camposItens.classList.add('hidden');
+                    toggleInputs(camposItens, false);
                     areaItensSemLote.classList.add('hidden');
+                    toggleInputs(areaItensSemLote, false);
                     areaLotes.classList.add('hidden');
+                    toggleInputs(areaLotes, false);
                 }
             };
 
@@ -495,20 +526,26 @@
                 // Se for OBRAS, esconde a área de itens e muda o label do PDF
                 if (val === 'obras') {
                     areaSemLote.classList.add('hidden');
+                    toggleInputs(areaSemLote, false);
                     areaLotes.classList.add('hidden');
+                    toggleInputs(areaLotes, false);
                     labelPdf.innerText = 'Anexar Projeto Básico *';
                     document.getElementById('cotacao_path').setAttribute('required', 'required');
                 }
                 else if (val === 'lote') {
                     areaSemLote.classList.add('hidden');
+                    toggleInputs(areaSemLote, false);
                     areaLotes.classList.remove('hidden');
+                    toggleInputs(areaLotes, true);
                     labelPdf.innerText = 'Anexar Cotação do Fornecedor Local';
                     document.getElementById('cotacao_path').removeAttribute('required');
                     if (document.querySelectorAll('.lote-card').length === 0) adicionarLote();
                 }
                 else {
                     areaSemLote.classList.remove('hidden');
+                    toggleInputs(areaSemLote, true);
                     areaLotes.classList.add('hidden');
+                    toggleInputs(areaLotes, false);
                     labelPdf.innerText = 'Anexar Cotação do Fornecedor Local';
                     document.getElementById('cotacao_path').removeAttribute('required');
                 }
@@ -721,6 +758,7 @@
                     removerItemSelecionado(id, loteIndex);
                 }
                 renumerarItens(containerId);
+                agendarAutoSave();
             };
 
             window.removerItemSelecionado = function(id, loteIndex) {
@@ -736,6 +774,7 @@
                 const cb = document.querySelector(sel);
                 if (cb) cb.checked = false;
                 renumerarItens(containerId);
+                agendarAutoSave();
             };
 
             window.renumerarItens = function(containerId) {
@@ -1055,12 +1094,12 @@
             }
 
             /* ── SUBMETER ETP (salvar ou concluir) ── */
-            window.submeterEtp = function(tipo, callback) {
+            window.submeterEtp = function(tipo, callback, silent) {
                 document.getElementById('action_type').value = tipo;
 
                 if (tipo === 'salvar') {
                     document.getElementById('should_redirect').value = '0';
-                    enviarFormularioAjax(callback);
+                    enviarFormularioAjax(callback, silent);
                     return;
                 }
 
@@ -1073,16 +1112,14 @@
             };
 
             // Função para enviar o formulário via AJAX
-            function enviarFormularioAjax(callback) {
+            function enviarFormularioAjax(callback, silent) {
                 const form = document.getElementById('etpForm');
                 const formData = new FormData(form);
 
-                // Mostra indicador de loading
-                const btnSalvar = document.querySelector('button[onclick="submeterEtp(\'salvar\')"]');
-                const btnNext = document.querySelector('button[onclick="nextStep(3)"]');
-                
+                const btnSalvar = silent ? null : document.querySelector('button[onclick="submeterEtp(\'salvar\')"]');
+                const btnNext   = silent ? null : document.querySelector('button[onclick="nextStep(3)"]');
                 const originalContentSalvar = btnSalvar ? btnSalvar.innerHTML : '';
-                const originalContentNext = btnNext ? btnNext.innerHTML : '';
+                const originalContentNext   = btnNext   ? btnNext.innerHTML   : '';
 
                 if (btnSalvar) {
                     btnSalvar.disabled = true;
@@ -1119,13 +1156,14 @@
                     })
                     .then(data => {
                         if (data.success) {
-                            // Mostra mensagem de sucesso
-                            mostrarNotificacao('success', data.message || 'Rascunho salvo com sucesso!');
+                            if (silent) {
+                                mostrarIndicadorAutoSave();
+                            } else {
+                                mostrarNotificacao('success', data.message || 'Rascunho salvo com sucesso!');
+                            }
 
-                            // Atualiza o ID do ETP no formulário para próximos saves se for store
                             if (data.etp_id && form.action.endsWith('/etps')) {
                                 form.action = form.action + '/' + data.etp_id;
-                                // Muda method para PUT
                                 if (!document.querySelector('input[name="_method"]')) {
                                     const methodInput = document.createElement('input');
                                     methodInput.type = 'hidden';
@@ -1135,21 +1173,18 @@
                                 }
                             }
 
-                            // Executa o callback de transição de tela, se existir
-                            if (typeof callback === 'function') {
-                                callback();
-                            }
+                            if (typeof callback === 'function') callback();
                         } else {
-                            // Mostra mensagem de erro
-                            mostrarNotificacao('error', data.message || 'Erro ao salvar rascunho.');
+                            if (!silent) mostrarNotificacao('error', data.message || 'Erro ao salvar rascunho.');
                         }
                     })
                     .catch(error => {
-                        console.error('Erro:', error);
-                        // Exibir múltiplos erros se for validação (trocando \n por <br> se for HTML)
-                        let msg = error.message || 'Erro ao salvar rascunho. Tente novamente.';
-                        msg = msg.replace(/\n/g, '<br>');
-                        mostrarNotificacao('error', msg);
+                        if (!silent) {
+                            console.error('Erro:', error);
+                            let msg = error.message || 'Erro ao salvar rascunho. Tente novamente.';
+                            msg = msg.replace(/\n/g, '<br>');
+                            mostrarNotificacao('error', msg);
+                        }
                     })
                     .finally(() => {
                         if (btnSalvar) {
@@ -1162,6 +1197,33 @@
                         }
                     });
             }
+
+            function mostrarIndicadorAutoSave() {
+                let ind = document.getElementById('indicador-auto-save');
+                if (!ind) {
+                    ind = document.createElement('span');
+                    ind.id = 'indicador-auto-save';
+                    ind.className = 'fixed bottom-5 left-5 z-[200] flex items-center gap-1.5 px-3 py-1.5 bg-gray-800 text-white text-xs font-medium rounded-full shadow-lg pointer-events-none';
+                    ind.style.cssText = 'opacity:0; transform:translateY(6px); transition:opacity .3s,transform .3s;';
+                    ind.innerHTML = '<i class="fas fa-check text-emerald-400 text-[10px]"></i> Auto-salvo';
+                    document.body.appendChild(ind);
+                }
+                ind.style.opacity = '1';
+                ind.style.transform = 'translateY(0)';
+                clearTimeout(ind._timer);
+                ind._timer = setTimeout(function() {
+                    ind.style.opacity = '0';
+                    ind.style.transform = 'translateY(6px)';
+                }, 2500);
+            }
+
+            let autoSaveTimer = null;
+            window.agendarAutoSave = function() {
+                const form = document.getElementById('etpForm');
+                if (!form || form.action.endsWith('/etps')) return;
+                clearTimeout(autoSaveTimer);
+                autoSaveTimer = setTimeout(function() { submeterEtp('salvar', null, true); }, 1500);
+            };
 
             // Função para mostrar notificações
             function mostrarNotificacao(tipo, mensagem) {
@@ -1369,6 +1431,7 @@
         const modalImportar = document.getElementById('modalImportarItens');
         const btnImportar = document.getElementById('btnImportarItens');
         const btnCancelar = document.getElementById('btnCancelarImportacao');
+        const btnFecharImportar = document.getElementById('btnFecharModalImportar');
         const btnConfirmar = document.getElementById('btnConfirmarImportacao');
         const btnBaixarModelo = document.getElementById('btnBaixarModelo');
         const overlay = document.getElementById('modal-overlay');
@@ -1392,6 +1455,8 @@
                     return;
                 }
                 resetarModal();
+                const infoLote = document.getElementById('info-lote-import');
+                if (infoLote) infoLote.classList.toggle('hidden', tipoContratacaoAtual !== 'lote');
                 modalImportar.classList.remove('hidden');
                 setTimeout(() => modalImportar.classList.add('show'), 10);
             });
@@ -1408,6 +1473,7 @@
         }
 
         if (btnCancelar) btnCancelar.addEventListener('click', fecharModal);
+        if (btnFecharImportar) btnFecharImportar.addEventListener('click', fecharModal);
         if (overlay) overlay.addEventListener('click', fecharModal);
 
         function resetarModal() {
@@ -1417,6 +1483,8 @@
             if (mensagemErro) mensagemErro.classList.add('hidden');
             if (previaItens) previaItens.classList.add('hidden');
             if (btnConfirmar) btnConfirmar.disabled = true;
+            const infoLote = document.getElementById('info-lote-import');
+            if (infoLote) infoLote.classList.add('hidden');
             itensImportados = [];
         }
 
@@ -1501,54 +1569,140 @@
             listaIitensImportados.innerHTML = '';
             itens.forEach(item => {
                 const li = document.createElement('li');
-                li.className = 'flex justify-between items-center text-sm';
-                li.innerHTML =
-                    `<span class="font-medium">${item.descricao}</span><span class="text-gray-600">${item.quantidade} ${item.unidade}</span>`;
+                li.className = 'flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2 shadow-sm';
+                li.dataset.itemId = item.item_id;
+                const descSafe = item.descricao.replace(/"/g, '&quot;').replace(/</g, '&lt;');
+                li.innerHTML = `
+                    <span class="drag-handle text-gray-400 hover:text-gray-600 flex-shrink-0 text-lg leading-none select-none" title="Arrastar para reordenar">⠿</span>
+                    <input type="text" class="item-desc-input flex-1 text-sm text-gray-800 border border-transparent hover:border-gray-300 focus:border-[#009496] focus:outline-none focus:ring-1 focus:ring-[#009496] rounded px-2 py-0.5 transition-colors bg-transparent" value="${descSafe}" title="Clique para editar a descrição">
+                    <span class="text-xs text-gray-500 whitespace-nowrap flex-shrink-0">${item.quantidade} ${item.unidade}</span>
+                    <button type="button" class="flex-shrink-0 text-red-400 hover:text-red-600 transition-colors font-bold leading-none" onclick="removerItemPrevia(this)" title="Remover">✕</button>`;
                 listaIitensImportados.appendChild(li);
             });
+
+            const countEl = document.getElementById('contador-itens-importados');
+            if (countEl) countEl.textContent = `(${itens.length} ${itens.length === 1 ? 'item' : 'itens'})`;
+
+            if (typeof Sortable !== 'undefined') {
+                new Sortable(listaIitensImportados, {
+                    handle: '.drag-handle',
+                    animation: 150,
+                    ghostClass: 'sortable-ghost'
+                });
+            }
+
             if (previaItens) previaItens.classList.remove('hidden');
+        }
+
+        window.removerItemPrevia = function(btn) {
+            const li = btn.closest('li');
+            if (!li) return;
+            const id = parseInt(li.dataset.itemId);
+            itensImportados = itensImportados.filter(i => i.item_id !== id);
+            li.remove();
+            const restantes = listaIitensImportados ? listaIitensImportados.querySelectorAll('li').length : 0;
+            const countEl = document.getElementById('contador-itens-importados');
+            if (countEl) countEl.textContent = `(${restantes} ${restantes === 1 ? 'item' : 'itens'})`;
+            if (!restantes) {
+                if (btnConfirmar) btnConfirmar.disabled = true;
+                if (previaItens) previaItens.classList.add('hidden');
+            }
+        };
+
+        function coletarItensAtualizados() {
+            if (!listaIitensImportados) return itensImportados;
+            const resultado = [];
+            listaIitensImportados.querySelectorAll('li[data-item-id]').forEach(li => {
+                const id = parseInt(li.dataset.itemId);
+                const original = itensImportados.find(i => i.item_id === id);
+                if (!original) return;
+                const input = li.querySelector('.item-desc-input');
+                const descricao = (input && input.value.trim()) ? input.value.trim() : original.descricao;
+                resultado.push({ ...original, descricao });
+            });
+            return resultado;
         }
 
         if (btnConfirmar) {
             btnConfirmar.addEventListener('click', function() {
-                if (!itensImportados.length) return;
-                if (tipoContratacaoAtual === 'lote') importarItensComLote(itensImportados);
-                else importarItensSemLote(itensImportados);
+                const itensAtualizados = coletarItensAtualizados();
+                if (!itensAtualizados.length) return;
+                if (tipoContratacaoAtual === 'lote') importarItensComLote(itensAtualizados);
+                else importarItensSemLote(itensAtualizados);
                 fecharModal();
             });
         }
 
-        function importarItensSemLote(itens) {
-            const container = document.getElementById('itens-selecionados-sem-lote');
-            itens.forEach(item => {
-                if (document.getElementById(`item-itens-selecionados-sem-lote-${item.item_id}`)) return;
-                const itemDiv = document.createElement('div');
-                itemDiv.className = 'flex items-center justify-between bg-white border rounded-lg p-3 shadow-sm';
-                itemDiv.id = `item-itens-selecionados-sem-lote-${item.item_id}`;
-                itemDiv.innerHTML =
-                    `
-                <div class="flex items-center gap-3 flex-1">
+        function buildUnidadeSelectHtml(name, valorImportado) {
+            const opcoes = [
+                ['UN','UN (Unidade)'],['KG','KG (Quilograma)'],['CX','CX (Caixa)'],
+                ['PCT','PCT (Pacote)'],['L','L (Litro)'],['M','M (Metro)'],
+                ['RES','RES (Resma)'],['SAC','SAC (Saco)'],['FR','FR (Frasco)'],
+                ['KIT','KIT (Kit)'],['JG','JG (Jogo)'],['FD','FD (Fardo)'],
+                ['GL','GL (Galão)'],['RL','RL (Rolo)']
+            ];
+            const val = (valorImportado || 'UN').toUpperCase();
+            const conhecidos = opcoes.map(o => o[0]);
+            let opts = opcoes.map(([v, l]) =>
+                `<option value="${v}"${v === val ? ' selected' : ''}>${l}</option>`
+            ).join('');
+            if (!conhecidos.includes(val) && valorImportado) {
+                opts = `<option value="${valorImportado}" selected>${valorImportado}</option>` + opts;
+            }
+            return `<select name="${name}" required class="rounded-lg border-gray-300 text-xs py-1.5 focus:border-[#009496] focus:ring-[#009496] w-32 bg-gray-50/50 hover:bg-gray-50 transition">${opts}</select>`;
+        }
+
+        function buildItemSelecionadoHtml(containerId, id, descricao, loteIndex, unidade, quantidade) {
+            const namePrefix = (loteIndex !== null && loteIndex !== undefined)
+                ? `lotes[${loteIndex}][itens]`
+                : 'itens';
+            const loteArg = (loteIndex !== null && loteIndex !== undefined) ? loteIndex : 'null';
+            const descSafe = String(descricao).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+            return `
+            <div class="flex flex-col md:flex-row md:items-center justify-between bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:border-[#009496]/30 transition gap-4" id="item-${containerId}-${id}">
+                <div class="flex items-center gap-3 flex-1 min-w-0">
+                    <i class="fas fa-grip-vertical text-gray-300 hover:text-gray-500 cursor-grab px-1 drag-handle" title="Arrastar para reordenar"></i>
                     <span class="item-numero inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#009496]/10 text-[#009496] text-xs font-bold flex-shrink-0 border border-[#009496]/20">0</span>
-                    <div class="flex-1">
-                        <p class="text-sm font-medium text-gray-800 mb-2">${item.descricao}</p>
-                        <div class="flex gap-3">
-                            <input type="hidden" name="itens[${item.item_id}][item_id]" value="${item.item_id}">
-                            <input type="text"
-                                name="itens[${item.item_id}][unidade]"
-                                value="${item.unidade}"
-                                placeholder="Ex: Unidade, Pacote, Caixa..."
-                                class="px-2 py-1 border border-gray-300 rounded text-sm w-24"
-                                required>
-                            <input type="number" name="itens[${item.item_id}][quantidade]" value="${item.quantidade}" placeholder="Qtd" min="1" required class="px-2 py-1 border border-gray-300 rounded text-sm w-20">
-                        </div>
+                    <div class="min-w-0 flex-1 flex items-center gap-2">
+                        <p class="desc-item-${id} text-sm font-semibold text-gray-800 leading-relaxed truncate" title="${descSafe}">${descSafe}</p>
+                        <button type="button" onclick="openModalItemQuickEdit(${id}, document.querySelector('.desc-item-${id}').getAttribute('title'))" class="btn-edit-item-${id} text-[#009496] hover:text-[#007a7a] focus:outline-none flex-shrink-0 transition-transform hover:scale-110" title="Ver/Editar Descrição Completa">
+                            <i class="fas fa-edit"></i>
+                        </button>
                     </div>
                 </div>
-                <button type="button" class="ml-4 text-red-500 hover:text-red-700 font-bold" onclick="removerItemSelecionado(${item.item_id}, null)">✕</button>`;
-                container.appendChild(itemDiv);
+                <div class="flex items-center gap-3 flex-shrink-0">
+                    <div class="flex flex-col gap-1">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Unidade</span>
+                        ${buildUnidadeSelectHtml(`${namePrefix}[${id}][unidade]`, unidade)}
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Quantidade</span>
+                        <input type="number" name="${namePrefix}[${id}][quantidade]" value="${quantidade}" placeholder="Qtd" min="1" required class="rounded-lg border-gray-300 text-xs py-1.5 focus:border-[#009496] focus:ring-[#009496] w-20 bg-gray-50/50 hover:bg-gray-50 transition">
+                    </div>
+                    <div class="flex items-end self-end pb-0.5">
+                        <input type="hidden" name="${namePrefix}[${id}][item_id]" value="${id}">
+                        <button type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-red-600 hover:bg-red-50 focus:outline-none transition" onclick="removerItemSelecionado(${id}, ${loteArg})" title="Excluir Item">
+                            <i class="fas fa-trash-alt text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        function importarItensSemLote(itens) {
+            const containerId = 'itens-selecionados-sem-lote';
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            itens.forEach(item => {
+                if (document.getElementById(`item-${containerId}-${item.item_id}`)) return;
+                container.insertAdjacentHTML('beforeend',
+                    buildItemSelecionadoHtml(containerId, item.item_id, item.descricao, null, item.unidade, item.quantidade));
                 const cb = document.querySelector(`.item-checkbox[value="${item.item_id}"]:not([data-lote-index])`);
                 if (cb) cb.checked = true;
             });
-            renumerarItens('itens-selecionados-sem-lote');
+            renumerarItens(containerId);
+            if (typeof initSortable === 'function') initSortable(containerId);
+            agendarAutoSave();
         }
 
         function importarItensComLote(itens) {
@@ -1564,38 +1718,19 @@
                 alert('Número de lote inválido.');
                 return;
             }
-            const container = document.getElementById(`itens-selecionados-lote-${index}`);
+            const containerId = `itens-selecionados-lote-${index}`;
+            const container = document.getElementById(containerId);
             if (!container) return;
             itens.forEach(item => {
-                if (document.getElementById(`item-itens-selecionados-lote-${index}-${item.item_id}`)) return;
-                const itemDiv = document.createElement('div');
-                itemDiv.className = 'flex items-center justify-between bg-white border rounded-lg p-3 shadow-sm';
-                itemDiv.id = `item-itens-selecionados-lote-${index}-${item.item_id}`;
-                itemDiv.innerHTML =
-                    `
-                <div class="flex items-center gap-3 flex-1">
-                    <span class="item-numero inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#009496]/10 text-[#009496] text-xs font-bold flex-shrink-0 border border-[#009496]/20">0</span>
-                    <div class="flex-1">
-                        <p class="text-sm font-medium text-gray-800 mb-2">${item.descricao}</p>
-                        <div class="flex gap-3">
-                            <input type="hidden" name="lotes[${index}][itens][${item.item_id}][item_id]" value="${item.item_id}">
-                            <input type="text"
-                                name="lotes[${index}][itens][${item.item_id}][unidade]" 
-                                value="${item.unidade}"
-                                placeholder="Ex: Unidade, Pacote, Caixa..."
-                                class="px-2 py-1 border border-gray-300 rounded text-sm w-24"
-                                required>
-                            <input type="number" name="lotes[${index}][itens][${item.item_id}][quantidade]" value="${item.quantidade}" placeholder="Qtd" min="1" required class="px-2 py-1 border border-gray-300 rounded text-sm w-20">
-                        </div>
-                    </div>
-                </div>
-                <button type="button" class="ml-4 text-red-500 hover:text-red-700 font-bold" onclick="removerItemSelecionado(${item.item_id}, ${index})">✕</button>`;
-                container.appendChild(itemDiv);
-                const cb = document.querySelector(
-                    `.item-checkbox[value="${item.item_id}"][data-lote-index="${index}"]`);
+                if (document.getElementById(`item-${containerId}-${item.item_id}`)) return;
+                container.insertAdjacentHTML('beforeend',
+                    buildItemSelecionadoHtml(containerId, item.item_id, item.descricao, index, item.unidade, item.quantidade));
+                const cb = document.querySelector(`.item-checkbox[value="${item.item_id}"][data-lote-index="${index}"]`);
                 if (cb) cb.checked = true;
             });
-            renumerarItens(`itens-selecionados-lote-${index}`);
+            renumerarItens(containerId);
+            if (typeof initSortable === 'function') initSortable(containerId);
+            agendarAutoSave();
         }
     </script>
 

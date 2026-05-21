@@ -322,15 +322,17 @@
                     }
                 }
 
-                closeModalPncp();
+                selectBtn.disabled = true;
+                selectBtn.innerHTML = '<i class="fas fa-check mr-1"></i> Adicionado';
+                selectBtn.className = selectBtn.className
+                    .replace('bg-[#009496]', 'bg-emerald-500')
+                    .replace('hover:bg-[#007f7c]', 'hover:bg-emerald-500');
             } else {
                 throw new Error(data.message || 'Erro desconhecido.');
             }
         })
         .catch(err => {
             alert('Erro na integração do PNCP: ' + (err.message || err));
-        })
-        .finally(() => {
             selectBtn.disabled = false;
             selectBtn.innerHTML = originalBtnText;
         });

@@ -220,6 +220,15 @@
 
 
 
+                        {{-- BOTÃO: IMPORTAR VIA EXCEL --}}
+                        <div class="mb-6 flex justify-end">
+                            <button type="button" id="btnImportarItens"
+                                class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-all shadow-sm gap-2">
+                                <i class="fas fa-file-excel"></i>
+                                Importar Itens via Excel
+                            </button>
+                        </div>
+
                         {{-- ÁREA DE ITENS (sem lote) --}}
                         @php $tipoAtual = old('tipo_contratacao', $etp->tipo_contratacao); @endphp
                         <div id="area-itens-sem-lote" class="{{ $tipoAtual === 'lote' ? 'hidden' : 'block' }}">
@@ -421,6 +430,15 @@
             preencherServidor();
             secretariaSelect.addEventListener('change', preencherServidor);
 
+            function toggleInputs(container, enable) {
+                if (!container) return;
+                container.querySelectorAll('input, select, textarea').forEach(el => {
+                    if (el.name !== '_token' && el.name !== '_method') {
+                        el.disabled = !enable;
+                    }
+                });
+            }
+
             /* ── MODALIDADE ── */
             window.toggleModalidadeFields = function() {
                 const modalidade = modalidadeSelect.value;
@@ -440,13 +458,18 @@
                 opcoesPregao.classList.add('hidden');
                 opcoesDisp.classList.add('hidden');
                 camposItens.classList.remove('hidden');
+                toggleInputs(camposItens, true);
+
                 labelPdf.innerText = 'Anexar Cotação do Fornecedor Local';
                 cotacaoInput.removeAttribute('required');
 
                 if (modalidade === 'concorrencia' || modalidade === 'inexigibilidade') {
                     camposItens.classList.add('hidden');
+                    toggleInputs(camposItens, false);
                     areaItensSemLote.classList.add('hidden');
+                    toggleInputs(areaItensSemLote, false);
                     areaLotes.classList.add('hidden');
+                    toggleInputs(areaLotes, false);
                     labelPdf.innerText = 'Anexar Projeto Básico *';
                     cotacaoInput.setAttribute('required', 'required');
 
@@ -461,7 +484,9 @@
                         el.required = true;
                     });
                     areaItensSemLote.classList.remove('hidden');
+                    toggleInputs(areaItensSemLote, true);
                     areaLotes.classList.add('hidden');
+                    toggleInputs(areaLotes, false);
                     toggleContratacaoTipo();
 
                 } else if (modalidade === 'pregao') {
@@ -478,8 +503,11 @@
 
                 } else {
                     camposItens.classList.add('hidden');
+                    toggleInputs(camposItens, false);
                     areaItensSemLote.classList.add('hidden');
+                    toggleInputs(areaItensSemLote, false);
                     areaLotes.classList.add('hidden');
+                    toggleInputs(areaLotes, false);
                 }
             };
 
@@ -496,20 +524,26 @@
                 // Se for OBRAS, esconde a área de itens e muda o label do PDF
                 if (val === 'obras') {
                     areaSemLote.classList.add('hidden');
+                    toggleInputs(areaSemLote, false);
                     areaLotes.classList.add('hidden');
+                    toggleInputs(areaLotes, false);
                     labelPdf.innerText = 'Anexar Projeto Básico *';
                     document.getElementById('cotacao_path').setAttribute('required', 'required');
                 }
                 else if (val === 'lote') {
                     areaSemLote.classList.add('hidden');
+                    toggleInputs(areaSemLote, false);
                     areaLotes.classList.remove('hidden');
+                    toggleInputs(areaLotes, true);
                     labelPdf.innerText = 'Anexar Cotação do Fornecedor Local';
                     document.getElementById('cotacao_path').removeAttribute('required');
                     if (document.querySelectorAll('.lote-card').length === 0) adicionarLote();
                 }
                 else {
                     areaSemLote.classList.remove('hidden');
+                    toggleInputs(areaSemLote, true);
                     areaLotes.classList.add('hidden');
+                    toggleInputs(areaLotes, false);
                     labelPdf.innerText = 'Anexar Cotação do Fornecedor Local';
                     document.getElementById('cotacao_path').removeAttribute('required');
                 }
@@ -1296,4 +1330,5 @@
             renumerarItens(`itens-selecionados-lote-${index}`);
         }
     </script>
+    @include('Admin.Etps.partials.modal-importar-itens')
 @endsection
