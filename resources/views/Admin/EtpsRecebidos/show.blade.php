@@ -5,14 +5,29 @@
 @section('content')
     <div class="py-8">
         <div class="mb-6 flex justify-between items-center">
-            <a href="{{ route('admin.etps_recebidos.index') }}"
-                class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all duration-200 shadow-sm">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18">
-                    </path>
-                </svg>
-                Voltar para a Lista
-            </a>
+            <div class="flex items-center gap-3">
+                <a href="{{ route('admin.etps_recebidos.index') }}"
+                    class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all duration-200 shadow-sm">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18">
+                        </path>
+                    </svg>
+                    Voltar para a Lista
+                </a>
+
+                @php
+                    $podeEditar = ($etp->status === 'pendente' || $etp->status === 'recusado') || 
+                                 auth()->user()->hasRole(['diretor_licicon', 'gerente_licicon']);
+                @endphp
+
+                @if($podeEditar)
+                    <a href="{{ route('admin.etps.edit', $etp->id) }}"
+                        class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-all duration-200 shadow-sm">
+                        <i class="fas fa-edit mr-2"></i>
+                        Editar ETP
+                    </a>
+                @endif
+            </div>
 
             <div
                 class="inline-flex items-center px-4 py-2 text-sm font-bold rounded-lg shadow-sm border
@@ -156,7 +171,8 @@
                                 class="fas fa-align-left mr-2 text-[#009496]"></i> Objeto da Licitação</h4>
                         <div class="flex-grow bg-white p-4 rounded-lg border border-gray-200 overflow-y-auto max-h-[300px]">
                             <p class="text-gray-700 whitespace-pre-wrap text-sm leading-relaxed">
-                                {{ $etp->objeto_licitacao }}</p>
+                                {{ $etp->objeto_licitacao }}
+                            </p>
                         </div>
                     </div>
                 </div>
