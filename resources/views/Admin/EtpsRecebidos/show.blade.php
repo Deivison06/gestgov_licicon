@@ -74,21 +74,32 @@
                     @endif
 
                     @if (in_array($etp->status, ['pendente', 'em_analise', 'aprovado']))
-                        <form action="{{ route('admin.etps_recebidos.status', $etp->id) }}" method="POST" class="inline"
-                            onsubmit="return confirm('Tem certeza que deseja recusar este ETP?');">
-                            @csrf
-                            @method('PUT')
-                            <input type="hidden" name="status" value="recusado">
-                            <button type="submit"
-                                class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-all flex items-center shadow-sm">
-                                <i class="fas fa-times mr-2"></i> Recusar
-                            </button>
-                        </form>
+                        <button type="button" onclick="abrirModalRecusa()"
+                            class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-all flex items-center shadow-sm">
+                            <i class="fas fa-times mr-2"></i> Recusar
+                        </button>
                     @endif
                 </div>
             </div>
 
             <div class="p-8 border-b border-gray-100">
+                @if($etp->status === 'recusado' && $etp->motivo_recusa)
+                    <div class="mb-8 p-6 bg-red-50 border-l-4 border-red-500 rounded-lg shadow-sm">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-exclamation-circle text-red-500 text-2xl"></i>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-lg font-bold text-red-800">Solicitação Recusada</h3>
+                                <div class="mt-2 text-red-700 text-sm leading-relaxed">
+                                    <p class="font-semibold mb-1">Motivo da recusa:</p>
+                                    <p class="whitespace-pre-wrap">{{ $etp->motivo_recusa }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                     <!-- Informações Iniciais -->
                     <div class="bg-gray-50 p-6 rounded-xl border border-gray-200 shadow-sm">
@@ -339,3 +350,68 @@
         </div>
     </div>
 @endsection
+
+{{-- Modal para Justificativa de Recusa --}}
+<div id="modalRecusa" class="fixed inset-0 z-[100] flex items-center justify-center hidden bg-black bg-opacity-50 backdrop-blur-sm px-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all">
+        <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+            <h3 class="text-lg font-bold text-gray-800">Justificativa de Recusa</h3>
+            <button type="button" onclick="fecharModalRecusa()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <form action="{{ route('admin.etps_recebidos.status', $etp->id) }}" method="POST" id="formRecusa">
+            @csrf
+            @method('PUT')
+            <input type="hidden" name="status" value="recusado">
+            
+            <div class="p-6">
+                <p class="text-sm text-gray-600 mb-4">Por favor, informe detalhadamente o motivo da recusa deste ETP. Esta informação ficará visível para o solicitante.</p>
+                
+                <label for="motivo_recusa" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Motivo / Justificativa *</label>
+                <textarea name="motivo_recusa" id="motivo_recusa" rows="5" required
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none text-sm text-gray-700 placeholder-gray-400"
+                    placeholder="Ex: Documentação incompleta, objeto mal descrito, etc..."></textarea>
+            </div>
+            
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex gap-3">
+                <button type="button" onclick="fecharModalRecusa()"
+                    class="flex-1 px-4 py-2.5 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all">
+                    Cancelar
+                </button>
+                <button type="submit" id="btnConfirmarRecusa" disabled
+                    class="flex-1 px-4 py-2.5 text-sm font-bold text-white bg-red-600 rounded-lg hover:bg-red-700 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
+                    Confirmar Recusa
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function abrirModalRecusa() {
+        document.getElementById('modalRecusa').classList.remove('hidden');
+        document.getElementById('motivo_recusa').focus();
+    }
+
+    function fecharModalRecusa() {
+        document.getElementById('modalRecusa').classList.add('hidden');
+    }
+
+    // Fecha o modal ao clicar fora dele
+    window.onclick = function(event) {
+        const modal = document.getElementById('modalRecusa');
+        if (event.target == modal) {
+            fecharModalRecusa();
+        }
+    }
+
+    // Habilita/Desabilita botão baseado no preenchimento
+    const textarea = document.getElementById('motivo_recusa');
+    const btn = document.getElementById('btnConfirmarRecusa');
+    
+    textarea.addEventListener('input', function() {
+        btn.disabled = this.value.trim().length < 5;
+    });
+</script>

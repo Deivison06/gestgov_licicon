@@ -34,7 +34,11 @@ class RolePermissionSeeder extends Seeder
             'diretor_licicon'    => $permissions, // tudo
             'gerente_licicon'    => [
                 'criar processos',
-                'dar seguimento processos',
+                'dar seguimento processos'
+                
+                
+                
+                ,
                 'assinar processos',
                 'contratos',
                 'etp inteligente',

@@ -892,6 +892,14 @@
                         alert('Preencha a justificativa da necessidade.');
                         return;
                     }
+
+                    // SALVAMENTO AUTOMÁTICO ANTES DE IR PARA PASSO 3
+                    submeterEtp('salvar', () => {
+                        document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
+                        document.getElementById('step-' + step).classList.remove('hidden');
+                        updateProgress(step);
+                    });
+                    return; // Interrompe para esperar o save
                 }
                 document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
                 document.getElementById('step-' + step).classList.remove('hidden');
@@ -1047,12 +1055,12 @@
             }
 
             /* ── SUBMETER ETP (salvar ou concluir) ── */
-            window.submeterEtp = function(tipo) {
+            window.submeterEtp = function(tipo, callback) {
                 document.getElementById('action_type').value = tipo;
 
                 if (tipo === 'salvar') {
                     document.getElementById('should_redirect').value = '0';
-                    enviarFormularioAjax();
+                    enviarFormularioAjax(callback);
                     return;
                 }
 
@@ -1065,15 +1073,25 @@
             };
 
             // Função para enviar o formulário via AJAX
-            function enviarFormularioAjax() {
+            function enviarFormularioAjax(callback) {
                 const form = document.getElementById('etpForm');
                 const formData = new FormData(form);
 
                 // Mostra indicador de loading
                 const btnSalvar = document.querySelector('button[onclick="submeterEtp(\'salvar\')"]');
-                const textoOriginal = btnSalvar.innerHTML;
-                btnSalvar.disabled = true;
-                btnSalvar.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Salvando...';
+                const btnNext = document.querySelector('button[onclick="nextStep(3)"]');
+                
+                const originalContentSalvar = btnSalvar ? btnSalvar.innerHTML : '';
+                const originalContentNext = btnNext ? btnNext.innerHTML : '';
+
+                if (btnSalvar) {
+                    btnSalvar.disabled = true;
+                    btnSalvar.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Salvando...';
+                }
+                if (btnNext) {
+                    btnNext.disabled = true;
+                    btnNext.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Salvando...';
+                }
 
                 fetch(form.action, {
                         method: 'POST',
@@ -1108,11 +1126,18 @@
                             if (data.etp_id && form.action.endsWith('/etps')) {
                                 form.action = form.action + '/' + data.etp_id;
                                 // Muda method para PUT
-                                const methodInput = document.createElement('input');
-                                methodInput.type = 'hidden';
-                                methodInput.name = '_method';
-                                methodInput.value = 'PUT';
-                                form.appendChild(methodInput);
+                                if (!document.querySelector('input[name="_method"]')) {
+                                    const methodInput = document.createElement('input');
+                                    methodInput.type = 'hidden';
+                                    methodInput.name = '_method';
+                                    methodInput.value = 'PUT';
+                                    form.appendChild(methodInput);
+                                }
+                            }
+
+                            // Executa o callback de transição de tela, se existir
+                            if (typeof callback === 'function') {
+                                callback();
                             }
                         } else {
                             // Mostra mensagem de erro
@@ -1127,8 +1152,14 @@
                         mostrarNotificacao('error', msg);
                     })
                     .finally(() => {
-                        btnSalvar.disabled = false;
-                        btnSalvar.innerHTML = textoOriginal;
+                        if (btnSalvar) {
+                            btnSalvar.disabled = false;
+                            btnSalvar.innerHTML = originalContentSalvar;
+                        }
+                        if (btnNext) {
+                            btnNext.disabled = false;
+                            btnNext.innerHTML = originalContentNext;
+                        }
                     });
             }
 

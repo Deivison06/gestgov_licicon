@@ -5,15 +5,31 @@
 @section('content')
     <div class="py-8">
         <div class="mb-6 flex justify-between items-center">
-            <a href="{{ route('admin.etps.index') }}"
-                class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all duration-200 shadow-sm">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18">
-                    </path>
-                </svg>
-                Voltar para a Lista
-            </a>
+            <div class="flex items-center gap-3">
+                <a href="{{ route('admin.etps.index') }}"
+                    class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all duration-200 shadow-sm">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18">
+                        </path>
+                    </svg>
+                    Voltar para a Lista
+                </a>
 
+                @php
+                    $podeEditar = ($etp->status === 'pendente' || $etp->status === 'recusado') || 
+                                 auth()->user()->hasRole(['diretor_licicon', 'gerente_licicon']);
+                @endphp
+
+                @if($podeEditar)
+                    <a href="{{ route('admin.etps.edit', $etp->id) }}"
+                        class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-all duration-200 shadow-sm">
+                        <i class="fas fa-edit mr-2"></i>
+                        Editar ETP
+                    </a>
+                @endif
+            </div>
+
+            <div class="inline-flex items-center px-4 py-2 rounded-lg bg-gray-100 text-gray-700 text-sm font-semibold border border-gray-200">
                 Status: {{ ucfirst(str_replace('_', ' ', $etp->status)) }}
             </div>
         </div>
@@ -29,6 +45,23 @@
             </div>
 
             <div class="p-8">
+                @if($etp->status === 'recusado' && $etp->motivo_recusa)
+                    <div class="mb-8 p-6 bg-red-50 border-l-4 border-red-500 rounded-lg shadow-sm">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-exclamation-circle text-red-500 text-2xl"></i>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-lg font-bold text-red-800">Sua Solicitação foi Recusada</h3>
+                                <div class="mt-2 text-red-700 text-sm leading-relaxed">
+                                    <p class="font-semibold mb-1">Motivo informado pela análise:</p>
+                                    <p class="whitespace-pre-wrap">{{ $etp->motivo_recusa }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                     <!-- Informações Iniciais -->
                     <div class="bg-gray-50 p-6 rounded-xl border border-gray-100">

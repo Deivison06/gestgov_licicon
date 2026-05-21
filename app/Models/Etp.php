@@ -21,6 +21,7 @@ class Etp extends Model
         'prazo_entrega',
         'cotacao_path',
         'status',
+        'motivo_recusa',
         'processo_id',
     ];
 

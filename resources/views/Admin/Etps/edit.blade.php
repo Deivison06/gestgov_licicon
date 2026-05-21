@@ -713,31 +713,39 @@
 
             /* ── STEPS ── */
             window.nextStep = function(step) {
-            if (step === 2) {
-                if (!secretariaSelect.value) {
-                    alert('Selecione uma secretaria primeiro.');
-                    return;
+                if (step === 2) {
+                    if (!secretariaSelect.value) {
+                        alert('Selecione uma secretaria primeiro.');
+                        return;
+                    }
+                    if (!modalidadeSelect.value) {
+                        alert('Selecione uma modalidade primeiro.');
+                        return;
+                    }
                 }
-                if (!modalidadeSelect.value) {
-                    alert('Selecione uma modalidade primeiro.');
-                    return;
+                if (step === 3) {
+                    if (!document.getElementById('objeto_licitacao').value.trim()) {
+                        alert('Preencha o objeto primeiro.');
+                        return;
+                    }
+                    // NOVA VALIDAÇÃO: Verificar justificativa
+                    if (!document.getElementById('justificativa_necessidade').value.trim()) {
+                        alert('Preencha a justificativa da necessidade.');
+                        return;
+                    }
+
+                    // SALVAMENTO AUTOMÁTICO ANTES DE IR PARA PASSO 3
+                    submeterEtp('salvar', () => {
+                        document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
+                        document.getElementById('step-' + step).classList.remove('hidden');
+                        updateProgress(step);
+                    });
+                    return; // Interrompe para esperar o save
                 }
-            }
-            if (step === 3) {
-                if (!document.getElementById('objeto_licitacao').value.trim()) {
-                    alert('Preencha o objeto primeiro.');
-                    return;
-                }
-                // NOVA VALIDAÇÃO: Verificar justificativa
-                if (!document.getElementById('justificativa_necessidade').value.trim()) {
-                    alert('Preencha a justificativa da necessidade.');
-                    return;
-                }
-            }
-            document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
-            document.getElementById('step-' + step).classList.remove('hidden');
-            updateProgress(step);
-        };
+                document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
+                document.getElementById('step-' + step).classList.remove('hidden');
+                updateProgress(step);
+            };
 
             window.prevStep = function(step) {
                 document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
@@ -764,7 +772,7 @@
             };
 
             /* ── SUBMETER ETP (salvar ou concluir) ── */
-            window.submeterEtp = function(tipo) {
+            window.submeterEtp = function(tipo, callback) {
                 document.getElementById('action_type').value = tipo;
 
                 // Se for "salvar" (rascunho), não redireciona
@@ -773,7 +781,7 @@
                     document.getElementById('should_redirect').value = '0';
 
                     // Envia o formulário via AJAX para não redirecionar
-                    enviarFormularioAjax();
+                    enviarFormularioAjax(callback);
                 } else {
                     document.getElementById('should_redirect').value = '1';
                     document.getElementById('etpForm').submit();
@@ -781,15 +789,25 @@
             };
 
             // Função para enviar o formulário via AJAX
-            function enviarFormularioAjax() {
+            function enviarFormularioAjax(callback) {
                 const form = document.getElementById('etpForm');
                 const formData = new FormData(form);
 
                 // Mostra indicador de loading
                 const btnSalvar = document.querySelector('button[onclick="submeterEtp(\'salvar\')"]');
-                const textoOriginal = btnSalvar.innerHTML;
-                btnSalvar.disabled = true;
-                btnSalvar.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Salvando...';
+                const btnNext = document.querySelector('button[onclick="nextStep(3)"]');
+                
+                const originalContentSalvar = btnSalvar ? btnSalvar.innerHTML : '';
+                const originalContentNext = btnNext ? btnNext.innerHTML : '';
+
+                if (btnSalvar) {
+                    btnSalvar.disabled = true;
+                    btnSalvar.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Salvando...';
+                }
+                if (btnNext) {
+                    btnNext.disabled = true;
+                    btnNext.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Salvando...';
+                }
 
                 fetch(form.action, {
                         method: 'POST',
@@ -818,6 +836,11 @@
                     .then(data => {
                         if (data.success) {
                             mostrarNotificacao('success', data.message || 'Rascunho atualizado com sucesso!');
+                            
+                            // Executa callback se existir (ex: mudar de passo)
+                            if (typeof callback === 'function') {
+                                callback();
+                            }
                         } else {
                             mostrarNotificacao('error', data.message || 'Erro ao salvar rascunho.');
                         }
@@ -829,8 +852,14 @@
                         mostrarNotificacao('error', msg);
                     })
                     .finally(() => {
-                        btnSalvar.disabled = false;
-                        btnSalvar.innerHTML = textoOriginal;
+                        if (btnSalvar) {
+                            btnSalvar.disabled = false;
+                            btnSalvar.innerHTML = originalContentSalvar;
+                        }
+                        if (btnNext) {
+                            btnNext.disabled = false;
+                            btnNext.innerHTML = originalContentNext;
+                        }
                     });
             }
 

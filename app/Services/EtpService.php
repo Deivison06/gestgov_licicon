@@ -215,7 +215,7 @@ class EtpService
         return $this->repository->findById($id);
     }
 
-    public function updateStatus($id, $status)
+    public function updateStatus($id, $status, $motivo_recusa = null)
     {
         $validStatuses = ['pendente', 'em_analise', 'aprovado', 'recusado', 'em_processo'];
         
@@ -223,7 +223,12 @@ class EtpService
             throw new Exception("Status inválido.");
         }
 
-        $etp = $this->repository->update($id, ['status' => $status]);
+        $updateData = ['status' => $status];
+        if ($status === 'recusado' && $motivo_recusa) {
+            $updateData['motivo_recusa'] = $motivo_recusa;
+        }
+
+        $etp = $this->repository->update($id, $updateData);
 
         return $etp;
     }

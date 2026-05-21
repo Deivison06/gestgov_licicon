@@ -82,35 +82,36 @@ class EtpController extends Controller
             'is_ajax' => $request->ajax() || $request->wantsJson() || $request->input('should_redirect') == '0'
         ]);
 
-        // Validação base
+        // Validação base - relaxada para rascunho
+        $isDraft = $request->input('action_type') === 'salvar';
+
         $rules = [
-            'secretaria_id'       => 'required|exists:unidades,id',
-            'servidor_responsavel' => 'required|string|max:255',
-            'objeto_licitacao'    => 'required|string',
-            'justificativa_necessidade' => 'required|string',
-            'modalidade'          => 'required|in:pregao,concorrencia,dispensa,inexigibilidade',
-            'tipo_contratacao'    => 'required_if:modalidade,pregao,dispensa|in:item,lote,servicos,compras,obras',
-            'dotacao_orcamentaria' => 'required|string',
-            'prazo_entrega'       => 'required|string',
+            'secretaria_id'       => $isDraft ? 'nullable|exists:unidades,id' : 'required|exists:unidades,id',
+            'servidor_responsavel' => $isDraft ? 'nullable|string|max:255' : 'required|string|max:255',
+            'objeto_licitacao'    => $isDraft ? 'nullable|string' : 'required|string',
+            'justificativa_necessidade' => $isDraft ? 'nullable|string' : 'required|string',
+            'modalidade'          => $isDraft ? 'nullable|in:pregao,concorrencia,dispensa,inexigibilidade' : 'required|in:pregao,concorrencia,dispensa,inexigibilidade',
+            'tipo_contratacao'    => $isDraft ? 'nullable' : 'required_if:modalidade,pregao,dispensa|in:item,lote,servicos,compras,obras',
+            'dotacao_orcamentaria' => $isDraft ? 'nullable|string' : 'required|string',
+            'prazo_entrega'       => $isDraft ? 'nullable|string' : 'required|string',
             'cotacao_path'        => 'nullable|file|max:90240',
             'action_type'         => 'nullable|in:salvar,concluir',
             'should_redirect'     => 'nullable|in:0,1',
         ];
 
         // Para itens sem lote
-        $rules['itens']                   = 'required_if:tipo_contratacao,item|array';
-        $rules['itens.*.item_id']         = 'required_if:tipo_contratacao,item|exists:etp_itens,id';
-        $rules['itens.*.unidade']         = 'required_if:tipo_contratacao,item|string|max:100';
-        $rules['itens.*.quantidade']      = 'required_if:tipo_contratacao,item|numeric|min:0.01';
+        $rules['itens']                   = (!$isDraft) ? 'required_if:tipo_contratacao,item|array' : 'nullable|array';
+        $rules['itens.*.item_id']         = (!$isDraft) ? 'required_if:tipo_contratacao,item|exists:etp_itens,id' : 'nullable|exists:etp_itens,id';
+        $rules['itens.*.unidade']         = (!$isDraft) ? 'required_if:tipo_contratacao,item|string|max:100' : 'nullable|string|max:100';
+        $rules['itens.*.quantidade']      = (!$isDraft) ? 'required_if:tipo_contratacao,item|numeric|min:0.01' : 'nullable|numeric|min:0.01';
 
-        // Para lotes (O segredo é remover o índice fixo do item na regra se for usar IDs como chaves)
-        $rules['lotes']                       = 'required_if:tipo_contratacao,lote|array';
-        $rules['lotes.*.nome']                = 'required_if:tipo_contratacao,lote|string|max:255';
-        $rules['lotes.*.itens']               = 'required_if:tipo_contratacao,lote|array';
-        // Usamos '*' duas vezes para validar qualquer chave dentro de itens
-        $rules['lotes.*.itens.*.item_id']     = 'required_if:tipo_contratacao,lote';
-        $rules['lotes.*.itens.*.unidade']     = 'required_if:tipo_contratacao,lote|string|max:100';
-        $rules['lotes.*.itens.*.quantidade']  = 'required_if:tipo_contratacao,lote|numeric|min:0.01';
+        // Para lotes
+        $rules['lotes']                       = (!$isDraft) ? 'required_if:tipo_contratacao,lote|array' : 'nullable|array';
+        $rules['lotes.*.nome']                = (!$isDraft) ? 'required_if:tipo_contratacao,lote|string|max:255' : 'nullable|string|max:255';
+        $rules['lotes.*.itens']               = (!$isDraft) ? 'required_if:tipo_contratacao,lote|array' : 'nullable|array';
+        $rules['lotes.*.itens.*.item_id']     = (!$isDraft) ? 'required_if:tipo_contratacao,lote' : 'nullable';
+        $rules['lotes.*.itens.*.unidade']     = (!$isDraft) ? 'required_if:tipo_contratacao,lote|string|max:100' : 'nullable|string|max:100';
+        $rules['lotes.*.itens.*.quantidade']  = (!$isDraft) ? 'required_if:tipo_contratacao,lote|numeric|min:0.01' : 'nullable|numeric|min:0.01';
 
         try {
             $request->validate($rules, $this->etpValidationMessages());
@@ -212,12 +213,15 @@ class EtpController extends Controller
 
         $etp = $this->etpService->findById($id);
 
-        if ($etp->prefeitura_id !== auth()->user()->prefeitura_id) {
+        $user = auth()->user();
+        $isSuperAdmin = $user->hasRole(['diretor_licicon', 'gerente_licicon']);
+
+        if (!$isSuperAdmin && $etp->prefeitura_id !== $user->prefeitura_id) {
             Log::warning('Tentativa de acesso negado a ETP', [
                 'user_id' => auth()->id(),
                 'etp_id' => $id,
                 'etp_prefeitura_id' => $etp->prefeitura_id,
-                'user_prefeitura_id' => auth()->user()->prefeitura_id
+                'user_prefeitura_id' => $user->prefeitura_id
             ]);
             abort(403, 'Acesso negado.');
         }
@@ -241,18 +245,22 @@ class EtpController extends Controller
 
         $etp = $this->etpService->findById($id);
 
-        if ($etp->prefeitura_id !== auth()->user()->prefeitura_id) {
+        $user = auth()->user();
+        $isSuperAdmin = $user->hasRole(['diretor_licicon', 'gerente_licicon']);
+
+        if (!$isSuperAdmin && $etp->prefeitura_id !== $user->prefeitura_id) {
             Log::warning('Tentativa de edição negada - permissão', [
                 'user_id' => auth()->id(),
                 'etp_id' => $id,
                 'etp_prefeitura_id' => $etp->prefeitura_id,
-                'user_prefeitura_id' => auth()->user()->prefeitura_id
+                'user_prefeitura_id' => $user->prefeitura_id
             ]);
             abort(403, 'Acesso negado.');
         }
 
-        if ($etp->status !== 'pendente') {
-            Log::warning('Tentativa de edição de ETP não pendente', [
+        // Permite editar se estiver pendente, recusado ou se for um super admin (diretor/gerente)
+        if (!$isSuperAdmin && $etp->status !== 'pendente' && $etp->status !== 'recusado') {
+            Log::warning('Tentativa de edição de ETP em status não editável', [
                 'user_id' => auth()->id(),
                 'etp_id' => $id,
                 'status' => $etp->status
@@ -260,10 +268,10 @@ class EtpController extends Controller
 
             return redirect()
                 ->route('admin.etps.show', $id)
-                ->with('error', 'Apenas ETPs com status "pendente" podem ser editados.');
+                ->with('error', 'Apenas ETPs com status "pendente" ou "recusado" podem ser editados.');
         }
 
-        $prefeituraId = auth()->user()->prefeitura_id;
+        $prefeituraId = $isSuperAdmin ? $etp->prefeitura_id : $user->prefeitura_id;
         $secretarias  = Unidade::where('prefeitura_id', $prefeituraId)->orderBy('nome', 'asc')->get();
         $itens        = $this->etpItemService->getAllForSelect();
 
@@ -289,18 +297,21 @@ class EtpController extends Controller
 
         $etp = $this->etpService->findById($id);
 
-        if ($etp->prefeitura_id !== auth()->user()->prefeitura_id) {
+        $user = auth()->user();
+        $isSuperAdmin = $user->hasRole(['diretor_licicon', 'gerente_licicon']);
+
+        if (!$isSuperAdmin && $etp->prefeitura_id !== $user->prefeitura_id) {
             Log::warning('Tentativa de atualização negada - permissão', [
                 'user_id' => auth()->id(),
                 'etp_id' => $id,
                 'etp_prefeitura_id' => $etp->prefeitura_id,
-                'user_prefeitura_id' => auth()->user()->prefeitura_id
+                'user_prefeitura_id' => $user->prefeitura_id
             ]);
             abort(403, 'Acesso negado.');
         }
 
-        if ($etp->status !== 'pendente') {
-            Log::warning('Tentativa de atualização de ETP não pendente', [
+        if (!$isSuperAdmin && $etp->status !== 'pendente' && $etp->status !== 'recusado') {
+            Log::warning('Tentativa de atualização de ETP em status não editável', [
                 'user_id' => auth()->id(),
                 'etp_id' => $id,
                 'status_atual' => $etp->status
@@ -308,37 +319,39 @@ class EtpController extends Controller
 
             return redirect()
                 ->route('admin.etps.show', $id)
-                ->with('error', 'Apenas ETPs com status "pendente" podem ser editados.');
+                ->with('error', 'Apenas ETPs com status "pendente" ou "recusado" podem ser editados.');
         }
 
+        // Validação base - relaxada para rascunho
+        $isDraft = $request->input('action_type') === 'salvar';
+
         $rules = [
-            'secretaria_id'       => 'required|exists:unidades,id',
-            'servidor_responsavel' => 'required|string|max:255',
-            'objeto_licitacao'    => 'required|string',
-            'justificativa_necessidade' => 'required|string',
-            'modalidade'          => 'required|in:pregao,concorrencia,dispensa,inexigibilidade',
-            'tipo_contratacao'    => 'required_if:modalidade,pregao,dispensa|in:item,lote,servicos,compras,obras',
-            'dotacao_orcamentaria' => 'required|string',
-            'prazo_entrega'       => 'required|string',
+            'secretaria_id'       => $isDraft ? 'nullable|exists:unidades,id' : 'required|exists:unidades,id',
+            'servidor_responsavel' => $isDraft ? 'nullable|string|max:255' : 'required|string|max:255',
+            'objeto_licitacao'    => $isDraft ? 'nullable|string' : 'required|string',
+            'justificativa_necessidade' => $isDraft ? 'nullable|string' : 'required|string',
+            'modalidade'          => $isDraft ? 'nullable|in:pregao,concorrencia,dispensa,inexigibilidade' : 'required|in:pregao,concorrencia,dispensa,inexigibilidade',
+            'tipo_contratacao'    => $isDraft ? 'nullable' : 'required_if:modalidade,pregao,dispensa|in:item,lote,servicos,compras,obras',
+            'dotacao_orcamentaria' => $isDraft ? 'nullable|string' : 'required|string',
+            'prazo_entrega'       => $isDraft ? 'nullable|string' : 'required|string',
             'cotacao_path'        => 'nullable|file|max:90240',
             'action_type'         => 'nullable|in:salvar,concluir',
             'should_redirect'     => 'nullable|in:0,1',
         ];
 
         // Para itens sem lote
-        $rules['itens']                   = 'required_if:tipo_contratacao,item|array';
-        $rules['itens.*.item_id']         = 'required_if:tipo_contratacao,item|exists:etp_itens,id';
-        $rules['itens.*.unidade']         = 'required_if:tipo_contratacao,item|string|max:100';
-        $rules['itens.*.quantidade']      = 'required_if:tipo_contratacao,item|numeric|min:0.01';
+        $rules['itens']                   = (!$isDraft) ? 'required_if:tipo_contratacao,item|array' : 'nullable|array';
+        $rules['itens.*.item_id']         = (!$isDraft) ? 'required_if:tipo_contratacao,item|exists:etp_itens,id' : 'nullable|exists:etp_itens,id';
+        $rules['itens.*.unidade']         = (!$isDraft) ? 'required_if:tipo_contratacao,item|string|max:100' : 'nullable|string|max:100';
+        $rules['itens.*.quantidade']      = (!$isDraft) ? 'required_if:tipo_contratacao,item|numeric|min:0.01' : 'nullable|numeric|min:0.01';
 
-        // Para lotes (O segredo é remover o índice fixo do item na regra se for usar IDs como chaves)
-        $rules['lotes']                       = 'required_if:tipo_contratacao,lote|array';
-        $rules['lotes.*.nome']                = 'required_if:tipo_contratacao,lote|string|max:255';
-        $rules['lotes.*.itens']               = 'required_if:tipo_contratacao,lote|array';
-        // Usamos '*' duas vezes para validar qualquer chave dentro de itens
-        $rules['lotes.*.itens.*.item_id']     = 'required_if:tipo_contratacao,lote';
-        $rules['lotes.*.itens.*.unidade']     = 'required_if:tipo_contratacao,lote|string|max:100';
-        $rules['lotes.*.itens.*.quantidade']  = 'required_if:tipo_contratacao,lote|numeric|min:0.01';
+        // Para lotes
+        $rules['lotes']                       = (!$isDraft) ? 'required_if:tipo_contratacao,lote|array' : 'nullable|array';
+        $rules['lotes.*.nome']                = (!$isDraft) ? 'required_if:tipo_contratacao,lote|string|max:255' : 'nullable|string|max:255';
+        $rules['lotes.*.itens']               = (!$isDraft) ? 'required_if:tipo_contratacao,lote|array' : 'nullable|array';
+        $rules['lotes.*.itens.*.item_id']     = (!$isDraft) ? 'required_if:tipo_contratacao,lote' : 'nullable';
+        $rules['lotes.*.itens.*.unidade']     = (!$isDraft) ? 'required_if:tipo_contratacao,lote|string|max:100' : 'nullable|string|max:100';
+        $rules['lotes.*.itens.*.quantidade']  = (!$isDraft) ? 'required_if:tipo_contratacao,lote|numeric|min:0.01' : 'nullable|numeric|min:0.01';
 
         try {
             $request->validate($rules, $this->etpValidationMessages());
@@ -441,17 +454,20 @@ class EtpController extends Controller
 
         $etp = $this->etpService->findById($id);
 
-        if ($etp->prefeitura_id !== auth()->user()->prefeitura_id) {
+        $user = auth()->user();
+        $isSuperAdmin = $user->hasRole(['diretor_licicon', 'gerente_licicon']);
+
+        if (!$isSuperAdmin && $etp->prefeitura_id !== $user->prefeitura_id) {
             Log::warning('Tentativa de exclusão negada - permissão', [
                 'user_id' => auth()->id(),
                 'etp_id' => $id,
                 'etp_prefeitura_id' => $etp->prefeitura_id,
-                'user_prefeitura_id' => auth()->user()->prefeitura_id
+                'user_prefeitura_id' => $user->prefeitura_id
             ]);
             abort(403, 'Acesso negado.');
         }
 
-        if ($etp->status !== 'pendente') {
+        if (!$isSuperAdmin && $etp->status !== 'pendente') {
             Log::warning('Tentativa de exclusão de ETP não pendente', [
                 'user_id' => auth()->id(),
                 'etp_id' => $id,
@@ -735,12 +751,15 @@ class EtpController extends Controller
 
         $etp = $this->etpService->findById($id);
 
-        if ($etp->prefeitura_id !== auth()->user()->prefeitura_id) {
+        $user = auth()->user();
+        $isSuperAdmin = $user->hasRole(['diretor_licicon', 'gerente_licicon']);
+
+        if (!$isSuperAdmin && $etp->prefeitura_id !== $user->prefeitura_id) {
             Log::warning('Tentativa de gerar PDF negada - permissão', [
                 'user_id' => auth()->id(),
                 'etp_id' => $id,
                 'etp_prefeitura_id' => $etp->prefeitura_id,
-                'user_prefeitura_id' => auth()->user()->prefeitura_id
+                'user_prefeitura_id' => $user->prefeitura_id
             ]);
             abort(403, 'Acesso negado.');
         }
@@ -767,6 +786,19 @@ class EtpController extends Controller
         ]);
 
         $etp = $this->etpService->findById($id);
+
+        $user = auth()->user();
+        $isSuperAdmin = $user->hasRole(['diretor_licicon', 'gerente_licicon']);
+
+        if (!$isSuperAdmin && $etp->prefeitura_id !== $user->prefeitura_id) {
+            Log::warning('Tentativa de exportação negada - permissão', [
+                'user_id' => auth()->id(),
+                'etp_id' => $id,
+                'etp_prefeitura_id' => $etp->prefeitura_id,
+                'user_prefeitura_id' => $user->prefeitura_id
+            ]);
+            abort(403, 'Acesso negado.');
+        }
 
         $spreadsheet = new Spreadsheet();
         $sheet       = $spreadsheet->getActiveSheet();

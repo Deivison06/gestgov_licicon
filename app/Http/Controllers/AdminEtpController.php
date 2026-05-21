@@ -33,11 +33,12 @@ class AdminEtpController extends Controller
     public function alterarStatus(Request $request, $id)
     {
         $request->validate([
-            'status' => 'required|in:em_analise,aprovado,recusado'
+            'status' => 'required|in:em_analise,aprovado,recusado',
+            'motivo_recusa' => 'required_if:status,recusado|nullable|string'
         ]);
 
         try {
-            $this->etpService->updateStatus($id, $request->status);
+            $this->etpService->updateStatus($id, $request->status, $request->motivo_recusa);
             return redirect()->back()->with('success', 'Status do ETP atualizado com sucesso.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', $e->getMessage());

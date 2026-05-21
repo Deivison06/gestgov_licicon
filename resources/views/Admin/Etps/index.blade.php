@@ -85,13 +85,20 @@
                                     <i class="fas fa-file-pdf"></i>
                                 </a>
                                 
-                                @if($etp->status !== 'aprovado' && $etp->status !== 'recusado')
+                                @php
+                                    $podeEditar = ($etp->status === 'pendente' || $etp->status === 'recusado') || 
+                                                 auth()->user()->hasRole(['diretor_licicon', 'gerente_licicon']);
+                                @endphp
+
+                                @if($podeEditar)
                                     <a href="{{ route('admin.etps.edit', $etp->id) }}" 
                                     class="inline-flex items-center justify-center w-8 h-8 text-blue-600 transition-colors duration-200 rounded-md hover:bg-blue-100 focus:outline-none" 
                                     title="Editar ETP">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    
+                                @endif
+                                
+                                @if($etp->status === 'pendente' || $etp->status === 'recusado')
                                     <button type="button" 
                                             onclick="confirmarExclusao('{{ $etp->id }}', 'ETP-{{ str_pad($etp->id, 4, '0', STR_PAD_LEFT) }}/{{ $etp->created_at->format('Y') }}')"
                                             class="inline-flex items-center justify-center w-8 h-8 text-red-600 transition-colors duration-200 rounded-md hover:bg-red-100 focus:outline-none" 
