@@ -121,8 +121,10 @@ class HomologacaoService
      * Cria nova homologação vinculando todos os lotes pendentes do processo.
      *
      * Regras:
-     *  - Falha se não houver lotes pendentes.
-     *  - Lotes já vinculados a outra homologação não são afetados (regra (d)).
+     *  - Em Pregão/Dispensa, falha se não houver lotes pendentes.
+     *  - Em Concorrência/Inexigibilidade, permite criar a homologação única
+     *    mesmo sem lotes (essas modalidades não usam o cadastro de lotes).
+     *  - Lotes já vinculados a outra homologação não são afetados.
      *  - Campos herdam da última homologação; quando for a primeira, herdam
      *    da Finalizacao do processo para não perder dados já preenchidos.
      */
@@ -138,7 +140,10 @@ class HomologacaoService
 
             $lotesPendentesIds = $processo->lotesPendentesHomologacao()->pluck('id');
 
-            if ($lotesPendentesIds->isEmpty()) {
+            // Lotes pendentes são obrigatórios apenas para modalidades de homologação parcial
+            // (Pregão Eletrônico e Dispensa). Concorrência/Inexigibilidade têm homologação
+            // única sem cadastro de lotes.
+            if ($lotesPendentesIds->isEmpty() && $this->permiteHomologacaoParcial($processo)) {
                 throw new \DomainException('Não há lotes pendentes de homologação para este processo.');
             }
 
@@ -166,8 +171,10 @@ class HomologacaoService
 
             $homologacao = Homologacao::create($atributos);
 
-            Lote::whereIn('id', $lotesPendentesIds)
-                ->update(['homologacao_id' => $homologacao->id]);
+            if ($lotesPendentesIds->isNotEmpty()) {
+                Lote::whereIn('id', $lotesPendentesIds)
+                    ->update(['homologacao_id' => $homologacao->id]);
+            }
 
             return $homologacao->refresh();
         });
