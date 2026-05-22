@@ -615,7 +615,165 @@
 
     @include('Admin.Processos.modais.republicar_edital')
 
+    {{-- Modal de Seleção de ETP Inteligente --}}
+    <div id="modalSelecaoEtp" class="fixed inset-0 z-[100] flex items-center justify-center hidden bg-slate-900/60 backdrop-blur-sm px-4 py-6 sm:px-0">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl flex flex-col max-h-[85vh] overflow-hidden transform transition-all">
+            <div class="px-6 py-4 border-b border-gray-100 bg-white flex justify-between items-center shrink-0">
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                        <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-[#009496]/10 text-[#009496]">
+                            <i class="fas fa-file-invoice"></i>
+                        </span>
+                        Selecionar ETP Inteligente
+                    </h3>
+                    <p class="text-sm text-gray-500 mt-1">
+                        Selecione um ETP aprovado para vincular a este processo.
+                    </p>
+                </div>
+                <button type="button" onclick="fecharModal('modalSelecaoEtp')" class="text-gray-400 hover:text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-full w-8 h-8 flex items-center justify-center transition-colors">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto flex-1 bg-gray-50/50">
+                <div id="lista-etps-disponiveis" class="grid gap-3">
+                    {{-- Populado via JS --}}
+                </div>
+
+                <div id="alerta-vazio-etp" class="hidden mt-2 p-8 text-center bg-white rounded-2xl border-2 border-dashed border-gray-200">
+                    <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-folder-open text-gray-400 text-2xl"></i>
+                    </div>
+                    <h4 class="text-gray-900 font-semibold mb-1">Nenhum ETP disponível</h4>
+                    <p class="text-gray-500 text-sm">Não há ETPs aprovados e sem vínculo no momento para sua secretaria.</p>
+                </div>
+            </div>
+            
+            <div class="px-6 py-4 bg-white border-t border-gray-100 flex justify-end shrink-0">
+                <button type="button" onclick="fecharModal('modalSelecaoEtp')"
+                    class="px-5 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all shadow-sm focus:ring-2 focus:ring-offset-2 focus:ring-gray-200">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // Funções para gerenciar vínculo de ETP
+        function abrirModalSelecaoEtp() {
+            const modal = document.getElementById('modalSelecaoEtp');
+            const lista = document.getElementById('lista-etps-disponiveis');
+            const alerta = document.getElementById('alerta-vazio-etp');
+
+            lista.innerHTML = '<div class="col-span-full py-12 text-center"><i class="fas fa-circle-notch fa-spin text-2xl text-[#009496] mb-3"></i><p class="text-gray-500 font-medium">Buscando ETPs disponíveis...</p></div>';
+            alerta.classList.add('hidden');
+            modal.classList.remove('hidden');
+
+            fetch(`/admin/processos/{{ $processo->id }}/etps-disponiveis`)
+                .then(res => res.json())
+                .then(response => {
+                    if (response.success) {
+                        if (response.data.length === 0) {
+                            lista.innerHTML = '';
+                            alerta.classList.remove('hidden');
+                            return;
+                        }
+
+                        lista.innerHTML = response.data.map(etp => `
+                            <div class="group flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white border border-gray-200 rounded-xl hover:border-[#009496]/50 hover:shadow-md transition-all gap-4">
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2 mb-1.5">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-semibold bg-[#009496]/10 text-[#009496] border border-[#009496]/20">
+                                            ${etp.identificador}
+                                        </span>
+                                        <span class="text-xs font-medium text-gray-500 truncate flex items-center gap-1">
+                                            <i class="fas fa-building text-gray-400"></i> ${etp.secretaria}
+                                        </span>
+                                    </div>
+                                    <h4 class="text-sm font-semibold text-gray-800 line-clamp-2 leading-relaxed" title="${etp.objeto}">
+                                        ${etp.objeto}
+                                    </h4>
+                                    <div class="flex items-center gap-3 mt-2.5">
+                                        <div class="flex items-center text-xs font-medium text-gray-600 bg-gray-50 px-2 py-1 rounded-md border border-gray-100">
+                                            <i class="fas fa-layer-group text-gray-400 mr-1.5"></i>
+                                            ${etp.qtd_itens} ${etp.qtd_itens == 1 ? 'item' : 'itens'}/lotes
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="w-full sm:w-auto shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-100 flex flex-col sm:flex-row gap-2">
+                                    <a href="/admin/etps/${etp.id}" target="_blank"
+                                       class="w-full sm:w-auto inline-flex justify-center items-center px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-100 border border-gray-200 rounded-lg hover:bg-gray-200 transition-colors shadow-sm">
+                                        <i class="fas fa-eye mr-2"></i> Visualizar
+                                    </a>
+                                    <button type="button" onclick="vincularEtp(${etp.id})" 
+                                            class="w-full sm:w-auto inline-flex justify-center items-center px-5 py-2 text-sm font-semibold text-[#009496] bg-[#009496]/10 border border-[#009496]/20 rounded-lg hover:bg-[#009496] hover:text-white transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-[#009496]">
+                                        <i class="fas fa-link mr-2"></i> Vincular
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('');
+                    } else {
+                        showMessage(response.message || 'Erro ao carregar ETPs.', 'error');
+                    }
+                })
+                .catch(() => showMessage('Erro de conexão ao carregar ETPs.', 'error'));
+        }
+
+        function vincularEtp(etpId) {
+            if (!confirm('Deseja realmente vincular este ETP ao processo? Isso afetará os dados dinâmicos dos documentos.')) return;
+
+            fetch(`/admin/processos/{{ $processo->id }}/vincular-etp`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ etp_id: etpId })
+            })
+            .then(res => res.json())
+            .then(response => {
+                if (response.success) {
+                    fecharModal('modalSelecaoEtp');
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Sucesso!',
+                        text: response.message,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    setTimeout(() => location.reload(), 2000);
+                } else {
+                    showMessage(response.message, 'error');
+                }
+            });
+        }
+
+        function desvincularEtp() {
+            if (!confirm('Deseja realmente desvincular este ETP? O processo deixará de usar os itens dinâmicos do ETP.')) return;
+
+            fetch(`/admin/processos/{{ $processo->id }}/desvincular-etp`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+            .then(res => res.json())
+            .then(response => {
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Sucesso!',
+                        text: response.message,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    setTimeout(() => location.reload(), 2000);
+                } else {
+                    showMessage(response.message, 'error');
+                }
+            });
+        }
+
         // Verificar se SweetAlert está disponível
         if (typeof Swal === 'undefined') {
             console.warn('SweetAlert2 não está carregado. Carregando agora...');

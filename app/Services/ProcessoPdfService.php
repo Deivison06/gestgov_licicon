@@ -300,7 +300,20 @@ class ProcessoPdfService
 
     public function prepararDadosPdf(Processo $processo, array $validatedData): array
     {
-        $processo->load(['detalhe', 'prefeitura']);
+        $processo->load(['detalhe', 'prefeitura', 'etp.itens', 'etp.lotes.itens']);
+
+        // Se houver um ETP vinculado, priorizamos os dados dinâmicos do ETP para as tabelas de itens
+        if ($processo->etp) {
+            $itensDinamicos = $processo->etp->transformarItensParaFormatoPdf();
+            
+            // Injetamos os itens dinâmicos nas variáveis de detalhe para que a view não perceba a diferença
+            if ($processo->detalhe) {
+                // Sobrescrevemos as colunas de itens apenas em memória para a geração do PDF
+                $processo->detalhe->itens_e_seus_quantitativos_xml = $itensDinamicos;
+                $processo->detalhe->descricao_e_quantitativos_itens_xml = $itensDinamicos;
+                $processo->detalhe->itens_especificaca_quantitativos_xml = $itensDinamicos;
+            }
+        }
 
         return [
             'processo' => $processo,

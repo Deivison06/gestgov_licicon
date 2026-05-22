@@ -244,7 +244,59 @@
     <x-form-field name="itens_especificaca_quantitativos_xml" label="📦 Itens e Seus quantitativos e especificações" type="file" accept=".xml, .xlsx, .xls, .csv" />
 
     @elseif($campo === 'descricao_e_quantitativos_itens_xml')
-    <x-form-field name="descricao_e_quantitativos_itens_xml" label="📦 Descrição e Quantitativos dos Itens" type="file" accept=".xml, .xlsx, .xls, .csv" />
+    <div class="space-y-3">
+        <label class="block text-sm font-semibold text-gray-800">📦 Descrição e Quantitativos dos Itens</label>
+        
+        {{-- Caso haja ETP vinculado --}}
+        @if($processo->etp)
+            <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-xl shadow-sm">
+                <div class="flex items-start justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                            <i class="fas fa-link text-lg"></i>
+                        </div>
+                        <div>
+                            <h5 class="text-sm font-bold text-emerald-900">ETP Inteligente Vinculado</h5>
+                            <p class="text-xs text-emerald-700 font-medium">
+                                Identificador: <span class="font-bold">ETP-{{ str_pad($processo->etp->id, 4, '0', STR_PAD_LEFT) }}/{{ $processo->etp->created_at->format('Y') }}</span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <a href="{{ route('admin.etps.show', $processo->etp->id) }}" target="_blank"
+                           class="inline-flex items-center px-3 py-1.5 text-xs font-bold text-blue-700 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 transition-all shadow-sm">
+                            <i class="fas fa-eye mr-1.5"></i> Ver ETP
+                        </a>
+                        <button type="button" @click="desvincularEtp()"
+                                class="inline-flex items-center px-3 py-1.5 text-xs font-bold text-red-700 bg-white border border-red-200 rounded-lg hover:bg-red-50 transition-all shadow-sm">
+                            <i class="fas fa-unlink mr-1.5"></i> Desvincular
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="mt-3 pt-3 border-t border-emerald-100">
+                    <p class="text-xs text-emerald-800">
+                        <i class="fas fa-info-circle mr-1"></i> Os itens deste ETP serão usados automaticamente na geração dos documentos.
+                    </p>
+                </div>
+            </div>
+        @else
+            {{-- Campo de upload normal + Botão de busca --}}
+            <div class="flex flex-col sm:flex-row gap-3">
+                <div class="flex-grow">
+                    <x-form-field name="descricao_e_quantitativos_itens_xml" label="" type="file" accept=".xml, .xlsx, .xls, .csv" />
+                </div>
+                <div class="flex items-end pb-1">
+                    <button type="button" @click="abrirModalSelecaoEtp()"
+                            class="inline-flex items-center px-4 py-2.5 text-sm font-bold text-white bg-[#009496] rounded-lg hover:bg-[#007a7a] transition-all shadow-md group">
+                        <i class="fas fa-search-plus mr-2 group-hover:scale-110 transition-transform"></i>
+                        Buscar ETP Inteligente
+                    </button>
+                </div>
+            </div>
+            <p class="text-[10px] text-gray-500 italic mt-1">* Vincular um ETP dispensa a necessidade de fazer o upload do arquivo XLS/XML.</p>
+        @endif
+    </div>
 
     @elseif($campo === 'info_extras')
     <x-form-field name="info_extras" label="Informações Extras" type="textarea" rows="5" />

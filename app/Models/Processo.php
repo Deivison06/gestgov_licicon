@@ -190,13 +190,15 @@ class Processo extends Model
             ->orderBy('gerado_em', 'desc');
     }
 
-    /**
-     * Obter documentos de cancelamento
-     */
     public function cancelamentos()
     {
         return $this->hasMany(Documento::class)
             ->where('tipo_documento', 'like', '%cancelamento%');
+    }
+
+    public function etp()
+    {
+        return $this->hasOne(Etp::class, 'processo_id');
     }
 
     /**

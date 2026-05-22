@@ -64,4 +64,38 @@ class Etp extends Model
         return $this->hasMany(EtpLote::class);
     }
 
+    /**
+     * Transforma os itens ou lotes do ETP para o formato array esperado pelos DocumentServices
+     * Formato: ['numero' => x, 'descricao' => y, 'und' => z, 'quantidade' => w]
+     */
+    public function transformarItensParaFormatoPdf(): array
+    {
+        $itensFormatados = [];
+        $num = 1;
+
+        if ($this->tipo_contratacao === 'lote') {
+            foreach ($this->lotes as $lote) {
+                foreach ($lote->itens as $item) {
+                    $itensFormatados[] = [
+                        'numero'     => $num++,
+                        'descricao'  => $item->descricao_item,
+                        'und'        => $item->pivot->unidade,
+                        'quantidade' => (float) $item->pivot->quantidade,
+                    ];
+                }
+            }
+        } else {
+            foreach ($this->itens as $item) {
+                $itensFormatados[] = [
+                    'numero'     => $num++,
+                    'descricao'  => $item->descricao_item,
+                    'und'        => $item->pivot->unidade,
+                    'quantidade' => (float) $item->pivot->quantidade,
+                ];
+            }
+        }
+
+        return $itensFormatados;
+    }
+
 }

@@ -265,6 +265,14 @@ Route::prefix('admin')
             Route::put('/status', [ProcessoController::class, 'updateStatus'])
                 ->name('processos.status.update');
 
+            // Vínculo Dinâmico de ETP Inteligente
+            Route::get('/etps-disponiveis', [ProcessoController::class, 'getEtpsDisponiveis'])
+                ->name('processos.etps.disponiveis');
+            Route::post('/vincular-etp', [ProcessoController::class, 'vincularEtp'])
+                ->name('processos.etps.vincular');
+            Route::post('/desvincular-etp', [ProcessoController::class, 'desvincularEtp'])
+                ->name('processos.etps.desvincular');
+
             // Gerar PDF
             Route::get('/pdf', [ProcessoController::class, 'gerarPdf'])
                 ->name('processos.pdf');

@@ -964,6 +964,131 @@ class ProcessoController extends Controller
         return response()->json($processos);
     }
 
+    public function desvincularEtp(Processo $processo)
+    {
+        try {
+            $etp = $processo->etp;
+
+            if (!$etp) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Não há ETP vinculado a este processo.'
+                ], 404);
+            }
+
+            DB::beginTransaction();
+
+            $etp->update([
+                'processo_id' => null,
+                'status' => 'aprovado'
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'ETP desvinculado com sucesso! O upload de arquivos agora está disponível.'
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Erro ao desvincular ETP', [
+                'processo_id' => $processo->id,
+                'erro' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao desvincular ETP: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function vincularEtp(Request $request, Processo $processo)
+    {
+        $request->validate([
+            'etp_id' => 'required|exists:etps,id'
+        ]);
+
+        try {
+            $etp = \App\Models\Etp::findOrFail($request->etp_id);
+
+            if ($etp->status !== 'aprovado') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Apenas ETPs aprovados podem ser vinculados.'
+                ], 400);
+            }
+
+            DB::beginTransaction();
+
+            // Desvincular qualquer ETP que já esteja vinculado a este processo (se houver)
+            if ($processo->etp) {
+                $processo->etp->update([
+                    'processo_id' => null,
+                    'status' => 'aprovado'
+                ]);
+            }
+
+            // Realizar o novo vínculo
+            $etp->update([
+                'processo_id' => $processo->id,
+                'status' => 'em_processo'
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'ETP vinculado com sucesso!'
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Erro ao vincular ETP', [
+                'processo_id' => $processo->id,
+                'etp_id' => $request->etp_id,
+                'erro' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao vincular ETP: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getEtpsDisponiveis(Processo $processo)
+    {
+        try {
+            $etps = \App\Models\Etp::with('secretaria')
+                ->where('prefeitura_id', $processo->prefeitura_id)
+                ->where('status', 'aprovado')
+                ->whereNull('processo_id')
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->map(function ($etp) {
+                    return [
+                        'id' => $etp->id,
+                        'identificador' => "ETP-" . str_pad($etp->id, 4, '0', STR_PAD_LEFT) . "/" . $etp->created_at->format('Y'),
+                        'secretaria' => $etp->secretaria->nome ?? 'N/A',
+                        'objeto' => \Illuminate\Support\Str::limit($etp->objeto_licitacao, 100),
+                        'data' => $etp->created_at->format('d/m/Y'),
+                        'tipo' => ucfirst($etp->tipo_contratacao),
+                        'qtd_itens' => $etp->tipo_contratacao === 'lote' ? $etp->lotes->count() : $etp->itens->count()
+                    ];
+                });
+
+            return response()->json([
+                'success' => true,
+                'data' => $etps
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao carregar ETPs: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function gerarNumeros(Request $request)
     {
         $prefeituraId = $request->input('prefeitura_id');
