@@ -1089,6 +1089,35 @@ class ProcessoController extends Controller
         }
     }
 
+    public function pesquisaPrecoItens(Processo $processo)
+    {
+        $fonte = null;
+        $etpInfo = null;
+
+        if ($processo->etp) {
+            $raw = $processo->etp->itens;
+            $itens = $raw->map(fn($item) => [
+                'descricao'  => $item->descricao_item,
+                'unidade'    => $item->pivot->unidade,
+                'quantidade' => $item->pivot->quantidade,
+            ]);
+            $fonte = 'etp';
+            $etpInfo = $processo->etp;
+        } else {
+            $raw = $processo->detalhe->descricao_e_quantitativos_itens_xml ?? [];
+            $itens = is_array($raw)
+                ? collect($raw)->map(fn($item) => [
+                    'descricao'  => $item['descricao'],
+                    'unidade'    => $item['und'] ?? null,
+                    'quantidade' => $item['quantidade'],
+                ])
+                : collect([]);
+            $fonte = 'xls';
+        }
+
+        return view('Admin.Processos.pesquisa_preco_itens', compact('processo', 'itens', 'fonte', 'etpInfo'));
+    }
+
     public function gerarNumeros(Request $request)
     {
         $prefeituraId = $request->input('prefeitura_id');

@@ -15,8 +15,9 @@ class PesquisaPrecoController extends Controller
     {
         $processoId = $request->integer('processo_id') ?: null;
         $processo   = $processoId ? Processo::find($processoId) : null;
+        $termo      = $request->input('termo', '');
 
-        return view('Admin.PesquisaPreco.index', compact('processo'));
+        return view('Admin.PesquisaPreco.index', compact('processo', 'termo'));
     }
 
     /**

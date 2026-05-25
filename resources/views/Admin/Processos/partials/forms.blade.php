@@ -245,8 +245,26 @@
 
     @elseif($campo === 'descricao_e_quantitativos_itens_xml')
     <div class="space-y-3">
-        <label class="block text-sm font-semibold text-gray-800">📦 Descrição e Quantitativos dos Itens</label>
-        
+        <div class="flex items-center justify-between">
+            <label class="block text-sm font-semibold text-gray-800">📦 Descrição e Quantitativos dos Itens</label>
+            @php
+                $temItensEtp = $processo->etp && $processo->etp->itens->count() > 0;
+                $itensXlsRaw = $processo->detalhe->descricao_e_quantitativos_itens_xml ?? [];
+                $temItensXls = is_array($itensXlsRaw) && count($itensXlsRaw) > 0;
+            @endphp
+            @if($temItensEtp || $temItensXls)
+            <a href="{{ route('admin.processos.pesquisa_preco_itens', $processo->id) }}"
+               target="_blank"
+               class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-all shadow-sm">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                Pesquisar preços por item
+            </a>
+            @endif
+        </div>
+
         {{-- Caso haja ETP vinculado --}}
         @if($processo->etp)
             <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-xl shadow-sm">
@@ -278,6 +296,50 @@
                     <p class="text-xs text-emerald-800">
                         <i class="fas fa-info-circle mr-1"></i> Os itens deste ETP serão usados automaticamente na geração dos documentos.
                     </p>
+
+                    {{-- Expandir/recolher itens do ETP --}}
+                    @php $etpItens = $processo->etp->itens; @endphp
+                    @if($etpItens->count() > 0)
+                    <div x-data="{ openEtpItens: false }" class="mt-2">
+                        <button type="button" @click="openEtpItens = !openEtpItens"
+                                class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 hover:text-emerald-900 transition-colors">
+                            <i :class="openEtpItens ? 'fa-chevron-up' : 'fa-chevron-down'" class="fas text-[9px]"></i>
+                            {{-- ALTERADO: Retirado o escape de aspas invertidas que quebrava o Blade --}}
+                            <span x-text="openEtpItens ? 'Recolher itens' : 'Ver {{ $etpItens->count() }} {{ $etpItens->count() === 1 ? 'item' : 'itens' }}'"></span>
+                        </button>
+
+                        <div x-show="openEtpItens" x-transition class="mt-2 overflow-x-auto rounded-lg border border-emerald-200">
+                            <table class="w-full text-xs text-left">
+                                <thead class="bg-emerald-100 text-emerald-800 uppercase text-[10px] font-bold">
+                                    <tr>
+                                        <th class="px-2 py-1.5 w-8 text-center">#</th>
+                                        <th class="px-2 py-1.5">Descrição</th>
+                                        <th class="px-2 py-1.5 w-16 text-center">Und.</th>
+                                        <th class="px-2 py-1.5 w-20 text-right">Qtd.</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-emerald-50">
+                                    @foreach($etpItens as $idx => $item)
+                                    <tr class="bg-white hover:bg-emerald-50/50">
+                                        <td class="px-2 py-1.5 text-center">
+                                            <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold">{{ $idx + 1 }}</span>
+                                        </td>
+                                        <td class="px-2 py-1.5 text-gray-700">{{ $item->descricao_item }}</td>
+                                        <td class="px-2 py-1.5 text-center text-gray-500">{{ $item->pivot->unidade ?? '-' }}</td>
+                                        <td class="px-2 py-1.5 text-right font-medium text-gray-700">{{ $item->pivot->quantidade }}</td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                                <tfoot>
+                                    <tr class="bg-emerald-50 border-t border-emerald-200">
+                                        <td colspan="3" class="px-2 py-1.5 text-[10px] text-emerald-700 font-semibold uppercase">Total</td>
+                                        <td class="px-2 py-1.5 text-right text-xs font-bold text-emerald-700">{{ $etpItens->count() }}</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                    @endif
                 </div>
             </div>
         @else
@@ -295,6 +357,49 @@
                 </div>
             </div>
             <p class="text-[10px] text-gray-500 italic mt-1">* Vincular um ETP dispensa a necessidade de fazer o upload do arquivo XLS/XML.</p>
+
+            {{-- Preview de itens já importados via XLS --}}
+            {{-- Preview de itens já importados via XLS --}}
+            @php $itensXls = $processo->detalhe->descricao_e_quantitativos_itens_xml ?? []; @endphp
+            @if(is_array($itensXls) && count($itensXls) > 0)
+            <div x-data="{ openXlsItens: false }" class="mt-2">
+                <button type="button" @click="openXlsItens = !openXlsItens"
+                        class="inline-flex items-center gap-1.5 text-xs font-semibold text-teal-700 hover:text-teal-900 transition-colors">
+                    <i :class="openXlsItens ? 'fa-chevron-up' : 'fa-chevron-down'" class="fas text-[9px]"></i>
+                    {{-- CORRIGIDO: Usando chaves Blade limpas e concatenando o texto sem escapes que quebram o compilador --}}
+                    <span x-text="openXlsItens ? 'Recolher itens' : '{{ count($itensXls) }} {{ count($itensXls) === 1 ? 'item importado' : 'itens importados' }} — clique para ver'"></span>
+                </button>
+
+                <div x-show="openXlsItens" x-transition class="mt-2 overflow-x-auto rounded-lg border border-gray-200">
+                    <table class="w-full text-xs text-left">
+                        <thead class="bg-gray-100 text-gray-600 uppercase text-[10px] font-bold">
+                            <tr>
+                                <th class="px-2 py-1.5 w-8 text-center">#</th>
+                                <th class="px-2 py-1.5">Descrição</th>
+                                <th class="px-2 py-1.5 w-16 text-center">Und.</th>
+                                <th class="px-2 py-1.5 w-20 text-right">Qtd.</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            @foreach($itensXls as $idx => $item)
+                            <tr class="bg-white hover:bg-gray-50">
+                                <td class="px-2 py-1.5 text-center text-gray-400">{{ $item['numero'] ?? ($idx + 1) }}</td>
+                                <td class="px-2 py-1.5 text-gray-700">{{ $item['descricao'] }}</td>
+                                <td class="px-2 py-1.5 text-center text-gray-500">{{ $item['und'] ?? '-' }}</td>
+                                <td class="px-2 py-1.5 text-right font-medium text-gray-700">{{ $item['quantidade'] }}</td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                        <tfoot>
+                            <tr class="bg-gray-50 border-t border-gray-200">
+                                <td colspan="3" class="px-2 py-1.5 text-[10px] text-gray-500 font-semibold uppercase">Total</td>
+                                <td class="px-2 py-1.5 text-right text-xs font-bold text-gray-600">{{ count($itensXls) }}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+            @endif
         @endif
     </div>
 

@@ -231,6 +231,7 @@ const PP_PROCESSO_ID   = @json($processo?->id);
 const PP_STORE_URL     = '{{ route('admin.pesquisa_preco.itens.store') }}';
 const PP_DESTROY_URL   = '{{ url('admin/pesquisa-preco/itens') }}'; // + /{id}
 const PP_CSRF          = '{{ csrf_token() }}';
+const PP_TERMO_INICIAL = @json($termo ?? '');
 
 document.addEventListener('DOMContentLoaded', function () {
 
@@ -694,6 +695,12 @@ document.addEventListener('DOMContentLoaded', function () {
         if (paginaCorrente > 1)             paginacao.appendChild(btn('← Anterior', paginaCorrente - 1));
         paginacao.appendChild(btn(`Pág. ${paginaCorrente} / ${totalPaginas}`, paginaCorrente, true));
         if (paginaCorrente < totalPaginas)  paginacao.appendChild(btn('Próxima →', paginaCorrente + 1));
+    }
+
+    // ── Auto-busca quando página é aberta com termo pré-definido ──
+    if (PP_TERMO_INICIAL && PP_TERMO_INICIAL.length >= 3) {
+        inputTermo.value = PP_TERMO_INICIAL;
+        executarBusca(PP_TERMO_INICIAL, 1);
     }
 
 });
