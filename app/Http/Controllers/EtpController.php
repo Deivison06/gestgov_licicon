@@ -103,7 +103,7 @@ class EtpController extends Controller
         $rules['itens']                   = (!$isDraft) ? 'required_if:tipo_contratacao,item|array' : 'nullable|array';
         $rules['itens.*.item_id']         = (!$isDraft) ? 'required_if:tipo_contratacao,item|exists:etp_itens,id' : 'nullable|exists:etp_itens,id';
         $rules['itens.*.unidade']         = (!$isDraft) ? 'required_if:tipo_contratacao,item|string|max:100' : 'nullable|string|max:100';
-        $rules['itens.*.quantidade']      = (!$isDraft) ? 'required_if:tipo_contratacao,item|numeric|min:0.01' : 'nullable|numeric|min:0.01';
+        $rules['itens.*.quantidade']      = (!$isDraft) ? 'required_if:tipo_contratacao,item|numeric|min:0.01' : 'nullable|numeric|min:0';
 
         // Para lotes
         $rules['lotes']                       = (!$isDraft) ? 'required_if:tipo_contratacao,lote|array' : 'nullable|array';
@@ -111,7 +111,7 @@ class EtpController extends Controller
         $rules['lotes.*.itens']               = (!$isDraft) ? 'required_if:tipo_contratacao,lote|array' : 'nullable|array';
         $rules['lotes.*.itens.*.item_id']     = (!$isDraft) ? 'required_if:tipo_contratacao,lote' : 'nullable';
         $rules['lotes.*.itens.*.unidade']     = (!$isDraft) ? 'required_if:tipo_contratacao,lote|string|max:100' : 'nullable|string|max:100';
-        $rules['lotes.*.itens.*.quantidade']  = (!$isDraft) ? 'required_if:tipo_contratacao,lote|numeric|min:0.01' : 'nullable|numeric|min:0.01';
+        $rules['lotes.*.itens.*.quantidade']  = (!$isDraft) ? 'required_if:tipo_contratacao,lote|numeric|min:0.01' : 'nullable|numeric|min:0';
 
         try {
             $request->validate($rules, $this->etpValidationMessages());
@@ -343,7 +343,7 @@ class EtpController extends Controller
         $rules['itens']                   = (!$isDraft) ? 'required_if:tipo_contratacao,item|array' : 'nullable|array';
         $rules['itens.*.item_id']         = (!$isDraft) ? 'required_if:tipo_contratacao,item|exists:etp_itens,id' : 'nullable|exists:etp_itens,id';
         $rules['itens.*.unidade']         = (!$isDraft) ? 'required_if:tipo_contratacao,item|string|max:100' : 'nullable|string|max:100';
-        $rules['itens.*.quantidade']      = (!$isDraft) ? 'required_if:tipo_contratacao,item|numeric|min:0.01' : 'nullable|numeric|min:0.01';
+        $rules['itens.*.quantidade']      = (!$isDraft) ? 'required_if:tipo_contratacao,item|numeric|min:0.01' : 'nullable|numeric|min:0';
 
         // Para lotes
         $rules['lotes']                       = (!$isDraft) ? 'required_if:tipo_contratacao,lote|array' : 'nullable|array';
@@ -351,7 +351,7 @@ class EtpController extends Controller
         $rules['lotes.*.itens']               = (!$isDraft) ? 'required_if:tipo_contratacao,lote|array' : 'nullable|array';
         $rules['lotes.*.itens.*.item_id']     = (!$isDraft) ? 'required_if:tipo_contratacao,lote' : 'nullable';
         $rules['lotes.*.itens.*.unidade']     = (!$isDraft) ? 'required_if:tipo_contratacao,lote|string|max:100' : 'nullable|string|max:100';
-        $rules['lotes.*.itens.*.quantidade']  = (!$isDraft) ? 'required_if:tipo_contratacao,lote|numeric|min:0.01' : 'nullable|numeric|min:0.01';
+        $rules['lotes.*.itens.*.quantidade']  = (!$isDraft) ? 'required_if:tipo_contratacao,lote|numeric|min:0.01' : 'nullable|numeric|min:0';
 
         try {
             $request->validate($rules, $this->etpValidationMessages());

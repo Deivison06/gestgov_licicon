@@ -61,10 +61,17 @@
 
     {{-- SELECIONADOS --}}
     <div class="mt-6">
-        <h5 class="text-sm font-semibold mb-2 text-gray-700">
-            Itens Selecionados 
-            {{ is_numeric($loteIndex) ? "- Lote " . ((int)$loteIndex + 1) : '' }}
-        </h5>
+        @if ($loteIndex === null)
+            <div class="flex items-center justify-between cursor-pointer select-none mb-2" onclick="toggleSemLote()">
+                <h5 class="text-sm font-semibold text-gray-700">Itens Selecionados</h5>
+                <i class="fas fa-chevron-down text-gray-400 transition-transform duration-200" id="chevron-sem-lote"></i>
+            </div>
+        @else
+            <h5 class="text-sm font-semibold mb-2 text-gray-700">
+                Itens Selecionados 
+                {{ is_numeric($loteIndex) ? "- Lote " . ((int)$loteIndex + 1) : '' }}
+            </h5>
+        @endif
 
         <div id="{{ $containerId }}" class="space-y-3">
             @if($loteIndex !== null && isset($lote) && $lote->itens)

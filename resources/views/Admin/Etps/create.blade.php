@@ -1663,13 +1663,14 @@
                 <div class="flex items-center gap-3 flex-1 min-w-0">
                     <i class="fas fa-grip-vertical text-gray-300 hover:text-gray-500 cursor-grab px-1 drag-handle" title="Arrastar para reordenar"></i>
                     <span class="item-numero inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#009496]/10 text-[#009496] text-xs font-bold flex-shrink-0 border border-[#009496]/20">0</span>
-                    <div class="min-w-0 flex-1 flex items-center gap-2">
-                        <p class="desc-item-${id} text-sm font-semibold text-gray-800 leading-relaxed truncate" title="${descSafe}">${descSafe}</p>
-                        <button type="button" onclick="openModalItemQuickEdit(${id}, document.querySelector('.desc-item-${id}').getAttribute('title'))" class="btn-edit-item-${id} text-[#009496] hover:text-[#007a7a] focus:outline-none flex-shrink-0 transition-transform hover:scale-110" title="Ver/Editar Descrição Completa">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                    </div>
-                </div>
+                    <div class="min-w-0 flex-1 flex flex-col gap-1">
+                        <div class="flex items-center gap-2">
+                            <p class="desc-item-${id} text-sm font-semibold text-gray-800 leading-relaxed" title="${descSafe}">${descSafe}</p>
+                            <button type="button" onclick="openModalItemQuickEdit(${id}, document.querySelector('.desc-item-${id}').getAttribute('title'))" class="btn-edit-item-${id} text-[#009496] hover:text-[#007a7a] focus:outline-none flex-shrink-0 transition-transform hover:scale-110" title="Editar Descrição">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </div>
+                    </div>                </div>
                 <div class="flex items-center gap-3 flex-shrink-0">
                     <div class="flex flex-col gap-1">
                         <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Unidade</span>

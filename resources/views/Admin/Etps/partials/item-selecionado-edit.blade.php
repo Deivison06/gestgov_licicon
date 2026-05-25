@@ -8,11 +8,13 @@
     <div class="flex items-center gap-3 flex-1 min-w-0">
         <i class="fas fa-grip-vertical text-gray-300 hover:text-gray-500 cursor-grab px-1 drag-handle" title="Arrastar para reordenar"></i>
         <span class="item-numero inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#009496]/10 text-[#009496] text-xs font-bold flex-shrink-0 border border-[#009496]/20">0</span>
-        <div class="min-w-0 flex-1 flex items-center gap-2">
-            <p class="desc-item-{{ $item->id }} text-sm font-semibold text-gray-800 leading-relaxed truncate" title="{{ $item->descricao_item }}">{{ $item->descricao_item }}</p>
-            <button type="button" onclick="const p = document.querySelector('.desc-item-{{ $item->id }}'); openModalItemQuickEdit({{ $item->id }}, p.getAttribute('title'))" class="btn-edit-item-{{ $item->id }} text-[#009496] hover:text-[#007a7a] focus:outline-none flex-shrink-0 transition-transform hover:scale-110" title="Ver/Editar Descrição Completa">
-                <i class="fas fa-edit"></i>
-            </button>
+        <div class="min-w-0 flex-1 flex flex-col gap-1">
+            <div class="flex items-center gap-2">
+                <p class="desc-item-{{ $item->id }} text-sm font-semibold text-gray-800 leading-relaxed" title="{{ $item->descricao_item }}">{{ $item->descricao_item }}</p>
+                <button type="button" onclick="const p = document.querySelector('.desc-item-{{ $item->id }}'); openModalItemQuickEdit({{ $item->id }}, p.getAttribute('title'))" class="btn-edit-item-{{ $item->id }} text-[#009496] hover:text-[#007a7a] focus:outline-none flex-shrink-0 transition-transform hover:scale-110" title="Editar Descrição">
+                    <i class="fas fa-edit"></i>
+                </button>
+            </div>
         </div>
     </div>
     
@@ -46,6 +48,7 @@
         </div>
 
         <div class="flex items-end self-end pb-0.5">
+            <input type="hidden" name="{{ $namePrefix }}[{{ $item->id }}][item_id]" value="{{ $item->id }}">
             <button type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-red-600 hover:bg-red-50 focus:outline-none transition" onclick="removerItemSelecionado({{ $item->id }}, {{ $loteIndex ?: 'null' }})" title="Excluir Item">
                 <i class="fas fa-trash-alt text-sm"></i>
             </button>

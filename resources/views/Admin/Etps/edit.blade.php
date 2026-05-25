@@ -341,6 +341,29 @@
     {{-- Modal: Buscar no PNCP --}}
     @include('Admin.Etps.partials.modal-pncp-search')
 
+    {{-- Modal: Validação / Confirmação antes de concluir ETP --}}
+    <div id="modal-concluir-etp" class="fixed inset-0 z-[80] flex items-center justify-center hidden bg-black bg-opacity-50">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 overflow-hidden">
+            <div class="p-5 border-b border-gray-200 bg-gray-50 flex justify-between items-center rounded-t-2xl">
+                <h3 id="modal-concluir-titulo" class="text-lg font-bold text-gray-800"></h3>
+                <button type="button" onclick="fecharModalConcluir()" class="text-gray-400 hover:text-red-500 transition-colors">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+            <div id="modal-concluir-body" class="p-6"></div>
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
+                <button type="button" onclick="fecharModalConcluir()"
+                    class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition">
+                    Fechar
+                </button>
+                <button type="button" id="btn-confirmar-concluir" onclick="confirmarConcluirEtp()"
+                    class="hidden px-5 py-2 text-sm font-bold text-white bg-green-600 rounded-lg hover:bg-green-700 transition shadow-sm">
+                    <i class="fas fa-check-circle mr-1"></i> Confirmar e Enviar
+                </button>
+            </div>
+        </div>
+    </div>
+
     {{-- ═══════════════════════════════════════════════════════
      MODAL: CRIAR ITEM RÁPIDO
 ════════════════════════════════════════════════════════ --}}
@@ -384,6 +407,9 @@
             </div>
         </div>
     </div>
+    @include('Admin.Etps.partials.modal-item-quick-edit')
+    @include('Admin.Etps.partials.modal-importar-itens')
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.3/Sortable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 
@@ -410,9 +436,9 @@
             return response;
         };
 
-        document.addEventListener("DOMContentLoaded", function() {
+        let loteCounter = {{ $etp->lotes->count() }};
 
-            let loteCounter = {{ $etp->lotes->count() }};
+        document.addEventListener("DOMContentLoaded", function() {
 
             const secretariaSelect = document.getElementById('secretaria_id');
             const servidorInput = document.getElementById('servidor_responsavel');
@@ -549,201 +575,132 @@
                 }
             };
 
-            /* ── LOTES ── */
-            window.adicionarLote = function() {
-                const container = document.getElementById('lotes-container');
-                const loteDiv = document.createElement('div');
-                loteDiv.className = 'lote-card border border-gray-200 rounded-xl p-6 bg-gray-50 relative';
-                loteDiv.id = `lote-${loteCounter}`;
-                loteDiv.innerHTML = `
-            <button type="button" onclick="removerLote(this)" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-            </button>
-            <div class="mb-4 pr-8">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Nome do Lote *</label>
-                <input type="text" name="lotes[${loteCounter}][nome]"
-                    placeholder="Ex: Lote ${loteCounter + 1} - Materiais de Escritório"
-                    class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496]" required>
-            </div>
-            ${gerarItensSelector(loteCounter)}`;
-                container.appendChild(loteDiv);
-                inicializarBuscaLote(loteCounter);
-                loteCounter++;
-            };
+            /* ── VALIDAÇÃO CLIENT-SIDE ── */
+            function validarFormularioEtp() {
+                const erros = [];
+                const modalidade = document.getElementById('modalidade').value;
 
-            function gerarItensSelector(loteIndex) {
-                const buscaId = `buscar_item_lote_${loteIndex}`;
-                const listaId = `lista_itens_lote_${loteIndex}`;
-                const containerId = `itens-selecionados-lote-${loteIndex}`;
+                if (!document.getElementById('secretaria_id').value)
+                    erros.push('Selecione a secretaria (Passo 1).');
+                if (!document.getElementById('servidor_responsavel').value.trim())
+                    erros.push('Informe o servidor responsável (Passo 1).');
+                if (!modalidade)
+                    erros.push('Selecione a modalidade da licitação (Passo 1).');
+                if (!document.getElementById('objeto_licitacao').value.trim())
+                    erros.push('Descreva o objeto da licitação (Passo 2).');
+                if (!document.getElementById('justificativa_necessidade').value.trim())
+                    erros.push('Informe a justificativa da necessidade (Passo 2).');
+                if (!document.getElementById('prazo_entrega').value.trim())
+                    erros.push('Informe o prazo de entrega (Passo 3).');
+                if (!document.getElementById('dotacao_orcamentaria').value.trim())
+                    erros.push('Informe a dotação orçamentária (Passo 3).');
 
-                // Passa os itens do PHP para JavaScript
-                const itens = @json($itens);
-
-                let itensOptions = '';
-                itens.forEach(item => {
-                    itensOptions += `
-                    <label class="flex items-center space-x-3 item-option" data-descricao="${item.descricao_item.toLowerCase()}">
-                        <input type="checkbox" value="${item.id}"
-                            data-descricao="${item.descricao_item}"
-                            data-lote-index="${loteIndex}"
-                            class="item-checkbox w-4 h-4 text-[#009496]"
-                            onchange="toggleItemSelecionado(this, ${loteIndex})">
-                        <span class="text-sm text-gray-700">${item.descricao_item}</span>
-                    </label>`;
-                });
-
-                return `
-                <div class="mb-4 itens-selector" data-lote-index="${loteIndex}">
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Selecionar Itens *</label>
-                    <div class="flex flex-col sm:flex-row gap-2.5 mb-3">
-                        <div class="relative flex-1">
-                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                                <i class="fas fa-search text-xs"></i>
-                            </span>
-                            <input type="text" id="${buscaId}" placeholder="Buscar item já cadastrado no sistema..."
-                                class="buscar-item w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#009496] focus:border-[#009496] transition"
-                                data-lista="${listaId}">
-                        </div>
-                        <button type="button" onclick="openModalPncp(${loteIndex})" 
-                            class="inline-flex items-center justify-center px-4 py-2 text-sm font-bold text-white bg-[#009496] hover:bg-[#007a7a] rounded-lg transition shadow-sm whitespace-nowrap gap-2">
-                            <i class="fas fa-globe"></i> Novo Item (PNCP)
-                        </button>
-                    </div>
-                    <div id="${listaId}" class="hidden border border-gray-200 rounded-lg p-4 max-h-60 overflow-y-auto space-y-2 bg-gray-50">
-                        ${itensOptions}
-                    </div>
-                    <div class="mt-6">
-                        <h5 class="text-sm font-semibold mb-2 text-gray-700">Itens Selecionados - Lote ${loteIndex + 1}</h5>
-                        <div id="${containerId}" class="space-y-3"></div>
-                    </div>
-                </div>`;
-            }
-
-            window.removerLote = function(button) {
-                const loteCard = button.closest('.lote-card');
-                if (document.querySelectorAll('.lote-card').length > 1) loteCard.remove();
-                else alert('É necessário ter pelo menos um lote.');
-            };
-
-            // Normaliza texto removendo acentos e convertendo para minúsculas
-            function normalizarTexto(texto) {
-                return texto
-                    .toLowerCase()
-                    .normalize('NFD')
-                    .replace(/[\u0300-\u036f]/g, '');
-            }
-
-            /* ── BUSCA ── */
-            function inicializarBuscaLote(loteIndex) {
-                const buscaId = loteIndex !== undefined ? `buscar_item_lote_${loteIndex}` : 'buscar_item_global';
-                const listaId = loteIndex !== undefined ? `lista_itens_lote_${loteIndex}` : 'lista_itens_global';
-                const buscaInput = document.getElementById(buscaId);
-                if (!buscaInput) return;
-                // DEPOIS
-                buscaInput.addEventListener('keyup', function() {
-                    const termo = normalizarTexto(this.value.trim());
-                    const lista = document.getElementById(listaId);
-                    if (!lista) return;
-                    const itens = lista.querySelectorAll('.item-option');
-
-                    if (termo.length === 0) {
-                        lista.classList.add('hidden');
-                        itens.forEach(el => el.style.display = 'flex');
-                        return;
-                    }
-
-                    lista.classList.remove('hidden');
-                    itens.forEach(el => {
-                        const descricao = normalizarTexto(el.getAttribute('data-descricao') || '');
-                        el.style.display = descricao.includes(termo) ? 'flex' : 'none';
-                    });
-                });
-            }
-
-            inicializarBuscaLote();
-            document.querySelectorAll('.lote-card').forEach((_, i) => inicializarBuscaLote(i));
-
-            /* ── SELEÇÃO DE ITENS ── */
-            window.toggleItemSelecionado = function(checkbox, loteIndex) {
-                const id = checkbox.value;
-                const descricao = checkbox.dataset.descricao;
-                const containerId = loteIndex !== null ? `itens-selecionados-lote-${loteIndex}` :
-                    'itens-selecionados-sem-lote';
-                const container = document.getElementById(containerId);
-
-                if (checkbox.checked) {
-                    const namePrefix = loteIndex !== null ? `lotes[${loteIndex}][itens]` : 'itens';
-                    container.insertAdjacentHTML('beforeend', `
-                    <div class="flex flex-col md:flex-row md:items-center justify-between bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:border-[#009496]/30 transition gap-4" id="item-${containerId}-${id}">
-                        <div class="flex items-center gap-3 flex-1 min-w-0">
-                            <span class="item-numero inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#009496]/10 text-[#009496] text-xs font-bold flex-shrink-0 border border-[#009496]/20">0</span>
-                            <div class="min-w-0 flex-1">
-                                <p class="text-sm font-semibold text-gray-800 leading-relaxed truncate" title="${descricao}">${descricao}</p>
-                            </div>
-                        </div>
-                        
-                        <div class="flex items-center gap-3 flex-shrink-0">
-                            <div class="flex flex-col gap-1">
-                                <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Unidade</span>
-                                <select name="${namePrefix}[${id}][unidade]" required class="rounded-lg border-gray-300 text-xs py-1.5 focus:border-[#009496] focus:ring-[#009496] w-32 bg-gray-50/50 hover:bg-gray-50 transition">
-                                    <option value="UN">UN (Unidade)</option>
-                                    <option value="KG">KG (Quilograma)</option>
-                                    <option value="CX">CX (Caixa)</option>
-                                    <option value="PCT">PCT (Pacote)</option>
-                                    <option value="L">L (Litro)</option>
-                                    <option value="M">M (Metro)</option>
-                                    <option value="RES">RES (Resma)</option>
-                                    <option value="SAC">SAC (Saco)</option>
-                                    <option value="FR">FR (Frasco)</option>
-                                    <option value="KIT">KIT (Kit)</option>
-                                    <option value="JG">JG (Jogo)</option>
-                                    <option value="FD">FD (Fardo)</option>
-                                    <option value="GL">GL (Galão)</option>
-                                    <option value="RL">RL (Rolo)</option>
-                                </select>
-                            </div>
-                            
-                            <div class="flex flex-col gap-1">
-                                <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Quantidade</span>
-                                <input type="number" name="${namePrefix}[${id}][quantidade]" placeholder="Qtd" min="1" required class="rounded-lg border-gray-300 text-xs py-1.5 focus:border-[#009496] focus:ring-[#009496] w-20 bg-gray-50/50 hover:bg-gray-50 transition">
-                            </div>
-
-                            <div class="flex items-end self-end pb-0.5">
-                                <input type="hidden" name="${namePrefix}[${id}][item_id]" value="${id}">
-                                <button type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-red-600 hover:bg-red-50 focus:outline-none transition" onclick="removerItemSelecionado(${id}, ${loteIndex})" title="Excluir Item">
-                                    <i class="fas fa-trash-alt text-sm"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>`);
-                } else {
-                    removerItemSelecionado(id, loteIndex);
+                if (modalidade === 'concorrencia' || modalidade === 'inexigibilidade') {
+                    const f = document.getElementById('cotacao_path');
+                    // Na edição, se já tiver um arquivo salvo e não anexar um novo, passa
+                    const jaTemArquivo = {{ $etp->cotacao_path ? 'true' : 'false' }};
+                    if (f && !f.files.length && !jaTemArquivo) erros.push('Anexe o Projeto Básico (Passo 3).');
+                    return erros;
                 }
-                renumerarItens(containerId);
+
+                const tipoEl = document.querySelector('input[name="tipo_contratacao"]:checked');
+                if (!tipoEl) {
+                    erros.push('Selecione o tipo de contratação (Passo 3).');
+                    return erros;
+                }
+
+                const tipo = tipoEl.value;
+
+                if (tipo === 'obras') {
+                    const f = document.getElementById('cotacao_path');
+                    const jaTemArquivo = {{ $etp->cotacao_path ? 'true' : 'false' }};
+                    if (f && !f.files.length && !jaTemArquivo) erros.push('Anexe o Projeto Básico (Passo 3).');
+                    return erros;
+                }
+
+                if (tipo === 'lote') {
+                    const loteCards = document.querySelectorAll('.lote-card');
+                    if (!loteCards.length) {
+                        erros.push('Adicione pelo menos um lote (Passo 3).');
+                    } else {
+                        loteCards.forEach((card, i) => {
+                            const match = card.id.match(/lote-(\d+)/);
+                            if (!match) return;
+                            const idx = match[1];
+                            const nomeInput = card.querySelector(`input[name="lotes[${idx}][nome]"]`);
+                            if (!nomeInput?.value.trim())
+                                erros.push(`Lote ${i + 1}: informe o nome do lote.`);
+                            const container = document.getElementById(`itens-selecionados-lote-${idx}`);
+                            if (!container || !container.children.length) {
+                                erros.push(`Lote ${i + 1}: adicione pelo menos um item.`);
+                            } else {
+                                let semQtd = false;
+                                container.querySelectorAll('input[type="number"]').forEach(el => {
+                                    if (!el.value || parseFloat(el.value) <= 0) semQtd = true;
+                                });
+                                if (semQtd) erros.push(`Lote ${i + 1}: preencha a quantidade de todos os itens.`);
+                            }
+                        });
+                    }
+                } else {
+                    const container = document.getElementById('itens-selecionados-sem-lote');
+                    if (!container || !container.children.length) {
+                        erros.push('Adicione pelo menos um item (Passo 3).');
+                    } else {
+                        let semQtd = false;
+                        container.querySelectorAll('input[type="number"]').forEach(el => {
+                            if (!el.value || parseFloat(el.value) <= 0) semQtd = true;
+                        });
+                        if (semQtd) erros.push('Preencha a quantidade de todos os itens selecionados.');
+                    }
+                }
+
+                return erros;
+            }
+
+            /* ── MODAIS DE VALIDAÇÃO / CONFIRMAÇÃO ── */
+            window.fecharModalConcluir = function() {
+                document.getElementById('modal-concluir-etp').classList.add('hidden');
             };
 
-            window.removerItemSelecionado = function(id, loteIndex) {
-                const containerId = loteIndex !== null && loteIndex !== undefined ?
-                    `itens-selecionados-lote-${loteIndex}` : 'itens-selecionados-sem-lote';
-                const itemDiv = document.getElementById(`item-${containerId}-${id}`);
-                if (itemDiv) itemDiv.remove();
-                const sel = loteIndex !== null && loteIndex !== undefined ?
-                    `.item-checkbox[value="${id}"][data-lote-index="${loteIndex}"]` :
-                    `.item-checkbox[value="${id}"]:not([data-lote-index])`;
-                const cb = document.querySelector(sel);
-                if (cb) cb.checked = false;
-                renumerarItens(containerId);
+            window.confirmarConcluirEtp = function() {
+                fecharModalConcluir();
+                document.getElementById('should_redirect').value = '1';
+                document.getElementById('etpForm').submit();
             };
 
-            window.renumerarItens = function(containerId) {
-                const container = document.getElementById(containerId);
-                if (!container) return;
-                container.querySelectorAll('.item-numero').forEach((badge, idx) => {
-                    badge.textContent = idx + 1;
-                });
-            };
+            function abrirModalErrosEtp(erros) {
+                document.getElementById('modal-concluir-titulo').textContent = 'Verifique os campos obrigatórios';
+                document.getElementById('modal-concluir-titulo').className = 'text-lg font-bold text-red-700';
+                const items = erros.map(e =>
+                    `<li class="flex items-start gap-2 text-sm text-gray-800">
+                        <i class="fas fa-exclamation-circle text-red-500 mt-0.5 flex-shrink-0"></i>
+                        <span>${e}</span>
+                    </li>`
+                ).join('');
+                document.getElementById('modal-concluir-body').innerHTML = `
+                    <p class="text-sm text-gray-600 mb-3">Corrija os itens abaixo antes de concluir o ETP:</p>
+                    <ul class="space-y-2">${items}</ul>`;
+                document.getElementById('btn-confirmar-concluir').classList.add('hidden');
+                document.getElementById('modal-concluir-etp').classList.remove('hidden');
+            }
+
+            function abrirModalConfirmacaoEtp() {
+                document.getElementById('modal-concluir-titulo').textContent = 'Confirmar conclusão do ETP';
+                document.getElementById('modal-concluir-titulo').className = 'text-lg font-bold text-gray-800';
+                document.getElementById('modal-concluir-body').innerHTML = `
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-paper-plane text-green-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800 mb-1">Tudo certo! O ETP está pronto para envio.</p>
+                            <p class="text-sm text-gray-500">Após confirmar, o ETP será enviado para análise. Deseja continuar?</p>
+                        </div>
+                    </div>`;
+                document.getElementById('btn-confirmar-concluir').classList.remove('hidden');
+                document.getElementById('modal-concluir-etp').classList.remove('hidden');
+            }
 
             /* ── STEPS ── */
             window.nextStep = function(step) {
@@ -762,7 +719,6 @@
                         alert('Preencha o objeto primeiro.');
                         return;
                     }
-                    // NOVA VALIDAÇÃO: Verificar justificativa
                     if (!document.getElementById('justificativa_necessidade').value.trim()) {
                         alert('Preencha a justificativa da necessidade.');
                         return;
@@ -774,7 +730,7 @@
                         document.getElementById('step-' + step).classList.remove('hidden');
                         updateProgress(step);
                     });
-                    return; // Interrompe para esperar o save
+                    return;
                 }
                 document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
                 document.getElementById('step-' + step).classList.remove('hidden');
@@ -809,16 +765,17 @@
             window.submeterEtp = function(tipo, callback) {
                 document.getElementById('action_type').value = tipo;
 
-                // Se for "salvar" (rascunho), não redireciona
-                // Se for "concluir", redireciona
                 if (tipo === 'salvar') {
                     document.getElementById('should_redirect').value = '0';
-
-                    // Envia o formulário via AJAX para não redirecionar
                     enviarFormularioAjax(callback);
+                    return;
+                }
+
+                const erros = validarFormularioEtp();
+                if (erros.length > 0) {
+                    abrirModalErrosEtp(erros);
                 } else {
-                    document.getElementById('should_redirect').value = '1';
-                    document.getElementById('etpForm').submit();
+                    abrirModalConfirmacaoEtp();
                 }
             };
 
@@ -984,11 +941,102 @@
             if (document.querySelector('input[name="tipo_contratacao"]:checked')?.value === 'lote') {
                 if (document.querySelectorAll('.lote-card').length === 0) adicionarLote();
             }
+
+            // Inicializar renumeração e Sortable para itens existentes
+            renumerarItens('itens-selecionados-sem-lote');
+            initSortable('itens-selecionados-sem-lote');
+            document.querySelectorAll('.lote-card').forEach(loteCard => {
+                const match = loteCard.id.match(/lote-(\d+)/);
+                if (match) {
+                    const idx = match[1];
+                    renumerarItens(`itens-selecionados-lote-${idx}`);
+                    initSortable(`itens-selecionados-lote-${idx}`);
+                }
+            });
         });
 
-        /* ══════════════════════════════════════════════════════════
-           MODAL: CRIAR ITEM RÁPIDO
-        ══════════════════════════════════════════════════════════ */
+        /* ── LOTES HELPERS (fora do DOMContentLoaded para acesso global) ── */
+        window.removerLote = function(button) {
+            const loteCard = button.closest('.lote-card');
+            if (document.querySelectorAll('.lote-card').length > 1) {
+                loteCard.remove();
+            } else {
+                alert('É necessário ter pelo menos um lote.');
+            }
+        };
+
+        function gerarItensSelector(loteIndex) {
+            const buscaId = `buscar_item_lote_${loteIndex}`;
+            const listaId = `lista_itens_lote_${loteIndex}`;
+            const containerId = `itens-selecionados-lote-${loteIndex}`;
+            const itens = @json($itens);
+
+            let itensOptions = '';
+            itens.forEach(item => {
+                itensOptions += `
+                <label class="flex items-center space-x-3 item-option" data-descricao="${item.descricao_item.toLowerCase()}">
+                    <input type="checkbox" value="${item.id}"
+                        data-descricao="${item.descricao_item}"
+                        data-lote-index="${loteIndex}"
+                        class="item-checkbox w-4 h-4 text-[#009496]"
+                        onchange="toggleItemSelecionado(this, ${loteIndex})">
+                    <span class="text-sm text-gray-700">${item.descricao_item}</span>
+                </label>`;
+            });
+
+            return `
+            <div class="mb-4 itens-selector" data-lote-index="${loteIndex}">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Selecionar Itens *</label>
+                <div class="flex flex-col sm:flex-row gap-2.5 mb-3">
+                    <div class="relative flex-1">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                            <i class="fas fa-search text-xs"></i>
+                        </span>
+                        <input type="text" id="${buscaId}" placeholder="Buscar item já cadastrado no sistema..."
+                            class="buscar-item w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#009496] focus:border-[#009496] transition"
+                            data-lista="${listaId}">
+                    </div>
+                    <button type="button" onclick="openModalPncp(${loteIndex})" 
+                        class="inline-flex items-center justify-center px-4 py-2 text-sm font-bold text-white bg-[#009496] hover:bg-[#007a7a] rounded-lg transition shadow-sm whitespace-nowrap gap-2">
+                        <i class="fas fa-globe"></i> Novo Item (PNCP)
+                    </button>
+                </div>
+                <div id="${listaId}" class="hidden border border-gray-200 rounded-lg p-4 max-h-60 overflow-y-auto space-y-2 bg-gray-50">
+                    ${itensOptions}
+                </div>
+                <div class="mt-6">
+                    <h5 class="text-sm font-semibold mb-2 text-gray-700">Itens Selecionados - Lote ${loteIndex + 1}</h5>
+                    <div id="${containerId}" class="space-y-3"></div>
+                </div>
+            </div>`;
+        }
+
+        function normalizarTexto(texto) {
+            return texto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        }
+
+        function inicializarBuscaLote(loteIndex) {
+            const buscaId = loteIndex !== undefined ? `buscar_item_lote_${loteIndex}` : 'buscar_item_global';
+            const listaId = loteIndex !== undefined ? `lista_itens_lote_${loteIndex}` : 'lista_itens_global';
+            const buscaInput = document.getElementById(buscaId);
+            if (!buscaInput) return;
+            buscaInput.addEventListener('keyup', function() {
+                const termo = normalizarTexto(this.value.trim());
+                const lista = document.getElementById(listaId);
+                if (!lista) return;
+                const itens = lista.querySelectorAll('.item-option');
+                if (termo.length === 0) {
+                    lista.classList.add('hidden');
+                    itens.forEach(el => el.style.display = 'flex');
+                    return;
+                }
+                lista.classList.remove('hidden');
+                itens.forEach(el => {
+                    const descricao = normalizarTexto(el.getAttribute('data-descricao') || '');
+                    el.style.display = descricao.includes(termo) ? 'flex' : 'none';
+                });
+            });
+        }
         window.abrirModalCriarItem = function() {
             document.getElementById('modalCriarItem').classList.remove('hidden');
             document.getElementById('novo_item_descricao').value = '';
@@ -1124,6 +1172,8 @@
                     return;
                 }
                 resetarModal();
+                const infoLote = document.getElementById('info-lote-import');
+                if (infoLote) infoLote.classList.toggle('hidden', tipoContratacaoAtual !== 'lote');
                 modalImportar.classList.remove('hidden');
                 setTimeout(() => modalImportar.classList.add('show'), 10);
             });
@@ -1149,6 +1199,8 @@
             if (mensagemErro) mensagemErro.classList.add('hidden');
             if (previaItens) previaItens.classList.add('hidden');
             if (btnConfirmar) btnConfirmar.disabled = true;
+            const infoLote = document.getElementById('info-lote-import');
+            if (infoLote) infoLote.classList.add('hidden');
             itensImportados = [];
         }
 
@@ -1250,85 +1302,275 @@
             });
         }
 
-        function importarItensSemLote(itens) {
-            const container = document.getElementById('itens-selecionados-sem-lote');
-            itens.forEach(item => {
-                if (document.getElementById(`item-itens-selecionados-sem-lote-${item.item_id}`)) return;
-                const itemDiv = document.createElement('div');
-                itemDiv.className = 'flex items-center justify-between bg-white border rounded-lg p-3 shadow-sm';
-                itemDiv.id = `item-itens-selecionados-sem-lote-${item.item_id}`;
-                itemDiv.innerHTML =
-                    `
-            <div class="flex items-center gap-3 flex-1">
-                <span class="item-numero inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#009496]/10 text-[#009496] text-xs font-bold flex-shrink-0 border border-[#009496]/20">0</span>
-                <div class="flex-1">
-                    <p class="text-sm font-medium text-gray-800 mb-2">${item.descricao}</p>
-                    <div class="flex gap-3">
-                        <input type="hidden" name="itens[${item.item_id}][item_id]" value="${item.item_id}">
-                        <input type="text"
-                            name="itens[${item.item_id}][unidade]"
-                            value="${item.unidade}"
-                            placeholder="Ex: Unidade, Pacote, Caixa..."
-                            class="px-2 py-1 border border-gray-300 rounded text-sm w-24"
-                            required>
-                        <input type="number" name="itens[${item.item_id}][quantidade]" value="${item.quantidade}" placeholder="Qtd" min="1" required class="px-2 py-1 border border-gray-300 rounded text-sm w-20">
+        /* ── RENUMERAR ITENS ── */
+        window.renumerarItens = function(containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            container.querySelectorAll('.item-numero').forEach((badge, idx) => {
+                badge.textContent = idx + 1;
+            });
+        };
+
+        /* ── SORTABLE ── */
+        window.initSortable = function(containerId) {
+            if (typeof Sortable === 'undefined') return;
+            const el = document.getElementById(containerId);
+            if (!el) return;
+            if (el._sortable) el._sortable.destroy();
+            el._sortable = new Sortable(el, {
+                handle: '.drag-handle',
+                animation: 150,
+                ghostClass: 'opacity-50',
+                onEnd: function() {
+                    renumerarItens(containerId);
+                }
+            });
+        };
+
+        /* ── LOTE HELPERS ── */
+        window.toggleLote = function(loteIndex) {
+            const body = document.getElementById(`body-lote-${loteIndex}`);
+            const chevron = document.getElementById(`chevron-lote-${loteIndex}`);
+            if (!body) return;
+            body.classList.toggle('hidden');
+            if (chevron) chevron.classList.toggle('rotate-180');
+        };
+
+        window.toggleSemLote = function() {
+            const body = document.getElementById('itens-selecionados-sem-lote');
+            const chevron = document.getElementById('chevron-sem-lote');
+            if (!body) return;
+            body.classList.toggle('hidden');
+            if (chevron) chevron.classList.toggle('rotate-180');
+        };
+
+        window.atualizarLabelLote = function(loteIndex, value) {
+            const label = document.getElementById(`label-lote-${loteIndex}`);
+            if (label) label.textContent = value.trim() || `Lote ${loteIndex + 1}`;
+        };
+
+        /* ── CENTRALIZED ITEM HTML BUILDER ── */
+        function renderUnidadeSelect(name, valorImportado) {
+            const opcoes = [
+                ['UN', 'UN (Unidade)'], ['KG', 'KG (Quilograma)'], ['CX', 'CX (Caixa)'],
+                ['PCT', 'PCT (Pacote)'], ['L', 'L (Litro)'], ['M', 'M (Metro)'],
+                ['RES', 'RES (Resma)'], ['SAC', 'SAC (Saco)'], ['FR', 'FR (Frasco)'],
+                ['KIT', 'KIT (Kit)'], ['JG', 'JG (Jogo)'], ['FD', 'FD (Fardo)'],
+                ['GL', 'GL (Galão)'], ['RL', 'RL (Rolo)']
+            ];
+            const val = (valorImportado || 'UN').toUpperCase();
+            const conhecidos = opcoes.map(o => o[0]);
+            let opts = opcoes.map(([v, l]) =>
+                `<option value="${v}"${v === val ? ' selected' : ''}>${l}</option>`
+            ).join('');
+
+            if (!conhecidos.includes(val) && valorImportado) {
+                opts = `<option value="${valorImportado}" selected>${valorImportado}</option>` + opts;
+            }
+            return `<select name="${name}" required class="rounded-lg border-gray-300 text-xs py-1.5 focus:border-[#009496] focus:ring-[#009496] w-32 bg-gray-50/50 hover:bg-gray-50 transition">${opts}</select>`;
+        }
+
+        function buildItemSelecionadoHtml(containerId, id, descricao, loteIndex, unidade, quantidade) {
+            const namePrefix = (loteIndex !== null && loteIndex !== undefined) ?
+                `lotes[${loteIndex}][itens]` :
+                'itens';
+            const loteArg = (loteIndex !== null && loteIndex !== undefined) ? loteIndex : 'null';
+            const descSafe = String(descricao).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+
+            return `
+            <div class="flex flex-col md:flex-row md:items-center justify-between bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:border-[#009496]/30 transition gap-4" id="item-${containerId}-${id}">
+                <div class="flex items-center gap-3 flex-1 min-w-0">
+                    <i class="fas fa-grip-vertical text-gray-300 hover:text-gray-500 cursor-grab px-1 drag-handle" title="Arrastar para reordenar"></i>
+                    <span class="item-numero inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#009496]/10 text-[#009496] text-xs font-bold flex-shrink-0 border border-[#009496]/20">0</span>
+                    <div class="min-w-0 flex-1 flex flex-col gap-1">
+                        <div class="flex items-center gap-2">
+                            <p class="desc-item-${id} text-sm font-semibold text-gray-800 leading-relaxed" title="${descSafe}">${descSafe}</p>
+                            <button type="button" onclick="openModalItemQuickEdit(${id}, document.querySelector('.desc-item-${id}').getAttribute('title'))" class="btn-edit-item-${id} text-[#009496] hover:text-[#007a7a] focus:outline-none flex-shrink-0 transition-transform hover:scale-110" title="Editar Descrição">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </div>
+                    </div>                </div>
+                
+                <div class="flex items-center gap-3 flex-shrink-0">
+                    <div class="flex flex-col gap-1">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Unidade</span>
+                        ${renderUnidadeSelect(`${namePrefix}[${id}][unidade]`, unidade)}
+                    </div>
+                    
+                    <div class="flex flex-col gap-1">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Quantidade</span>
+                        <input type="number" name="${namePrefix}[${id}][quantidade]" value="${quantidade || 1}" placeholder="Qtd" min="1" required class="rounded-lg border-gray-300 text-xs py-1.5 focus:border-[#009496] focus:ring-[#009496] w-20 bg-gray-50/50 hover:bg-gray-50 transition">
+                    </div>
+
+                    <div class="flex items-end self-end pb-0.5">
+                        <input type="hidden" name="${namePrefix}[${id}][item_id]" value="${id}">
+                        <button type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-red-600 hover:bg-red-50 focus:outline-none transition" onclick="removerItemSelecionado(${id}, ${loteArg})" title="Excluir Item">
+                            <i class="fas fa-trash-alt text-sm"></i>
+                        </button>
                     </div>
                 </div>
-            </div>
-            <button type="button" class="ml-4 text-red-500 hover:text-red-700 font-bold" onclick="removerItemSelecionado(${item.item_id}, null)">✕</button>`;
-                container.appendChild(itemDiv);
+            </div>`;
+        }
+
+        /* ── SELEÇÃO DE ITENS ── */
+        window.toggleItemSelecionado = function(checkbox, loteIndex) {
+            const id = checkbox.value;
+            const descricao = checkbox.dataset.descricao;
+            const containerId = loteIndex !== null ? `itens-selecionados-lote-${loteIndex}` :
+                'itens-selecionados-sem-lote';
+            const container = document.getElementById(containerId);
+
+            if (checkbox.checked) {
+                container.insertAdjacentHTML('beforeend', buildItemSelecionadoHtml(containerId, id, descricao, loteIndex));
+            } else {
+                removerItemSelecionado(id, loteIndex);
+            }
+            renumerarItens(containerId);
+            initSortable(containerId);
+        };
+
+        window.removerItemSelecionado = function(id, loteIndex) {
+            const containerId = loteIndex !== null && loteIndex !== undefined ?
+                `itens-selecionados-lote-${loteIndex}` : 'itens-selecionados-sem-lote';
+            const itemDiv = document.getElementById(`item-${containerId}-${id}`);
+            if (itemDiv) itemDiv.remove();
+            const sel = loteIndex !== null && loteIndex !== undefined ?
+                `.item-checkbox[value="${id}"][data-lote-index="${loteIndex}"]` :
+                `.item-checkbox[value="${id}"]:not([data-lote-index])`;
+            const cb = document.querySelector(sel);
+            if (cb) cb.checked = false;
+            renumerarItens(containerId);
+        };
+
+        function importarItensSemLote(itens) {
+            const containerId = 'itens-selecionados-sem-lote';
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            itens.forEach(item => {
+                if (document.getElementById(`item-${containerId}-${item.item_id}`)) return;
+                container.insertAdjacentHTML('beforeend',
+                    buildItemSelecionadoHtml(containerId, item.item_id, item.descricao, null, item.unidade, item.quantidade));
                 const cb = document.querySelector(`.item-checkbox[value="${item.item_id}"]:not([data-lote-index])`);
                 if (cb) cb.checked = true;
             });
-            renumerarItens('itens-selecionados-sem-lote');
+            renumerarItens(containerId);
+            initSortable(containerId);
         }
 
         function importarItensComLote(itens) {
             const lotes = document.querySelectorAll('.lote-card');
             if (!lotes.length) {
-                alert('Crie um lote antes de importar.');
+                alert('Crie um lote antes de importar os itens.');
                 return;
             }
-            const loteIndex = prompt('Digite o número do lote (1 a ' + lotes.length + '):');
+            const loteIndex = prompt('Digite o número do lote (1 a ' + lotes.length + ') para importar os itens:');
             if (!loteIndex) return;
             const index = parseInt(loteIndex) - 1;
             if (isNaN(index) || index < 0 || index >= lotes.length) {
-                alert('Número inválido.');
+                alert('Número de lote inválido.');
                 return;
             }
-            const container = document.getElementById(`itens-selecionados-lote-${index}`);
+            const containerId = `itens-selecionados-lote-${index}`;
+            const container = document.getElementById(containerId);
             if (!container) return;
             itens.forEach(item => {
-                if (document.getElementById(`item-itens-selecionados-lote-${index}-${item.item_id}`)) return;
-                const itemDiv = document.createElement('div');
-                itemDiv.className = 'flex items-center justify-between bg-white border rounded-lg p-3 shadow-sm';
-                itemDiv.id = `item-itens-selecionados-lote-${index}-${item.item_id}`;
-                itemDiv.innerHTML =
-                    `
-            <div class="flex items-center gap-3 flex-1">
-                <span class="item-numero inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#009496]/10 text-[#009496] text-xs font-bold flex-shrink-0 border border-[#009496]/20">0</span>
-                <div class="flex-1">
-                    <p class="text-sm font-medium text-gray-800 mb-2">${item.descricao}</p>
-                    <div class="flex gap-3">
-                        <input type="hidden" name="lotes[${index}][itens][${item.item_id}][item_id]" value="${item.item_id}">
-                        <input type="text"
-                            name="lotes[${index}][itens][${item.item_id}][unidade]"
-                            value="${item.unidade}"
-                            placeholder="Ex: Unidade, Pacote, Caixa..."
-                            class="px-2 py-1 border border-gray-300 rounded text-sm w-24"
-                            required>
-                        <input type="number" name="lotes[${index}][itens][${item.item_id}][quantidade]" value="${item.quantidade}" placeholder="Qtd" min="1" required class="px-2 py-1 border border-gray-300 rounded text-sm w-20">
-                    </div>
-                </div>
-            </div>
-            <button type="button" class="ml-4 text-red-500 hover:text-red-700 font-bold" onclick="removerItemSelecionado(${item.item_id}, ${index})">✕</button>`;
-                container.appendChild(itemDiv);
-                const cb = document.querySelector(
-                    `.item-checkbox[value="${item.item_id}"][data-lote-index="${index}"]`);
+                if (document.getElementById(`item-${containerId}-${item.item_id}`)) return;
+                container.insertAdjacentHTML('beforeend',
+                    buildItemSelecionadoHtml(containerId, item.item_id, item.descricao, index, item.unidade, item.quantidade));
+                const cb = document.querySelector(`.item-checkbox[value="${item.item_id}"][data-lote-index="${index}"]`);
                 if (cb) cb.checked = true;
             });
-            renumerarItens(`itens-selecionados-lote-${index}`);
+            renumerarItens(containerId);
+            initSortable(containerId);
         }
+
+        /* ── LOTES ── */
+        window.adicionarLote = function() {
+            const idx = loteCounter;
+            const container = document.getElementById('lotes-container');
+            const loteDiv = document.createElement('div');
+            loteDiv.className = 'lote-card border border-gray-200 rounded-xl bg-white shadow-sm overflow-hidden';
+            loteDiv.id = `lote-${idx}`;
+
+            loteDiv.innerHTML = `
+            <div class="flex items-center justify-between px-5 py-3.5 bg-gray-50 border-b border-gray-200">
+                <button type="button" class="flex items-center gap-2 flex-1 text-left min-w-0" onclick="toggleLote(${idx})">
+                    <i class="fas fa-chevron-down text-gray-400 transition-transform duration-200" id="chevron-lote-${idx}"></i>
+                    <span class="text-sm font-semibold text-gray-700 truncate" id="label-lote-${idx}">Lote ${idx + 1}</span>
+                </button>
+                <div class="flex items-center gap-1 flex-shrink-0 ml-3">
+                    <button type="button" onclick="duplicarLote(${idx})" title="Duplicar este lote"
+                        class="inline-flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-[#009496] hover:bg-[#009496]/10 transition">
+                        <i class="fas fa-copy text-sm"></i>
+                    </button>
+                    <button type="button" onclick="removerLote(this)" title="Remover lote"
+                        class="inline-flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition">
+                        <i class="fas fa-times text-sm"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="px-6 py-5" id="body-lote-${idx}">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nome do Lote *</label>
+                    <input type="text" name="lotes[${idx}][nome]"
+                        placeholder="Ex: Lote ${idx + 1} - Materiais de Escritório"
+                        oninput="atualizarLabelLote(${idx}, this.value)"
+                        class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496]" required>
+                </div>
+                ${gerarItensSelector(idx)}
+            </div>`;
+
+            container.appendChild(loteDiv);
+            inicializarBuscaLote(idx);
+            initSortable(`itens-selecionados-lote-${idx}`);
+            loteCounter++;
+            return idx;
+        };
+
+        window.duplicarLote = function(sourceIndex) {
+            const nomeOriginal = document.querySelector(`input[name="lotes[${sourceIndex}][nome]"]`)?.value || '';
+            const sourceContainer = document.getElementById(`itens-selecionados-lote-${sourceIndex}`);
+
+            const itensDuplicar = [];
+            if (sourceContainer) {
+                Array.from(sourceContainer.children).forEach(div => {
+                    const match = div.id.match(/item-itens-selecionados-lote-\d+-(\d+)$/);
+                    if (!match) return;
+                    const itemId = match[1];
+                    const descEl = div.querySelector(`.desc-item-${itemId}`);
+                    const descricao = descEl ? (descEl.getAttribute('title') || descEl.textContent.trim()) : '';
+                    const unidadeEl = div.querySelector(`select[name="lotes[${sourceIndex}][itens][${itemId}][unidade]"]`);
+                    const qtdEl = div.querySelector(`input[name="lotes[${sourceIndex}][itens][${itemId}][quantidade]"]`);
+                    itensDuplicar.push({
+                        id: itemId,
+                        descricao,
+                        unidade: unidadeEl?.value || 'UN',
+                        quantidade: qtdEl?.value || '1'
+                    });
+                });
+            }
+
+            const newIndex = adicionarLote();
+
+            const nomeInput = document.querySelector(`input[name="lotes[${newIndex}][nome]"]`);
+            if (nomeInput) {
+                nomeInput.value = nomeOriginal ? `Cópia de ${nomeOriginal}` : `Cópia de Lote ${sourceIndex + 1}`;
+                atualizarLabelLote(newIndex, nomeInput.value);
+            }
+
+            if (!itensDuplicar.length) return;
+
+            const newContainer = document.getElementById(`itens-selecionados-lote-${newIndex}`);
+            if (!newContainer) return;
+
+            itensDuplicar.forEach(({ id, descricao, unidade, quantidade }) => {
+                newContainer.insertAdjacentHTML('beforeend', buildItemSelecionadoHtml(`itens-selecionados-lote-${newIndex}`, id, descricao, newIndex, unidade, quantidade));
+                const cb = document.querySelector(`.item-checkbox[value="${id}"][data-lote-index="${newIndex}"]`);
+                if (cb) cb.checked = true;
+            });
+
+            renumerarItens(`itens-selecionados-lote-${newIndex}`);
+            initSortable(`itens-selecionados-lote-${newIndex}`);
+        };
     </script>
-    @include('Admin.Etps.partials.modal-importar-itens')
 @endsection
