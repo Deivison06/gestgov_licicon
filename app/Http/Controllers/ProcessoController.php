@@ -1093,6 +1093,7 @@ class ProcessoController extends Controller
     {
         $fonte = null;
         $etpInfo = null;
+        $lotes = null;
 
         // Agrupa as referências já coletadas por descrição para contar rápido
         $coletasPorDescricao = $processo->pesquisaPrecoItens
@@ -1100,15 +1101,31 @@ class ProcessoController extends Controller
             ->map->count();
 
         if ($processo->etp) {
-            $raw = $processo->etp->itens;
-            $itens = $raw->map(fn($item) => [
-                'descricao'  => $item->descricao_item,
-                'unidade'    => $item->pivot->unidade,
-                'quantidade' => $item->pivot->quantidade,
-                'refs_count' => $coletasPorDescricao[strtolower(trim($item->descricao_item))] ?? 0,
-            ]);
+            $etp = $processo->etp;
             $fonte = 'etp';
-            $etpInfo = $processo->etp;
+            $etpInfo = $etp;
+
+            if ($etp->tipo_contratacao === 'lote') {
+                $lotes = $etp->lotes()->with('itens')->get()->map(function($lote) use ($coletasPorDescricao) {
+                    return [
+                        'nome' => $lote->nome,
+                        'itens' => $lote->itens->map(fn($item) => [
+                            'descricao'  => $item->descricao_item,
+                            'unidade'    => $item->pivot->unidade,
+                            'quantidade' => $item->pivot->quantidade,
+                            'refs_count' => $coletasPorDescricao[strtolower(trim($item->descricao_item))] ?? 0,
+                        ])
+                    ];
+                });
+                $itens = $lotes->flatMap(fn($l) => $l['itens']);
+            } else {
+                $itens = $etp->itens->map(fn($item) => [
+                    'descricao'  => $item->descricao_item,
+                    'unidade'    => $item->pivot->unidade,
+                    'quantidade' => $item->pivot->quantidade,
+                    'refs_count' => $coletasPorDescricao[strtolower(trim($item->descricao_item))] ?? 0,
+                ]);
+            }
         } else {
             $raw = $processo->detalhe->descricao_e_quantitativos_itens_xml ?? [];
             $itens = is_array($raw)
@@ -1122,7 +1139,7 @@ class ProcessoController extends Controller
             $fonte = 'xls';
         }
 
-        return view('Admin.Processos.pesquisa_preco_itens', compact('processo', 'itens', 'fonte', 'etpInfo'));
+        return view('Admin.Processos.pesquisa_preco_itens', compact('processo', 'itens', 'fonte', 'etpInfo', 'lotes'));
     }
 
     public function gerarNumeros(Request $request)

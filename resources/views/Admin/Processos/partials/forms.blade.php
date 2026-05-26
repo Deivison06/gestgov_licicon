@@ -300,14 +300,16 @@
                     </p>
 
                     {{-- Expandir/recolher itens do ETP --}}
-                    @php $etpItens = $processo->etp->all_itens; @endphp
+                    @php
+                        $isLote = $processo->etp->tipo_contratacao === 'lote';
+                        $etpItens = $processo->etp->all_itens;
+                    @endphp
                     @if($etpItens->count() > 0)
                     <div x-data="{ openEtpItens: false }" class="mt-2">
                         <button type="button" @click="openEtpItens = !openEtpItens"
                                 class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 hover:text-emerald-900 transition-colors">
                             <i :class="openEtpItens ? 'fa-chevron-up' : 'fa-chevron-down'" class="fas text-[9px]"></i>
-                            {{-- ALTERADO: Retirado o escape de aspas invertidas que quebrava o Blade --}}
-                            <span x-text="openEtpItens ? 'Recolher itens' : 'Ver {{ $etpItens->count() }} {{ $etpItens->count() === 1 ? 'item' : 'itens' }}'"></span>
+                            <span x-text="openEtpItens ? 'Recolher itens' : 'Ver {{ $etpItens->count() }} {{ $etpItens->count() === 1 ? 'item' : 'itens' }} {{ $isLote ? '(distribuídos em lotes)' : '' }}'"></span>
                         </button>
 
                         <div x-show="openEtpItens" x-transition class="mt-2 overflow-x-auto rounded-lg border border-emerald-200">
@@ -321,20 +323,40 @@
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-emerald-50">
-                                    @foreach($etpItens as $idx => $item)
-                                    <tr class="bg-white hover:bg-emerald-50/50">
-                                        <td class="px-2 py-1.5 text-center">
-                                            <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold">{{ $idx + 1 }}</span>
-                                        </td>
-                                        <td class="px-2 py-1.5 text-gray-700">{{ $item->descricao_item }}</td>
-                                        <td class="px-2 py-1.5 text-center text-gray-500">{{ $item->pivot->unidade ?? '-' }}</td>
-                                        <td class="px-2 py-1.5 text-right font-medium text-gray-700">{{ $item->pivot->quantidade }}</td>
-                                    </tr>
-                                    @endforeach
+                                    @if($isLote)
+                                        @foreach($processo->etp->lotes as $lote)
+                                            <tr class="bg-emerald-50/80">
+                                                <td colspan="4" class="px-2 py-1.5 font-bold text-emerald-900 border-y border-emerald-100">
+                                                    <i class="fas fa-layer-group mr-1"></i> Lote: {{ $lote->nome }}
+                                                </td>
+                                            </tr>
+                                            @foreach($lote->itens as $idx => $item)
+                                            <tr class="bg-white hover:bg-emerald-50/50">
+                                                <td class="px-2 py-1.5 text-center">
+                                                    <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold">{{ $idx + 1 }}</span>
+                                                </td>
+                                                <td class="px-2 py-1.5 text-gray-700">{{ $item->descricao_item }}</td>
+                                                <td class="px-2 py-1.5 text-center text-gray-500">{{ $item->pivot->unidade ?? '-' }}</td>
+                                                <td class="px-2 py-1.5 text-right font-medium text-gray-700">{{ $item->pivot->quantidade }}</td>
+                                            </tr>
+                                            @endforeach
+                                        @endforeach
+                                    @else
+                                        @foreach($etpItens as $idx => $item)
+                                        <tr class="bg-white hover:bg-emerald-50/50">
+                                            <td class="px-2 py-1.5 text-center">
+                                                <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold">{{ $idx + 1 }}</span>
+                                            </td>
+                                            <td class="px-2 py-1.5 text-gray-700">{{ $item->descricao_item }}</td>
+                                            <td class="px-2 py-1.5 text-center text-gray-500">{{ $item->pivot->unidade ?? '-' }}</td>
+                                            <td class="px-2 py-1.5 text-right font-medium text-gray-700">{{ $item->pivot->quantidade }}</td>
+                                        </tr>
+                                        @endforeach
+                                    @endif
                                 </tbody>
                                 <tfoot>
                                     <tr class="bg-emerald-50 border-t border-emerald-200">
-                                        <td colspan="3" class="px-2 py-1.5 text-[10px] text-emerald-700 font-semibold uppercase">Total</td>
+                                        <td colspan="3" class="px-2 py-1.5 text-[10px] text-emerald-700 font-semibold uppercase">Total Geral</td>
                                         <td class="px-2 py-1.5 text-right text-xs font-bold text-emerald-700">{{ $etpItens->count() }}</td>
                                     </tr>
                                 </tfoot>

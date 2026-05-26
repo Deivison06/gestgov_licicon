@@ -146,53 +146,111 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50">
-                    @foreach($itens as $idx => $item)
-                    <tr class="bg-white hover:bg-gray-50/70 transition-colors group item-row">
-                        <td class="px-4 py-3.5 text-center">
-                            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#009496]/10 text-[#009496] text-xs font-bold">
-                                {{ $idx + 1 }}
-                            </span>
-                        </td>
-                        <td class="px-4 py-3.5 item-descricao">
-                            <span class="text-gray-800 font-medium leading-snug">{{ $item['descricao'] }}</span>
-                        </td>
-                        <td class="px-4 py-3.5 text-center">
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 text-xs font-semibold">
-                                {{ $item['unidade'] ?? '—' }}
-                            </span>
-                        </td>
-                        <td class="px-4 py-3.5 text-right font-semibold text-gray-700">
-                            {{ number_format($item['quantidade'], 0, ',', '.') }}
-                        </td>
-                        <td class="px-4 py-3.5 text-center">
-                            @php $refs = $item['refs_count'] ?? 0; @endphp
-                            @if($refs >= 3)
-                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-[10px] font-bold">
-                                    <i class="fas fa-check-circle"></i> {{ $refs }} ref.
+                    @if(isset($lotes) && $lotes)
+                        @php $globalIdx = 1; @endphp
+                        @foreach($lotes as $lote)
+                            <tr class="bg-gray-100/50">
+                                <td colspan="6" class="px-4 py-2 font-bold text-gray-700 border-y border-gray-200">
+                                    <i class="fas fa-layer-group mr-1.5 text-gray-400"></i> Lote: {{ $lote['nome'] }}
+                                </td>
+                            </tr>
+                            @foreach($lote['itens'] as $idx => $item)
+                            <tr class="bg-white hover:bg-gray-50/70 transition-colors group item-row">
+                                <td class="px-4 py-3.5 text-center">
+                                    <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#009496]/10 text-[#009496] text-xs font-bold">
+                                        {{ $globalIdx++ }}
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3.5 item-descricao">
+                                    <span class="text-gray-800 font-medium leading-snug">{{ $item['descricao'] }}</span>
+                                </td>
+                                <td class="px-4 py-3.5 text-center">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 text-xs font-semibold">
+                                        {{ $item['unidade'] ?? '—' }}
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3.5 text-right font-semibold text-gray-700">
+                                    {{ number_format($item['quantidade'], 0, ',', '.') }}
+                                </td>
+                                <td class="px-4 py-3.5 text-center">
+                                    @php $refs = $item['refs_count'] ?? 0; @endphp
+                                    @if($refs >= 3)
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-[10px] font-bold">
+                                            <i class="fas fa-check-circle"></i> {{ $refs }} ref.
+                                        </span>
+                                    @elseif($refs > 0)
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold">
+                                            <i class="fas fa-spinner fa-spin text-[8px]"></i> {{ $refs }} ref.
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-100 text-gray-400 text-[10px] font-bold">
+                                             Pendente
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="px-4 py-3.5 text-center">
+                                    <a href="{{ route('admin.pesquisa_preco.index', ['processo_id' => $processo->id, 'termo' => $item['descricao']]) }}"
+                                       target="_blank"
+                                       class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-all shadow-sm group-hover:shadow-md">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                        </svg>
+                                        Buscar no PNCP
+                                    </a>
+                                </td>
+                            </tr>
+                            @endforeach
+                        @endforeach
+                    @else
+                        @foreach($itens as $idx => $item)
+                        <tr class="bg-white hover:bg-gray-50/70 transition-colors group item-row">
+                            <td class="px-4 py-3.5 text-center">
+                                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#009496]/10 text-[#009496] text-xs font-bold">
+                                    {{ $idx + 1 }}
                                 </span>
-                            @elseif($refs > 0)
-                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold">
-                                    <i class="fas fa-spinner fa-spin text-[8px]"></i> {{ $refs }} ref.
+                            </td>
+                            <td class="px-4 py-3.5 item-descricao">
+                                <span class="text-gray-800 font-medium leading-snug">{{ $item['descricao'] }}</span>
+                            </td>
+                            <td class="px-4 py-3.5 text-center">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 text-xs font-semibold">
+                                    {{ $item['unidade'] ?? '—' }}
                                 </span>
-                            @else
-                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-100 text-gray-400 text-[10px] font-bold">
-                                     Pendente
-                                </span>
-                            @endif
-                        </td>
-                        <td class="px-4 py-3.5 text-center">
-                            <a href="{{ route('admin.pesquisa_preco.index', ['processo_id' => $processo->id, 'termo' => $item['descricao']]) }}"
-                               target="_blank"
-                               class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-all shadow-sm group-hover:shadow-md">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                                </svg>
-                                Buscar no PNCP
-                            </a>
-                        </td>
-                    </tr>
-                    @endforeach
+                            </td>
+                            <td class="px-4 py-3.5 text-right font-semibold text-gray-700">
+                                {{ number_format($item['quantidade'], 0, ',', '.') }}
+                            </td>
+                            <td class="px-4 py-3.5 text-center">
+                                @php $refs = $item['refs_count'] ?? 0; @endphp
+                                @if($refs >= 3)
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-[10px] font-bold">
+                                        <i class="fas fa-check-circle"></i> {{ $refs }} ref.
+                                    </span>
+                                @elseif($refs > 0)
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold">
+                                        <i class="fas fa-spinner fa-spin text-[8px]"></i> {{ $refs }} ref.
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-100 text-gray-400 text-[10px] font-bold">
+                                         Pendente
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="px-4 py-3.5 text-center">
+                                <a href="{{ route('admin.pesquisa_preco.index', ['processo_id' => $processo->id, 'termo' => $item['descricao']]) }}"
+                                   target="_blank"
+                                   class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-all shadow-sm group-hover:shadow-md">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                    </svg>
+                                    Buscar no PNCP
+                                </a>
+                            </td>
+                        </tr>
+                        @endforeach
+                    @endif
                 </tbody>
             </table>
         </div>
