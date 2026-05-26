@@ -213,7 +213,7 @@
                 Decretos Municipais e demais legislação aplicável e, ainda, de acordo com as condições estabelecidas neste Edital.
             </p>
             <p style="text-align: justify;">
-                O início da Sessão de disputa de preços será realizado no dia {{ $detalhe->data_hora_fase_edital->translatedFormat('d \d\e F \d\e Y') }}, às {{ $detalhe->data_hora_fase_edital->format('H:i') }}hs, por meio de sessão virtual, com
+                O início da Sessão de disputa de preços será realizado no dia {{ ($embutidoMinuta ?? false) ? 'XXXXXXXXXXXXXX' : $detalhe->data_hora_fase_edital->translatedFormat('d \d\e F \d\e Y') }}, às {{ ($embutidoMinuta ?? false) ? 'XX:XX' : $detalhe->data_hora_fase_edital->format('H:i') }}hs, por meio de sessão virtual, com
                 inserção e comunicação via plataforma digital já especificada neste instrumento de convocação.
             </p>
             <p style="text-align: justify;">
@@ -222,7 +222,7 @@
                 MUNICIPAL, denominado Pregoeiro.
             </p>
             <p style="text-align: justify;">
-                Também fica registrado neste instrumento de convocação, que as empresas licitantes terão até o dia {{ $detalhe->data_hora_limite_edital->translatedFormat('d \d\e F \d\e Y') }}, às {{ $detalhe->data_hora_limite_edital->format('H:i') }}min, para finalizar o envio de suas propostas com as devidas exigências do edital e documentos de habilitação
+                Também fica registrado neste instrumento de convocação, que as empresas licitantes terão até o dia {{ ($embutidoMinuta ?? false) ? 'XXXXXXXXXXXXXX' : $detalhe->data_hora_limite_edital->translatedFormat('d \d\e F \d\e Y') }}, às {{ ($embutidoMinuta ?? false) ? 'XX:XX' : $detalhe->data_hora_limite_edital->format('H:i') }}min, para finalizar o envio de suas propostas com as devidas exigências do edital e documentos de habilitação
                 pertinentes à futura disputa.
             </p>
 

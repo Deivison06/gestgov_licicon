@@ -78,7 +78,7 @@
                 inciso II, nos termos da Lei n.º 14.133, de 1º de abril de 2021.
                 As empresas interessadas a enviarem suas propostas de preços e todos os documentos
                 de habilitação para o objeto constante do Termo de Referência e conforme modelo de
-                proposta até o dia {{ $detalhe->data_hora_limite_edital->translatedFormat('d \d\e F \d\e Y') }}, às {{ $detalhe->data_hora_limite_edital->format('H:i') }} horas, para o e-mail:
+                proposta até o dia {{ ($embutidoMinuta ?? false) ? 'XXXXXXXXXXXXXX' : $detalhe->data_hora_limite_edital->translatedFormat('d \d\e F \d\e Y') }}, às {{ ($embutidoMinuta ?? false) ? 'XX:XX' : $detalhe->data_hora_limite_edital->format('H:i') }} horas, para o e-mail:
                 {{ $processo->prefeitura->email }}, ou entregar pessoalmente na Sala de
                 Licitação do município de {{ $processo->prefeitura->cidade }}, na {{ $processo->prefeitura->endereco }} 
             </p>
@@ -193,7 +193,7 @@
             <p style="text-align: justify;">
                 3.1. O ingresso do fornecedor na disputa da dispensa ocorrerá com o envio de sua
                 proposta de preços para o objeto constante do Termo de Referência e conforme modelo
-                de proposta até o dia {{ $detalhe->data_hora_limite_edital->translatedFormat('d \d\e F \d\e Y') }}, às {{ $detalhe->data_hora_limite_edital->format('H:i') }} horas para o e-mail:
+                de proposta até o dia {{ ($embutidoMinuta ?? false) ? 'XXXXXXXXXXXXXX' : $detalhe->data_hora_limite_edital->translatedFormat('d \d\e F \d\e Y') }}, às {{ ($embutidoMinuta ?? false) ? 'XX:XX' : $detalhe->data_hora_limite_edital->format('H:i') }} horas para o e-mail:
                 {{ $processo->prefeitura->email }}, ou entregar pessoalmente na Sala de
                 Licitação do município de {{ $processo->prefeitura->cidade }}, na {{ $processo->prefeitura->endereco }}
                 <br><br>

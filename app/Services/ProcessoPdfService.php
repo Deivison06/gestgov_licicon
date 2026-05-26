@@ -537,6 +537,12 @@ class ProcessoPdfService
             Log::info("Processando ATA de Registro de Preço para SRP");
             $this->gerarEJuntarAtaRegistroPreco($processo, $caminhoPrincipal);
         }
+         // Quando geramos o PDF da MINUTA, embutimos automaticamente o Edital
+        // entre páginas separadoras ("INÍCIO DO EDITAL" / "FIM DO EDITAL").
+        // Substitui o antigo upload manual anexar_minuta.
+        if ($documento === 'minutas') {
+            $this->gerarEJuntarEditalNaMinuta($processo, $caminhoPrincipal);
+        }
 
         Log::info("Processamento de anexos concluído para: {$documento}");
     }
@@ -841,6 +847,109 @@ class ProcessoPdfService
                 'erro' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
+        }
+    }
+    /**
+     * Gera o Edital da modalidade do processo e o embute no PDF da Minuta,
+     * cercado por páginas separadoras "INÍCIO DO EDITAL" e "FIM DO EDITAL".
+     *
+     * Substitui o antigo upload manual de `anexar_minuta`.
+     */
+    private function gerarEJuntarEditalNaMinuta(Processo $processo, string $caminhoPrincipal): void
+    {
+        $arquivosTemp = [];
+
+        try {
+            Log::info('Gerando Edital embutido para a Minuta', [
+                'processo_id' => $processo->id,
+            ]);
+
+            if (!file_exists($caminhoPrincipal) || filesize($caminhoPrincipal) === 0) {
+                Log::error('PDF base da Minuta não encontrado/vazio antes de embutir Edital', [
+                    'caminho' => $caminhoPrincipal,
+                ]);
+                return;
+            }
+
+            // Resolve a view do Edital correspondente à modalidade do processo
+            try {
+                $viewEdital = $this->determinarViewPdf($processo, 'edital');
+            } catch (\Throwable $e) {
+                Log::warning('View de Edital não encontrada para esta modalidade — Minuta seguirá sem embutimento.', [
+                    'processo_id' => $processo->id,
+                    'erro' => $e->getMessage(),
+                ]);
+                return;
+            }
+
+            $dados = $this->prepararDadosPdf($processo, [
+                'dataSelecionada' => now()->format('Y-m-d'),
+                'assinantes' => [],
+                'parecerSelecionado' => null,
+            ]);
+
+            // Flag consumida pelos templates do Edital para mostrar "XXXX..." nos
+            // campos que NÃO devem aparecer preenchidos quando o Edital é embutido
+            // dentro da Minuta (data limite, data fase, pregoeiro). Esses campos
+            // só fazem sentido quando o Edital "real" é gerado lá na frente.
+            $dados['embutidoMinuta'] = true;
+
+            // 1) INÍCIO DO EDITAL
+            $pdfInicio = Pdf::loadView('Admin.Processos.pdf-separadores.inicio-edital', $dados)
+                ->setPaper('a4', 'portrait');
+            $arquivoInicio = storage_path('app/temp_inicio_edital_' . $processo->id . '_' . uniqid() . '.pdf');
+            $pdfInicio->save($arquivoInicio);
+            $arquivosTemp[] = $arquivoInicio;
+
+            // 2) EDITAL completo
+            $pdfEdital = Pdf::loadView($viewEdital, $dados)->setPaper('a4', 'portrait');
+            $arquivoEdital = storage_path('app/temp_edital_embutido_' . $processo->id . '_' . uniqid() . '.pdf');
+            $pdfEdital->save($arquivoEdital);
+            $arquivosTemp[] = $arquivoEdital;
+
+            // 3) FIM DO EDITAL
+            $pdfFim = Pdf::loadView('Admin.Processos.pdf-separadores.fim-edital', $dados)
+                ->setPaper('a4', 'portrait');
+            $arquivoFim = storage_path('app/temp_fim_edital_' . $processo->id . '_' . uniqid() . '.pdf');
+            $pdfFim->save($arquivoFim);
+            $arquivosTemp[] = $arquivoFim;
+
+            // Validação básica dos 3 arquivos
+            foreach ([$arquivoInicio, $arquivoEdital, $arquivoFim] as $f) {
+                if (!file_exists($f) || filesize($f) === 0) {
+                    Log::error('Arquivo temporário do Edital embutido vazio/ausente', ['arquivo' => $f]);
+                    return;
+                }
+            }
+
+            $sucesso = $this->juntarPdfsComGhostscript($caminhoPrincipal, [
+                $arquivoInicio,
+                $arquivoEdital,
+                $arquivoFim,
+            ]);
+
+            if ($sucesso) {
+                Log::info('Edital embutido na Minuta com sucesso', [
+                    'caminho_final' => $caminhoPrincipal,
+                    'tamanho_final' => filesize($caminhoPrincipal),
+                ]);
+            } else {
+                Log::error('Falha ao juntar Edital embutido na Minuta', [
+                    'minuta' => $caminhoPrincipal,
+                ]);
+            }
+        } catch (\Throwable $e) {
+            Log::error('Erro ao gerar Edital embutido para a Minuta', [
+                'processo_id' => $processo->id,
+                'erro' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+        } finally {
+            foreach ($arquivosTemp as $f) {
+                if (file_exists($f)) {
+                    @unlink($f);
+                }
+            }
         }
     }
 

@@ -98,7 +98,23 @@ class ProcessoDocumentoService
             'titulo' => 'MINUTAS',
             'cor' => '#EC4899',
             'data_id' => 'data_minutas',
-            'campos' => ['anexar_minuta'],
+            // Os 11 campos abaixo foram migrados do EDITAL para a MINUTA.
+            // O PDF da Minuta agora embute o Edital com esses dados (separado por
+            // páginas "INÍCIO DO EDITAL" / "FIM DO EDITAL"), eliminando a necessidade
+            // de upload do antigo `anexar_minuta`.
+            'campos' => [
+                'exige_atestado',
+                'intervalo_lances',
+                'exigencia_garantia_proposta',
+                'exigencia_garantia_contrato',
+                'participacao_exclusiva_mei_epp',
+                'reserva_cotas_mei_epp',
+                'prioridade_contratacao_mei_epp',
+                'regularidade_fisica',
+                'qualificacao_economica',
+                'exigencias_tecnicas',
+                'numero_items',
+            ],
         ],
         'parecer_juridico' => [
             'titulo' => 'PARECER JURÍDICO',
@@ -128,22 +144,13 @@ class ProcessoDocumentoService
             'titulo' => 'EDITAL',
             'cor' => '#6366F1',
             'data_id' => 'data_edital',
+            // 11 campos foram movidos para o doc "minutas". Aqui ficaram apenas
+            // os 4 campos específicos da sessão pública e do contrato.
             'campos' => [
-                'exige_atestado',
                 'data_hora_limite_edital',
                 'data_hora_fase_edital',
                 'pregoeiro',
-                'intervalo_lances',
-                'exigencia_garantia_proposta',
-                'exigencia_garantia_contrato',
-                'participacao_exclusiva_mei_epp',
-                'reserva_cotas_mei_epp',
-                'prioridade_contratacao_mei_epp',
-                'regularidade_fisica',
-                'qualificacao_economica',
-                'exigencias_tecnicas',
                 'anexo_pdf_minuta_contrato',
-                'numero_items',
             ],
         ],
 
@@ -234,7 +241,8 @@ class ProcessoDocumentoService
 
     protected array $mapeamentoAnexos = [
         'analise_mercado' => 'anexo_pdf_analise_mercado',
-        'minutas' => 'anexar_minuta',
+        // 'minutas' não mescla mais o upload `anexar_minuta`. O Edital agora é
+        // gerado e embutido dinamicamente pelo ProcessoPdfService::gerarEJuntarEditalNaMinuta().
         'publicacoes_avisos_licitacao' => 'anexo_pdf_publicacoes',
         'edital' => ['anexo_pdf_minuta_contrato'],
         'projeto_basico' => 'projeto_basico_pdf',
