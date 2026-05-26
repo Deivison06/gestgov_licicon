@@ -214,9 +214,10 @@ class EtpController extends Controller
         $etp = $this->etpService->findById($id);
 
         $user = auth()->user();
-        $isSuperAdmin = $user->hasRole(['diretor_licicon', 'gerente_licicon']);
+        $isSuperAdmin = $user->hasAnyRole(['diretor_licicon', 'gerente_licicon', 'colaborador_licicon']);
 
-        if (!$isSuperAdmin && $etp->prefeitura_id !== $user->prefeitura_id) {
+        if (!$isSuperAdmin && $etp->prefeitura_id !== $user->prefeitura_id)
+             {
             Log::warning('Tentativa de acesso negado a ETP', [
                 'user_id' => auth()->id(),
                 'etp_id' => $id,
@@ -246,7 +247,7 @@ class EtpController extends Controller
         $etp = $this->etpService->findById($id);
 
         $user = auth()->user();
-        $isSuperAdmin = $user->hasRole(['diretor_licicon', 'gerente_licicon']);
+        $isSuperAdmin = $user->hasAnyRole(['diretor_licicon', 'gerente_licicon', 'colaborador_licicon']);
 
         if (!$isSuperAdmin && $etp->prefeitura_id !== $user->prefeitura_id) {
             Log::warning('Tentativa de edição negada - permissão', [
@@ -298,7 +299,7 @@ class EtpController extends Controller
         $etp = $this->etpService->findById($id);
 
         $user = auth()->user();
-        $isSuperAdmin = $user->hasRole(['diretor_licicon', 'gerente_licicon']);
+        $isSuperAdmin = $user->hasAnyRole(['diretor_licicon', 'gerente_licicon', 'colaborador_licicon']);
 
         if (!$isSuperAdmin && $etp->prefeitura_id !== $user->prefeitura_id) {
             Log::warning('Tentativa de atualização negada - permissão', [
@@ -455,7 +456,7 @@ class EtpController extends Controller
         $etp = $this->etpService->findById($id);
 
         $user = auth()->user();
-        $isSuperAdmin = $user->hasRole(['diretor_licicon', 'gerente_licicon']);
+        $isSuperAdmin = $user->hasAnyRole(['diretor_licicon', 'gerente_licicon', 'colaborador_licicon']);
 
         if (!$isSuperAdmin && $etp->prefeitura_id !== $user->prefeitura_id) {
             Log::warning('Tentativa de exclusão negada - permissão', [
@@ -752,7 +753,7 @@ class EtpController extends Controller
         $etp = $this->etpService->findById($id);
 
         $user = auth()->user();
-        $isSuperAdmin = $user->hasRole(['diretor_licicon', 'gerente_licicon']);
+        $isSuperAdmin = $user->hasAnyRole(['diretor_licicon', 'gerente_licicon', 'colaborador_licicon']);
 
         if (!$isSuperAdmin && $etp->prefeitura_id !== $user->prefeitura_id) {
             Log::warning('Tentativa de gerar PDF negada - permissão', [
@@ -788,7 +789,7 @@ class EtpController extends Controller
         $etp = $this->etpService->findById($id);
 
         $user = auth()->user();
-        $isSuperAdmin = $user->hasRole(['diretor_licicon', 'gerente_licicon']);
+        $isSuperAdmin = $user->hasAnyRole(['diretor_licicon', 'gerente_licicon', 'colaborador_licicon']);
 
         if (!$isSuperAdmin && $etp->prefeitura_id !== $user->prefeitura_id) {
             Log::warning('Tentativa de exportação negada - permissão', [

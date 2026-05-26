@@ -1094,12 +1094,18 @@ class ProcessoController extends Controller
         $fonte = null;
         $etpInfo = null;
 
+        // Agrupa as referências já coletadas por descrição para contar rápido
+        $coletasPorDescricao = $processo->pesquisaPrecoItens
+            ->groupBy(fn($i) => strtolower(trim($i->descricao)))
+            ->map->count();
+
         if ($processo->etp) {
             $raw = $processo->etp->itens;
             $itens = $raw->map(fn($item) => [
                 'descricao'  => $item->descricao_item,
                 'unidade'    => $item->pivot->unidade,
                 'quantidade' => $item->pivot->quantidade,
+                'refs_count' => $coletasPorDescricao[strtolower(trim($item->descricao_item))] ?? 0,
             ]);
             $fonte = 'etp';
             $etpInfo = $processo->etp;
@@ -1110,6 +1116,7 @@ class ProcessoController extends Controller
                     'descricao'  => $item['descricao'],
                     'unidade'    => $item['und'] ?? null,
                     'quantidade' => $item['quantidade'],
+                    'refs_count' => $coletasPorDescricao[strtolower(trim($item['descricao']))] ?? 0,
                 ])
                 : collect([]);
             $fonte = 'xls';

@@ -17,7 +17,7 @@
 
                 @php
                     $podeEditar = ($etp->status === 'pendente' || $etp->status === 'recusado') || 
-                                 auth()->user()->hasRole(['diretor_licicon', 'gerente_licicon']);
+                                 auth()->user()->hasAnyRole(['diretor_licicon', 'gerente_licicon', 'colaborador_licicon']);
                 @endphp
 
                 @if($podeEditar)
