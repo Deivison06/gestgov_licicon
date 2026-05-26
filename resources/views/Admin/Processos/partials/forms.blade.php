@@ -248,8 +248,10 @@
         <div class="flex items-center justify-between">
             <label class="block text-sm font-semibold text-gray-800">📦 Descrição e Quantitativos dos Itens</label>
             @php
-                $temItensEtp = $processo->etp && $processo->etp->itens->count() > 0;
+                $temItensEtp = $processo->etp && $processo->etp->all_itens->count() > 0;
                 $itensXlsRaw = $processo->detalhe->descricao_e_quantitativos_itens_xml ?? [];
+
+
                 $temItensXls = is_array($itensXlsRaw) && count($itensXlsRaw) > 0;
             @endphp
             @if($temItensEtp || $temItensXls)
@@ -298,7 +300,7 @@
                     </p>
 
                     {{-- Expandir/recolher itens do ETP --}}
-                    @php $etpItens = $processo->etp->itens; @endphp
+                    @php $etpItens = $processo->etp->all_itens; @endphp
                     @if($etpItens->count() > 0)
                     <div x-data="{ openEtpItens: false }" class="mt-2">
                         <button type="button" @click="openEtpItens = !openEtpItens"

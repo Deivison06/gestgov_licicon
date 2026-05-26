@@ -65,6 +65,18 @@ class Etp extends Model
     }
 
     /**
+     * Retorna todos os itens do ETP, seja de forma direta ou através dos lotes.
+     * @return \Illuminate\Support\Collection
+     */
+    public function getAllItensAttribute()
+    {
+        if ($this->tipo_contratacao === 'lote') {
+            return $this->lotes->flatMap->itens;
+        }
+        return $this->itens;
+    }
+
+    /**
      * Transforma os itens ou lotes do ETP para o formato array esperado pelos DocumentServices
      * Formato: ['numero' => x, 'descricao' => y, 'und' => z, 'quantidade' => w]
      */
