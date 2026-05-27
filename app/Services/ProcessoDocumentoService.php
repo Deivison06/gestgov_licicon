@@ -9,6 +9,24 @@ use App\Enums\TipoProcedimentoEnum;
 
 class ProcessoDocumentoService
 {
+    /**
+     * Campos que pertencem à MINUTA em Pregão/Concorrência, mas que em
+     * DISPENSA voltam para o EDITAL (DISPENSA não usa o documento "minutas").
+     */
+    private const CAMPOS_EDITAL_DISPENSA = [
+        'exige_atestado',
+        'intervalo_lances',
+        'exigencia_garantia_proposta',
+        'exigencia_garantia_contrato',
+        'participacao_exclusiva_mei_epp',
+        'reserva_cotas_mei_epp',
+        'prioridade_contratacao_mei_epp',
+        'regularidade_fisica',
+        'qualificacao_economica',
+        'exigencias_tecnicas',
+        'numero_items',
+    ];
+
     protected array $documentos = [
         'capa' => [
             'titulo' => 'Capa do documento',
@@ -346,6 +364,15 @@ class ProcessoDocumentoService
             if ($tipo === 'estudo_tecnico' && $processo->modalidade === ModalidadeEnum::DISPENSA) {
                 $documentosOrdenados[$tipo]['campos'] = $this->filtrarCamposEstudoTecnicoDispensa(
                     $documentosOrdenados[$tipo]['campos']
+                );
+            }
+
+            // DISPENSA: os 11 campos que vivem em MINUTAS (Pregão/Concorrência)
+            // voltam para o EDITAL, já que DISPENSA não gera documento de minuta.
+            if ($tipo === 'edital' && $processo->modalidade === ModalidadeEnum::DISPENSA) {
+                $documentosOrdenados[$tipo]['campos'] = array_merge(
+                    $documentosOrdenados[$tipo]['campos'],
+                    self::CAMPOS_EDITAL_DISPENSA
                 );
             }
         }
