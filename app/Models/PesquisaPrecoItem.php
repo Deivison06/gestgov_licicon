@@ -14,6 +14,7 @@ class PesquisaPrecoItem extends Model
         'numero_item',
         'ano_compra',
         'sequencial_compra',
+        'numero_processo',
         'orgao_cnpj',
         'orgao_nome',
         'uf',

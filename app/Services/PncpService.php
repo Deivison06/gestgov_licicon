@@ -180,7 +180,7 @@ class PncpService
                     return ['error' => 'Falha na consulta estruturada do PNCP (Status: ' . $response->status() . ')'];
                 }
 
-                $json    = $response->json();
+                $json    = $json = $response->json();
                 $total   = $json['totalRegistros'] ?? 0;
                 $paginas = $json['totalPaginas'] ?? (int) ceil($total / $tamanhoApi);
 
@@ -251,9 +251,9 @@ class PncpService
 
         return Cache::remember($cacheKey, $this->cacheTtl, function () use ($cnpj, $ano, $sequencial) {
             try {
-                $url = "https://pncp.gov.br/api/pncp/v1/orgaos/{$cnpj}/compras/{$ano}/{$sequencial}";
+                $url = "{$this->baseUrl}/orgaos/{$cnpj}/compras/{$ano}/{$sequencial}";
 
-                $response = $this->httpClient(timeout: 10)->get($url);
+                $response = $this->httpClient(timeout: 30)->get($url);
 
                 if ($response->status() === 404) {
                     return ['error' => 'Contratação não encontrada no PNCP.'];
@@ -266,11 +266,11 @@ class PncpService
                 $c = $response->json();
 
                 return [
-                    'numeroProcesso'       => $c['numeroProcesso'] ?? null,
+                    'numeroProcesso'       => $c['numeroCompra'] ?? $c['processo'] ?? $c['numeroProcesso'] ?? null,
                     'valorTotalEstimado'   => $c['valorTotalEstimado'] ?? null,
                     'valorTotalHomologado' => $c['valorTotalHomologado'] ?? null,
                     'dataResultadoCompra'  => $c['dataResultadoCompra'] ?? null,
-                    'situacaoCompra'       => $c['situacaoCompra']['nome'] ?? null,
+                    'situacaoCompra'       => $c['situacaoCompra']['nome'] ?? ($c['situacaoCompraNome'] ?? null),
                     'modalidadeNome'       => $c['modalidade']['nome'] ?? ($c['modalidadeNome'] ?? null),
                     'objeto'               => $c['objetoCompra'] ?? ($c['objeto'] ?? null),
                     'linkSistemaOrigem'    => $c['linkSistemaOrigem'] ?? null,
@@ -284,6 +284,38 @@ class PncpService
                     'sequencial' => $sequencial,
                 ]);
                 return ['error' => 'Erro ao processar detalhe da contratação: ' . $e->getMessage()];
+            }
+        });
+    }
+
+    /**
+     * Busca os resultados (vencedores) de um item específico.
+     * Retorna array de vencedores com niFornecedor, nomeRazaoSocialFornecedor, valorUnitarioHomologado, etc.
+     */
+    public function buscarResultadosItem(string $cnpj, string $ano, string $sequencial, int $itemNumero): array
+    {
+        $cacheKey = "pncp_resultados_item_{$cnpj}_{$ano}_{$sequencial}_{$itemNumero}";
+
+        return Cache::remember($cacheKey, $this->cacheTtl, function () use ($cnpj, $ano, $sequencial, $itemNumero) {
+            try {
+                $url = "https://pncp.gov.br/api/pncp/v1/orgaos/{$cnpj}/compras/{$ano}/{$sequencial}/itens/{$itemNumero}/resultados";
+
+                $response = $this->httpClient(timeout: 20)->get($url);
+
+                if ($response->failed()) {
+                    return [];
+                }
+
+                return $response->json() ?? [];
+            } catch (Exception $e) {
+                Log::error('Erro ao buscar resultados do item PNCP', [
+                    'message'    => $e->getMessage(),
+                    'cnpj'       => $cnpj,
+                    'ano'        => $ano,
+                    'sequencial' => $sequencial,
+                    'item'       => $itemNumero
+                ]);
+                return [];
             }
         });
     }
