@@ -276,16 +276,26 @@ document.addEventListener('DOMContentLoaded', function () {
         return hom ?? est ?? null;
     }
 
-    function aplicarFiltroValor(lista) {
+    function aplicarFiltrosLocais(lista) {
+        // UF — filtra pelo campo uf da contratação (client-side, qualquer modo)
+        const uf = document.getElementById('pp_uf')?.value;
+        if (uf) {
+            lista = lista.filter(({ contratacao: c }) => c.uf === uf);
+        }
+
+        // Valor de referência + variação %
         const ref = parseFloat(document.getElementById('pp_valor_ref')?.value);
         const pct = parseFloat(document.getElementById('pp_valor_pct')?.value);
-        if (isNaN(ref) || ref <= 0 || isNaN(pct) || pct < 0) return lista;
-        const min = ref * (1 - pct / 100);
-        const max = ref * (1 + pct / 100);
-        return lista.filter(({ item }) => {
-            const v = extrairValorItem(item);
-            return v !== null && v >= min && v <= max;
-        });
+        if (!isNaN(ref) && ref > 0 && !isNaN(pct) && pct >= 0) {
+            const min = ref * (1 - pct / 100);
+            const max = ref * (1 + pct / 100);
+            lista = lista.filter(({ item }) => {
+                const v = extrairValorItem(item);
+                return v !== null && v >= min && v <= max;
+            });
+        }
+
+        return lista;
     }
 
     function atualizarPreviewValor() {
@@ -303,12 +313,50 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
         if (metaAtual && todosItensCache.length > 0) {
-            renderizarItens(aplicarFiltroValor(todosItensCache), metaAtual);
+            renderizarItens(aplicarFiltrosLocais(todosItensCache), metaAtual);
         }
     }
 
     ['pp_valor_ref', 'pp_valor_pct'].forEach(id => {
         document.getElementById(id)?.addEventListener('input', atualizarPreviewValor);
+    });
+
+    // UF — re-filtra os resultados carregados imediatamente (sem nova busca)
+    document.getElementById('pp_uf')?.addEventListener('change', () => {
+        if (metaAtual && todosItensCache.length > 0) {
+            renderizarItens(aplicarFiltrosLocais(todosItensCache), metaAtual);
+        }
+    });
+
+    // Modalidade — auto-preenche período (últimos 12 meses) quando datas estão vazias
+    function toDateInput(d) {
+        const p = n => String(n).padStart(2, '0');
+        return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+    }
+
+    document.getElementById('pp_modalidade')?.addEventListener('change', function () {
+        const dataIni  = document.getElementById('pp_data_inicial');
+        const dataFim  = document.getElementById('pp_data_final');
+        const badge    = document.getElementById('pp_data_auto_badge');
+
+        if (this.value && !dataIni.value && !dataFim.value) {
+            const hoje       = new Date();
+            const umAnoAtras = new Date(hoje);
+            umAnoAtras.setFullYear(hoje.getFullYear() - 1);
+            dataIni.value = toDateInput(umAnoAtras);
+            dataFim.value = toDateInput(hoje);
+            badge?.classList.remove('hidden');
+        } else if (!this.value) {
+            badge?.classList.add('hidden');
+        }
+        coletarFiltros();
+    });
+
+    // Esconde o badge quando o usuário ajusta as datas manualmente
+    ['pp_data_inicial', 'pp_data_final'].forEach(id => {
+        document.getElementById(id)?.addEventListener('change', () => {
+            document.getElementById('pp_data_auto_badge')?.classList.add('hidden');
+        });
     });
 
     // ── Highlight do termo buscado ─────────────────────────────────
@@ -370,13 +418,13 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!badge) return;
         const modoFiltrado   = filtros.modalidade && filtros.data_inicial && filtros.data_final;
         const temFiltroAtivo = modoFiltrado || !!filtros.situacao;
-        badge.textContent  = modoFiltrado ? 'Filtros avançados ativos' : (filtros.situacao ? 'Situação aplicada' : 'Busca textual');
-        badge.className    = temFiltroAtivo
-            ? 'text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200'
-            : 'text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider bg-gray-100 text-gray-400 border border-gray-200';
+        badge.textContent = modoFiltrado ? 'Consulta estruturada ativa' : (filtros.situacao ? 'Situação aplicada' : 'Busca textual');
+        badge.className   = temFiltroAtivo
+            ? 'text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200 transition-all'
+            : 'text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider bg-gray-100 text-gray-400 border border-gray-200 transition-all';
         if (nota) nota.className = temFiltroAtivo
-            ? 'mt-3 text-[11px] text-blue-600'
-            : 'mt-3 text-[11px] text-gray-400';
+            ? 'text-[10px] text-blue-600 leading-relaxed'
+            : 'text-[10px] text-gray-400 leading-relaxed';
     }
 
     // Atualiza badge ao alterar qualquer filtro
@@ -409,14 +457,19 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('pp_btn_limpar_filtros')?.addEventListener('click', () => {
         document.querySelectorAll('#pp_painel_filtros input, #pp_painel_filtros select')
             .forEach(el => { el.value = ''; });
+        document.getElementById('pp_data_auto_badge')?.classList.add('hidden');
         coletarFiltros();
-        atualizarPreviewValor(); // esconde preview e re-renderiza sem filtro de valor
+        atualizarPreviewValor(); // esconde preview de valor e re-renderiza sem filtros locais
     });
 
     document.getElementById('pp_btn_filtros')?.addEventListener('click', function () {
-        const p = document.getElementById('pp_painel_filtros');
+        const p      = document.getElementById('pp_painel_filtros');
         p.classList.toggle('hidden');
-        this.querySelector('span').textContent = p.classList.contains('hidden') ? 'Filtros' : 'Ocultar';
+        const aberto = !p.classList.contains('hidden');
+        this.querySelector('span').textContent = aberto ? 'Fechar filtros' : 'Filtros';
+        this.className = aberto
+            ? 'inline-flex items-center gap-2 px-4 py-3.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 font-semibold text-sm rounded-xl transition-all'
+            : 'inline-flex items-center gap-2 px-4 py-3.5 bg-gray-100 hover:bg-gray-200 text-gray-600 font-semibold text-sm rounded-xl transition-all';
     });
 
     // ── Busca principal ────────────────────────────────────────────
@@ -502,7 +555,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         todosItensCache = todosItens;
         metaAtual = contratacoes;
-        renderizarItens(aplicarFiltroValor(todosItens), contratacoes);
+        renderizarItens(aplicarFiltrosLocais(todosItens), contratacoes);
     }
 
     // ── Renderização dos cards ─────────────────────────────────────
