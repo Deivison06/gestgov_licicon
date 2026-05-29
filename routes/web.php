@@ -524,6 +524,7 @@ Route::prefix('admin/pncp')->name('admin.pncp.')->middleware(['auth', 'verified'
     Route::get('/items/{cnpj}/{ano}/{sequencial}', [PncpController::class, 'getItems'])->name('items');
     Route::get('/mercado/search', [PncpController::class, 'buscarMercado'])->name('mercado.search');
     Route::get('/contratacao/{cnpj}/{ano}/{sequencial}', [PncpController::class, 'getContratacao'])->name('contratacao');
+    Route::get('/contratacao/{cnpj}/{ano}/{sequencial}/itens/{item}/resultados', [PncpController::class, 'getResultadosItem'])->name('resultados_item');
     Route::get('/atas/search', [PncpController::class, 'buscarAtas'])->name('atas.search');
 });
 

@@ -19,7 +19,7 @@
             </span>
         </div>
 
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
 
             {{-- Período: Data Inicial --}}
             <div>
@@ -81,12 +81,30 @@
                 </select>
             </div>
 
+            {{-- Situação --}}
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1.5" for="pp_situacao">
+                    Situação
+                </label>
+                <select id="pp_situacao" name="situacao"
+                    class="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700
+                           focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all pp-filtro-watch">
+                    <option value="">Qualquer situação</option>
+                    <option value="8">Resultado Homologado</option>
+                    <option value="2">Recebendo Proposta</option>
+                    <option value="3">Em Julgamento</option>
+                    <option value="4">Adjudicada e Encerrada</option>
+                    <option value="7">Suspensa</option>
+                </select>
+            </div>
+
         </div>
 
         {{-- Nota sobre modos --}}
         <p id="pp_filtro_nota" class="mt-3 text-[11px] text-gray-400">
-            Preencha <strong>Modalidade + Período</strong> para ativar a consulta estruturada com filtros reais do PNCP.
-            UF funciona em ambos os modos.
+            Preencha <strong>Modalidade + Período</strong> para ativar a consulta estruturada.
+            <strong>Resultado Homologado</strong> requer Filtros Avançados e filtra os itens com preço homologado.
+            <strong>Recebendo Proposta</strong> funciona também na busca textual.
         </p>
 
         <div class="mt-4 flex items-center justify-end gap-3">

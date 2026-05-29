@@ -162,13 +162,14 @@
                                 <p class="text-gray-400 text-[10px] uppercase font-semibold">Nº Item</p>
                                 <p class="font-bold text-gray-700 painel-num-item"></p>
                             </div>
-                            <div>
-                                <p class="text-gray-400 text-[10px] uppercase font-semibold">CNPJ Fornecedor</p>
-                                <p class="font-mono text-gray-700 painel-cnpj-fornecedor"></p>
-                            </div>
                             <div class="col-span-2">
                                 <p class="text-gray-400 text-[10px] uppercase font-semibold">Situação</p>
                                 <p class="text-gray-700 painel-situacao"></p>
+                            </div>
+                            <div class="col-span-2">
+                                <p class="text-gray-400 text-[10px] uppercase font-semibold">Fornecedor (Vencedor)</p>
+                                <p class="text-gray-700 painel-nome-fornecedor"></p>
+                                <p class="font-mono text-gray-500 text-[11px] painel-cnpj-fornecedor mt-0.5"></p>
                             </div>
                         </div>
                     </div>
@@ -313,6 +314,7 @@ document.addEventListener('DOMContentLoaded', function () {
             data_final:   document.getElementById('pp_data_final')?.value   || null,
             uf:           document.getElementById('pp_uf')?.value           || null,
             modalidade:   document.getElementById('pp_modalidade')?.value   || null,
+            situacao:     document.getElementById('pp_situacao')?.value     || null,
         };
         atualizarBadgeModo(filtros);
         return filtros;
@@ -322,12 +324,13 @@ document.addEventListener('DOMContentLoaded', function () {
         const badge = document.getElementById('pp_badge_modo');
         const nota  = document.getElementById('pp_filtro_nota');
         if (!badge) return;
-        const modoFiltrado = filtros.modalidade && filtros.data_inicial && filtros.data_final;
-        badge.textContent  = modoFiltrado ? 'Filtros avançados ativos' : 'Busca textual';
-        badge.className    = modoFiltrado
+        const modoFiltrado   = filtros.modalidade && filtros.data_inicial && filtros.data_final;
+        const temFiltroAtivo = modoFiltrado || !!filtros.situacao;
+        badge.textContent  = modoFiltrado ? 'Filtros avançados ativos' : (filtros.situacao ? 'Situação aplicada' : 'Busca textual');
+        badge.className    = temFiltroAtivo
             ? 'text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200'
             : 'text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider bg-gray-100 text-gray-400 border border-gray-200';
-        if (nota) nota.className = modoFiltrado
+        if (nota) nota.className = temFiltroAtivo
             ? 'mt-3 text-[11px] text-blue-600'
             : 'mt-3 text-[11px] text-gray-400';
     }
@@ -378,7 +381,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         mostrarLoading('Buscando contratações no PNCP...');
 
-        const filtros = coletarFiltros();
+        const filtros     = coletarFiltros();
+        const modoFiltrado = filtros.modalidade && filtros.data_inicial && filtros.data_final;
+
         const params  = new URLSearchParams({ termo, pagina });
         Object.entries(filtros).forEach(([k, v]) => { if (v) params.append(k, v); });
 
@@ -400,10 +405,26 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        loadingMsg.textContent = `Carregando itens de ${contratacoes.data.length} contratação(ões)...`;
+        // Filtro de Resultado Homologado: reduz as contratações antes de buscar os itens.
+        // Modo filtrado: usa valorTotalHomologado (campo disponível no /consulta/v1).
+        // Modo textual: usa temResultado (campo disponível no /api/search/).
+        let contratacoesBuscar = contratacoes.data;
+        if (filtros.situacao === '8') {
+            const antes = contratacoesBuscar.length;
+            contratacoesBuscar = modoFiltrado
+                ? contratacoesBuscar.filter(c => (c.valorTotalHomologado ?? 0) > 0)
+                : contratacoesBuscar.filter(c => c.temResultado === true);
+            console.log(`[PNCP] Filtro homologado (contratos): ${antes} → ${contratacoesBuscar.length}`);
+            if (contratacoesBuscar.length === 0) {
+                mostrarErro('Nenhuma contratação com resultado homologado nessa busca. Tente ampliar o período ou mudar o termo.');
+                return;
+            }
+        }
+
+        loadingMsg.textContent = `Carregando itens de ${contratacoesBuscar.length} contratação(ões) homologada(s)...`;
 
         // Busca itens de todas as contratações em paralelo (timeout 12s por request)
-        const itensRequests = contratacoes.data.map(c => {
+        const itensRequests = contratacoesBuscar.map(c => {
             const ctrl = new AbortController();
             const tid  = setTimeout(() => ctrl.abort(), 12000);
             return fetch(`/admin/pncp/items/${c.orgaoEntidade.cnpj}/${c.anoCompra}/${c.sequencialCompra}`, { signal: ctrl.signal })
@@ -433,7 +454,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 todosItens.push({ item, contratacao });
             });
         });
-        console.log(`[PNCP] Total de itens prontos para renderizar: ${todosItens.length}`);
 
         renderizarItens(todosItens, contratacoes);
     }
@@ -603,7 +623,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // ── Preenche dados fixos do painel (item + contratação já disponíveis) ──
             card.querySelector('.painel-num-item').textContent        = item.numeroItem ?? '—';
-            card.querySelector('.painel-cnpj-fornecedor').textContent = fmtCnpj(item.cnpjFornecedorNorm || item.cnpjFornecedor);
+            
+            const pNomeForn = item.nomeFornecedor || item.nomeRazaoSocialFornecedor || null;
+            const pCnpjForn = item.cnpjFornecedorNorm || item.cnpjFornecedor || null;
+            
+            card.querySelector('.painel-nome-fornecedor').textContent = pNomeForn || '—';
+            card.querySelector('.painel-cnpj-fornecedor').textContent = pCnpjForn ? fmtCnpj(pCnpjForn) : '';
+            
             card.querySelector('.painel-situacao').textContent        = item.situacaoItem || item.situacaoCompraItem?.nome || '—';
             card.querySelector('.painel-objeto').textContent          = c.objeto || '—';
             card.querySelector('.painel-orgao').textContent           = c.orgaoEntidade.razaoSocial || '—';
@@ -635,13 +661,25 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 if (detalhesCarregados) return;
 
-                // Carrega detalhe da contratação (proceso, valorTotal, dataResultado)
+                // Busca detalhe da contratação e resultados do item em paralelo
                 try {
-                    console.log(`[PNCP] Buscando detalhe: ${cnpj}/${ano}/${seq}`);
-                    const r   = await fetch(`/admin/pncp/contratacao/${cnpj}/${ano}/${seq}`);
-                    const j   = await r.json();
-                    const det = j.success ? j.data : null;
+                    const requests = [
+                        fetch(`/admin/pncp/contratacao/${cnpj}/${ano}/${seq}`).then(r => r.json()).catch(() => null),
+                    ];
+
+                    if (item.numeroItem != null) {
+                        requests.push(
+                            fetch(`/admin/pncp/contratacao/${cnpj}/${ano}/${seq}/itens/${item.numeroItem}/resultados`)
+                                .then(r => r.json()).catch(() => null)
+                        );
+                    }
+
+                    const [detJson, resJson] = await Promise.all(requests);
+                    const det = detJson?.success ? detJson.data : null;
+                    const resultados = resJson?.success && Array.isArray(resJson.data) ? resJson.data : [];
+
                     console.log('[PNCP] Detalhe recebido:', det);
+                    console.log('[PNCP] Resultados do item:', resultados);
 
                     if (det) {
                         if (det.numeroProcesso)       card.querySelector('.painel-processo').textContent            = det.numeroProcesso;
@@ -662,9 +700,18 @@ document.addEventListener('DOMContentLoaded', function () {
                         }
                     }
 
+                    // Preenche fornecedor com dados do vencedor (resultados é a fonte autoritativa)
+                    if (resultados.length > 0) {
+                        const vencedor = resultados[0];
+                        const nome = vencedor.nomeRazaoSocialFornecedor || null;
+                        const cnpjVenc = vencedor.niFornecedor || null;
+                        if (nome) card.querySelector('.painel-nome-fornecedor').textContent = nome;
+                        if (cnpjVenc) card.querySelector('.painel-cnpj-fornecedor').textContent = fmtCnpj(cnpjVenc);
+                    }
+
                     detalhesCarregados = true;
                 } catch (e) {
-                    console.warn('[PNCP] Erro ao buscar detalhe da contratação:', e);
+                    console.warn('[PNCP] Erro ao buscar detalhes:', e);
                 } finally {
                     card.querySelector('.painel-loading')?.classList.add('hidden');
                     card.querySelector('.painel-conteudo')?.classList.remove('hidden');

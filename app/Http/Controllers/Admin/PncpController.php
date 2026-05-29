@@ -72,10 +72,11 @@ class PncpController extends Controller
             'data_final'   => 'nullable|date_format:Y-m-d|after_or_equal:data_inicial',
             'uf'           => 'nullable|string|size:2',
             'modalidade'   => 'nullable|integer|min:1|max:12',
+            'situacao'     => 'nullable|integer|min:1|max:12',
         ]);
 
         $termo   = $request->input('termo');
-        $filtros = $request->only(['data_inicial', 'data_final', 'uf', 'modalidade']);
+        $filtros = $request->only(['data_inicial', 'data_final', 'uf', 'modalidade', 'situacao']);
         $pagina  = $request->integer('pagina', 1);
 
         $modoFiltrado = !empty($filtros['modalidade'])
@@ -111,6 +112,16 @@ class PncpController extends Controller
         }
 
         return response()->json(['success' => true, 'data' => $result]);
+    }
+
+    /**
+     * Retorna os vencedores (resultados) de um item específico de uma contratação.
+     */
+    public function getResultadosItem(string $cnpj, string $ano, string $sequencial, int $item): JsonResponse
+    {
+        $results = $this->pncpService->buscarResultadosItem($cnpj, $ano, $sequencial, $item);
+
+        return response()->json(['success' => true, 'data' => $results]);
     }
 
     /**

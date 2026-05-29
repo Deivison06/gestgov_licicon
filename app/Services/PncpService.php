@@ -104,46 +104,63 @@ class PncpService
     // =========================================================================
 
     /**
-     * Busca contratações para pesquisa de preço de mercado — sem filtro de status.
-     * Usa /api/search/ para busca textual (sem filtros estruturados).
+     * Busca contratações para pesquisa de preço de mercado.
+     * Usa /api/search/ para busca textual. Erros não são cacheados para permitir retry imediato.
      */
     public function buscarContratacoesMercado(string $termo, array $filtros = [], int $pagina = 1, int $tamanho = 10): array
     {
         $cacheKey = 'pncp_mercado_' . md5($termo . serialize($filtros) . $pagina . $tamanho);
 
-        return Cache::remember($cacheKey, $this->cacheTtl, function () use ($termo, $filtros, $pagina, $tamanho) {
-            try {
-                $params = array_filter([
-                    'q'               => $termo,
-                    'tipos_documento' => 'edital',
-                    'pagina'          => $pagina,
-                    'tam_pagina'      => $tamanho,
-                ]);
+        if ($cached = Cache::get($cacheKey)) {
+            return $cached;
+        }
 
-                $response = $this->httpClient()->get($this->searchUrl, $params);
+        try {
+            // O endpoint /api/search/ só suporta status='recebendo_proposta'.
+            // Outros valores (homologado, resultado_homologado, etc.) são ignorados pela API.
+            // Para filtrar por Resultado Homologado, use buscarContratacoesFiltradas (codigoSituacaoCompra).
+            $statusMap  = ['2' => 'recebendo_proposta'];
+            $statusPncp = $statusMap[(string) ($filtros['situacao'] ?? '')] ?? null;
 
-                if ($response->status() === 502) {
-                    return ['error' => 'O serviço PNCP está temporariamente instável (502). Tente novamente em instantes.'];
-                }
+            $params = array_filter([
+                'q'               => $termo,
+                'tipos_documento' => 'edital',
+                'pagina'          => $pagina,
+                'tam_pagina'      => $tamanho,
+                'status'          => $statusPncp,
+            ]);
 
-                if ($response->failed()) {
-                    Log::error('Erro ao consultar PNCP Mercado', ['status' => $response->status(), 'termo' => $termo]);
-                    return ['error' => 'Falha na comunicação com o PNCP'];
-                }
+            // Timeout maior (API do gov pode estar lenta); 1 retry com espera para não triplicar a espera
+            $response = $this->httpClient(timeout: 30)->retry(1, 2000)->get($this->searchUrl, $params);
 
-                $json = $response->json();
-
-                return [
-                    'data'           => $this->normalizarContratacoes($json['items'] ?? []),
-                    'totalRegistros' => $json['total'] ?? 0,
-                    'totalPaginas'   => ceil(($json['total'] ?? 0) / $tamanho),
-                    'paginaAtual'    => $pagina,
-                ];
-            } catch (Exception $e) {
-                Log::error('Exceção ao consultar PNCP Mercado', ['message' => $e->getMessage(), 'termo' => $termo]);
-                return ['error' => 'Erro interno ao processar busca de mercado no PNCP'];
+            if ($response->status() === 502) {
+                return ['error' => 'O serviço PNCP está temporariamente instável (502). Tente novamente em instantes.'];
             }
-        });
+
+            if ($response->failed()) {
+                Log::error('Erro ao consultar PNCP Mercado', ['status' => $response->status(), 'termo' => $termo]);
+                return ['error' => 'Falha na comunicação com o PNCP'];
+            }
+
+            $json = $response->json();
+
+            $result = [
+                'data'           => $this->normalizarContratacoes($json['items'] ?? []),
+                'totalRegistros' => $json['total'] ?? 0,
+                'totalPaginas'   => ceil(($json['total'] ?? 0) / $tamanho),
+                'paginaAtual'    => $pagina,
+            ];
+
+            Cache::put($cacheKey, $result, $this->cacheTtl);
+
+            return $result;
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::warning('Timeout ao consultar PNCP Mercado', ['message' => $e->getMessage(), 'termo' => $termo]);
+            return ['error' => 'A API do PNCP está lenta no momento. Aguarde alguns segundos e tente novamente.'];
+        } catch (Exception $e) {
+            Log::error('Exceção ao consultar PNCP Mercado', ['message' => $e->getMessage(), 'termo' => $termo]);
+            return ['error' => 'Erro interno ao processar busca de mercado no PNCP'];
+        }
     }
 
     /**
@@ -162,6 +179,7 @@ class PncpService
                     'dataInicial'                 => str_replace('-', '', $filtros['data_inicial'] ?? ''),
                     'dataFinal'                   => str_replace('-', '', $filtros['data_final'] ?? ''),
                     'codigoModalidadeContratacao' => (int) ($filtros['modalidade'] ?? 0),
+                    'codigoSituacaoCompra'        => !empty($filtros['situacao']) ? (int) $filtros['situacao'] : null,
                     'pagina'                      => $pagina,
                     'tamanhoPagina'               => $tamanhoApi,
                     'uf'                          => $filtros['uf'] ?? null,
@@ -376,8 +394,9 @@ class PncpService
                 'modalidadeNome'     => $item['modalidade_licitacao_nome'] ?? '',
                 'objeto'             => $item['description'] ?? '',
                 'dataPublicacaoPncp' => $item['data_publicacao_pncp'] ?? '',
-                'uf'                 => $item['uf'] ?? '',         // API retorna 'uf', não 'uf_nome'
+                'uf'                 => $item['uf'] ?? '',
                 'municipio'          => $item['municipio_nome'] ?? '',
+                'temResultado'       => $item['tem_resultado'] ?? false,
             ];
         }, $items);
     }
@@ -390,13 +409,14 @@ class PncpService
                     'cnpj'        => $item['orgaoEntidade']['cnpj'] ?? '',
                     'razaoSocial' => $item['orgaoEntidade']['razaoSocial'] ?? '',
                 ],
-                'anoCompra'          => $item['anoCompra'] ?? '',
-                'sequencialCompra'   => $item['sequencialCompra'] ?? '',
-                'modalidadeNome'     => $item['modalidadeNome'] ?? '',
-                'objeto'             => $item['objetoCompra'] ?? '',
-                'dataPublicacaoPncp' => $item['dataPublicacaoPncp'] ?? '',
-                'uf'                 => $item['unidadeOrgao']['ufSigla'] ?? '',
-                'municipio'          => $item['unidadeOrgao']['municipioNome'] ?? '',
+                'anoCompra'             => $item['anoCompra'] ?? '',
+                'sequencialCompra'      => $item['sequencialCompra'] ?? '',
+                'modalidadeNome'        => $item['modalidadeNome'] ?? '',
+                'objeto'                => $item['objetoCompra'] ?? '',
+                'dataPublicacaoPncp'    => $item['dataPublicacaoPncp'] ?? '',
+                'uf'                    => $item['unidadeOrgao']['ufSigla'] ?? '',
+                'municipio'             => $item['unidadeOrgao']['municipioNome'] ?? '',
+                'valorTotalHomologado'  => $item['valorTotalHomologado'] ?? null,
             ];
         }, $items);
     }
