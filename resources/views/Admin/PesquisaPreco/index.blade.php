@@ -253,6 +253,8 @@ document.addEventListener('DOMContentLoaded', function () {
     let debounceTimer    = null;
     let termoAtual       = '';
     let paginaAtual      = 1;
+    let todosItensCache  = [];
+    let metaAtual        = null;
 
     const fmt = v => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v ?? 0);
     const fmtData = s => {
@@ -266,6 +268,48 @@ document.addEventListener('DOMContentLoaded', function () {
         const s = String(v).replace(/\D/g,'').padStart(14,'0');
         return s.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
     };
+
+    // ── Filtro de Valor por Referência ────────────────────────────
+    function extrairValorItem(item) {
+        const hom = item.valorUnitarioHomologado ?? item.valorHomologado ?? null;
+        const est = item.valorUnitarioEstimado   ?? item.valorEstimado   ?? null;
+        return hom ?? est ?? null;
+    }
+
+    function aplicarFiltroValor(lista) {
+        const ref = parseFloat(document.getElementById('pp_valor_ref')?.value);
+        const pct = parseFloat(document.getElementById('pp_valor_pct')?.value);
+        if (isNaN(ref) || ref <= 0 || isNaN(pct) || pct < 0) return lista;
+        const min = ref * (1 - pct / 100);
+        const max = ref * (1 + pct / 100);
+        return lista.filter(({ item }) => {
+            const v = extrairValorItem(item);
+            return v !== null && v >= min && v <= max;
+        });
+    }
+
+    function atualizarPreviewValor() {
+        const ref = parseFloat(document.getElementById('pp_valor_ref')?.value);
+        const pct = parseFloat(document.getElementById('pp_valor_pct')?.value);
+        const preview = document.getElementById('pp_valor_preview');
+        const ativo = !isNaN(ref) && ref > 0 && !isNaN(pct) && pct >= 0;
+        if (preview) {
+            if (ativo) {
+                document.getElementById('pp_valor_preview_min').textContent = fmt(ref * (1 - pct / 100));
+                document.getElementById('pp_valor_preview_max').textContent = fmt(ref * (1 + pct / 100));
+                preview.classList.remove('hidden');
+            } else {
+                preview.classList.add('hidden');
+            }
+        }
+        if (metaAtual && todosItensCache.length > 0) {
+            renderizarItens(aplicarFiltroValor(todosItensCache), metaAtual);
+        }
+    }
+
+    ['pp_valor_ref', 'pp_valor_pct'].forEach(id => {
+        document.getElementById(id)?.addEventListener('input', atualizarPreviewValor);
+    });
 
     // ── Highlight do termo buscado ─────────────────────────────────
     function highlight(texto, termo) {
@@ -365,7 +409,8 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('pp_btn_limpar_filtros')?.addEventListener('click', () => {
         document.querySelectorAll('#pp_painel_filtros input, #pp_painel_filtros select')
             .forEach(el => { el.value = ''; });
-        coletarFiltros(); // atualiza badge
+        coletarFiltros();
+        atualizarPreviewValor(); // esconde preview e re-renderiza sem filtro de valor
     });
 
     document.getElementById('pp_btn_filtros')?.addEventListener('click', function () {
@@ -455,7 +500,9 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
 
-        renderizarItens(todosItens, contratacoes);
+        todosItensCache = todosItens;
+        metaAtual = contratacoes;
+        renderizarItens(aplicarFiltroValor(todosItens), contratacoes);
     }
 
     // ── Renderização dos cards ─────────────────────────────────────

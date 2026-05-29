@@ -107,6 +107,45 @@
             <strong>Recebendo Proposta</strong> funciona também na busca textual.
         </p>
 
+        {{-- Filtro por Valor de Referência --}}
+        <div class="mt-4 pt-4 border-t border-gray-100">
+            <p class="text-xs font-bold text-gray-600 mb-3 flex items-center gap-2">
+                <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Filtro por Valor
+                <span class="text-[10px] font-normal text-gray-400">(aplicado sobre os resultados já carregados, sem nova consulta)</span>
+            </p>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1.5" for="pp_valor_ref">
+                        Valor de referência (R$)
+                    </label>
+                    <input type="number" id="pp_valor_ref" min="0" step="0.01" placeholder="Ex: 1500,00"
+                        class="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700
+                               focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1.5" for="pp_valor_pct">
+                        Variação (%)
+                    </label>
+                    <input type="number" id="pp_valor_pct" min="0" max="100" step="1" placeholder="Ex: 20"
+                        class="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700
+                               focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                </div>
+            </div>
+            <div id="pp_valor_preview" class="hidden mt-2 px-3 py-2 bg-blue-50 border border-blue-100 rounded-lg flex items-center gap-2 text-[11px] text-blue-700">
+                <svg class="w-3.5 h-3.5 flex-shrink-0 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Intervalo aplicado:
+                <strong id="pp_valor_preview_min" class="font-bold"></strong>
+                <span class="opacity-50">até</span>
+                <strong id="pp_valor_preview_max" class="font-bold"></strong>
+            </div>
+        </div>
+
         <div class="mt-4 flex items-center justify-end gap-3">
             <button type="button" id="pp_btn_limpar_filtros"
                 class="px-4 py-2 text-xs font-semibold text-gray-500 hover:text-gray-700 transition-colors">
