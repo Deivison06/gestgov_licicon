@@ -189,7 +189,7 @@
                                     @endif
                                 </td>
                                 <td class="px-4 py-3.5 text-center">
-                                    <a href="{{ route('admin.pesquisa_preco.index', ['processo_id' => $processo->id, 'termo' => $item['descricao']]) }}"
+                                    <a href="{{ route('admin.pesquisa_preco.index', ['processo_id' => $processo->id, 'termo' => $item['descricao'], 'etp_item_id' => $item['id'] ?? '']) }}"
                                        target="_blank"
                                        class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-all shadow-sm group-hover:shadow-md">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -238,7 +238,7 @@
                                 @endif
                             </td>
                             <td class="px-4 py-3.5 text-center">
-                                <a href="{{ route('admin.pesquisa_preco.index', ['processo_id' => $processo->id, 'termo' => $item['descricao']]) }}"
+                                <a href="{{ route('admin.pesquisa_preco.index', ['processo_id' => $processo->id, 'termo' => $item['descricao'], 'etp_item_id' => $item['id'] ?? '']) }}"
                                    target="_blank"
                                    class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-all shadow-sm group-hover:shadow-md">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

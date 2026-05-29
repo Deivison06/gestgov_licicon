@@ -1095,9 +1095,16 @@ class ProcessoController extends Controller
         $etpInfo = null;
         $lotes = null;
 
-        // Agrupa as referências já coletadas por descrição para contar rápido
-        $coletasPorDescricao = $processo->pesquisaPrecoItens
-            ->groupBy(fn($i) => strtolower(trim($i->descricao)))
+        // Agrupa as referências já coletadas
+        $coletas = $processo->pesquisaPrecoItens;
+        
+        // Mapeia coletas por ID de item do ETP (para maior precisão)
+        $coletasPorId = $coletas->whereNotNull('etp_item_id')
+            ->groupBy('etp_item_id')
+            ->map->count();
+
+        // Mapeia coletas por descrição (fallback para itens de XLS ou legados)
+        $coletasPorDescricao = $coletas->groupBy(fn($i) => strtolower(trim($i->descricao)))
             ->map->count();
 
         if ($processo->etp) {
@@ -1106,25 +1113,42 @@ class ProcessoController extends Controller
             $etpInfo = $etp;
 
             if ($etp->tipo_contratacao === 'lote') {
-                $lotes = $etp->lotes()->with('itens')->get()->map(function($lote) use ($coletasPorDescricao) {
+                $lotes = $etp->lotes()->with('itens')->get()->map(function($lote) use ($coletasPorId, $coletasPorDescricao) {
                     return [
                         'nome' => $lote->nome,
-                        'itens' => $lote->itens->map(fn($item) => [
-                            'descricao'  => $item->descricao_item,
-                            'unidade'    => $item->pivot->unidade,
-                            'quantidade' => $item->pivot->quantidade,
-                            'refs_count' => $coletasPorDescricao[strtolower(trim($item->descricao_item))] ?? 0,
-                        ])
+                        'itens' => $lote->itens->map(function($item) use ($coletasPorId, $coletasPorDescricao) {
+                            // Tenta pelo ID, se não tiver nada tenta pela descrição
+                            $count = $coletasPorId[$item->id] ?? null;
+                            if ($count === null) {
+                                $count = $coletasPorDescricao[strtolower(trim($item->descricao_item))] ?? 0;
+                            }
+
+                            return [
+                                'id'         => $item->id,
+                                'descricao'  => $item->descricao_item,
+                                'unidade'    => $item->pivot->unidade,
+                                'quantidade' => $item->pivot->quantidade,
+                                'refs_count' => $count,
+                            ];
+                        })
                     ];
                 });
                 $itens = $lotes->flatMap(fn($l) => $l['itens']);
             } else {
-                $itens = $etp->itens->map(fn($item) => [
-                    'descricao'  => $item->descricao_item,
-                    'unidade'    => $item->pivot->unidade,
-                    'quantidade' => $item->pivot->quantidade,
-                    'refs_count' => $coletasPorDescricao[strtolower(trim($item->descricao_item))] ?? 0,
-                ]);
+                $itens = $etp->itens->map(function($item) use ($coletasPorId, $coletasPorDescricao) {
+                    $count = $coletasPorId[$item->id] ?? null;
+                    if ($count === null) {
+                        $count = $coletasPorDescricao[strtolower(trim($item->descricao_item))] ?? 0;
+                    }
+
+                    return [
+                        'id'         => $item->id,
+                        'descricao'  => $item->descricao_item,
+                        'unidade'    => $item->pivot->unidade,
+                        'quantidade' => $item->pivot->quantidade,
+                        'refs_count' => $count,
+                    ];
+                });
             }
         } else {
             $raw = $processo->detalhe->descricao_e_quantitativos_itens_xml ?? [];

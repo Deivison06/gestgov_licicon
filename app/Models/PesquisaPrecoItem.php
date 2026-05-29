@@ -11,6 +11,7 @@ class PesquisaPrecoItem extends Model
 
     protected $fillable = [
         'processo_id',
+        'etp_item_id',
         'numero_item',
         'ano_compra',
         'sequencial_compra',
@@ -42,5 +43,10 @@ class PesquisaPrecoItem extends Model
     public function processo(): BelongsTo
     {
         return $this->belongsTo(Processo::class);
+    }
+
+    public function etpItem(): BelongsTo
+    {
+        return $this->belongsTo(EtpItem::class, 'etp_item_id');
     }
 }

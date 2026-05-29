@@ -228,6 +228,7 @@
 <script>
 // Contexto do processo (null quando acessado sem vinculação)
 const PP_PROCESSO_ID   = @json($processo?->id);
+const PP_ETP_ITEM_ID   = @json(request('etp_item_id'));
 const PP_STORE_URL     = '{{ route('admin.pesquisa_preco.itens.store') }}';
 const PP_DESTROY_URL   = '{{ url('admin/pesquisa-preco/itens') }}'; // + /{id}
 const PP_CSRF          = '{{ csrf_token() }}';
@@ -551,6 +552,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     const payload = {
                         processo_id:       PP_PROCESSO_ID,
+                        etp_item_id:       PP_ETP_ITEM_ID,
                         numero_item:       item.numeroItem != null ? String(item.numeroItem) : null,
                         ano_compra:        String(ano),
                         sequencial_compra: String(seq),

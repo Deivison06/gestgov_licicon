@@ -35,6 +35,7 @@ class PesquisaPrecoController extends Controller
     {
         $data = $request->validate([
             'processo_id'       => 'required|integer|exists:processos,id',
+            'etp_item_id'       => 'nullable|integer|exists:etp_itens,id',
             'numero_item'       => 'nullable|max:20',
             'ano_compra'        => 'required|max:4',
             'sequencial_compra' => 'required',
