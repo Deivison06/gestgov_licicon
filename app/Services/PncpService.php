@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -209,9 +210,12 @@ class PncpService
                     'paginaAtual'    => $pagina,
                     'modoFiltrado'   => true,
                 ];
+            } catch (ConnectionException $e) {
+                Log::warning('Timeout ao consultar PNCP Filtrado', ['message' => $e->getMessage(), 'filtros' => $filtros]);
+                return ['error' => 'A consulta ao PNCP excedeu o tempo limite. Reduza o período de busca (tente 3 meses) ou selecione uma UF específica para diminuir o volume de resultados.'];
             } catch (Exception $e) {
                 Log::error('Exceção ao consultar PNCP Filtrado', ['message' => $e->getMessage()]);
-                return ['error' => 'Erro interno na consulta estruturada: ' . $e->getMessage()];
+                return ['error' => 'Erro ao realizar a consulta estruturada. Tente novamente ou ajuste os filtros.'];
             }
         });
     }

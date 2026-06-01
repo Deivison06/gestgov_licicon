@@ -255,6 +255,9 @@ document.addEventListener('DOMContentLoaded', function () {
     let paginaAtual      = 1;
     let todosItensCache  = [];
     let metaAtual        = null;
+    let acumulador       = null; // estado do auto-avanço (modo filtrado + termo)
+    const VIRTUAL_PAGE_SIZE = 10;
+    const MAX_SWEEP_PAGES   = 8; // máx páginas do servidor varridas por clique de "Próxima"
 
     const fmt = v => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v ?? 0);
     const fmtData = s => {
@@ -295,6 +298,14 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
 
+        // Termo — só no modo filtrado simples; no modo virtual os itens já foram pré-filtrados pelo termo
+        if (metaAtual?.modoFiltrado && !metaAtual?._virtual && termoAtual) {
+            const termoLower = termoAtual.toLowerCase();
+            lista = lista.filter(({ item }) =>
+                (item.descricao || '').toLowerCase().includes(termoLower)
+            );
+        }
+
         return lista;
     }
 
@@ -328,7 +339,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Modalidade — auto-preenche período (últimos 12 meses) quando datas estão vazias
+    // Modalidade — auto-preenche período (últimos 3 meses) quando datas estão vazias
     function toDateInput(d) {
         const p = n => String(n).padStart(2, '0');
         return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
@@ -340,10 +351,10 @@ document.addEventListener('DOMContentLoaded', function () {
         const badge    = document.getElementById('pp_data_auto_badge');
 
         if (this.value && !dataIni.value && !dataFim.value) {
-            const hoje       = new Date();
-            const umAnoAtras = new Date(hoje);
-            umAnoAtras.setFullYear(hoje.getFullYear() - 1);
-            dataIni.value = toDateInput(umAnoAtras);
+            const hoje        = new Date();
+            const tresMesesAtras = new Date(hoje);
+            tresMesesAtras.setMonth(hoje.getMonth() - 3);
+            dataIni.value = toDateInput(tresMesesAtras);
             dataFim.value = toDateInput(hoje);
             badge?.classList.remove('hidden');
         } else if (!this.value) {
@@ -415,6 +426,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function atualizarBadgeModo(filtros) {
         const badge = document.getElementById('pp_badge_modo');
         const nota  = document.getElementById('pp_filtro_nota');
+        const aviso = document.getElementById('pp_aviso_modo_filtrado');
         if (!badge) return;
         const modoFiltrado   = filtros.modalidade && filtros.data_inicial && filtros.data_final;
         const temFiltroAtivo = modoFiltrado || !!filtros.situacao;
@@ -422,9 +434,18 @@ document.addEventListener('DOMContentLoaded', function () {
         badge.className   = temFiltroAtivo
             ? 'text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200 transition-all'
             : 'text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider bg-gray-100 text-gray-400 border border-gray-200 transition-all';
-        if (nota) nota.className = temFiltroAtivo
-            ? 'text-[10px] text-blue-600 leading-relaxed'
-            : 'text-[10px] text-gray-400 leading-relaxed';
+        if (aviso) aviso.classList.toggle('hidden', !modoFiltrado);
+        if (nota) {
+            if (modoFiltrado) {
+                nota.innerHTML = '<strong class="text-blue-700">Consulta estruturada:</strong> Modalidade + Período definem os contratos buscados no PNCP. '
+                    + '<strong class="text-amber-700">O termo filtra apenas os itens carregados nesta página</strong> — o PNCP não aceita busca textual neste modo.';
+                nota.className = 'text-[10px] text-blue-600 leading-relaxed';
+            } else {
+                nota.innerHTML = '<strong class="text-blue-600">Modalidade</strong> ativa a consulta estruturada no PNCP (período preenchido automaticamente). '
+                    + '<strong>UF</strong> e <strong>Valor</strong> filtram os resultados carregados instantaneamente.';
+                nota.className = 'text-[10px] text-gray-400 leading-relaxed';
+            }
+        }
     }
 
     // Atualiza badge ao alterar qualquer filtro
@@ -472,17 +493,27 @@ document.addEventListener('DOMContentLoaded', function () {
             : 'inline-flex items-center gap-2 px-4 py-3.5 bg-gray-100 hover:bg-gray-200 text-gray-600 font-semibold text-sm rounded-xl transition-all';
     });
 
-    // ── Busca principal ────────────────────────────────────────────
-    async function executarBusca(termo, pagina) {
+    // ── Busca principal — despacha para o modo correto ────────────
+    async function executarBusca(termo, paginaVirtual) {
         termoAtual  = termo;
-        paginaAtual = pagina;
+        paginaAtual = paginaVirtual;
 
+        const filtros      = coletarFiltros();
+        const modoFiltrado = !!(filtros.modalidade && filtros.data_inicial && filtros.data_final);
+
+        if (modoFiltrado && termo) {
+            await buscarAutoAvanço(termo, paginaVirtual, filtros);
+        } else {
+            acumulador = null; // abandona estado de auto-avanço ao sair desse modo
+            await buscarDireta(termo, paginaVirtual, filtros, modoFiltrado);
+        }
+    }
+
+    // ── Modo direto: uma página do servidor, comportamento original ─
+    async function buscarDireta(termo, pagina, filtros, modoFiltrado) {
         mostrarLoading('Buscando contratações no PNCP...');
 
-        const filtros     = coletarFiltros();
-        const modoFiltrado = filtros.modalidade && filtros.data_inicial && filtros.data_final;
-
-        const params  = new URLSearchParams({ termo, pagina });
+        const params = new URLSearchParams({ termo, pagina });
         Object.entries(filtros).forEach(([k, v]) => { if (v) params.append(k, v); });
 
         let contratacoes;
@@ -492,9 +523,9 @@ document.addEventListener('DOMContentLoaded', function () {
             const json = await resp.json();
             if (!json.success) { mostrarErro(json.message); return; }
             contratacoes = json.data;
-            console.log(`[PNCP] ${contratacoes.totalRegistros} contratação(ões) encontrada(s), exibindo ${contratacoes.data?.length ?? 0}`);
+            console.log(`[PNCP] ${contratacoes.totalRegistros} contratação(ões), ${contratacoes.data?.length ?? 0} nesta página`);
         } catch (e) {
-            console.error('[PNCP] Erro na busca de contratações:', e);
+            console.error('[PNCP] Erro na busca:', e);
             mostrarErro('Erro ao conectar com o servidor. Tente novamente.'); return;
         }
 
@@ -503,26 +534,30 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        // Filtro de Resultado Homologado: reduz as contratações antes de buscar os itens.
-        // Modo filtrado: usa valorTotalHomologado (campo disponível no /consulta/v1).
-        // Modo textual: usa temResultado (campo disponível no /api/search/).
         let contratacoesBuscar = contratacoes.data;
         if (filtros.situacao === '8') {
             const antes = contratacoesBuscar.length;
             contratacoesBuscar = modoFiltrado
                 ? contratacoesBuscar.filter(c => (c.valorTotalHomologado ?? 0) > 0)
                 : contratacoesBuscar.filter(c => c.temResultado === true);
-            console.log(`[PNCP] Filtro homologado (contratos): ${antes} → ${contratacoesBuscar.length}`);
+            console.log(`[PNCP] Filtro homologado: ${antes} → ${contratacoesBuscar.length}`);
             if (contratacoesBuscar.length === 0) {
-                mostrarErro('Nenhuma contratação com resultado homologado nessa busca. Tente ampliar o período ou mudar o termo.');
+                mostrarErro('Nenhuma contratação com resultado homologado. Tente ampliar o período.');
                 return;
             }
         }
 
-        loadingMsg.textContent = `Carregando itens de ${contratacoesBuscar.length} contratação(ões) homologada(s)...`;
+        loadingMsg.textContent = `Carregando itens de ${contratacoesBuscar.length} contratação(ões)...`;
+        const todosItens = await carregarItensContratacoes(contratacoesBuscar);
 
-        // Busca itens de todas as contratações em paralelo (timeout 12s por request)
-        const itensRequests = contratacoesBuscar.map(c => {
+        todosItensCache = todosItens;
+        metaAtual       = contratacoes;
+        renderizarItens(aplicarFiltrosLocais(todosItens), contratacoes);
+    }
+
+    // ── Helper: busca itens de um lote de contratações em paralelo ─
+    async function carregarItensContratacoes(contratacoes) {
+        const itensRequests = contratacoes.map(c => {
             const ctrl = new AbortController();
             const tid  = setTimeout(() => ctrl.abort(), 12000);
             return fetch(`/admin/pncp/items/${c.orgaoEntidade.cnpj}/${c.anoCompra}/${c.sequencialCompra}`, { signal: ctrl.signal })
@@ -541,21 +576,119 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         const resultadosBatch = await Promise.allSettled(itensRequests);
-
-        // Achata: item-card por item, com parent embutido
-        // Promise.allSettled retorna [{status, value}] — extraímos apenas os fulfilled
-        const todosItens = [];
-        resultadosBatch.forEach(resultado => {
-            const { contratacao, itens } = resultado.status === 'fulfilled' ? resultado.value : resultado.reason ?? { contratacao: null, itens: [] };
+        const todos = [];
+        resultadosBatch.forEach(r => {
+            const { contratacao, itens } = r.status === 'fulfilled' ? r.value : r.reason ?? { contratacao: null, itens: [] };
             if (!contratacao || !Array.isArray(itens)) return;
-            itens.forEach(item => {
-                todosItens.push({ item, contratacao });
-            });
+            itens.forEach(item => todos.push({ item, contratacao }));
         });
+        return todos;
+    }
 
-        todosItensCache = todosItens;
-        metaAtual = contratacoes;
-        renderizarItens(aplicarFiltrosLocais(todosItens), contratacoes);
+    // ── Modo auto-avanço: varre páginas do servidor até ter itens suficientes ──
+    async function buscarAutoAvanço(termo, paginaVirtual, filtros) {
+        const chave = JSON.stringify({ termo, filtros });
+
+        // Novo termo/filtro → recomeça do zero; mesma chave → aproveita acumulador existente
+        if (!acumulador || acumulador.chave !== chave) {
+            acumulador = { chave, itens: [], proximaServerPagina: 1, totalServerPaginas: null, esgotado: false };
+        }
+
+        const targetCount = paginaVirtual * VIRTUAL_PAGE_SIZE;
+
+        // Só busca mais páginas se ainda não temos itens suficientes para esta página virtual
+        if (acumulador.itens.length < targetCount && !acumulador.esgotado) {
+            mostrarLoading(`Varrendo contratos no PNCP em busca de "${termo}"...`);
+            let sweep = 0;
+
+            while (acumulador.itens.length < targetCount && !acumulador.esgotado && sweep < MAX_SWEEP_PAGES) {
+                const serverPagina = acumulador.proximaServerPagina;
+                loadingMsg.textContent =
+                    `Varrendo página ${serverPagina}` +
+                    (acumulador.totalServerPaginas ? ` de ${acumulador.totalServerPaginas}` : '') +
+                    ` · ${acumulador.itens.length} item(ns) com "${termo}" encontrado(s)`;
+
+                const params = new URLSearchParams({ termo, pagina: serverPagina });
+                Object.entries(filtros).forEach(([k, v]) => { if (v) params.append(k, v); });
+
+                let contratacoes;
+                try {
+                    const resp = await fetch(`{{ route('admin.pncp.mercado.search') }}?${params}`);
+                    const json = await resp.json();
+                    if (!json.success) { mostrarErro(json.message); return; }
+                    contratacoes = json.data;
+                } catch (e) {
+                    mostrarErro('Erro ao conectar com o servidor. Tente novamente.'); return;
+                }
+
+                if (!acumulador.totalServerPaginas && contratacoes.totalPaginas) {
+                    acumulador.totalServerPaginas = contratacoes.totalPaginas;
+                }
+
+                if (!contratacoes.data?.length) {
+                    acumulador.esgotado = true; break;
+                }
+
+                let contratacoesBuscar = contratacoes.data;
+                if (filtros.situacao === '8') {
+                    contratacoesBuscar = contratacoesBuscar.filter(c => (c.valorTotalHomologado ?? 0) > 0);
+                }
+
+                const itensNovos = await carregarItensContratacoes(contratacoesBuscar);
+
+                // Aplica filtro de termo sobre a descrição e filtro de valor
+                const termoLower = termo.toLowerCase();
+                const ref = parseFloat(document.getElementById('pp_valor_ref')?.value);
+                const pct = parseFloat(document.getElementById('pp_valor_pct')?.value);
+                const temFiltroValor = !isNaN(ref) && ref > 0 && !isNaN(pct) && pct >= 0;
+                const vMin = temFiltroValor ? ref * (1 - pct / 100) : null;
+                const vMax = temFiltroValor ? ref * (1 + pct / 100) : null;
+
+                const filtrados = itensNovos.filter(({ item }) => {
+                    if (!(item.descricao || '').toLowerCase().includes(termoLower)) return false;
+                    if (temFiltroValor) {
+                        const v = extrairValorItem(item);
+                        if (v === null || v < vMin || v > vMax) return false;
+                    }
+                    return true;
+                });
+
+                acumulador.itens = acumulador.itens.concat(filtrados);
+                acumulador.proximaServerPagina++;
+
+                if (acumulador.proximaServerPagina > (acumulador.totalServerPaginas ?? Infinity)) {
+                    acumulador.esgotado = true;
+                }
+
+                sweep++;
+            }
+        }
+
+        const start       = (paginaVirtual - 1) * VIRTUAL_PAGE_SIZE;
+        const itensPagina = acumulador.itens.slice(start, start + VIRTUAL_PAGE_SIZE);
+        const totalVirtual = acumulador.esgotado
+            ? Math.max(1, Math.ceil(acumulador.itens.length / VIRTUAL_PAGE_SIZE))
+            : paginaVirtual + 1;
+
+        const metaVirtual = {
+            modoFiltrado:    true,
+            _virtual:        true,
+            _aberto:         !acumulador.esgotado,
+            totalRegistros:  acumulador.totalServerPaginas ?? '?',
+            totalPaginas:    totalVirtual,
+            paginaAtual:     paginaVirtual,
+        };
+
+        if (itensPagina.length === 0) {
+            const msg = acumulador.esgotado
+                ? `Nenhum item com "${termo}" nas ${acumulador.totalServerPaginas ?? 'todas as'} página(s) de contratos. Tente ampliar o período ou ajustar os filtros.`
+                : `Nenhum item com "${termo}" nas ${MAX_SWEEP_PAGES} última(s) página(s) varridas. Tente uma UF ou período mais específico.`;
+            mostrarErro(msg); return;
+        }
+
+        todosItensCache = itensPagina; // filtros locais (UF, valor) re-filtram só a página virtual atual
+        metaAtual       = metaVirtual;
+        renderizarItens(aplicarFiltrosLocais(itensPagina), metaVirtual);
     }
 
     // ── Renderização dos cards ─────────────────────────────────────
@@ -563,8 +696,11 @@ document.addEventListener('DOMContentLoaded', function () {
         listaItens.innerHTML = '';
 
         const total = lista.length;
-        const modoLabel = meta.modoFiltrado ? ' · Filtros avançados' : ' · Busca textual';
-        sumario.textContent = `${(meta.totalRegistros || 0).toLocaleString('pt-BR')} contratação(ões)${modoLabel} · ${total} item(ns)`;
+        const modoLabel = meta._virtual
+            ? ` · Auto-avanço · página virtual ${meta.paginaAtual}`
+            : (meta.modoFiltrado ? ' · Filtros avançados' : ' · Busca textual');
+        const termoLabel = (meta.modoFiltrado && !meta._virtual && termoAtual) ? ` · filtrado por "${termoAtual}"` : '';
+        sumario.textContent = `${(meta.totalRegistros || 0).toLocaleString('pt-BR')} pág(s) no PNCP${modoLabel}${termoLabel} · ${total} item(ns)`;
 
         if (total === 0) {
             mostrarErro('As contratações encontradas não possuem itens disponíveis no momento.');
@@ -821,14 +957,15 @@ document.addEventListener('DOMContentLoaded', function () {
             listaItens.appendChild(card);
         });
 
-        renderizarPaginacao(meta.totalPaginas, meta.paginaAtual ?? paginaAtual);
+        renderizarPaginacao(meta.totalPaginas, meta.paginaAtual ?? paginaAtual, meta._aberto ?? false);
         mostrarResultados();
     }
 
     // ── Paginação ──────────────────────────────────────────────────
-    function renderizarPaginacao(totalPaginas, paginaCorrente) {
+    // aberto=true: total de páginas ainda é desconhecido (auto-avanço em curso)
+    function renderizarPaginacao(totalPaginas, paginaCorrente, aberto = false) {
         paginacao.innerHTML = '';
-        if (totalPaginas <= 1) return;
+        if (totalPaginas <= 1 && !aberto) return;
 
         const btn = (label, pg, ativo = false) => {
             const b = document.createElement('button');
@@ -841,9 +978,10 @@ document.addEventListener('DOMContentLoaded', function () {
             return b;
         };
 
-        if (paginaCorrente > 1)             paginacao.appendChild(btn('← Anterior', paginaCorrente - 1));
-        paginacao.appendChild(btn(`Pág. ${paginaCorrente} / ${totalPaginas}`, paginaCorrente, true));
-        if (paginaCorrente < totalPaginas)  paginacao.appendChild(btn('Próxima →', paginaCorrente + 1));
+        if (paginaCorrente > 1) paginacao.appendChild(btn('← Anterior', paginaCorrente - 1));
+        const totalLabel = aberto ? '...' : String(totalPaginas);
+        paginacao.appendChild(btn(`Pág. ${paginaCorrente} / ${totalLabel}`, paginaCorrente, true));
+        if (aberto || paginaCorrente < totalPaginas) paginacao.appendChild(btn('Próxima →', paginaCorrente + 1));
     }
 
     // ── Auto-busca quando página é aberta com termo pré-definido ──
