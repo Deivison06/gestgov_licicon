@@ -604,8 +604,26 @@ class ContratoProcessoController extends Controller
 
         $contratacoes = $contratacoesQuery->get();
 
-        // Quando temos homologação, os dados de cabeçalho vêm dela (já herdaram da finalização).
-        $fonteCabecalho = $homologacao ?: $processo->finalizacao;
+        // Fonte de leitura do cabeçalho:
+        //  - Pregão/Dispensa: usa a homologação resolvida pela request (usuário seleciona qual).
+        //  - Concorrência/Inexigibilidade (homologação única): se não veio pela request
+        //    (ex.: ainda está EM_EDICAO e o frontend não manda), pega automaticamente a
+        //    única homologação do processo como fonte de leitura.
+        $homologacaoLeitura = $homologacao;
+        if (!$homologacaoLeitura) {
+            $ehHomologacaoUnica = !in_array(
+                $processo->modalidade,
+                [ModalidadeEnum::PREGAO_ELETRONICO, ModalidadeEnum::DISPENSA],
+                true
+            );
+            if ($ehHomologacaoUnica) {
+                $homologacaoLeitura = $processo->homologacoes->sortBy('id')->first();
+            }
+        }
+
+        // Fonte unificada do cabeçalho com fallback campo-a-campo:
+        // Homologação preenchida → Finalização (legado / dado salvo antes da homologação existir).
+        $fonteCabecalho = $this->mesclarFonteCabecalho($homologacaoLeitura, $processo->finalizacao);
 
         // ==============================================
         // DADOS DO CONTRATANTE (PREFEITURA)
@@ -649,6 +667,11 @@ class ContratoProcessoController extends Controller
         return [
             'processo' => $processo,
             'prefeitura' => $processo->prefeitura,
+            // Fonte unificada dos campos preenchidos na finalização (Homologação > Finalização).
+            // Permite que as views usem `$finalizacao->razao_social` sem se preocupar com
+            // a modalidade — Concorrência/Inexigibilidade gravam na Homologação, Pregão/Dispensa
+            // podem usar Homologação (multi) ou Finalização (legado).
+            'finalizacao' => $fonteCabecalho,
             'contratacoes' => $contratacoes,
             'itensTabela' => $itensTabela,
             'valorTotalContrato' => $valorTotalContrato,
@@ -676,6 +699,42 @@ class ContratoProcessoController extends Controller
                     ? \Carbon\Carbon::parse($contratoSalvo->data_assinatura_contrato)->format('d/m/Y')
                     : null),
         ];
+    }
+
+    /**
+     * Mescla Homologacao + Finalizacao em uma fonte única, dando prioridade à Homologação
+     * mas caindo para a Finalização quando o campo da homologação estiver vazio.
+     * Resolve o caso em que o usuário preencheu campos na finalização ANTES da homologação
+     * ser auto-criada (dado fica em Finalizacao) e depois gera contrato (lê de Homologacao).
+     */
+    private function mesclarFonteCabecalho($homologacao, $finalizacao): object
+    {
+        $campos = [
+            'orgao_responsavel',
+            'cargo_responsavel',
+            'cnpj',
+            'endereco',
+            'responsavel',
+            'cpf_responsavel',
+            'razao_social',
+            'cnpj_empresa_vencedora',
+            'endereco_empresa_vencedora',
+            'representante_legal_empresa',
+            'cpf_representante',
+            'valor_total',
+        ];
+
+        $resultado = new \stdClass();
+        foreach ($campos as $campo) {
+            $valorHomol = $homologacao?->{$campo};
+            $valorFinal = $finalizacao?->{$campo};
+            // Considera string vazia como ausente.
+            $resultado->{$campo} = ($valorHomol !== null && $valorHomol !== '')
+                ? $valorHomol
+                : (($valorFinal !== null && $valorFinal !== '') ? $valorFinal : null);
+        }
+
+        return $resultado;
     }
 
     // Método para escrever valor por extenso

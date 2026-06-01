@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\ModalidadeEnum;
+use App\Enums\TipoProcedimentoEnum;
 use App\Models\Homologacao;
 use App\Models\Lote;
 use App\Models\Processo;
@@ -96,6 +97,51 @@ class HomologacaoService
     }
 
     /**
+     * Indica se a modalidade do processo usa o conceito de homologação.
+     * Dispensa de OBRA é contratação direta — não tem homologação em hipótese alguma.
+     */
+    public function usaHomologacao(Processo $processo): bool
+    {
+        return !($processo->modalidade === ModalidadeEnum::DISPENSA
+            && $processo->tipo_procedimento === TipoProcedimentoEnum::OBRA);
+    }
+
+    /**
+     * Indica se a tela de Finalização deve ser renderizada em modo "homologação única":
+     * todos os documentos numa só seção, sem cards separados por homologação.
+     *  - Concorrência, Inexigibilidade: 1 homologação (oculta atrás dos docs).
+     *  - Dispensa de Obra: 0 homologação (contratação direta).
+     *  - Pregão, Dispensa Compras/Serviços: false (homologação parcial, com cards).
+     */
+    public function ehHomologacaoUnica(Processo $processo): bool
+    {
+        return !$this->permiteHomologacaoParcial($processo)
+            || !$this->usaHomologacao($processo);
+    }
+
+    /**
+     * Define se a criação de homologação exige lotes pendentes cadastrados.
+     *
+     *  - Concorrência e Inexigibilidade: NÃO exigem (homologação única, sem cadastro de lotes).
+     *  - Dispensa de OBRA: NÃO exige (obras não usam lotes — vencedor único, contratação direta).
+     *  - Pregão Eletrônico e demais Dispensas (compras/serviços): EXIGEM lotes pendentes
+     *    para vincular à nova homologação.
+     */
+    public function exigeLotesPendentes(Processo $processo): bool
+    {
+        if (!$this->permiteHomologacaoParcial($processo)) {
+            return false;
+        }
+
+        if ($processo->modalidade === ModalidadeEnum::DISPENSA
+            && $processo->tipo_procedimento === TipoProcedimentoEnum::OBRA) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Regra de liberação do botão "Gerar Nova Homologação":
      *  - Permite quando ainda não existe nenhuma homologação (1ª é sempre liberada).
      *  - Em CONCORRÊNCIA e INEXIGIBILIDADE, bloqueia qualquer nova após a primeira
@@ -140,10 +186,10 @@ class HomologacaoService
 
             $lotesPendentesIds = $processo->lotesPendentesHomologacao()->pluck('id');
 
-            // Lotes pendentes são obrigatórios apenas para modalidades de homologação parcial
-            // (Pregão Eletrônico e Dispensa). Concorrência/Inexigibilidade têm homologação
-            // única sem cadastro de lotes.
-            if ($lotesPendentesIds->isEmpty() && $this->permiteHomologacaoParcial($processo)) {
+            // Lotes pendentes são obrigatórios apenas para modalidades que usam cadastro
+            // de lotes: Pregão Eletrônico e Dispensa (compras/serviços). Concorrência,
+            // Inexigibilidade e Dispensa de OBRA criam homologação sem exigir lotes.
+            if ($lotesPendentesIds->isEmpty() && $this->exigeLotesPendentes($processo)) {
                 throw new \DomainException('Não há lotes pendentes de homologação para este processo.');
             }
 

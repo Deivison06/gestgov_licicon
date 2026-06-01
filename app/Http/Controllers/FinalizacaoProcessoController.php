@@ -77,9 +77,10 @@ class FinalizacaoProcessoController extends Controller
         $temHomologacao = $this->homologacaoService->temHomologacao($processo);
         $podeCriarNovaHomologacao = $this->homologacaoService->podeCriarNovaHomologacao($processo);
 
-        // Concorrência e Inexigibilidade: homologação única, sem cards separados.
-        // Mescla os documentos por-homologação na seção "Documentos do Processo".
-        $ehHomologacaoUnica = !$this->homologacaoService->permiteHomologacaoParcial($processo);
+        // "Homologação única" cobre Concorrência, Inexigibilidade (1 homologação atrás dos
+        // docs) e Dispensa de Obra (zero homologação — contratação direta).
+        // Em todos esses casos, a tela mostra UMA seção com todos os documentos juntos.
+        $ehHomologacaoUnica = $this->homologacaoService->ehHomologacaoUnica($processo);
         $homologacaoUnica   = $ehHomologacaoUnica
             ? $processo->homologacoes->sortBy('id')->first()
             : null;

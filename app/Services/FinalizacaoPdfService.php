@@ -223,6 +223,12 @@ class FinalizacaoPdfService
         $documento = $requestData['documento'] ?? null;
         $homologacaoId = $requestData['homologacao_id'] ?? null;
 
+        // Modalidades que não usam homologação (Dispensa de Obra): todo documento é
+        // tratado como nível-processo (homologacao_id = null no banco).
+        if (!$this->homologacaoService->usaHomologacao($processo)) {
+            return null;
+        }
+
         if (!$documento || !$this->homologacaoService->ehTipoPorHomologacao($documento)) {
             return null;
         }
@@ -239,6 +245,16 @@ class FinalizacaoPdfService
                     'documento' => $documento,
                 ]);
                 return $homologacao;
+            }
+
+            // Modalidades de homologação efetivamente única (Concorrência, Inexigibilidade,
+            // Dispensa de Obra): se já existe uma homologação e nenhuma foi informada via
+            // request, usa a única existente — não faz sentido exigir id.
+            if (!$this->homologacaoService->exigeLotesPendentes($processo)) {
+                $homologacao = $processo->homologacoes()->orderBy('id')->first();
+                if ($homologacao) {
+                    return $homologacao;
+                }
             }
 
             throw new \DomainException('homologacao_id é obrigatório para gerar este tipo de documento.');

@@ -171,10 +171,10 @@
                             <td class="content">
                                 <div style=" font-weight: bold; margin-bottom: 3px;">Contratante</div>
                                 <div style="">
-                                    {{ $processo->finalizacao->orgao_responsavel }}, com sede no(a) {{ $processo->prefeitura->endereco }}, na
-                                    cidade de {{ $processo->prefeitura->cidade }}, inscrito(a) no CNPJ sob o nº {{ $processo->finalizacao->cnpj }},
-                                    neste ato representado(a) pelo(a) {{ $processo->finalizacao->responsavel }}, inscrito no CPF sob n°
-                                    {{ $processo->finalizacao->cpf_responsavel }}.
+                                    {{ $finalizacao->orgao_responsavel }}, com sede no(a) {{ $processo->prefeitura->endereco }}, na
+                                    cidade de {{ $processo->prefeitura->cidade }}, inscrito(a) no CNPJ sob o nº {{ $finalizacao->cnpj }},
+                                    neste ato representado(a) pelo(a) {{ $finalizacao->responsavel }}, inscrito no CPF sob n°
+                                    {{ $finalizacao->cpf_responsavel }}.
                                 </div>
                             </td>
                         </tr>
@@ -191,9 +191,9 @@
                             <td class="content">
                                 <div style=" font-weight: bold; margin-bottom: 3px;">Contratado</div>
                                 <div>
-                                    {{ $processo->finalizacao->razao_social }}, inscrito(a) no CNPJ/MF sob o nº {{ $processo->finalizacao->cnpj_empresa_vencedora }}, sediado(a)
-                                    na {{ $processo->finalizacao->endereco_empresa_vencedora }}, neste ato representado(a) por {{ $processo->finalizacao->representante_legal_empresa }}, inscrito no
-                                    CPF sob n° {{ $processo->finalizacao->cpf_representante }}.
+                                    {{ $finalizacao->razao_social }}, inscrito(a) no CNPJ/MF sob o nº {{ $finalizacao->cnpj_empresa_vencedora }}, sediado(a)
+                                    na {{ $finalizacao->endereco_empresa_vencedora }}, neste ato representado(a) por {{ $finalizacao->representante_legal_empresa }}, inscrito no
+                                    CPF sob n° {{ $finalizacao->cpf_representante }}.
                                 </div>
                             </td>
                         </tr>
@@ -254,7 +254,7 @@
                             <td class="content">
                                 <div style=" font-weight: bold; margin-bottom: 3px;">Valor Total</div>
                                 <div style="">
-                                    {{ $processo->finalizacao->valor_total }}
+                                    {{ $finalizacao->valor_total }}
                                 </div>
                             </td>
                         </tr>
@@ -284,8 +284,8 @@
                     <td class="content">
                         <div style=" font-weight: bold; margin-bottom: 3px;">Contratante</div>
                         <div style="">
-                            {{ $processo->finalizacao->orgao_responsavel }}, com sede no(a) {{ $processo->prefeitura->endereco }}, na cidade de {{ $processo->prefeitura->cidade }} inscrito(a) no CNPJ
-                            sob o nº {{ $processo->finalizacao->cnpj }}, neste ato representado(a) pelo(a) {{ $processo->finalizacao->responsavel }} inscrito no CPF sob n° {{ $processo->finalizacao->cpf_responsavel }}.
+                            {{ $finalizacao->orgao_responsavel }}, com sede no(a) {{ $processo->prefeitura->endereco }}, na cidade de {{ $processo->prefeitura->cidade }} inscrito(a) no CNPJ
+                            sob o nº {{ $finalizacao->cnpj }}, neste ato representado(a) pelo(a) {{ $finalizacao->responsavel }} inscrito no CPF sob n° {{ $finalizacao->cpf_responsavel }}.
                         </div>
                     </td>
                 </tr>
@@ -300,8 +300,8 @@
                     <td class="content">
                         <div style=" font-weight: bold; margin-bottom: 3px;">Contratado</div>
                         <div style="">
-                            {{ $processo->finalizacao->razao_social }}, inscrito(a) no CNPJ/MF sob o nº {{ $processo->finalizacao->cnpj_empresa_vencedora }}, sediado(a) na {{ $processo->finalizacao->endereco_empresa_vencedora }} neste
-                            ato representado(a) por {{ $processo->finalizacao->representante_legal_empresa }}, inscrito no CPF sob n° {{ $processo->finalizacao->cpf_representante }}.
+                            {{ $finalizacao->razao_social }}, inscrito(a) no CNPJ/MF sob o nº {{ $finalizacao->cnpj_empresa_vencedora }}, sediado(a) na {{ $finalizacao->endereco_empresa_vencedora }} neste
+                            ato representado(a) por {{ $finalizacao->representante_legal_empresa }}, inscrito no CPF sob n° {{ $finalizacao->cpf_representante }}.
                         </div>
                     </td>
                 </tr>
@@ -430,7 +430,7 @@
         </div>
 
         <p style="text-align: justify;">
-            5.1 O preço global deste contrato é de {{ $processo->finalizacao->valor_total }}, referente ao valor total da obra
+            5.1 O preço global deste contrato é de {{ $finalizacao->valor_total }}, referente ao valor total da obra
             prevista no presente contrato. <br>
             5.2 A CONTRATADA fica obrigada a aceitar nas mesmas condições contratuais os
             acréscimos ou supressões que se fizerem nas obras, decorrentes de modificações de
@@ -781,9 +781,9 @@
             <div class="signature-block" style="display: inline-block; margin: 0 40px;">
                 ___________________________________<br>
                 <p style="line-height: 1.2;">
-                    {{ $processo->finalizacao->razao_social }} <br>
-                    {{ $processo->finalizacao->representante_legal_empresa }} <br>
-                    {{ $processo->finalizacao->cpf_representante }} <br>
+                    {{ $finalizacao->razao_social }} <br>
+                    {{ $finalizacao->representante_legal_empresa }} <br>
+                    {{ $finalizacao->cpf_representante }} <br>
                 </p>
             </div>
         </div>
@@ -843,7 +843,7 @@
                     CONTRATADO:
                 </td>
                 <td style="padding:6px;">
-                    {{ $processo->finalizacao->razao_social }}
+                    {{ $finalizacao->razao_social }}
                 </td>
             </tr>
 
@@ -853,7 +853,7 @@
                     CNPJ (CONTRATADO):
                 </td>
                 <td style="padding:6px;">
-                    {{ $processo->finalizacao->cnpj_empresa_vencedora }}
+                    {{ $finalizacao->cnpj_empresa_vencedora }}
                 </td>
             </tr>
 
@@ -863,7 +863,7 @@
                     VALOR:
                 </td>
                 <td style="padding:6px;">
-                    {{ $processo->finalizacao->valor_total }}
+                    {{ $finalizacao->valor_total }}
                 </td>
             </tr>
 
@@ -934,7 +934,7 @@
                     ASSINATURA (CONTRATADO):
                 </td>
                 <td style="padding:6px;">
-                    {{ $processo->finalizacao->representante_legal_empresa }}
+                    {{ $finalizacao->representante_legal_empresa }}
                 </td>
             </tr>
 

@@ -1510,7 +1510,26 @@
                         if (data.success && data.lotes && data.lotes.length > 0) {
                             let html = `
                             <h4 class="font-bold mb-4">Itens Disponíveis - ${data.vencedor.razao_social}</h4>
-                            <p class="text-sm text-gray-600 mb-4">Informe a quantidade desejada para cada item</p>
+                            <p class="text-sm text-gray-600 mb-3">Informe a quantidade desejada para cada item</p>
+
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-2 flex flex-wrap items-center gap-2">
+                                <label for="percentual-contratacao" class="text-sm font-medium text-blue-900 whitespace-nowrap">
+                                    Contratar % dos quantitativos:
+                                </label>
+                                <input type="number" id="percentual-contratacao" min="1" max="100" step="1"
+                                       placeholder="Ex.: 80"
+                                       class="w-24 px-2 py-1 text-sm border border-blue-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                <span class="text-sm text-blue-900">%</span>
+                                <button type="button" onclick="aplicarPercentualContratacao()"
+                                        class="ml-auto px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded">
+                                    Aplicar
+                                </button>
+                            </div>
+                            <p class="text-xs text-gray-500 mb-3">
+                                Calcula <code class="bg-gray-100 px-1 rounded">floor(qtd_disponível × %)</code>
+                                por item. Itens cujo resultado for 0 são ignorados.
+                            </p>
+
                             <div class="overflow-y-auto">
                                 <table class="w-full">
                                     <thead class="bg-gray-50">
@@ -1620,6 +1639,50 @@
             // Alternar botões
             document.getElementById('modal-buttons-step-2').classList.add('hidden');
             document.getElementById('modal-buttons-step-1').classList.remove('hidden');
+        }
+
+        /**
+         * Aplica um percentual à quantidade disponível de cada item carregado no modal:
+         *   quantidade_contratada = floor(quantidade_disponivel * percentual / 100)
+         * Itens cujo resultado seja 0 são ignorados (input fica vazio).
+         */
+        function aplicarPercentualContratacao() {
+            const inputPercent = document.getElementById('percentual-contratacao');
+            if (!inputPercent) return;
+
+            const percentual = parseFloat(inputPercent.value);
+            if (isNaN(percentual) || percentual < 1 || percentual > 100) {
+                mostrarMensagem('Informe um percentual entre 1 e 100.', 'error');
+                return;
+            }
+
+            let aplicados = 0;
+            let ignorados = 0;
+
+            lotesSelecionados.forEach(lote => {
+                const disponivel = parseFloat(lote.quantidadeMax) || 0;
+                const calculado = Math.floor(disponivel * percentual / 100);
+                const inputQtd = document.getElementById(`quantidade-${lote.id}`);
+
+                if (calculado > 0) {
+                    if (inputQtd) inputQtd.value = calculado;
+                    lote.quantidade = calculado;
+                    lote.valorTotal = calculado * lote.valorUnitario;
+                    aplicados++;
+                } else {
+                    if (inputQtd) inputQtd.value = '';
+                    lote.quantidade = 0;
+                    lote.valorTotal = 0;
+                    ignorados++;
+                }
+            });
+
+            atualizarResumoModal();
+
+            const detalhe = ignorados > 0
+                ? `${aplicados} item(ns) preenchido(s), ${ignorados} ignorado(s) (resultado = 0)`
+                : `${aplicados} item(ns) preenchido(s)`;
+            mostrarMensagem(`${percentual}% aplicado — ${detalhe}.`, 'success');
         }
 
         function fecharModal() {

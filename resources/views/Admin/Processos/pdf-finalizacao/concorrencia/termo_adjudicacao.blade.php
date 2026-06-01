@@ -166,7 +166,7 @@
                     RAZÃO SOCIAL
                 </td>
                 <td style="padding:6px;">
-                    {{ $processo->finalizacao->razao_social }}
+                    {{ $finalizacao->razao_social ?? '' }}
                 </td>
             </tr>
 
@@ -176,9 +176,7 @@
                     CNPJ
                 </td>
                 <td style="padding:6px;">
-                    {{ $processo->finalizacao->cnpj_empresa_vencedora }}
-                    {{-- {{ $vencedor->cnpj_formatado
-                        ?? preg_replace('/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/', '$1.$2.$3/$4-$5', $vencedor->cnpj) }} --}}
+                    {{ $finalizacao->cnpj_empresa_vencedora ?? '' }}
                 </td>
             </tr>
 
@@ -199,7 +197,7 @@
                     {!! strip_tags($processo->objeto) !!}
                 </td>
                 <td style="padding:6px; font-weight:bold;">
-                    {{ $processo->finalizacao->valor_total }}
+                    {{ $finalizacao->valor_total ?? '' }}
                 </td>
             </tr>
 
