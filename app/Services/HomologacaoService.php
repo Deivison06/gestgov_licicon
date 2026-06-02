@@ -43,6 +43,10 @@ class HomologacaoService
         'cargo_controle_interno',
         'merenda_escolar',
         'veiculos',
+        // Número da Ata de Registro de Preços: herda da Finalização para que o PDF da Ata
+        // continue mostrando o número mesmo nos processos antigos que preencheram o
+        // campo antes da migração para AtaRegistroPreco por vencedor.
+        'numero_ata_registro_precos',
     ];
 
     public function tiposPorHomologacao(): array

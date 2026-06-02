@@ -83,7 +83,7 @@
     <x-form-field name="impacto_ambiental" label="IMPACTOS AMBIENTAIS" type="textarea" rows="5" :ia="true" :iaProcessoId="$processo->id" />
 
     @elseif($campo === 'riscos_extra')
-    <x-form-field name="riscos_extra" label="RISCOS EXTRAS" type="textarea" rows="5" />
+    <x-form-field name="riscos_extra" label="RISCOS EXTRAS" type="textarea" rows="5" :ia="true" :iaProcessoId="$processo->id" />
 
     @elseif($campo === 'problema_resolvido')
     <x-form-field name="problema_resolvido" label="Problema Resumido" type="textarea" rows="5" :ia="true" :iaProcessoId="$processo->id" />
