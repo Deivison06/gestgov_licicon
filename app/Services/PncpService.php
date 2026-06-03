@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\PncpContratacaoCache;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Cache;
@@ -342,6 +343,83 @@ class PncpService
         });
     }
 
+    // =========================================================================
+    // CACHE LOCAL DE CONTRATAÇÕES (busca SQL + filtros combinados)
+    // =========================================================================
+
+    /**
+     * Busca contratações no cache local usando SQL.
+     * Permite combinar termo livre (LIKE em objeto) + todos os filtros sem restrições de endpoint.
+     * Retorna no mesmo formato de buscarContratacoesFiltradas para compatibilidade com o JS.
+     */
+    public function buscarNoCache(string $termo, array $filtros = [], int $pagina = 1, int $tamanho = 10): array
+    {
+        $query = PncpContratacaoCache::query();
+
+        if (!empty($filtros['modalidade'])) {
+            $query->where('modalidade_codigo', (int) $filtros['modalidade']);
+        }
+        if (!empty($filtros['uf'])) {
+            $query->where('uf', strtoupper($filtros['uf']));
+        }
+        if (!empty($filtros['situacao'])) {
+            $query->where('codigo_situacao_compra', (int) $filtros['situacao']);
+        }
+        if (!empty($filtros['data_inicial'])) {
+            $query->whereDate('data_publicacao_pncp', '>=', $filtros['data_inicial']);
+        }
+        if (!empty($filtros['data_final'])) {
+            $query->whereDate('data_publicacao_pncp', '<=', $filtros['data_final']);
+        }
+
+        if ($termo) {
+            $query->where('objeto', 'LIKE', '%' . $termo . '%');
+        }
+
+        $total = $query->count();
+
+        $contratacoes = $query
+            ->orderByDesc('data_publicacao_pncp')
+            ->forPage($pagina, $tamanho)
+            ->get();
+
+        return [
+            'data'           => $this->normalizarContratacoesDaCache($contratacoes),
+            'totalRegistros' => $total,
+            'totalPaginas'   => (int) ceil($total / $tamanho),
+            'paginaAtual'    => $pagina,
+            'modoFiltrado'   => true,
+            'viaCache'       => true,
+        ];
+    }
+
+    /**
+     * Retorna true se o cache local possui registros.
+     * Usa metadados em cache por 5 minutos para evitar consulta ao banco a cada request.
+     */
+    public function cacheEstaDisponivel(): bool
+    {
+        return Cache::remember('pncp_cache_disponivel', 300, function () {
+            return PncpContratacaoCache::exists();
+        });
+    }
+
+    /**
+     * Retorna estatísticas sobre o estado do cache local.
+     */
+    public function statusCache(): array
+    {
+        $ultimoSync = PncpContratacaoCache::max('synced_at');
+        $total      = PncpContratacaoCache::count();
+
+        return [
+            'ativo'              => $total > 0,
+            'total_contratacoes' => $total,
+            'ultimo_sync'        => $ultimoSync,
+            'defasado'           => $ultimoSync ? now()->diffInHours($ultimoSync) > 26 : true,
+        ];
+    }
+
     /**
      * Busca em Atas de Registro de Preço.
      * Implementação inicial — endpoint preparado para a próxima iteração.
@@ -364,6 +442,27 @@ class PncpService
     // =========================================================================
     // UTILITÁRIOS PRIVADOS
     // =========================================================================
+
+    private function normalizarContratacoesDaCache($contratacoes): array
+    {
+        return $contratacoes->map(function ($c) {
+            return [
+                'orgaoEntidade' => [
+                    'cnpj'        => $c->cnpj,
+                    'razaoSocial' => $c->orgao_nome ?? '',
+                ],
+                'anoCompra'            => $c->ano_compra,
+                'sequencialCompra'     => $c->sequencial_compra,
+                'modalidadeNome'       => $c->modalidade_nome ?? '',
+                'objeto'               => $c->objeto ?? '',
+                'dataPublicacaoPncp'   => $c->data_publicacao_pncp?->toDateString(),
+                'uf'                   => $c->uf ?? '',
+                'municipio'            => $c->municipio ?? '',
+                'valorTotalHomologado' => $c->valor_total_homologado,
+                'temResultado'         => $c->valor_total_homologado > 0,
+            ];
+        })->values()->toArray();
+    }
 
     private static function extrairMaterialOuServico(array $item): ?string
     {

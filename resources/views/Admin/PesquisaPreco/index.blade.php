@@ -39,10 +39,13 @@
             <h1 class="text-2xl font-bold text-gray-800">Análise de Mercado</h1>
             <p class="text-sm text-gray-500 mt-0.5">Pesquisa de Preços via PNCP — Portal Nacional de Contratações Públicas</p>
         </div>
-        <span class="inline-flex items-center gap-2 px-3 py-1.5 bg-green-50 text-green-700 text-xs font-bold rounded-full border border-green-200">
-            <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-            API PNCP Conectada
-        </span>
+        <div class="flex items-center gap-2">
+            <span id="pp_badge_cache" class="hidden inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-full border transition-all"></span>
+            <span class="inline-flex items-center gap-2 px-3 py-1.5 bg-green-50 text-green-700 text-xs font-bold rounded-full border border-green-200">
+                <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                API PNCP Conectada
+            </span>
+        </div>
     </div>
 
     {{-- ── BARRA DE PESQUISA ─────────────────────────────────────────── --}}
@@ -332,14 +335,18 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById(id)?.addEventListener('input', atualizarPreviewValor);
     });
 
-    // UF — re-filtra os resultados carregados imediatamente (sem nova busca)
+    // UF — re-busca no cache quando há termo ativo (cache filtra server-side por UF + termo)
+    // Fallback: se não há termo, re-filtra apenas os resultados em memória
     document.getElementById('pp_uf')?.addEventListener('change', () => {
-        if (metaAtual && todosItensCache.length > 0) {
+        const t = inputTermo.value.trim();
+        if (t.length >= 3) {
+            executarBusca(t, 1);
+        } else if (metaAtual && todosItensCache.length > 0) {
             renderizarItens(aplicarFiltrosLocais(todosItensCache), metaAtual);
         }
     });
 
-    // Modalidade — auto-preenche período (últimos 3 meses) quando datas estão vazias
+    // Modalidade — auto-preenche período (últimos 6 meses) quando datas estão vazias
     function toDateInput(d) {
         const p = n => String(n).padStart(2, '0');
         return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
@@ -351,10 +358,10 @@ document.addEventListener('DOMContentLoaded', function () {
         const badge    = document.getElementById('pp_data_auto_badge');
 
         if (this.value && !dataIni.value && !dataFim.value) {
-            const hoje        = new Date();
-            const tresMesesAtras = new Date(hoje);
-            tresMesesAtras.setMonth(hoje.getMonth() - 3);
-            dataIni.value = toDateInput(tresMesesAtras);
+            const hoje           = new Date();
+            const seisMesesAtras = new Date(hoje);
+            seisMesesAtras.setMonth(hoje.getMonth() - 6);
+            dataIni.value = toDateInput(seisMesesAtras);
             dataFim.value = toDateInput(hoje);
             badge?.classList.remove('hidden');
         } else if (!this.value) {
@@ -989,6 +996,32 @@ document.addEventListener('DOMContentLoaded', function () {
         inputTermo.value = PP_TERMO_INICIAL;
         executarBusca(PP_TERMO_INICIAL, 1);
     }
+
+    // ── Badge de status do cache local ───────────────────────────
+    (async function carregarStatusCache() {
+        try {
+            const resp = await fetch('{{ route('admin.pncp.cache.status') }}');
+            if (!resp.ok) return;
+            const status = await resp.json();
+            const badge  = document.getElementById('pp_badge_cache');
+            if (!badge) return;
+
+            if (!status.ativo) {
+                badge.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-full border bg-gray-50 text-gray-400 border-gray-200';
+                badge.title     = 'Execute: php artisan pncp:sincronizar --meses=6';
+                badge.innerHTML = '<span class="w-2 h-2 bg-gray-300 rounded-full"></span> Cache inativo';
+            } else if (status.defasado) {
+                badge.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-full border bg-yellow-50 text-yellow-700 border-yellow-300';
+                badge.title     = `Último sync: ${status.ultimo_sync ?? '—'} · ${status.total_contratacoes.toLocaleString('pt-BR')} contratos`;
+                badge.innerHTML = '<span class="w-2 h-2 bg-yellow-400 rounded-full"></span> Cache desatualizado';
+            } else {
+                badge.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-full border bg-blue-50 text-blue-700 border-blue-200';
+                badge.title     = `Último sync: ${status.ultimo_sync ?? '—'} · ${status.total_contratacoes.toLocaleString('pt-BR')} contratos`;
+                badge.innerHTML = `<span class="w-2 h-2 bg-blue-500 rounded-full"></span> Cache: ${status.total_contratacoes.toLocaleString('pt-BR')} contratos`;
+            }
+            badge.classList.remove('hidden');
+        } catch (_) { /* silencioso — cache status é informativo */ }
+    })();
 
 });
 </script>

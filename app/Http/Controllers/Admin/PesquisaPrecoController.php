@@ -136,6 +136,38 @@ class PesquisaPrecoController extends Controller
     }
 
     /**
+     * Salva uma pesquisa de preço de fornecedor local manualmente.
+     */
+    public function storeLocal(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'processo_id'     => 'required|integer|exists:processos,id',
+            'etp_item_id'     => 'nullable|integer|exists:etp_itens,id',
+            'descricao'       => 'required|string',
+            'valor_unitario'  => 'required|numeric|min:0',
+            'fornecedor_nome' => 'required|string',
+            'fornecedor_cnpj' => 'nullable|string',
+            'data_publicacao' => 'required|date',
+            'quantidade'      => 'nullable|numeric|min:0',
+            'unidade_medida'  => 'nullable|string',
+        ]);
+
+        // Preenche campos obrigatórios do PNCP com valores de identificação local
+        $data['orgao_nome']        = 'PREÇOS DO FORNECEDOR LOCAL';
+        $data['ano_compra']        = date('Y');
+        $data['sequencial_compra'] = 'LOCAL';
+        $data['orgao_cnpj']        = '00.000.000/0000-00';
+        $data['tipo_valor']        = 'estimado';
+        $data['valor_total']       = ($data['quantidade'] ?? 0) > 0
+            ? round($data['quantidade'] * $data['valor_unitario'], 4)
+            : null;
+
+        $item = PesquisaPrecoItem::create($data);
+
+        return response()->json(['success' => true, 'id' => $item->id], 201);
+    }
+
+    /**
      * Remove um item do relatório.
      */
     public function destroy(int $id): JsonResponse

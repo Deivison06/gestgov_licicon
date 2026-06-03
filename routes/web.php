@@ -526,6 +526,7 @@ Route::prefix('admin/pncp')->name('admin.pncp.')->middleware(['auth', 'verified'
     Route::get('/contratacao/{cnpj}/{ano}/{sequencial}', [PncpController::class, 'getContratacao'])->name('contratacao');
     Route::get('/contratacao/{cnpj}/{ano}/{sequencial}/itens/{item}/resultados', [PncpController::class, 'getResultadosItem'])->name('resultados_item');
     Route::get('/atas/search', [PncpController::class, 'buscarAtas'])->name('atas.search');
+    Route::get('/cache/status', [PncpController::class, 'cacheStatus'])->name('cache.status');
 });
 
 // ================================================
@@ -534,6 +535,7 @@ Route::prefix('admin/pncp')->name('admin.pncp.')->middleware(['auth', 'verified'
 Route::prefix('admin/pesquisa-preco')->name('admin.pesquisa_preco.')->middleware(['auth', 'verified'])->group(function () {
     Route::get('/', [PesquisaPrecoController::class, 'index'])->name('index');
     Route::post('/itens', [PesquisaPrecoController::class, 'store'])->name('itens.store');
+    Route::post('/itens/local', [PesquisaPrecoController::class, 'storeLocal'])->name('itens.storeLocal');
     Route::delete('/itens/{id}', [PesquisaPrecoController::class, 'destroy'])->name('itens.destroy');
     Route::get('/itens/processo/{processoId}', [PesquisaPrecoController::class, 'listarPorProcesso'])->name('itens.processo');
 });

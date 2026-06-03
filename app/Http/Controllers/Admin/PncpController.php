@@ -60,8 +60,8 @@ class PncpController extends Controller
 
     /**
      * Busca contratações para Pesquisa de Preço de Mercado.
-     * Modo textual (/api/search/): quando modalidade ou período estão ausentes.
-     * Modo filtrado (/consulta/v1): quando modalidade + data_inicial + data_final estão presentes.
+     * Prioriza cache local quando disponível (permite combinar termo + filtros sem limitações de endpoint).
+     * Fallback: modo filtrado (/consulta/v1) ou textual (/api/search/).
      */
     public function buscarMercado(Request $request): JsonResponse
     {
@@ -83,21 +83,36 @@ class PncpController extends Controller
             && !empty($filtros['data_inicial'])
             && !empty($filtros['data_final']);
 
+        $temFiltroAtivo = $modoFiltrado || !empty($filtros['situacao']) || !empty($filtros['uf']);
+        $usarCache      = $this->pncpService->cacheEstaDisponivel() && ($modoFiltrado || $temFiltroAtivo);
+
         Log::info('Busca PNCP Mercado', [
-            'termo'  => $termo,
-            'modo'   => $modoFiltrado ? 'filtrado' : 'textual',
+            'termo'   => $termo,
+            'modo'    => $usarCache ? 'cache_local' : ($modoFiltrado ? 'filtrado' : 'textual'),
             'user_id' => auth()->id(),
         ]);
 
-        $results = $modoFiltrado
-            ? $this->pncpService->buscarContratacoesFiltradas($termo, $filtros, $pagina)
-            : $this->pncpService->buscarContratacoesMercado($termo, $filtros, $pagina);
+        if ($usarCache) {
+            $results = $this->pncpService->buscarNoCache($termo, $filtros, $pagina);
+        } elseif ($modoFiltrado) {
+            $results = $this->pncpService->buscarContratacoesFiltradas($termo, $filtros, $pagina);
+        } else {
+            $results = $this->pncpService->buscarContratacoesMercado($termo, $filtros, $pagina);
+        }
 
         if (isset($results['error'])) {
             return response()->json(['success' => false, 'message' => $results['error']], 502);
         }
 
         return response()->json(['success' => true, 'data' => $results]);
+    }
+
+    /**
+     * Retorna o status atual do cache local de contratações PNCP.
+     */
+    public function cacheStatus(): JsonResponse
+    {
+        return response()->json($this->pncpService->statusCache());
     }
 
     /**

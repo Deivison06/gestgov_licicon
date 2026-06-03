@@ -99,7 +99,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                     </svg>
-                    Período preenchido automaticamente <strong class="font-semibold">(últimos 3 meses)</strong>. Ajuste as datas se necessário — períodos longos podem causar lentidão.
+                    Período preenchido automaticamente <strong class="font-semibold">(últimos 6 meses)</strong>. Ajuste as datas se necessário — períodos longos podem causar lentidão.
                 </div>
             </div>
 
@@ -179,7 +179,7 @@
         <div class="px-5 py-3 bg-gray-50 border-t border-gray-100 flex items-center justify-between gap-4">
             <p id="pp_filtro_nota" class="text-[10px] text-gray-400 leading-relaxed">
                 <strong class="text-blue-600">Modalidade</strong> ativa a consulta estruturada no PNCP (período preenchido automaticamente).
-                <strong>UF</strong> e <strong>Valor</strong> filtram os resultados carregados instantaneamente.
+                <strong>UF</strong> refaz a busca no cache local ao ser alterada. <strong>Valor</strong> filtra os resultados carregados instantaneamente.
             </p>
             <div class="flex items-center gap-2 flex-shrink-0">
                 <button type="button" id="pp_btn_limpar_filtros"

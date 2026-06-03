@@ -284,6 +284,13 @@
                     <p class="text-xs text-gray-400 mt-0.5">Estes itens já foram selecionados e compõem o seu relatório de preços.</p>
                 </div>
                 <div class="flex items-center gap-3">
+                    <button onclick="abrirModalLocal()"
+                            class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 text-white text-xs font-bold rounded-lg hover:bg-amber-600 transition-all shadow-sm">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                        </svg>
+                        Adicionar Cotação Local
+                    </button>
                     @if($itensColetados->isNotEmpty())
                         <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">
                             {{ $itensColetados->count() }} {{ Str::plural('referência', $itensColetados->count()) }}
@@ -323,8 +330,14 @@
                                 </td>
                                 <td class="px-4 py-3.5">
                                     <div class="flex flex-col">
-                                        <span class="text-gray-700">{{ Str::limit($itemC->orgao_nome, 40) }}</span>
-                                        <span class="text-[10px] font-bold text-gray-400">{{ $itemC->uf }}</span>
+                                        @if($itemC->orgao_nome === 'PREÇOS DO FORNECEDOR LOCAL')
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700 w-fit">
+                                                FORNECEDOR LOCAL
+                                            </span>
+                                        @else
+                                            <span class="text-gray-700">{{ Str::limit($itemC->orgao_nome, 40) }}</span>
+                                            <span class="text-[10px] font-bold text-gray-400">{{ $itemC->uf }}</span>
+                                        @endif
                                     </div>
                                 </td>
                                 <td class="px-4 py-3.5 text-center text-gray-500">
@@ -412,5 +425,124 @@
             alert('Erro de conexão ao tentar remover o item.');
         }
     }
+
+    function abrirModalLocal() {
+        document.getElementById('modal-cotacao-local').classList.remove('hidden');
+    }
+
+    function fecharModalLocal() {
+        document.getElementById('modal-cotacao-local').classList.add('hidden');
+    }
+
+    async function salvarCotacaoLocal() {
+        const select = document.getElementById('local_etp_item_id');
+        const opt = select.options[select.selectedIndex];
+        
+        const data = {
+            processo_id: '{{ $processo->id }}',
+            etp_item_id: select.value || null,
+            descricao: opt.dataset.descricao || '',
+            fornecedor_nome: document.getElementById('local_fornecedor_nome').value,
+            fornecedor_cnpj: document.getElementById('local_fornecedor_cnpj').value,
+            valor_unitario: document.getElementById('local_valor_unitario').value,
+            data_publicacao: document.getElementById('local_data_publicacao').value,
+            _token: '{{ csrf_token() }}'
+        };
+
+        if (!data.descricao || !data.fornecedor_nome || !data.valor_unitario || !data.data_publicacao) {
+            alert('Por favor, preencha todos os campos obrigatórios.');
+            return;
+        }
+
+        try {
+            const response = await fetch('{{ route("admin.pesquisa_preco.itens.storeLocal") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                window.location.reload();
+            } else {
+                alert('Erro ao salvar: ' + (result.message || 'Verifique os dados informados.'));
+            }
+        } catch (error) {
+            console.error('Erro:', error);
+            alert('Erro de conexão ao salvar a cotação.');
+        }
+    }
 </script>
+
+{{-- Modal de Cotação Local --}}
+<div id="modal-cotacao-local" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="fecharModalLocal()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-amber-100 sm:mx-0 sm:h-10 sm:w-10">
+                        <svg class="h-6 w-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                        </svg>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                        <h3 class="text-lg leading-6 font-bold text-gray-900" id="modal-title">Adicionar Cotação Local</h3>
+                        <div class="mt-4 space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Item do Processo</label>
+                                <select id="local_etp_item_id" class="w-full border-gray-300 rounded-lg text-sm focus:ring-amber-500 focus:border-amber-500">
+                                    <option value="">Selecione um item...</option>
+                                    @foreach($itens as $i)
+                                        <option value="{{ $i['id'] ?? '' }}" data-descricao="{{ $i['descricao'] }}">
+                                            {{ Str::limit($i['descricao'], 60) }} ({{ $i['unidade'] ?? 'und' }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Fornecedor (Razão Social)</label>
+                                    <input type="text" id="local_fornecedor_nome" class="w-full border-gray-300 rounded-lg text-sm" placeholder="Ex: Comercial Silva Ltda">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-700 uppercase mb-1">CNPJ (Opcional)</label>
+                                    <input type="text" id="local_fornecedor_cnpj" class="w-full border-gray-300 rounded-lg text-sm" placeholder="00.000.000/0000-00">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Valor Unitário</label>
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <span class="text-gray-500 sm:text-sm">R$</span>
+                                        </div>
+                                        <input type="number" step="0.0001" id="local_valor_unitario" class="w-full pl-10 border-gray-300 rounded-lg text-sm" placeholder="0,00">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Data da Cotação</label>
+                                    <input type="date" id="local_data_publicacao" class="w-full border-gray-300 rounded-lg text-sm" value="{{ date('Y-m-d') }}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button type="button" onclick="salvarCotacaoLocal()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-amber-600 text-base font-medium text-white hover:bg-amber-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm transition-colors">
+                    Salvar Cotação
+                </button>
+                <button type="button" onclick="fecharModalLocal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
