@@ -26,7 +26,7 @@
                 </p>
             </div>
         </div>
-        <a href="{{ url()->previous() }}"
+        <a href="{{ route('admin.processos.iniciar', $processo->id) }}"
             class="flex-shrink-0 px-4 py-2 bg-white/20 hover:bg-white/30 text-white text-xs font-bold rounded-lg border border-white/30 transition-all">
             ← Voltar ao Processo
         </a>

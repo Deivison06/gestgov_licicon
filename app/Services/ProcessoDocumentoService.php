@@ -87,7 +87,7 @@ class ProcessoDocumentoService
             'titulo' => 'ANÁLISE DE MERCADO (PESQUISA DE PREÇOS)',
             'cor' => '#22C55E',
             'data_id' => 'data_analise_mercado',
-            'campos' => ['painel_preco_tce', 'anexo_pdf_analise_mercado'],
+            'campos' => ['tipo_relatorio_analise_mercado', 'painel_preco_tce', 'anexo_pdf_analise_mercado'],
         ],
         'disponibilidade_orçamento' => [
             'titulo' => 'DISPONIBILIDADE ORÇAMENTÁRIA',

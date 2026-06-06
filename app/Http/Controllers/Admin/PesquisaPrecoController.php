@@ -168,6 +168,42 @@ class PesquisaPrecoController extends Controller
     }
 
     /**
+     * Salva múltiplas cotações locais de uma vez (modal batch da Cesta de Preços).
+     */
+    public function storeLocalBatch(Request $request): JsonResponse
+    {
+        $request->validate([
+            'processo_id' => 'required|integer|exists:processos,id',
+            'itens'       => 'required|array',
+            'itens.*.etp_item_id'   => 'nullable|integer',
+            'itens.*.descricao'     => 'required|string',
+            'itens.*.valor_unitario' => 'required|numeric|min:0',
+            'itens.*.fornecedor_nome' => 'required|string',
+        ]);
+
+        $processoId = $request->input('processo_id');
+        $created = 0;
+
+        foreach ($request->input('itens') as $item) {
+            PesquisaPrecoItem::create([
+                'processo_id'      => $processoId,
+                'etp_item_id'      => $item['etp_item_id'] ?? null,
+                'descricao'        => $item['descricao'],
+                'valor_unitario'   => $item['valor_unitario'],
+                'fornecedor_nome'  => $item['fornecedor_nome'],
+                'orgao_nome'       => 'PREÇOS DO FORNECEDOR LOCAL',
+                'ano_compra'       => date('Y'),
+                'sequencial_compra' => 'LOCAL',
+                'orgao_cnpj'       => '00.000.000/0000-00',
+                'tipo_valor'       => 'estimado',
+            ]);
+            $created++;
+        }
+
+        return response()->json(['success' => true, 'created' => $created], 201);
+    }
+
+    /**
      * Remove um item do relatório.
      */
     public function destroy(int $id): JsonResponse

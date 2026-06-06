@@ -300,18 +300,16 @@ class ProcessoPdfService
 
     public function prepararDadosPdf(Processo $processo, array $validatedData): array
     {
-        $processo->load(['detalhe', 'prefeitura', 'etp.itens', 'etp.lotes.itens']);
+        $processo->load(['detalhe', 'prefeitura', 'etp.itens', 'etp.lotes.itens', 'pesquisaPrecoItens']);
 
         // Se houver um ETP vinculado, priorizamos os dados dinâmicos do ETP para as tabelas de itens
         if ($processo->etp) {
             $itensDinamicos = $processo->etp->transformarItensParaFormatoPdf();
-            
-            // Injetamos os itens dinâmicos nas variáveis de detalhe para que a view não perceba a diferença
+
             if ($processo->detalhe) {
-                // Sobrescrevemos as colunas de itens apenas em memória para a geração do PDF
-                $processo->detalhe->itens_e_seus_quantitativos_xml = $itensDinamicos;
-                $processo->detalhe->descricao_e_quantitativos_itens_xml = $itensDinamicos;
-                $processo->detalhe->itens_especificaca_quantitativos_xml = $itensDinamicos;
+                $processo->detalhe->itens_e_seus_quantitativos_xml        = $itensDinamicos;
+                $processo->detalhe->descricao_e_quantitativos_itens_xml   = $itensDinamicos;
+                $processo->detalhe->itens_especificaca_quantitativos_xml  = $this->construirItensTr($processo, $itensDinamicos);
             }
         }
 
@@ -1116,6 +1114,78 @@ class ProcessoPdfService
                 'erro' => $e->getMessage()
             ]);
         }
+    }
+
+    private function construirItensTr(Processo $processo, array $itensDinamicos): array
+    {
+        $detalhe       = $processo->detalhe;
+        $tipoRelatorio = $detalhe->tipo_relatorio_analise_mercado ?? 'tce';
+
+        // Mapa principal: etp_item_id (int) => valor_unitario (float)
+        $precoMapId = [];
+
+        if ($tipoRelatorio === 'tce') {
+            foreach ($detalhe->painel_preco_tce ?? [] as $p) {
+                if (!empty($p['etp_item_id']) && ($p['media'] ?? '') !== '') {
+                    $media = (float) str_replace(',', '.', str_replace('.', '', $p['media']));
+                    if ($media > 0) {
+                        $precoMapId[(int) $p['etp_item_id']] = $media;
+                    }
+                }
+            }
+        } elseif ($tipoRelatorio === 'fornecedor_local') {
+            foreach ($detalhe->fornecedor_local_precos ?? [] as $p) {
+                if (empty($p['etp_item_id'])) continue;
+                $vals = array_filter(
+                    [$p['f1_preco'] ?? null, $p['f2_preco'] ?? null, $p['f3_preco'] ?? null],
+                    fn($v) => $v !== null && $v !== ''
+                );
+                $avg = count($vals) > 0 ? array_sum($vals) / count($vals) : 0;
+                if ($avg > 0) {
+                    $precoMapId[(int) $p['etp_item_id']] = $avg;
+                }
+            }
+        } else {
+            // pncp / cesta_preco — usa etp_item_id do PesquisaPrecoItem
+            foreach ($processo->pesquisaPrecoItens->groupBy('etp_item_id') as $etpItemId => $grupo) {
+                if ($etpItemId) {
+                    $precoMapId[(int) $etpItemId] = $grupo->avg('valor_unitario');
+                }
+            }
+        }
+
+        $etp    = $processo->etp;
+        $result = [];
+        $fmt    = fn($v) => $v > 0 ? 'R$ ' . number_format($v, 2, ',', '.') : '';
+
+        $processarItem = function ($item) use ($precoMapId, $fmt, &$result) {
+            $valorUnitario = $precoMapId[$item->id] ?? 0;
+            $quantidade    = (float) ($item->pivot->quantidade ?? 0);
+            $valorTotal    = $valorUnitario > 0 ? $valorUnitario * $quantidade : 0;
+
+            $result[] = [
+                'item'           => $item->descricao_item,
+                'especificacoes' => $item->descricao_item,
+                'unidade'        => $item->pivot->unidade ?? '',
+                'quantidade'     => $item->pivot->quantidade ?? '',
+                'valor_unitario' => $fmt($valorUnitario),
+                'valor_total'    => $fmt($valorTotal),
+            ];
+        };
+
+        if ($etp->tipo_contratacao === 'lote') {
+            foreach ($etp->lotes as $lote) {
+                foreach ($lote->itens as $item) {
+                    $processarItem($item);
+                }
+            }
+        } else {
+            foreach ($etp->itens as $item) {
+                $processarItem($item);
+            }
+        }
+
+        return $result;
     }
 
     private function formatarNomeArquivo(string $nome): string

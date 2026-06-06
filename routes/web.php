@@ -289,6 +289,18 @@ Route::prefix('admin')
 
             Route::get('/pesquisa-preco-itens', [ProcessoController::class, 'pesquisaPrecoItens'])
                 ->name('processos.pesquisa_preco_itens');
+
+            Route::get('/pesquisa-preco-fornecedor-local', [ProcessoController::class, 'pesquisaPrecoFornecedorLocal'])
+                ->name('processos.pesquisa_preco_fornecedor_local');
+
+            Route::post('/pesquisa-preco-fornecedor-local', [ProcessoController::class, 'salvarFornecedorLocalPrecos'])
+                ->name('processos.pesquisa_preco_fornecedor_local.store');
+
+            Route::get('/pesquisa-preco-tce', [ProcessoController::class, 'pesquisaPrecoTce'])
+                ->name('processos.pesquisa_preco_tce');
+
+            Route::post('/pesquisa-preco-tce', [ProcessoController::class, 'salvarTcePrecos'])
+                ->name('processos.pesquisa_preco_tce.store');
         });
 
         // ========================================
@@ -536,6 +548,7 @@ Route::prefix('admin/pesquisa-preco')->name('admin.pesquisa_preco.')->middleware
     Route::get('/', [PesquisaPrecoController::class, 'index'])->name('index');
     Route::post('/itens', [PesquisaPrecoController::class, 'store'])->name('itens.store');
     Route::post('/itens/local', [PesquisaPrecoController::class, 'storeLocal'])->name('itens.storeLocal');
+    Route::post('/itens/local-batch', [PesquisaPrecoController::class, 'storeLocalBatch'])->name('itens.storeLocalBatch');
     Route::delete('/itens/{id}', [PesquisaPrecoController::class, 'destroy'])->name('itens.destroy');
     Route::get('/itens/processo/{processoId}', [PesquisaPrecoController::class, 'listarPorProcesso'])->name('itens.processo');
 });

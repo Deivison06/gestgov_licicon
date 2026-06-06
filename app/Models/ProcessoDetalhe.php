@@ -50,6 +50,8 @@ class ProcessoDetalhe extends Model
         'encaminhamento_pesquisa_preco',
         'encaminhamento_doacao_orcamentaria',
         'painel_preco_tce',
+        'tipo_relatorio_analise_mercado',
+        'fornecedor_local_precos',
         'anexo_pdf_analise_mercado',
 
         'encaminhamento_elaborar_editais',
@@ -122,6 +124,8 @@ class ProcessoDetalhe extends Model
         'prazo_final_prestacao_servico' => 'datetime:Y-m-d H:i:s',
         'instrumento_vinculativo' => 'array',
         'prazo_vigencia' => 'array',
+        'fornecedor_local_precos' => 'array',
+        'painel_preco_tce' => 'array',
         'itens_e_seus_quantitativos_xml' => 'array',
         'descricao_e_quantitativos_itens_xml' => 'array',
         'itens_especificaca_quantitativos_xml' => 'array',

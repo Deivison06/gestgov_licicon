@@ -235,13 +235,45 @@
     {{-- Campos File --}}
     {{-- ATUALIZADO: Agora inclui DISPENSA também --}}
     @elseif($campo === 'itens_e_seus_quantitativos_xml' && ($processo->modalidade === \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO || $processo->modalidade === \App\Enums\ModalidadeEnum::DISPENSA))
-    <x-form-field name="itens_e_seus_quantitativos_xml" label="📦 Itens e Seus Quantitativos" type="file" accept=".xml, .xlsx, .xls, .csv" />
+    @if($processo->etp)
+        <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3">
+            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                <i class="fas fa-link text-sm"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-xs font-bold text-emerald-900">ETP Inteligente Vinculado</p>
+                <p class="text-xs text-emerald-700">Os itens e quantitativos são fornecidos automaticamente pelo ETP. O upload de XLS está desabilitado.</p>
+            </div>
+            <a href="{{ route('admin.etps.show', $processo->etp->id) }}" target="_blank"
+               class="flex-shrink-0 inline-flex items-center px-3 py-1.5 text-xs font-bold text-blue-700 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 transition-all shadow-sm">
+                <i class="fas fa-eye mr-1.5"></i> Ver ETP
+            </a>
+        </div>
+    @else
+        <x-form-field name="itens_e_seus_quantitativos_xml" label="📦 Itens e Seus Quantitativos" type="file" accept=".xml, .xlsx, .xls, .csv" />
+    @endif
 
     @elseif($campo === 'projeto_basico_pdf')
     <x-form-field name="projeto_basico_pdf" label="📎 Anexar PDF Projeto Básico" type="file" accept="application/pdf" />
 
     @elseif($campo === 'itens_especificaca_quantitativos_xml')
-    <x-form-field name="itens_especificaca_quantitativos_xml" label="📦 Itens e Seus quantitativos e especificações" type="file" accept=".xml, .xlsx, .xls, .csv" />
+    @if($processo->etp)
+        <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3">
+            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                <i class="fas fa-link text-sm"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-xs font-bold text-emerald-900">ETP Inteligente Vinculado</p>
+                <p class="text-xs text-emerald-700">As especificações e quantitativos serão gerenciados pelo ETP. O upload de XLS está desabilitado.</p>
+            </div>
+            <a href="{{ route('admin.etps.show', $processo->etp->id) }}" target="_blank"
+               class="flex-shrink-0 inline-flex items-center px-3 py-1.5 text-xs font-bold text-blue-700 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 transition-all shadow-sm">
+                <i class="fas fa-eye mr-1.5"></i> Ver ETP
+            </a>
+        </div>
+    @else
+        <x-form-field name="itens_especificaca_quantitativos_xml" label="📦 Itens e Seus quantitativos e especificações" type="file" accept=".xml, .xlsx, .xls, .csv" />
+    @endif
 
     @elseif($campo === 'descricao_e_quantitativos_itens_xml')
     <div class="space-y-3">
@@ -430,80 +462,129 @@
     @elseif($campo === 'info_extras')
     <x-form-field name="info_extras" label="Informações Extras" type="textarea" rows="5" />
 
-    @elseif($campo === 'painel_preco_tce')
-    <div class="space-y-2">
+    @elseif($campo === 'tipo_relatorio_analise_mercado')
+    <div class="space-y-3">
+        <div class="flex items-center justify-between mb-1">
+            <label class="block text-xs font-bold text-gray-700 uppercase">Tipo de Relatório</label>
+            <span x-show="confirmed.tipo_relatorio_analise_mercado" class="inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold rounded-full">
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                Salvo
+            </span>
+        </div>
+        <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            @foreach(['tce' => 'Painel TCE', 'fornecedor_local' => 'Fornecedor Local', 'cesta_preco' => 'Cesta de Preços', 'pncp' => 'PNCP'] as $valor => $label)
+            <label class="flex items-center gap-2 p-3 border rounded-lg cursor-pointer transition-colors"
+                   :class="tipo_relatorio_analise_mercado === '{{ $valor }}' ? 'bg-blue-50 border-blue-400 text-blue-800' : 'bg-white border-gray-200 hover:bg-gray-50'">
+                <input type="radio"
+                       name="tipo_relatorio_analise_mercado"
+                       value="{{ $valor }}"
+                       x-model="tipo_relatorio_analise_mercado"
+                       @change="saveField('tipo_relatorio_analise_mercado')"
+                       class="sr-only">
+                <span class="text-xs font-semibold">{{ $label }}</span>
+            </label>
+            @endforeach
+        </div>
+
+        {{-- Links contextuais conforme tipo selecionado --}}
+        <div x-show="tipo_relatorio_analise_mercado === 'fornecedor_local'" x-cloak class="mt-2">
+            <a href="{{ route('admin.processos.pesquisa_preco_fornecedor_local', $processo->id) }}"
+               target="_blank"
+               class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition-all">
+                <i class="fas fa-store mr-1"></i> Inserir preços de fornecedores locais
+            </a>
+            @php $countFl = !empty($processo->detalhe?->fornecedor_local_precos) ? count($processo->detalhe->fornecedor_local_precos) : 0; @endphp
+            @if($countFl > 0)
+            <span class="ml-2 inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 text-amber-700 text-xs font-bold rounded-full border border-amber-200">
+                <i class="fas fa-check-circle"></i> {{ $countFl }} {{ Str::plural('item', $countFl) }} com preços
+            </span>
+            @endif
+        </div>
+
+        {{-- Link TCE (apenas quando tipo = tce e ETP vinculado) --}}
         @if($processo->etp)
-            <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-xl shadow-sm">
-                <div class="flex items-start justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
-                            <i class="fas fa-link text-lg"></i>
-                        </div>
-                        <div>
-                            <h5 class="text-sm font-bold text-emerald-900">ETP Inteligente Vinculado</h5>
-                            <p class="text-xs text-emerald-700 font-medium">
-                                Identificador: <span class="font-bold">ETP-{{ str_pad($processo->etp->id, 4, '0', STR_PAD_LEFT) }}/{{ $processo->etp->created_at->format('Y') }}</span>
-                            </p>
-                        </div>
+        <div x-show="tipo_relatorio_analise_mercado === 'tce' || !tipo_relatorio_analise_mercado" x-cloak class="mt-2">
+            <a href="{{ route('admin.processos.pesquisa_preco_tce', $processo->id) }}"
+               target="_blank"
+               class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-all">
+                <i class="fas fa-balance-scale mr-1"></i> Inserir preços TCE
+            </a>
+            @php $countTceLink = !empty($processo->detalhe?->painel_preco_tce) ? count($processo->detalhe->painel_preco_tce) : 0; @endphp
+            @if($countTceLink > 0)
+            <span class="ml-2 inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 text-xs font-bold rounded-full border border-blue-200">
+                <i class="fas fa-check-circle"></i> {{ $countTceLink }} {{ Str::plural('item', $countTceLink) }} com preços
+            </span>
+            @endif
+        </div>
+        @endif
+
+        <div x-show="['cesta_preco', 'pncp'].includes(tipo_relatorio_analise_mercado)" x-cloak class="mt-2">
+            <a href="{{ route('admin.processos.pesquisa_preco_itens', $processo->id) }}"
+               target="_blank"
+               class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-all">
+                <i class="fas fa-search mr-1.5"></i> Pesquisar preços no PNCP
+            </a>
+            @php $countPesq = $processo->pesquisaPrecoItens()->where('orgao_nome', '!=', 'PREÇOS DO FORNECEDOR LOCAL')->count(); @endphp
+            @if($countPesq > 0)
+            <span class="ml-2 inline-flex items-center gap-1 px-2.5 py-1 bg-green-50 text-green-700 text-xs font-bold rounded-full border border-green-200">
+                <i class="fas fa-check-circle"></i> {{ $countPesq }} {{ Str::plural('referência', $countPesq) }} PNCP
+            </span>
+            @endif
+        </div>
+
+        {{-- Card completo do ETP vinculado — visível em todos os tipos de relatório --}}
+        @if($processo->etp)
+        @php
+            $isLoteRelatorio  = $processo->etp->tipo_contratacao === 'lote';
+            $etpItensRelatorio = $processo->etp->all_itens;
+        @endphp
+        <div class="mt-3 p-4 bg-emerald-50 border border-emerald-200 rounded-xl shadow-sm">
+            <div class="flex items-start justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                        <i class="fas fa-link text-lg"></i>
                     </div>
-                    <div class="flex gap-2">
-                        <a href="{{ route('admin.processos.pesquisa_preco_itens', $processo->id) }}"
-                           target="_blank"
-                           class="inline-flex items-center px-3 py-1.5 text-xs font-bold text-white bg-blue-600 border border-blue-600 rounded-lg hover:bg-blue-700 transition-all shadow-sm">
-                            <i class="fas fa-search mr-1.5"></i> Pesquisar preços
-                        </a>
+                    <div>
+                        <h5 class="text-sm font-bold text-emerald-900">ETP Inteligente Vinculado</h5>
+                        <p class="text-xs text-emerald-700 font-medium">
+                            Identificador: <span class="font-bold">ETP-{{ str_pad($processo->etp->id, 4, '0', STR_PAD_LEFT) }}/{{ $processo->etp->created_at->format('Y') }}</span>
+                        </p>
                     </div>
                 </div>
-                
-                <div class="mt-3 pt-3 border-t border-emerald-100">
-                    <p class="text-xs text-emerald-800">
-                        <i class="fas fa-info-circle mr-1"></i> Os itens deste ETP já estão disponíveis para a pesquisa de preços.
-                    </p>
-                    
-                    {{-- Expandir/recolher itens do ETP --}}
-                    @php
-                        $isLoteTce = $processo->etp->tipo_contratacao === 'lote';
-                        $etpItensTce = $processo->etp->all_itens;
-                    @endphp
-                    @if($etpItensTce->count() > 0)
-                    <div x-data="{ openEtpItens: false }" class="mt-2">
-                        <button type="button" @click="openEtpItens = !openEtpItens"
-                                class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 hover:text-emerald-900 transition-colors">
-                            <i :class="openEtpItens ? 'fa-chevron-up' : 'fa-chevron-down'" class="fas text-[9px]"></i>
-                            <span x-text="openEtpItens ? 'Recolher itens' : 'Ver {{ $etpItensTce->count() }} {{ $etpItensTce->count() === 1 ? 'item' : 'itens' }} {{ $isLoteTce ? '(distribuídos em lotes)' : '' }}'"></span>
-                        </button>
+                <a href="{{ route('admin.etps.show', $processo->etp->id) }}" target="_blank"
+                   class="inline-flex items-center px-3 py-1.5 text-xs font-bold text-blue-700 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 transition-all shadow-sm">
+                    <i class="fas fa-eye mr-1.5"></i> Ver ETP
+                </a>
+            </div>
 
-                        <div x-show="openEtpItens" x-transition class="mt-2 overflow-x-auto rounded-lg border border-emerald-200">
-                            <table class="w-full text-xs text-left">
-                                <thead class="bg-emerald-100 text-emerald-800 uppercase text-[10px] font-bold">
-                                    <tr>
-                                        <th class="px-2 py-1.5 w-8 text-center">#</th>
-                                        <th class="px-2 py-1.5">Descrição</th>
-                                        <th class="px-2 py-1.5 w-16 text-center">Und.</th>
-                                        <th class="px-2 py-1.5 w-20 text-right">Qtd.</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-emerald-50">
-                                    @if($isLoteTce)
-                                        @foreach($processo->etp->lotes as $lote)
-                                            <tr class="bg-emerald-50/80">
-                                                <td colspan="4" class="px-2 py-1.5 font-bold text-emerald-900 border-y border-emerald-100">
-                                                    <i class="fas fa-layer-group mr-1"></i> Lote: {{ $lote->nome }}
-                                                </td>
-                                            </tr>
-                                            @foreach($lote->itens as $idx => $item)
-                                            <tr class="bg-white hover:bg-emerald-50/50">
-                                                <td class="px-2 py-1.5 text-center">
-                                                    <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold">{{ $idx + 1 }}</span>
-                                                </td>
-                                                <td class="px-2 py-1.5 text-gray-700">{{ $item->descricao_item }}</td>
-                                                <td class="px-2 py-1.5 text-center text-gray-500">{{ $item->pivot->unidade ?? '-' }}</td>
-                                                <td class="px-2 py-1.5 text-right font-medium text-gray-700">{{ $item->pivot->quantidade }}</td>
-                                            </tr>
-                                            @endforeach
-                                        @endforeach
-                                    @else
-                                        @foreach($etpItensTce as $idx => $item)
+            @if($etpItensRelatorio->count() > 0)
+            <div class="mt-3 pt-3 border-t border-emerald-100">
+                <div x-data="{ openEtpRelatorio: false }">
+                    <button type="button" @click="openEtpRelatorio = !openEtpRelatorio"
+                            class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 hover:text-emerald-900 transition-colors">
+                        <i :class="openEtpRelatorio ? 'fa-chevron-up' : 'fa-chevron-down'" class="fas text-[9px]"></i>
+                        <span x-text="openEtpRelatorio ? 'Recolher itens' : 'Ver {{ $etpItensRelatorio->count() }} {{ $etpItensRelatorio->count() === 1 ? 'item' : 'itens' }} {{ $isLoteRelatorio ? '(distribuídos em lotes)' : '' }}'"></span>
+                    </button>
+
+                    <div x-show="openEtpRelatorio" x-transition class="mt-2 overflow-x-auto rounded-lg border border-emerald-200">
+                        <table class="w-full text-xs text-left">
+                            <thead class="bg-emerald-100 text-emerald-800 uppercase text-[10px] font-bold">
+                                <tr>
+                                    <th class="px-2 py-1.5 w-8 text-center">#</th>
+                                    <th class="px-2 py-1.5">Descrição</th>
+                                    <th class="px-2 py-1.5 w-16 text-center">Und.</th>
+                                    <th class="px-2 py-1.5 w-20 text-right">Qtd.</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-emerald-50">
+                                @if($isLoteRelatorio)
+                                    @foreach($processo->etp->lotes as $lote)
+                                        <tr class="bg-emerald-50/80">
+                                            <td colspan="4" class="px-2 py-1.5 font-bold text-emerald-900 border-y border-emerald-100">
+                                                <i class="fas fa-layer-group mr-1"></i> Lote: {{ $lote->nome }}
+                                            </td>
+                                        </tr>
+                                        @foreach($lote->itens as $idx => $item)
                                         <tr class="bg-white hover:bg-emerald-50/50">
                                             <td class="px-2 py-1.5 text-center">
                                                 <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold">{{ $idx + 1 }}</span>
@@ -513,26 +594,56 @@
                                             <td class="px-2 py-1.5 text-right font-medium text-gray-700">{{ $item->pivot->quantidade }}</td>
                                         </tr>
                                         @endforeach
-                                    @endif
-                                </tbody>
-                                <tfoot>
-                                    <tr class="bg-emerald-50 border-t border-emerald-200">
-                                        <td colspan="3" class="px-2 py-1.5 text-[10px] text-emerald-700 font-semibold uppercase">Total Geral</td>
-                                        <td class="px-2 py-1.5 text-right text-xs font-bold text-emerald-700">{{ $etpItensTce->count() }}</td>
+                                    @endforeach
+                                @else
+                                    @foreach($etpItensRelatorio as $idx => $item)
+                                    <tr class="bg-white hover:bg-emerald-50/50">
+                                        <td class="px-2 py-1.5 text-center">
+                                            <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold">{{ $idx + 1 }}</span>
+                                        </td>
+                                        <td class="px-2 py-1.5 text-gray-700">{{ $item->descricao_item }}</td>
+                                        <td class="px-2 py-1.5 text-center text-gray-500">{{ $item->pivot->unidade ?? '-' }}</td>
+                                        <td class="px-2 py-1.5 text-right font-medium text-gray-700">{{ $item->pivot->quantidade }}</td>
                                     </tr>
-                                </tfoot>
-                            </table>
-                        </div>
+                                    @endforeach
+                                @endif
+                            </tbody>
+                            <tfoot>
+                                <tr class="bg-emerald-50 border-t border-emerald-200">
+                                    <td colspan="3" class="px-2 py-1.5 text-[10px] text-emerald-700 font-semibold uppercase">Total Geral</td>
+                                    <td class="px-2 py-1.5 text-right text-xs font-bold text-emerald-700">{{ $etpItensRelatorio->count() }}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
                     </div>
-                    @endif
                 </div>
             </div>
-            
-            @php $countPncp = $processo->pesquisaPrecoItens()->count(); @endphp
-            @if($countPncp > 0)
-            <div class="mt-2 text-xs font-medium text-green-700 flex items-center gap-1.5">
+            @endif
+        </div>
+        @endif
+    </div>
+
+    @elseif($campo === 'painel_preco_tce')
+    <div x-show="tipo_relatorio_analise_mercado === 'tce' || !tipo_relatorio_analise_mercado" x-cloak>
+    <div class="space-y-2">
+        @if($processo->etp)
+            <div class="flex flex-wrap gap-2">
+                <a href="{{ route('admin.processos.pesquisa_preco_tce', $processo->id) }}"
+                   target="_blank"
+                   class="inline-flex items-center px-3 py-1.5 text-xs font-bold text-white bg-blue-600 border border-blue-600 rounded-lg hover:bg-blue-700 transition-all shadow-sm">
+                    <i class="fas fa-balance-scale mr-1.5"></i> Inserir preços TCE
+                </a>
+                <a href="{{ route('admin.processos.pesquisa_preco_itens', $processo->id) }}"
+                   target="_blank"
+                   class="inline-flex items-center px-3 py-1.5 text-xs font-bold text-blue-700 bg-white border border-blue-300 rounded-lg hover:bg-blue-50 transition-all shadow-sm">
+                    <i class="fas fa-search mr-1.5"></i> Pesquisar no PNCP
+                </a>
+            </div>
+            @php $countTce = !empty($processo->detalhe?->painel_preco_tce) ? count($processo->detalhe->painel_preco_tce) : 0; @endphp
+            @if($countTce > 0)
+            <div class="text-xs font-medium text-blue-700 flex items-center gap-1.5">
                 <i class="fas fa-check-circle"></i>
-                {{ $countPncp }} {{ Str::plural('referência', $countPncp) }} de preço já {{ Str::plural('coletada', $countPncp) }} no PNCP.
+                {{ $countTce }} {{ Str::plural('item', $countTce) }} com preços TCE preenchidos.
             </div>
             @endif
         @else
@@ -562,11 +673,40 @@
             </div>
         @endif
     </div>
+    </div>{{-- /x-show tce --}}
 
     @elseif($campo === 'anexo_pdf_analise_mercado')
-    @if(!$processo->etp)
-    <x-form-field name="anexo_pdf_analise_mercado" label="📎 Anexar PDF à Análise de Mercado" type="file" accept="application/pdf" />
-    @endif
+    <div x-show="tipo_relatorio_analise_mercado !== 'pncp'" x-cloak>
+        <div class="flex items-start mb-4 space-x-2">
+            <div class="flex-1">
+                <div class="flex items-center justify-between mb-1">
+                    <label for="anexo_pdf_analise_mercado" class="block text-sm font-medium text-gray-700">
+                        <span x-text="{
+                            'tce':             '📎 Anexar PDF — Painel TCE',
+                            'fornecedor_local':'📎 Anexar PDF — Fornecedor Local',
+                            'cesta_preco':     '📎 Anexar PDF — Cesta de Preços'
+                        }[tipo_relatorio_analise_mercado] || '📎 Anexar PDF à Análise de Mercado'"></span>
+                    </label>
+                </div>
+                <input type="file"
+                       id="anexo_pdf_analise_mercado"
+                       name="anexo_pdf_analise_mercado"
+                       :disabled="confirmed.anexo_pdf_analise_mercado"
+                       accept="application/pdf"
+                       class="block w-full mt-1 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#009496] file:text-white hover:file:bg-[#007779]">
+            </div>
+            <div class="flex pt-6 space-x-1">
+                <button type="button" @click="saveField('anexo_pdf_analise_mercado')"
+                        x-show="!confirmed.anexo_pdf_analise_mercado"
+                        class="flex items-center justify-center w-8 h-8 transition-colors duration-200 rounded-lg bg-green-500 hover:bg-green-600 text-white"
+                        title="Confirmar">✓</button>
+                <button type="button" @click="toggleConfirm('anexo_pdf_analise_mercado')"
+                        x-show="confirmed.anexo_pdf_analise_mercado"
+                        class="flex items-center justify-center w-8 h-8 transition-colors duration-200 rounded-lg bg-red-500 hover:bg-red-600 text-white"
+                        title="Editar">✗</button>
+            </div>
+        </div>
+    </div>
 
     @elseif($campo === 'empresa_vencedora_pdf')
     <x-form-field name="empresa_vencedora_pdf" label="📎 Anexar PDF à Empresa Vencedora" type="file" accept="application/pdf" />

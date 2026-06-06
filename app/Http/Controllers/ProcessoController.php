@@ -1166,6 +1166,122 @@ class ProcessoController extends Controller
         return view('Admin.Processos.pesquisa_preco_itens', compact('processo', 'itens', 'fonte', 'etpInfo', 'lotes'));
     }
 
+    public function pesquisaPrecoFornecedorLocal(Processo $processo)
+    {
+        $itens = collect();
+
+        if ($processo->etp) {
+            $etp = $processo->etp;
+            if ($etp->tipo_contratacao === 'lote') {
+                $itens = $etp->lotes()->with('itens')->get()
+                    ->flatMap(fn($lote) => $lote->itens->map(fn($item) => [
+                        'id'        => $item->id,
+                        'descricao' => $item->descricao_item,
+                        'unidade'   => $item->pivot->unidade,
+                    ]));
+            } else {
+                $itens = $etp->itens->map(fn($item) => [
+                    'id'        => $item->id,
+                    'descricao' => $item->descricao_item,
+                    'unidade'   => $item->pivot->unidade,
+                ]);
+            }
+        } else {
+            $raw = $processo->detalhe->descricao_e_quantitativos_itens_xml ?? [];
+            $itens = is_array($raw)
+                ? collect($raw)->map(fn($item) => [
+                    'id'        => null,
+                    'descricao' => $item['descricao'],
+                    'unidade'   => $item['und'] ?? null,
+                ])
+                : collect([]);
+        }
+
+        $precosSalvos = $processo->detalhe?->fornecedor_local_precos ?? [];
+
+        return view('Admin.Processos.pesquisa_preco_fornecedor_local', compact('processo', 'itens', 'precosSalvos'));
+    }
+
+    public function salvarFornecedorLocalPrecos(\Illuminate\Http\Request $request, Processo $processo)
+    {
+        $request->validate(['itens' => 'required|array']);
+
+        $precos = collect($request->input('itens'))->map(fn($item) => [
+            'etp_item_id' => $item['etp_item_id'] ?? null,
+            'descricao'   => $item['descricao'] ?? '',
+            'f1_nome'     => $item['f1_nome'] ?? null,
+            'f1_preco'    => $item['f1_preco'] !== '' && $item['f1_preco'] !== null ? (float) $item['f1_preco'] : null,
+            'f2_nome'     => $item['f2_nome'] ?? null,
+            'f2_preco'    => $item['f2_preco'] !== '' && $item['f2_preco'] !== null ? (float) $item['f2_preco'] : null,
+            'f3_nome'     => $item['f3_nome'] ?? null,
+            'f3_preco'    => $item['f3_preco'] !== '' && $item['f3_preco'] !== null ? (float) $item['f3_preco'] : null,
+        ])->values()->all();
+
+        $processo->detalhe()->updateOrCreate(
+            ['processo_id' => $processo->id],
+            ['fornecedor_local_precos' => $precos]
+        );
+
+        return response()->json(['success' => true, 'message' => 'Preços salvos com sucesso.']);
+    }
+
+    public function pesquisaPrecoTce(Processo $processo)
+    {
+        $itens = collect();
+
+        if ($processo->etp) {
+            $etp = $processo->etp;
+            if ($etp->tipo_contratacao === 'lote') {
+                $itens = $etp->lotes()->with('itens')->get()
+                    ->flatMap(fn($lote) => $lote->itens->map(fn($item) => [
+                        'id'        => $item->id,
+                        'descricao' => $item->descricao_item,
+                        'unidade'   => $item->pivot->unidade,
+                    ]));
+            } else {
+                $itens = $etp->itens->map(fn($item) => [
+                    'id'        => $item->id,
+                    'descricao' => $item->descricao_item,
+                    'unidade'   => $item->pivot->unidade,
+                ]);
+            }
+        }
+
+        $precosSalvos = $processo->detalhe?->painel_preco_tce ?? [];
+
+        return view('Admin.Processos.pesquisa_preco_tce', compact('processo', 'itens', 'precosSalvos'));
+    }
+
+    public function salvarTcePrecos(\Illuminate\Http\Request $request, Processo $processo)
+    {
+        $request->validate(['itens' => 'required|array']);
+
+        $precos = collect($request->input('itens'))->map(function ($item) {
+            $v1 = $item['valor_tce_1'] !== '' && $item['valor_tce_1'] !== null ? (float) $item['valor_tce_1'] : null;
+            $v2 = $item['valor_tce_2'] !== '' && $item['valor_tce_2'] !== null ? (float) $item['valor_tce_2'] : null;
+            $v3 = $item['valor_tce_3'] !== '' && $item['valor_tce_3'] !== null ? (float) $item['valor_tce_3'] : null;
+
+            $vals  = array_filter([$v1, $v2, $v3], fn($v) => $v !== null);
+            $media = count($vals) > 0 ? array_sum($vals) / count($vals) : null;
+
+            return [
+                'etp_item_id' => !empty($item['etp_item_id']) ? (int) $item['etp_item_id'] : null,
+                'item'        => $item['descricao'] ?? '',
+                'valor_tce_1' => $v1 !== null ? number_format($v1, 2, ',', '.') : '',
+                'valor_tce_2' => $v2 !== null ? number_format($v2, 2, ',', '.') : '',
+                'valor_tce_3' => $v3 !== null ? number_format($v3, 2, ',', '.') : '',
+                'media'       => $media !== null ? number_format($media, 2, ',', '.') : '',
+            ];
+        })->values()->all();
+
+        $processo->detalhe()->updateOrCreate(
+            ['processo_id' => $processo->id],
+            ['painel_preco_tce' => $precos]
+        );
+
+        return response()->json(['success' => true, 'message' => 'Preços TCE salvos com sucesso.']);
+    }
+
     public function gerarNumeros(Request $request)
     {
         $prefeituraId = $request->input('prefeitura_id');
