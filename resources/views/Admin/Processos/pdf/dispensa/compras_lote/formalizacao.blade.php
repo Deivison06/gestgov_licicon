@@ -331,7 +331,7 @@
             </thead>
             <tbody>
                 @php
-                $itens = json_decode($detalhe->descricao_e_quantitativos_itens_xml, true);
+                $itens = is_array($detalhe->descricao_e_quantitativos_itens_xml) ? $detalhe->descricao_e_quantitativos_itens_xml : json_decode($detalhe->descricao_e_quantitativos_itens_xml, true);
                 @endphp
 
                 @if ($itens && count($itens) > 0)

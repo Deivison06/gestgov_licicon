@@ -403,6 +403,20 @@
                     <td>{{ $item['valor_total'] ?? '' }}</td>
                 </tr>
                 @endforeach
+                @php
+                $parseBr = fn($v) => (float) str_replace(',', '.', str_replace(['.', 'R$', ' '], '', $v ?? ''));
+                $sumVt = 0;
+                foreach ($itens as $_i) {
+                    $sumVt += $parseBr($_i['valor_total'] ?? '');
+                }
+                $fmtBr = fn($v) => $v > 0 ? 'R$ ' . number_format($v, 2, ',', '.') : '—';
+                @endphp
+                @if($sumVt > 0)
+                <tr>
+                    <td colspan="5" style="text-align:right; font-weight:bold; border-top:2px solid #555; background-color:#f0f0f0;">VALOR TOTAL</td>
+                    <td style="font-weight:bold; border-top:2px solid #555; background-color:#f0f0f0;">{{ $fmtBr($sumVt) }}</td>
+                </tr>
+                @endif
                 @else
                 <tr>
                     <td colspan="6">Nenhum item encontrado</td>

@@ -529,7 +529,7 @@
             </thead>
             <tbody>
                 @php
-                    $itens = json_decode($detalhe->itens_e_seus_quantitativos_xml, true);
+                    $itens = is_array($detalhe->itens_e_seus_quantitativos_xml) ? $detalhe->itens_e_seus_quantitativos_xml : json_decode($detalhe->itens_e_seus_quantitativos_xml, true);
                 @endphp
 
                 @if ($itens && count($itens) > 0)
