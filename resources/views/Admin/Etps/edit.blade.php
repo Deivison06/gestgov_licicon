@@ -1311,6 +1311,17 @@
             });
         };
 
+        window.toggleAccordionItem = function(uniqueId) {
+            const body = document.getElementById(`body-item-${uniqueId}`);
+            const chevron = document.getElementById(`chevron-item-${uniqueId}`);
+            if (!body) return;
+            
+            body.classList.toggle('hidden');
+            if (chevron) {
+                chevron.classList.toggle('rotate-180');
+            }
+        };
+
         /* ── SORTABLE ── */
         window.initSortable = function(containerId) {
             if (typeof Sortable === 'undefined') return;
@@ -1378,36 +1389,46 @@
             const descSafe = String(descricao).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 
             return `
-            <div class="flex flex-col md:flex-row md:items-center justify-between bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:border-[#009496]/30 transition gap-4" id="item-${containerId}-${id}">
-                <div class="flex items-center gap-3 flex-1 min-w-0">
-                    <i class="fas fa-grip-vertical text-gray-300 hover:text-gray-500 cursor-grab px-1 drag-handle" title="Arrastar para reordenar"></i>
-                    <span class="item-numero inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#009496]/10 text-[#009496] text-xs font-bold flex-shrink-0 border border-[#009496]/20">0</span>
-                    <div class="min-w-0 flex-1 flex flex-col gap-1">
-                        <div class="flex items-center gap-2">
-                            <p class="desc-item-${id} text-sm font-semibold text-gray-800 leading-relaxed" title="${descSafe}">${descSafe}</p>
-                            <button type="button" onclick="openModalItemQuickEdit(${id}, document.querySelector('.desc-item-${id}').getAttribute('title'))" class="btn-edit-item-${id} text-[#009496] hover:text-[#007a7a] focus:outline-none flex-shrink-0 transition-transform hover:scale-110" title="Editar Descrição">
-                                <i class="fas fa-edit"></i>
-                            </button>
+            <div class="bg-white border border-gray-200 rounded-xl shadow-sm hover:border-[#009496]/30 transition overflow-hidden" id="item-${containerId}-${id}">
+                <div class="flex flex-col md:flex-row md:items-center justify-between p-4 gap-4 cursor-pointer" onclick="toggleAccordionItem('${containerId}-${id}')" title="Clique para expandir/recolher">
+                    <div class="flex items-center gap-3 flex-1 min-w-0">
+                        <i class="fas fa-grip-vertical text-gray-300 hover:text-gray-500 cursor-grab px-1 drag-handle" title="Arrastar para reordenar" onclick="event.stopPropagation()"></i>
+                        <span class="item-numero inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#009496]/10 text-[#009496] text-xs font-bold flex-shrink-0 border border-[#009496]/20">0</span>
+                        <div class="min-w-0 flex-1 flex flex-col gap-1">
+                            <div class="flex items-center gap-2">
+                                <p class="desc-item-${id} text-sm font-semibold text-gray-800 leading-relaxed truncate" title="${descSafe}">${descSafe}</p>
+                            </div>
                         </div>
-                    </div>                </div>
-                
-                <div class="flex items-center gap-3 flex-shrink-0">
-                    <div class="flex flex-col gap-1">
-                        <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Unidade</span>
-                        ${renderUnidadeSelect(`${namePrefix}[${id}][unidade]`, unidade)}
-                    </div>
-                    
-                    <div class="flex flex-col gap-1">
-                        <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Quantidade</span>
-                        <input type="number" name="${namePrefix}[${id}][quantidade]" value="${quantidade || 1}" placeholder="Qtd" min="1" required class="rounded-lg border-gray-300 text-xs py-1.5 focus:border-[#009496] focus:ring-[#009496] w-20 bg-gray-50/50 hover:bg-gray-50 transition">
-                    </div>
-
-                    <div class="flex items-end self-end pb-0.5">
-                        <input type="hidden" name="${namePrefix}[${id}][item_id]" value="${id}">
-                        <button type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-red-600 hover:bg-red-50 focus:outline-none transition" onclick="removerItemSelecionado(${id}, ${loteArg})" title="Excluir Item">
-                            <i class="fas fa-trash-alt text-sm"></i>
+                        <button type="button" class="text-gray-400 hover:text-[#009496] focus:outline-none flex-shrink-0 transition-transform duration-200" id="chevron-item-${containerId}-${id}">
+                            <i class="fas fa-chevron-down"></i>
                         </button>
                     </div>
+                    
+                    <div class="flex items-center gap-3 flex-shrink-0" onclick="event.stopPropagation()">
+                        <div class="flex flex-col gap-1">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Unidade</span>
+                            ${renderUnidadeSelect(`${namePrefix}[${id}][unidade]`, unidade)}
+                        </div>
+                        
+                        <div class="flex flex-col gap-1">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Quantidade</span>
+                            <input type="number" name="${namePrefix}[${id}][quantidade]" value="${quantidade || 1}" placeholder="Qtd" min="1" required class="rounded-lg border-gray-300 text-xs py-1.5 focus:border-[#009496] focus:ring-[#009496] w-20 bg-gray-50/50 hover:bg-gray-50 transition">
+                        </div>
+
+                        <div class="flex items-end self-end pb-0.5 gap-2">
+                            <input type="hidden" name="${namePrefix}[${id}][item_id]" value="${id}">
+                            <button type="button" onclick="openModalItemQuickEdit(${id}, document.querySelector('#body-item-${containerId}-${id} .desc-item-${id}').textContent)" class="btn-edit-item-${id} inline-flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-[#009496] hover:bg-[#009496]/10 transition" title="Editar Descrição Completa">
+                                <i class="fas fa-edit text-sm"></i>
+                            </button>
+                            <button type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-red-600 hover:bg-red-50 focus:outline-none transition" onclick="removerItemSelecionado(${id}, ${loteArg})" title="Excluir Item">
+                                <i class="fas fa-trash-alt text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div id="body-item-${containerId}-${id}" class="hidden border-t border-gray-100 bg-gray-50/80 p-4">
+                    <h6 class="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Descrição Completa</h6>
+                    <p class="desc-item-${id} text-sm text-gray-700 whitespace-pre-wrap">${descSafe}</p>
                 </div>
             </div>`;
         }

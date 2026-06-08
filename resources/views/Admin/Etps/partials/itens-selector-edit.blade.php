@@ -50,7 +50,7 @@
                     data-lote-index="{{ $loteIndex }}"
                     class="item-checkbox w-4 h-4 text-[#009496]"
                     {{ isset($itensSelecionados[$item->id]) ? 'checked' : '' }}
-                    onchange="toggleItemSelecionado(this, {{ $loteIndex ?: 'null' }})">
+                    onchange="toggleItemSelecionado(this, {{ $loteIndex !== null ? $loteIndex : 'null' }})">
 
                 <span class="text-sm text-gray-700">
                     {{ $item->descricao_item }}
