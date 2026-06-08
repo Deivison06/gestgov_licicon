@@ -234,59 +234,14 @@
 
     {{-- Campos File --}}
     {{-- ATUALIZADO: Agora inclui DISPENSA também --}}
-    @elseif($campo === 'itens_e_seus_quantitativos_xml' && ($processo->modalidade === \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO || $processo->modalidade === \App\Enums\ModalidadeEnum::DISPENSA))
-    @if($processo->etp)
-        <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3">
-            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
-                <i class="fas fa-link text-sm"></i>
-            </div>
-            <div class="flex-1 min-w-0">
-                <p class="text-xs font-bold text-emerald-900">ETP Inteligente Vinculado</p>
-                <p class="text-xs text-emerald-700">Os itens e quantitativos são fornecidos automaticamente pelo ETP. O upload de XLS está desabilitado.</p>
-            </div>
-            <a href="{{ route('admin.etps.show', $processo->etp->id) }}" target="_blank"
-               class="flex-shrink-0 inline-flex items-center px-3 py-1.5 text-xs font-bold text-blue-700 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 transition-all shadow-sm">
-                <i class="fas fa-eye mr-1.5"></i> Ver ETP
-            </a>
-        </div>
-    @else
-        <x-form-field name="itens_e_seus_quantitativos_xml" label="📦 Itens e Seus Quantitativos" type="file" accept=".xml, .xlsx, .xls, .csv" />
-    @endif
-
-    @elseif($campo === 'projeto_basico_pdf')
-    <x-form-field name="projeto_basico_pdf" label="📎 Anexar PDF Projeto Básico" type="file" accept="application/pdf" />
-
-    @elseif($campo === 'itens_especificaca_quantitativos_xml')
-    @if($processo->etp)
-        <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3">
-            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
-                <i class="fas fa-link text-sm"></i>
-            </div>
-            <div class="flex-1 min-w-0">
-                <p class="text-xs font-bold text-emerald-900">ETP Inteligente Vinculado</p>
-                <p class="text-xs text-emerald-700">As especificações e quantitativos serão gerenciados pelo ETP. O upload de XLS está desabilitado.</p>
-            </div>
-            <a href="{{ route('admin.etps.show', $processo->etp->id) }}" target="_blank"
-               class="flex-shrink-0 inline-flex items-center px-3 py-1.5 text-xs font-bold text-blue-700 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 transition-all shadow-sm">
-                <i class="fas fa-eye mr-1.5"></i> Ver ETP
-            </a>
-        </div>
-    @else
-        <x-form-field name="itens_especificaca_quantitativos_xml" label="📦 Itens e Seus quantitativos e especificações" type="file" accept=".xml, .xlsx, .xls, .csv" />
-    @endif
-
-    @elseif($campo === 'descricao_e_quantitativos_itens_xml')
+    @elseif($campo === 'itens_e_seus_quantitativos_xml')
     <div class="space-y-3">
         <div class="flex items-center justify-between">
-            <label class="block text-sm font-semibold text-gray-800">📦 Descrição e Quantitativos dos Itens</label>
+            <label class="block text-sm font-semibold text-gray-800">📦 Itens e Seus Quantitativos</label>
             @php
                 $temItensEtp = $processo->etp && $processo->etp->all_itens->count() > 0;
-                $itensXlsRaw = $processo->detalhe->descricao_e_quantitativos_itens_xml ?? [];
-
-
-                $temItensXls = is_array($itensXlsRaw) && count($itensXlsRaw) > 0;
             @endphp
-            @if($temItensEtp || $temItensXls)
+            @if($temItensEtp)
             <a href="{{ route('admin.processos.pesquisa_preco_itens', $processo->id) }}"
                target="_blank"
                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-all shadow-sm">
@@ -402,7 +357,7 @@
             {{-- Campo de upload normal + Botão de busca --}}
             <div class="flex flex-col sm:flex-row gap-3">
                 <div class="flex-grow">
-                    <x-form-field name="descricao_e_quantitativos_itens_xml" label="" type="file" accept=".xml, .xlsx, .xls, .csv" />
+                    <x-form-field name="itens_e_seus_quantitativos_xml" label="" type="file" accept=".xml, .xlsx, .xls, .csv" />
                 </div>
                 <div class="flex items-end pb-1">
                     <button type="button" @click="abrirModalSelecaoEtp()"
@@ -413,49 +368,109 @@
                 </div>
             </div>
             <p class="text-[10px] text-gray-500 italic mt-1">* Vincular um ETP dispensa a necessidade de fazer o upload do arquivo XLS/XML.</p>
+        @endif
+    </div>
 
-            {{-- Preview de itens já importados via XLS --}}
-            {{-- Preview de itens já importados via XLS --}}
-            @php $itensXls = $processo->detalhe->descricao_e_quantitativos_itens_xml ?? []; @endphp
-            @if(is_array($itensXls) && count($itensXls) > 0)
-            <div x-data="{ openXlsItens: false }" class="mt-2">
-                <button type="button" @click="openXlsItens = !openXlsItens"
-                        class="inline-flex items-center gap-1.5 text-xs font-semibold text-teal-700 hover:text-teal-900 transition-colors">
-                    <i :class="openXlsItens ? 'fa-chevron-up' : 'fa-chevron-down'" class="fas text-[9px]"></i>
-                    {{-- CORRIGIDO: Usando chaves Blade limpas e concatenando o texto sem escapes que quebram o compilador --}}
-                    <span x-text="openXlsItens ? 'Recolher itens' : '{{ count($itensXls) }} {{ count($itensXls) === 1 ? 'item importado' : 'itens importados' }} — clique para ver'"></span>
-                </button>
+    @elseif($campo === 'projeto_basico_pdf')
+    <x-form-field name="projeto_basico_pdf" label="📎 Anexar PDF Projeto Básico" type="file" accept="application/pdf" />
 
-                <div x-show="openXlsItens" x-transition class="mt-2 overflow-x-auto rounded-lg border border-gray-200">
-                    <table class="w-full text-xs text-left">
-                        <thead class="bg-gray-100 text-gray-600 uppercase text-[10px] font-bold">
-                            <tr>
-                                <th class="px-2 py-1.5 w-8 text-center">#</th>
-                                <th class="px-2 py-1.5">Descrição</th>
-                                <th class="px-2 py-1.5 w-16 text-center">Und.</th>
-                                <th class="px-2 py-1.5 w-20 text-right">Qtd.</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100">
-                            @foreach($itensXls as $idx => $item)
-                            <tr class="bg-white hover:bg-gray-50">
-                                <td class="px-2 py-1.5 text-center text-gray-400">{{ $item['numero'] ?? ($idx + 1) }}</td>
-                                <td class="px-2 py-1.5 text-gray-700">{{ $item['descricao'] }}</td>
-                                <td class="px-2 py-1.5 text-center text-gray-500">{{ $item['und'] ?? '-' }}</td>
-                                <td class="px-2 py-1.5 text-right font-medium text-gray-700">{{ $item['quantidade'] }}</td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                        <tfoot>
-                            <tr class="bg-gray-50 border-t border-gray-200">
-                                <td colspan="3" class="px-2 py-1.5 text-[10px] text-gray-500 font-semibold uppercase">Total</td>
-                                <td class="px-2 py-1.5 text-right text-xs font-bold text-gray-600">{{ count($itensXls) }}</td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
+    @elseif($campo === 'itens_especificaca_quantitativos_xml')
+    @if($processo->etp)
+        <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3">
+            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                <i class="fas fa-link text-sm"></i>
             </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-xs font-bold text-emerald-900">ETP Inteligente Vinculado</p>
+                <p class="text-xs text-emerald-700">As especificações e quantitativos serão gerenciados pelo ETP. O upload de XLS está desabilitado.</p>
+            </div>
+            <a href="{{ route('admin.etps.show', $processo->etp->id) }}" target="_blank"
+               class="flex-shrink-0 inline-flex items-center px-3 py-1.5 text-xs font-bold text-blue-700 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 transition-all shadow-sm">
+                <i class="fas fa-eye mr-1.5"></i> Ver ETP
+            </a>
+        </div>
+    @else
+        <x-form-field name="itens_especificaca_quantitativos_xml" label="📦 Itens e Seus quantitativos e especificações" type="file" accept=".xml, .xlsx, .xls, .csv" />
+    @endif
+
+    @elseif($campo === 'descricao_e_quantitativos_itens_xml')
+    <div class="space-y-3">
+        <div class="flex items-center justify-between">
+            <label class="block text-sm font-semibold text-gray-800">📦 Descrição e Quantitativos dos Itens</label>
+            @php
+                $itensXlsRaw = $processo->detalhe->descricao_e_quantitativos_itens_xml ?? [];
+                $temItensXls = is_array($itensXlsRaw) && count($itensXlsRaw) > 0;
+            @endphp
+            @if($temItensXls)
+            <a href="{{ route('admin.processos.pesquisa_preco_itens', $processo->id) }}"
+               target="_blank"
+               class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-all shadow-sm">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                Pesquisar preços por item
+            </a>
             @endif
+        </div>
+
+        @if($processo->etp)
+            <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3">
+                <div class="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                    <i class="fas fa-link text-sm"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs font-bold text-emerald-900">ETP Inteligente Vinculado</p>
+                    <p class="text-xs text-emerald-700">Os itens e quantitativos são fornecidos automaticamente pelo ETP. O upload de XLS está desabilitado.</p>
+                </div>
+                <a href="{{ route('admin.etps.show', $processo->etp->id) }}" target="_blank"
+                   class="flex-shrink-0 inline-flex items-center px-3 py-1.5 text-xs font-bold text-blue-700 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 transition-all shadow-sm">
+                    <i class="fas fa-eye mr-1.5"></i> Ver ETP
+                </a>
+            </div>
+        @else
+            <x-form-field name="descricao_e_quantitativos_itens_xml" label="" type="file" accept=".xml, .xlsx, .xls, .csv" />
+        @endif
+
+        {{-- Preview de itens já importados via XLS --}}
+        @php $itensXls = $processo->detalhe->descricao_e_quantitativos_itens_xml ?? []; @endphp
+        @if(is_array($itensXls) && count($itensXls) > 0)
+        <div x-data="{ openXlsItens: false }" class="mt-2">
+            <button type="button" @click="openXlsItens = !openXlsItens"
+                    class="inline-flex items-center gap-1.5 text-xs font-semibold text-teal-700 hover:text-teal-900 transition-colors">
+                <i :class="openXlsItens ? 'fa-chevron-up' : 'fa-chevron-down'" class="fas text-[9px]"></i>
+                <span x-text="openXlsItens ? 'Recolher itens' : '{{ count($itensXls) }} {{ count($itensXls) === 1 ? 'item importado' : 'itens importados' }} — clique para ver'"></span>
+            </button>
+
+            <div x-show="openXlsItens" x-transition class="mt-2 overflow-x-auto rounded-lg border border-gray-200">
+                <table class="w-full text-xs text-left">
+                    <thead class="bg-gray-100 text-gray-600 uppercase text-[10px] font-bold">
+                        <tr>
+                            <th class="px-2 py-1.5 w-8 text-center">#</th>
+                            <th class="px-2 py-1.5">Descrição</th>
+                            <th class="px-2 py-1.5 w-16 text-center">Und.</th>
+                            <th class="px-2 py-1.5 w-20 text-right">Qtd.</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        @foreach($itensXls as $idx => $item)
+                        <tr class="bg-white hover:bg-gray-50">
+                            <td class="px-2 py-1.5 text-center text-gray-400">{{ $item['numero'] ?? ($idx + 1) }}</td>
+                            <td class="px-2 py-1.5 text-gray-700">{{ $item['descricao'] }}</td>
+                            <td class="px-2 py-1.5 text-center text-gray-500">{{ $item['und'] ?? '-' }}</td>
+                            <td class="px-2 py-1.5 text-right font-medium text-gray-700">{{ $item['quantidade'] }}</td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                    <tfoot>
+                        <tr class="bg-gray-50 border-t border-gray-200">
+                            <td colspan="3" class="px-2 py-1.5 text-[10px] text-gray-500 font-semibold uppercase">Total</td>
+                            <td class="px-2 py-1.5 text-right text-xs font-bold text-gray-600">{{ count($itensXls) }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
         @endif
     </div>
 
