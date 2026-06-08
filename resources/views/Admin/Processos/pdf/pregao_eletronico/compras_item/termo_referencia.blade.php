@@ -328,38 +328,50 @@
             <tbody>
                 @php
                 $itens = is_array($detalhe->itens_especificaca_quantitativos_xml)
-                ? $detalhe->itens_especificaca_quantitativos_xml
-                : json_decode($detalhe->itens_especificaca_quantitativos_xml, true);
-                @endphp
-                @if ($itens && count($itens) > 0)
-                @foreach ($itens as $item)
-                <tr>
-                    <td>{{ $item['item'] ?? '' }}</td>
-                    <td style="text-align: left;">{{ $item['especificacoes'] ?? '' }}</td>
-                    <td>{{ $item['unidade'] ?? '' }}</td>
-                    <td>{{ $item['quantidade'] ?? '' }}</td>
-                    <td>{{ $item['valor_unitario'] ?? '' }}</td>
-                    <td>{{ $item['valor_total'] ?? '' }}</td>
-                </tr>
-                @endforeach
-                @php
+                    ? $detalhe->itens_especificaca_quantitativos_xml
+                    : json_decode($detalhe->itens_especificaca_quantitativos_xml, true);
+
                 $parseBr = fn($v) => (float) str_replace(',', '.', str_replace(['.', 'R$', ' '], '', $v ?? ''));
-                $sumVt = 0;
-                foreach ($itens as $_i) {
-                    $sumVt += $parseBr($_i['valor_total'] ?? '');
-                }
                 $fmtBr = fn($v) => $v > 0 ? 'R$ ' . number_format($v, 2, ',', '.') : '—';
+                
+                $itensAgrupados = collect($itens)->groupBy(fn($i) => $i['lote'] ?? 'Sem Lote');
                 @endphp
-                @if($sumVt > 0)
-                <tr>
-                    <td colspan="5" style="text-align:right; font-weight:bold; border-top:2px solid #555; background-color:#f0f0f0;">VALOR TOTAL</td>
-                    <td style="font-weight:bold; border-top:2px solid #555; background-color:#f0f0f0;">{{ $fmtBr($sumVt) }}</td>
-                </tr>
-                @endif
+
+                @if ($itens && count($itens) > 0)
+                    @foreach ($itensAgrupados as $loteNome => $itensDoLote)
+                        @php $sumLote = 0; @endphp
+                        @if($loteNome !== 'Sem Lote')
+                            <tr style="background-color: #e9e9e9;">
+                                <td colspan="6" style="text-align: left; font-weight: bold; padding-left: 10px;">{{ $loteNome }}</td>
+                            </tr>
+                        @endif
+
+                        @foreach ($itensDoLote as $index => $item)
+                            @php
+                                $qtd = (float) str_replace(',', '.', str_replace('.', '', $item['quantidade'] ?? '0'));
+                                $vUnit = $parseBr($item['valor_unitario'] ?? '0');
+                                $vTotal = $qtd * $vUnit;
+                                $sumLote += $vTotal;
+                            @endphp
+                            <tr>
+                                <td>{{ $item['item'] ?? ($index + 1) }}</td>
+                                <td style="text-align: left;">{{ $item['especificacoes'] ?? '' }}</td>
+                                <td>{{ $item['unidade'] ?? '' }}</td>
+                                <td>{{ number_format($qtd, 2, ',', '.') }}</td>
+                                <td>{{ $fmtBr($vUnit) }}</td>
+                                <td>{{ $fmtBr($vTotal) }}</td>
+                            </tr>
+                        @endforeach
+                        
+                        <tr>
+                            <td colspan="5" style="text-align:right; font-weight:bold; background-color:#f0f0f0; border-top:1px solid #999;">TOTAL DO LOTE</td>
+                            <td style="font-weight:bold; background-color:#f0f0f0; border-top:1px solid #999;">{{ $fmtBr($sumLote) }}</td>
+                        </tr>
+                    @endforeach
                 @else
-                <tr>
-                    <td colspan="6">Nenhum item encontrado</td>
-                </tr>
+                    <tr>
+                        <td colspan="6">Nenhum item encontrado</td>
+                    </tr>
                 @endif
             </tbody>
         </table>
