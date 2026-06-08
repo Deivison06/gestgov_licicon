@@ -2944,4 +2944,12 @@
             }
         }
     </script>
+
+    @if (session('error'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                showMessage(@json(session('error')), 'error');
+            });
+        </script>
+    @endif
 @endsection

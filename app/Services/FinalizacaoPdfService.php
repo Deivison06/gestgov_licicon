@@ -126,9 +126,18 @@ class FinalizacaoPdfService
             $ata = AtaRegistroPreco::where('processo_id', $processo->id)
                 ->where('homologacao_id', $homologacaoId)
                 ->where('vencedor_id', $vencedorId)
-                ->firstOrFail();
+                ->first();
 
-            return response()->download(public_path($ata->caminho));
+            return $this->responderDownload($processo, $tipo, $ata?->caminho, $homologacaoId, $vencedorId);
+        }
+
+        // Alinha o lookup à lógica de gravação (resolverHomologacao): tipos que não são
+        // "por-homologação" são SEMPRE persistidos a nível-processo (homologacao_id null),
+        // mesmo quando exibidos dentro de um bloco de homologação (homologação única).
+        // Sem isso, o filtro `where('homologacao_id', X)` não encontra o registro e o
+        // download falha com uma página de erro.
+        if (!$this->homologacaoService->ehTipoPorHomologacao($tipo)) {
+            $homologacaoId = null;
         }
 
         $query = Documento::where('processo_id', $processo->id)
@@ -140,9 +149,37 @@ class FinalizacaoPdfService
             $query->whereNull('homologacao_id');
         }
 
-        $documento = $query->firstOrFail();
+        $documento = $query->first();
 
-        return response()->download(public_path($documento->caminho));
+        return $this->responderDownload($processo, $tipo, $documento?->caminho, $homologacaoId, $vencedorId);
+    }
+
+    /**
+     * Devolve a resposta de download validando a existência do registro e do arquivo
+     * físico. Lança DomainException (com mensagem amigável) em vez de deixar o
+     * response()->download estourar uma página de erro — que o navegador salvaria
+     * como "Baixar.html".
+     */
+    private function responderDownload(Processo $processo, string $tipo, ?string $caminho, ?int $homologacaoId, ?int $vencedorId)
+    {
+        if (!$caminho) {
+            throw new \DomainException('Este documento ainda não foi gerado. Clique em "Gerar PDF" antes de baixá-lo.');
+        }
+
+        $caminhoAbsoluto = public_path($caminho);
+        if (!file_exists($caminhoAbsoluto)) {
+            Log::warning('Arquivo do documento não encontrado no disco ao baixar - Finalização', [
+                'processo_id' => $processo->id,
+                'tipo' => $tipo,
+                'homologacao_id' => $homologacaoId,
+                'vencedor_id' => $vencedorId,
+                'caminho' => $caminho,
+            ]);
+
+            throw new \DomainException('O arquivo deste documento não foi encontrado no servidor. Gere o PDF novamente para baixá-lo.');
+        }
+
+        return response()->download($caminhoAbsoluto);
     }
 
     public function gerarCaminhoTodosDocumentos(Processo $processo): string

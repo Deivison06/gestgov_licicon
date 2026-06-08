@@ -262,12 +262,21 @@ class FinalizacaoProcessoController extends Controller
         $homologacaoId = $request->query('homologacao_id') ?: null;
         $vencedorId = $request->query('vencedor_id') ?: null;
 
-        return $this->pdfService->baixarDocumento(
-            $processo,
-            $tipo,
-            $homologacaoId ? (int) $homologacaoId : null,
-            $vencedorId ? (int) $vencedorId : null
-        );
+        try {
+            return $this->pdfService->baixarDocumento(
+                $processo,
+                $tipo,
+                $homologacaoId ? (int) $homologacaoId : null,
+                $vencedorId ? (int) $vencedorId : null
+            );
+        } catch (\DomainException $e) {
+            // Erro previsível (documento não gerado / arquivo ausente): volta para a tela
+            // de finalização com uma mensagem clara, em vez de servir uma página de erro
+            // que o navegador salvaria como "Baixar.html".
+            return redirect()
+                ->route('admin.processos.finalizacao.finalizar', $processo)
+                ->with('error', $e->getMessage());
+        }
     }
 
     public function baixarTodosDocumentos(Processo $processo)
