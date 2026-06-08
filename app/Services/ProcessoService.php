@@ -244,9 +244,10 @@ class ProcessoService
 
         $itens = [];
         $linhasEmBranco = [];
+        $loteAtual = null;
 
         foreach ($rows as $index => $row) {
-            // Pular cabeçalho
+            // Pular cabeçalho da planilha
             if ($index === 0) continue;
 
             // Verificar se a linha está em branco
@@ -264,7 +265,20 @@ class ProcessoService
                 continue;
             }
 
+            // Identificar se a linha é um cabeçalho de Lote
+            // Padrão: Primeira coluna contém a palavra "Lote" e colunas de quantidade/valor estão vazias
+            $col0 = trim((string)($row[0] ?? ''));
+            $isLoteHeader = (stripos($col0, 'Lote') === 0) && 
+                            empty(trim((string)($row[3] ?? ''))) && 
+                            empty(trim((string)($row[4] ?? '')));
+
+            if ($isLoteHeader) {
+                $loteAtual = $col0;
+                continue; // Não adiciona o cabeçalho como um item
+            }
+
             $itens[] = [
+                'lote'              => $loteAtual,
                 'item'              => $row[0] ?? null,
                 'especificacoes'    => $row[1] ?? null,
                 'unidade'           => $row[2] ?? null,

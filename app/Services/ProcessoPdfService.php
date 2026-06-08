@@ -1158,12 +1158,13 @@ class ProcessoPdfService
         $result = [];
         $fmt    = fn($v) => $v > 0 ? 'R$ ' . number_format($v, 2, ',', '.') : '';
 
-        $processarItem = function ($item) use ($precoMapId, $fmt, &$result) {
+        $processarItem = function ($item, $loteNome = null) use ($precoMapId, $fmt, &$result) {
             $valorUnitario = $precoMapId[$item->id] ?? 0;
             $quantidade    = (float) ($item->pivot->quantidade ?? 0);
             $valorTotal    = $valorUnitario > 0 ? $valorUnitario * $quantidade : 0;
 
             $result[] = [
+                'lote'           => $loteNome,
                 'item'           => $item->descricao_item,
                 'especificacoes' => $item->descricao_item,
                 'unidade'        => $item->pivot->unidade ?? '',
@@ -1176,7 +1177,7 @@ class ProcessoPdfService
         if ($etp->tipo_contratacao === 'lote') {
             foreach ($etp->lotes as $lote) {
                 foreach ($lote->itens as $item) {
-                    $processarItem($item);
+                    $processarItem($item, $lote->nome);
                 }
             }
         } else {
