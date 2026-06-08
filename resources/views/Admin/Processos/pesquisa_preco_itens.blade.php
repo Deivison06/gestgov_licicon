@@ -20,7 +20,6 @@
         </div>
 
         <a href="{{ route('admin.pesquisa_preco.index', ['processo_id' => $processo->id]) }}"
-           target="_blank"
            class="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-all shadow-sm">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
@@ -190,7 +189,6 @@
                                 </td>
                                 <td class="px-4 py-3.5 text-center">
                                     <a href="{{ route('admin.pesquisa_preco.index', ['processo_id' => $processo->id, 'termo' => $item['descricao'], 'etp_item_id' => $item['id'] ?? '']) }}"
-                                       target="_blank"
                                        class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-all shadow-sm group-hover:shadow-md">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -239,7 +237,6 @@
                             </td>
                             <td class="px-4 py-3.5 text-center">
                                 <a href="{{ route('admin.pesquisa_preco.index', ['processo_id' => $processo->id, 'termo' => $item['descricao'], 'etp_item_id' => $item['id'] ?? '']) }}"
-                                   target="_blank"
                                    class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-all shadow-sm group-hover:shadow-md">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -258,10 +255,9 @@
         {{-- Rodapé com link para pesquisa geral --}}
         <div class="px-5 py-3.5 border-t border-gray-100 bg-gray-50 flex items-center justify-between">
             <p class="text-xs text-gray-400">
-                Cada botão abre uma nova aba com a pesquisa já iniciada para aquele item.
+                Cada botão redireciona para a pesquisa já iniciada para aquele item.
             </p>
             <a href="{{ route('admin.pesquisa_preco.index', ['processo_id' => $processo->id]) }}"
-               target="_blank"
                class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-all">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
