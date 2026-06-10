@@ -16,6 +16,18 @@ use Illuminate\Support\Facades\Log;
 
 class ContratoProcessoController extends Controller
 {
+    // Campos do snapshot de contratante persistidos por contrato (sobrescrevem os
+    // dados globais do processo apenas para aquele contrato específico).
+    private const CAMPOS_CONTRATANTE = [
+        'orgao_responsavel',
+        'cargo_responsavel',
+        'cnpj',
+        'endereco',
+        'responsavel',
+        'cpf_responsavel',
+        'razao_social',
+    ];
+
     // Configuração única para contrato
     protected $documentoConfig = [
         'contrato' => [
@@ -34,6 +46,7 @@ class ContratoProcessoController extends Controller
             'vencedores.lotes.contratados',
             'homologacoes.lotes.contratados',
             'homologacoes.contrato',
+            'contratos',
             'finalizacao',
         ]);
 
@@ -46,6 +59,20 @@ class ContratoProcessoController extends Controller
         $contratoLegado = Contrato::where('processo_id', $processo->id)
             ->whereNull('homologacao_id')
             ->first();
+
+        // Múltiplos contratos por processo (um por secretaria), agrupados por homologação
+        // (chave string do id, ou 'legado' para os sem homologação) para a listagem na tela.
+        $contratosPorHomologacao = $processo->contratos
+            ->sortBy('numero_sequencial')
+            ->groupBy(fn ($c) => $c->homologacao_id ? (string) $c->homologacao_id : 'legado');
+
+        // Dados padrão do contratante por homologação, para pré-preencher o formulário de
+        // "novo contrato" (o usuário pode editar antes de gerar). Inclui a chave 'legado'.
+        $contratantePadraoPorHomologacao = [];
+        foreach ($homologacoesHomologadas as $homol) {
+            $contratantePadraoPorHomologacao[(string) $homol->id] = $this->montarContratantePadrao($processo, $homol);
+        }
+        $contratantePadraoPorHomologacao['legado'] = $this->montarContratantePadrao($processo, null);
 
         // Contratações agrupadas por vencedor — modo legado / topo da tela.
         $contratacoes = LoteContratado::where('processo_id', $processo->id)
@@ -73,7 +100,9 @@ class ContratoProcessoController extends Controller
             'contratoLegado',
             'contratacoes',
             'homologacoesHomologadas',
-            'contratacoesPorHomologacao'
+            'contratacoesPorHomologacao',
+            'contratosPorHomologacao',
+            'contratantePadraoPorHomologacao'
         ));
     }
 
@@ -260,10 +289,16 @@ class ContratoProcessoController extends Controller
             $homologacao = $this->resolverHomologacao($processo, $request);
             $validatedData = $this->validarRequisicaoPdf($request, $processo, $homologacao);
             $validatedData['homologacao'] = $homologacao;
-            $data = $this->prepararDadosPdf($processo, $validatedData);
 
-            // SALVAR OS CAMPOS DO CONTRATO NO BANCO DE DADOS
-            $this->salvarCamposContrato($processo->id, $validatedData['campos'], $homologacao?->id);
+            // Cada geração cria um NOVO contrato (Contrato 1, 2, 3...), salvo quando o
+            // frontend envia contrato_id para regerar um existente. O snapshot do
+            // contratante e os campos preenchidos no modal são persistidos no contrato.
+            $contratoId = $request->input('contrato_id') ?: $request->query('contrato_id');
+            $contrato = $this->resolverOuCriarContrato($processo, $homologacao, $contratoId ? (int) $contratoId : null);
+            $this->persistirDadosContrato($contrato, $processo, $homologacao, $validatedData['campos'], $validatedData['contratante']);
+            $validatedData['contrato'] = $contrato;
+
+            $data = $this->prepararDadosPdf($processo, $validatedData);
 
             $view = $this->determinarViewContrato($processo);
 
@@ -276,13 +311,17 @@ class ContratoProcessoController extends Controller
             Log::info('Contrato gerado com sucesso', [
                 'processo_id' => $processo->id,
                 'homologacao_id' => $homologacao?->id,
+                'contrato_id' => $contrato->id,
+                'numero_sequencial' => $contrato->numero_sequencial,
                 'caminho' => $caminhoCompleto
             ]);
 
             return response()->json([
                 'success' => true,
                 'message' => '✅ Contrato gerado com sucesso! Clique em "Download" para visualizar o arquivo.',
-                'documento' => 'contrato'
+                'documento' => 'contrato',
+                'contrato_id' => $contrato->id,
+                'numero_sequencial' => $contrato->numero_sequencial,
             ]);
 
         } catch (\DomainException $e) {
@@ -362,25 +401,121 @@ class ContratoProcessoController extends Controller
     }
 
     /**
+     * Carrega o contrato informado (validando o vínculo ao processo) ou cria um novo
+     * com o próximo numero_sequencial do processo.
+     */
+    private function resolverOuCriarContrato(Processo $processo, ?Homologacao $homologacao, ?int $contratoId): Contrato
+    {
+        if ($contratoId) {
+            $contrato = Contrato::where('processo_id', $processo->id)
+                ->where('id', $contratoId)
+                ->first();
+
+            if (!$contrato) {
+                throw new \DomainException('Contrato não pertence a este processo.');
+            }
+
+            return $contrato;
+        }
+
+        $proximoSequencial = (int) Contrato::where('processo_id', $processo->id)->max('numero_sequencial') + 1;
+
+        return Contrato::create([
+            'processo_id' => $processo->id,
+            'homologacao_id' => $homologacao?->id,
+            'numero_sequencial' => $proximoSequencial,
+        ]);
+    }
+
+    /**
+     * Persiste os campos e o snapshot do contratante no contrato. O snapshot usa os
+     * valores informados no modal e cai para os dados padrão do processo quando vazios.
+     */
+    private function persistirDadosContrato(
+        Contrato $contrato,
+        Processo $processo,
+        ?Homologacao $homologacao,
+        array $campos,
+        array $contratante
+    ): void {
+        $padrao = $this->montarContratantePadrao($processo, $homologacao);
+
+        $snapshot = [];
+        foreach (self::CAMPOS_CONTRATANTE as $campo) {
+            $valor = $contratante[$campo] ?? null;
+            $snapshot[$campo] = ($valor !== null && $valor !== '')
+                ? $valor
+                : ($padrao[$campo] ?? null);
+        }
+
+        $contrato->update([
+            'numero_contrato' => $campos['numero_contrato'] ?? $contrato->numero_contrato,
+            'data_assinatura_contrato' => !empty($campos['data_assinatura_contrato'])
+                ? \Carbon\Carbon::parse($campos['data_assinatura_contrato'])->format('Y-m-d')
+                : $contrato->data_assinatura_contrato,
+            'numero_extrato' => $campos['numero_extrato'] ?? $contrato->numero_extrato,
+            'comarca' => $campos['comarca'] ?? $contrato->comarca,
+            'fonte_recurso' => $campos['fonte_recurso'] ?? $contrato->fonte_recurso,
+            'subcontratacao' => $campos['subcontratacao'] ?? $contrato->subcontratacao,
+            'dados_contratante' => $snapshot,
+        ]);
+    }
+
+    /**
+     * Monta os dados padrão do contratante (7 campos) a partir da fonte de cabeçalho
+     * (Homologação > Finalização) com fallback para a Prefeitura. Usado para pré-preencher
+     * o formulário e para completar o snapshot quando o usuário deixa campos em branco.
+     */
+    private function montarContratantePadrao(Processo $processo, ?Homologacao $homologacao): array
+    {
+        $fonte = $this->mesclarFonteCabecalho($homologacao, $processo->finalizacao);
+        $prefeitura = $processo->prefeitura;
+
+        return [
+            'orgao_responsavel' => $fonte->orgao_responsavel ?? $prefeitura?->cidade,
+            'cargo_responsavel' => $fonte->cargo_responsavel ?? 'Prefeito Municipal',
+            'cnpj' => $fonte->cnpj ?? $prefeitura?->cnpj,
+            'endereco' => $fonte->endereco ?? $prefeitura?->endereco,
+            'responsavel' => $fonte->responsavel ?? $prefeitura?->autoridade_competente,
+            'cpf_responsavel' => $fonte->cpf_responsavel,
+            'razao_social' => $fonte->razao_social,
+        ];
+    }
+
+    /**
      * Download do contrato COM CARIMBO
      */
     public function baixarContrato(Request $request, Processo $processo)
     {
         try {
-            $homologacao = $this->resolverHomologacao($processo, $request);
+            // Download por contrato específico (novo fluxo de múltiplos contratos).
+            $contratoId = $request->query('contrato_id');
+            if ($contratoId) {
+                $contrato = Contrato::where('processo_id', $processo->id)
+                    ->where('id', $contratoId)
+                    ->firstOrFail();
 
-            $query = Documento::where('processo_id', $processo->id)
-                ->where('tipo_documento', 'contrato');
+                if (!$contrato->caminho) {
+                    throw new \Exception('Este contrato ainda não possui PDF gerado.');
+                }
 
-            if ($homologacao) {
-                $query->where('homologacao_id', $homologacao->id);
+                $caminhoOriginal = public_path($contrato->caminho);
             } else {
-                $query->whereNull('homologacao_id');
+                // Compatibilidade: download do contrato registrado em `documentos` por homologação.
+                $homologacao = $this->resolverHomologacao($processo, $request);
+
+                $query = Documento::where('processo_id', $processo->id)
+                    ->where('tipo_documento', 'contrato');
+
+                if ($homologacao) {
+                    $query->where('homologacao_id', $homologacao->id);
+                } else {
+                    $query->whereNull('homologacao_id');
+                }
+
+                $documento = $query->firstOrFail();
+                $caminhoOriginal = public_path($documento->caminho);
             }
-
-            $documento = $query->firstOrFail();
-
-            $caminhoOriginal = public_path($documento->caminho);
 
             if (!file_exists($caminhoOriginal)) {
                 throw new \Exception('Arquivo do contrato não encontrado.');
@@ -524,12 +659,38 @@ class ContratoProcessoController extends Controller
         // Campos do contrato (busca persistido por processo+homologação se não vier na request)
         $campos = $this->processarCamposContrato($request, $processo, $homologacao);
 
+        // Dados do contratante editados no modal (snapshot deste contrato).
+        $contratante = $this->processarContratante($request);
+
         return [
             'documento' => 'contrato',
             'dataSelecionada' => $dataSelecionada,
             'assinantes' => $assinantes,
-            'campos' => $campos
+            'campos' => $campos,
+            'contratante' => $contratante,
         ];
+    }
+
+    /**
+     * Decodifica o JSON `contratante` (7 campos do snapshot) enviado pelo modal.
+     */
+    private function processarContratante(Request $request): array
+    {
+        $json = $request->input('contratante') ?: $request->query('contratante');
+
+        if (!$json) {
+            return [];
+        }
+
+        $decoded = json_decode(urldecode($json), true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            Log::warning('Erro ao decodificar JSON de contratante - Contrato: ' . json_last_error_msg());
+            return [];
+        }
+
+        // Mantém apenas as chaves esperadas.
+        return array_intersect_key($decoded, array_flip(self::CAMPOS_CONTRATANTE));
     }
 
     private function processarCamposContrato(Request $request, ?Processo $processo = null, ?Homologacao $homologacao = null): array
@@ -626,6 +787,42 @@ class ContratoProcessoController extends Controller
         $fonteCabecalho = $this->mesclarFonteCabecalho($homologacaoLeitura, $processo->finalizacao);
 
         // ==============================================
+        // SNAPSHOT DO CONTRATANTE (por contrato)
+        // ==============================================
+        // Quando o contrato tem dados de contratante próprios, eles sobrescrevem os dados
+        // globais APENAS para este PDF. Os templates leem de $processo->finalizacao->* e
+        // $processo->prefeitura->*, então sobrescrevemos os modelos EM MEMÓRIA (sem persistir).
+        // Faz $processo->contrato (hasOne) apontar para o contrato sendo gerado: vários
+        // templates leem $processo->contrato->{numero_contrato, comarca, numero_extrato,
+        // data_assinatura_contrato, fonte_recurso, subcontratacao}, e o hasOne retornaria
+        // o primeiro contrato do processo (errado quando há múltiplos contratos).
+        $contratoAtual = $validatedData['contrato'] ?? null;
+        if ($contratoAtual) {
+            $processo->setRelation('contrato', $contratoAtual);
+        }
+
+        $snapshot = $contratoAtual?->dados_contratante ?? [];
+        if (!empty($snapshot)) {
+            foreach (['orgao_responsavel', 'cargo_responsavel', 'cnpj', 'responsavel', 'cpf_responsavel'] as $campo) {
+                if (!empty($snapshot[$campo])) {
+                    $fonteCabecalho->{$campo} = $snapshot[$campo];
+                    if ($processo->finalizacao) {
+                        $processo->finalizacao->{$campo} = $snapshot[$campo];
+                    }
+                }
+            }
+            if (!empty($snapshot['endereco'])) {
+                $fonteCabecalho->endereco = $snapshot['endereco'];
+                if ($processo->prefeitura) {
+                    $processo->prefeitura->endereco = $snapshot['endereco'];
+                }
+            }
+            // razao_social: persistido no snapshot e exposto em $dadosContratante abaixo,
+            // mas NÃO sobrescreve $processo->finalizacao->razao_social — em
+            // Concorrência/Dispensa-Obra esse campo representa o CONTRATADO.
+        }
+
+        // ==============================================
         // DADOS DO CONTRATANTE (PREFEITURA)
         // ==============================================
         $dadosContratante = [
@@ -637,6 +834,7 @@ class ContratoProcessoController extends Controller
             'responsavel' => $fonteCabecalho->responsavel ?? $processo->prefeitura->autoridade_competente,
             'cargo_responsavel' => $fonteCabecalho->cargo_responsavel ?? 'Prefeito Municipal',
             'cpf_responsavel' => $fonteCabecalho->cpf_responsavel ?? null,
+            'razao_social' => $snapshot['razao_social'] ?? $fonteCabecalho->razao_social ?? null,
         ];
         
         // Formatando CNPJ e CPF
@@ -659,10 +857,13 @@ class ContratoProcessoController extends Controller
         $valorTotalContrato = $contratacoes->sum('valor_total');
         $quantidadeTotalContrato = $contratacoes->sum('quantidade_contratada');
 
-        // Carregar dados salvos do contrato (mesmo escopo do upsert)
-        $contratoSalvo = Contrato::where('processo_id', $processo->id)
-            ->where('homologacao_id', $homologacao?->id)
-            ->first();
+        // Dados salvos do contrato: usa o contrato sendo gerado quando disponível;
+        // caso contrário, o mais recente da homologação (compatibilidade).
+        $contratoSalvo = $validatedData['contrato']
+            ?? Contrato::where('processo_id', $processo->id)
+                ->where('homologacao_id', $homologacao?->id)
+                ->latest('numero_sequencial')
+                ->first();
 
         return [
             'processo' => $processo,
@@ -962,6 +1163,15 @@ class ContratoProcessoController extends Controller
             $homologacao?->id
         );
 
+        // Arquivo próprio deste contrato (usado pela listagem e download por contrato).
+        if (!empty($validatedData['contrato'])) {
+            $validatedData['contrato']->update([
+                'caminho' => $caminhoRelativo,
+                'data_documento' => $validatedData['dataSelecionada'],
+                'gerado_em' => now(),
+            ]);
+        }
+
         return $caminhoCompleto;
     }
 
@@ -992,11 +1202,10 @@ class ContratoProcessoController extends Controller
         $documentoExistente = $query->first();
 
         if ($documentoExistente) {
-            $caminhoAntigo = public_path($documentoExistente->caminho);
-            if (file_exists($caminhoAntigo)) {
-                unlink($caminhoAntigo);
-            }
-
+            // NÃO remove o arquivo antigo: com múltiplos contratos por homologação, o
+            // arquivo anterior ainda pode pertencer a outro contrato (contratos.caminho).
+            // O registro em `documentos` apenas aponta para o contrato mais recente,
+            // necessário para a montagem do processo completo.
             $documentoExistente->update([
                 'data_selecionada' => $dataSelecionada,
                 'caminho' => $caminhoRelativo,

@@ -93,6 +93,11 @@ class Processo extends Model
         return $this->hasOne(Contrato::class);
     }
 
+    public function contratos()
+    {
+        return $this->hasMany(Contrato::class)->orderBy('numero_sequencial');
+    }
+
     // Processo original (para republicação)
     public function processoOriginal()
     {

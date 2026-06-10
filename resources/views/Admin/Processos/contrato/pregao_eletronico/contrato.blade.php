@@ -176,8 +176,8 @@
                 <!-- Conteúdo da primeira célula -->
                 </td>
                 <td style="width:60%; padding:8px; vertical-align:top; word-wrap:break-word; white-space:normal;">
-                    CONTRATO Nº {{ $processo->contrato->numero_contrato }}, QUE FAZEM ENTRE SI A
-                    {{ $processo->finalizacao->orgao_responsavel }} E {{ $dadosContratado['razao_social'] }}
+                    CONTRATO Nº {{ $contratoSalvo->numero_contrato ?? $processo->contrato?->numero_contrato }}, QUE FAZEM ENTRE SI A
+                    {{ $dadosContratante['orgao'] }} E {{ $dadosContratado['razao_social'] }}
                 </td>
             </tr>
         </table>
@@ -191,8 +191,8 @@
                     <td class="content">
                         <div style=" font-weight: bold; margin-bottom: 3px;">Contratante</div>
                         <div style="">
-                            {{ $processo->finalizacao->orgao_responsavel }}, com sede no(a) {{ $processo->prefeitura->endereco }}, na cidade de {{ $processo->prefeitura->cidade }} inscrito(a) no CNPJ
-                            sob o nº {{ $processo->finalizacao->cnpj }}, neste ato representado(a) pelo(a) {{ $processo->finalizacao->responsavel }} inscrito no CPF sob n° {{ $processo->finalizacao->cpf_responsavel }}.
+                            {{ $dadosContratante['orgao'] }}, com sede no(a) {{ $dadosContratante['endereco'] }}, na cidade de {{ $dadosContratante['cidade'] }} inscrito(a) no CNPJ
+                            sob o nº {{ $dadosContratante['cnpj_formatado'] }}, neste ato representado(a) pelo(a) {{ $dadosContratante['responsavel'] }} inscrito no CPF sob n° {{ $dadosContratante['cpf_responsavel_formatado'] }}.
                         </div>
                     </td>
                 </tr>
@@ -1270,7 +1270,7 @@
                     CONTRATANTE:
                 </td>
                 <td style="padding:6px;">
-                   {{ $processo->finalizacao->orgao_responsavel }}
+                   {{ $dadosContratante['orgao'] }}
                 </td>
             </tr>
 

@@ -607,7 +607,7 @@
                                                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                                         </svg>
-                                                        Gerar
+                                                        Gerar novo contrato
                                                     </button>
 
                                                     @php
@@ -828,6 +828,64 @@
 
                                                         </div>
                                                     @endif
+
+                                                    {{-- ============ DADOS DO CONTRATANTE (snapshot por contrato) ============ --}}
+                                                    @if ($tipo === 'contrato')
+                                                        @php
+                                                            $contratanteInicial = $contratantePadraoPorHomologacao[(string) ($homologacaoInicial ?? 'legado')]
+                                                                ?? ($contratantePadraoPorHomologacao['legado'] ?? []);
+                                                        @endphp
+                                                        <div class="p-4 rounded-lg bg-gray-50">
+                                                            <h5 class="mb-1 text-sm font-semibold text-gray-700">Dados do Contratante</h5>
+                                                            <p class="mb-3 text-xs text-gray-500">
+                                                                Pré-preenchidos com os dados do processo. Edite para gerar um contrato com contratante diferente (ex.: outra secretaria) — os dados são salvos apenas neste contrato.
+                                                            </p>
+                                                            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                                                <div class="sm:col-span-2">
+                                                                    <label for="contratante_orgao_responsavel" class="block mb-1 text-xs font-medium text-gray-600">Órgão Responsável pela Assinatura do Contrato</label>
+                                                                    <input type="text" id="contratante_orgao_responsavel" name="contratante_orgao_responsavel"
+                                                                           value="{{ $contratanteInicial['orgao_responsavel'] ?? '' }}"
+                                                                           class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                                                                </div>
+                                                                <div>
+                                                                    <label for="contratante_cargo_responsavel" class="block mb-1 text-xs font-medium text-gray-600">Cargo do Responsável</label>
+                                                                    <input type="text" id="contratante_cargo_responsavel" name="contratante_cargo_responsavel"
+                                                                           value="{{ $contratanteInicial['cargo_responsavel'] ?? '' }}"
+                                                                           class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                                                                </div>
+                                                                <div>
+                                                                    <label for="contratante_responsavel" class="block mb-1 text-xs font-medium text-gray-600">Responsável</label>
+                                                                    <input type="text" id="contratante_responsavel" name="contratante_responsavel"
+                                                                           value="{{ $contratanteInicial['responsavel'] ?? '' }}"
+                                                                           class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                                                                </div>
+                                                                <div>
+                                                                    <label for="contratante_cpf_responsavel" class="block mb-1 text-xs font-medium text-gray-600">CPF</label>
+                                                                    <input type="text" id="contratante_cpf_responsavel" name="contratante_cpf_responsavel"
+                                                                           value="{{ $contratanteInicial['cpf_responsavel'] ?? '' }}"
+                                                                           class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                                                                </div>
+                                                                <div>
+                                                                    <label for="contratante_cnpj" class="block mb-1 text-xs font-medium text-gray-600">CNPJ</label>
+                                                                    <input type="text" id="contratante_cnpj" name="contratante_cnpj"
+                                                                           value="{{ $contratanteInicial['cnpj'] ?? '' }}"
+                                                                           class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                                                                </div>
+                                                                <div>
+                                                                    <label for="contratante_razao_social" class="block mb-1 text-xs font-medium text-gray-600">Razão Social</label>
+                                                                    <input type="text" id="contratante_razao_social" name="contratante_razao_social"
+                                                                           value="{{ $contratanteInicial['razao_social'] ?? '' }}"
+                                                                           class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                                                                </div>
+                                                                <div class="sm:col-span-2">
+                                                                    <label for="contratante_endereco" class="block mb-1 text-xs font-medium text-gray-600">Endereço</label>
+                                                                    <input type="text" id="contratante_endereco" name="contratante_endereco"
+                                                                           value="{{ $contratanteInicial['endereco'] ?? '' }}"
+                                                                           class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    @endif
                                                 </div>
                                             </div>
                                         @endif
@@ -835,6 +893,65 @@
                                 </div>
                             @endforeach
                         </div>
+
+                        {{-- ============ HISTÓRICO DE CONTRATOS GERADOS ============ --}}
+                        @php
+                            $gruposContratos = $contratosPorHomologacao ?? collect();
+                            $chaveContratosInicial = (string) ($homologacaoInicial ?? 'legado');
+                        @endphp
+                        @if ($gruposContratos->isNotEmpty())
+                            @foreach ($gruposContratos as $chaveGrupo => $listaContratos)
+                                <div data-contratos-homologacao="{{ $chaveGrupo }}"
+                                     class="mt-8"
+                                     style="{{ (string) $chaveGrupo === $chaveContratosInicial ? '' : 'display:none;' }}">
+                                    <h4 class="mb-3 text-sm font-semibold text-gray-900">
+                                        Contratos gerados
+                                        <span class="ml-1 text-xs font-normal text-gray-500">({{ $listaContratos->count() }})</span>
+                                    </h4>
+                                    <div class="space-y-2">
+                                        @foreach ($listaContratos as $contratoItem)
+                                            @php $dc = $contratoItem->dados_contratante ?? []; @endphp
+                                            <details class="overflow-hidden border border-gray-200 rounded-lg">
+                                                <summary class="flex items-center justify-between px-4 py-3 cursor-pointer bg-gray-50 hover:bg-gray-100">
+                                                    <span class="text-sm font-medium text-gray-900">
+                                                        Contrato {{ $contratoItem->numero_sequencial }}
+                                                        @if ($contratoItem->numero_contrato)
+                                                            <span class="text-gray-500">— {{ $contratoItem->numero_contrato }}</span>
+                                                        @endif
+                                                    </span>
+                                                    <span class="flex items-center gap-3">
+                                                        @if ($contratoItem->gerado_em)
+                                                            <span class="text-xs text-gray-500">Gerado em {{ \Carbon\Carbon::parse($contratoItem->gerado_em)->format('d/m/Y H:i') }}</span>
+                                                        @endif
+                                                        @if ($contratoItem->caminho)
+                                                            <a href="{{ route('admin.processo.contrato.download', ['processo' => $processo->id, 'contrato_id' => $contratoItem->id]) }}"
+                                                               class="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+                                                                Baixar
+                                                            </a>
+                                                        @endif
+                                                    </span>
+                                                </summary>
+                                                <div class="grid grid-cols-1 gap-2 px-4 py-3 text-xs border-t border-gray-100 sm:grid-cols-2">
+                                                    <div><span class="font-medium text-gray-600">Órgão:</span> {{ $dc['orgao_responsavel'] ?? '—' }}</div>
+                                                    <div><span class="font-medium text-gray-600">Cargo:</span> {{ $dc['cargo_responsavel'] ?? '—' }}</div>
+                                                    <div><span class="font-medium text-gray-600">Responsável:</span> {{ $dc['responsavel'] ?? '—' }}</div>
+                                                    <div><span class="font-medium text-gray-600">CPF:</span> {{ $dc['cpf_responsavel'] ?? '—' }}</div>
+                                                    <div><span class="font-medium text-gray-600">CNPJ:</span> {{ $dc['cnpj'] ?? '—' }}</div>
+                                                    <div><span class="font-medium text-gray-600">Razão Social:</span> {{ $dc['razao_social'] ?? '—' }}</div>
+                                                    <div class="sm:col-span-2"><span class="font-medium text-gray-600">Endereço:</span> {{ $dc['endereco'] ?? '—' }}</div>
+                                                    @if ($contratoItem->data_assinatura_contrato)
+                                                        <div><span class="font-medium text-gray-600">Assinatura:</span> {{ \Carbon\Carbon::parse($contratoItem->data_assinatura_contrato)->format('d/m/Y') }}</div>
+                                                    @endif
+                                                    @if ($contratoItem->numero_extrato)
+                                                        <div><span class="font-medium text-gray-600">Extrato:</span> {{ $contratoItem->numero_extrato }}</div>
+                                                    @endif
+                                                </div>
+                                            </details>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endforeach
+                        @endif
                     </div>
                 </div>
             </div>
@@ -1739,8 +1856,10 @@
 
         // Carregar dados salvos do contrato
         document.addEventListener('DOMContentLoaded', function() {
-            carregarDadosContratoSalvos();
+            // Os campos começam em branco: cada geração cria um NOVO contrato. O
+            // contratante já vem pré-preenchido do servidor para a homologação inicial.
             inicializarEventosCampos();
+            toggleListaContratos(window.currentHomologacaoId);
         });
 
         async function carregarDadosContratoSalvos() {
@@ -1795,7 +1914,11 @@
                 linkDownload.href = homologacaoId ? `${base}?homologacao_id=${homologacaoId}` : base;
             }
 
-            carregarDadosContratoSalvos();
+            // Novo contrato: limpa os campos, recarrega o contratante padrão da
+            // homologação selecionada e mostra a lista de contratos correspondente.
+            limparCamposContrato();
+            preencherContratante((window.contratantePadrao || {})[homologacaoId ? String(homologacaoId) : 'legado']);
+            toggleListaContratos(homologacaoId);
         };
 
         function preencherCamposContrato(dados) {
@@ -1839,15 +1962,10 @@
         }
 
         function inicializarEventosCampos() {
-            // Adicionar eventos de blur para salvar automaticamente
-            const camposParaSalvar = [
-                'numero_contrato',
-                'data_assinatura_contrato', 
-                'numero_extrato',
-                'comarca',
-                'fonte_recurso',
-                'subcontratacao'
-            ];
+            // Autosave por campo desativado: com múltiplos contratos por processo, os
+            // campos são coletados e persistidos no momento da geração (em um novo
+            // contrato), evitando sobrescrever contratos já existentes.
+            const camposParaSalvar = [];
 
             camposParaSalvar.forEach(campoId => {
                 const elemento = document.getElementById(campoId) || 
@@ -2075,6 +2193,50 @@
             return assinantes;
         }
 
+        // Dados padrão do contratante por homologação (chave string do id ou 'legado').
+        window.contratantePadrao = @json($contratantePadraoPorHomologacao ?? []);
+
+        const CAMPOS_CONTRATANTE = ['orgao_responsavel', 'cargo_responsavel', 'cnpj', 'endereco', 'responsavel', 'cpf_responsavel', 'razao_social'];
+
+        // Lê os 7 campos do contratante do formulário (snapshot deste contrato).
+        function getContratante() {
+            const dados = {};
+            CAMPOS_CONTRATANTE.forEach(campo => {
+                const el = document.getElementById('contratante_' + campo);
+                dados[campo] = el ? el.value : '';
+            });
+            return dados;
+        }
+
+        // Preenche o formulário do contratante com um conjunto de dados.
+        function preencherContratante(dados) {
+            if (!dados) return;
+            CAMPOS_CONTRATANTE.forEach(campo => {
+                const el = document.getElementById('contratante_' + campo);
+                if (el) el.value = dados[campo] ?? '';
+            });
+        }
+
+        // Limpa os campos do contrato (cada geração é um NOVO contrato).
+        function limparCamposContrato() {
+            ['numero_contrato', 'data_assinatura_contrato', 'numero_extrato', 'comarca'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            const fonteRecurso = document.querySelector('[name="fonte_recurso"]');
+            if (fonteRecurso) fonteRecurso.value = '';
+            const subcontratacao = document.querySelector('[name="subcontratacao"]');
+            if (subcontratacao) subcontratacao.value = '';
+        }
+
+        // Mostra apenas a lista de contratos da homologação selecionada.
+        function toggleListaContratos(homologacaoId) {
+            const chave = homologacaoId ? String(homologacaoId) : 'legado';
+            document.querySelectorAll('[data-contratos-homologacao]').forEach(el => {
+                el.style.display = (el.getAttribute('data-contratos-homologacao') === chave) ? '' : 'none';
+            });
+        }
+
         function gerarContrato(processoId, data, event, tipo = 'contrato') {
             if (!data) {
                 showMessage('Por favor, selecione uma data antes de gerar o contrato.', 'error');
@@ -2089,10 +2251,12 @@
             }
 
             const camposContrato = getCamposContrato();
+            const contratante = getContratante();
             const assinantesJson = JSON.stringify(assinantes);
             const assinantesEncoded = encodeURIComponent(assinantesJson);
             const camposContratoJson = JSON.stringify(camposContrato);
             const camposContratoEncoded = encodeURIComponent(camposContratoJson);
+            const contratanteEncoded = encodeURIComponent(JSON.stringify(contratante));
 
             let url = `/admin/contrato/processos/${processoId}/pdf?data=${data}&tipo=${tipo}`;
 
@@ -2107,6 +2271,8 @@
             if (Object.keys(camposContrato).length > 0) {
                 url += `&campos=${camposContratoEncoded}`;
             }
+
+            url += `&contratante=${contratanteEncoded}`;
 
             const button = event.currentTarget;
             const originalText = button.textContent;
