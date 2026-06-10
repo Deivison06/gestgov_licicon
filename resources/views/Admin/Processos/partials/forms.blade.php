@@ -429,7 +429,27 @@
                 </a>
             </div>
         @else
-            <x-form-field name="descricao_e_quantitativos_itens_xml" label="" type="file" accept=".xml, .xlsx, .xls, .csv" />
+            {{-- DISPENSA: a vinculação do ETP acontece aqui, na Formalização da Demanda,
+                 pois o fluxo de dispensa não possui a seção de Estudo Técnico (onde as
+                 demais modalidades vinculam o ETP). Sem este botão, não havia como
+                 vincular um ETP num processo de dispensa. --}}
+            @if($processo->modalidade === \App\Enums\ModalidadeEnum::DISPENSA)
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <div class="flex-grow">
+                        <x-form-field name="descricao_e_quantitativos_itens_xml" label="" type="file" accept=".xml, .xlsx, .xls, .csv" />
+                    </div>
+                    <div class="flex items-end pb-1">
+                        <button type="button" @click="abrirModalSelecaoEtp()"
+                                class="inline-flex items-center px-4 py-2.5 text-sm font-bold text-white bg-[#009496] rounded-lg hover:bg-[#007a7a] transition-all shadow-md group">
+                            <i class="fas fa-search-plus mr-2 group-hover:scale-110 transition-transform"></i>
+                            Buscar ETP Inteligente
+                        </button>
+                    </div>
+                </div>
+                <p class="text-[10px] text-gray-500 italic mt-1">* Vincular um ETP dispensa a necessidade de fazer o upload do arquivo XLS/XML.</p>
+            @else
+                <x-form-field name="descricao_e_quantitativos_itens_xml" label="" type="file" accept=".xml, .xlsx, .xls, .csv" />
+            @endif
         @endif
 
         {{-- Preview de itens já importados via XLS --}}
