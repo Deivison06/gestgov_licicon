@@ -858,16 +858,29 @@
             {{ \Carbon\Carbon::parse($dataSelecionada)->translatedFormat('d \d\e F \d\e Y') }}
         </div>
 
-        <div class="signature-block">
-            ___________________________________<br>
-            {{ $processo->finalizacao->responsavel }} <br>
-            {{ $processo->finalizacao->orgao_responsavel }}
-        </div>
+        {{-- Assinatura do órgão gerenciador: usa o assinante selecionado na tela, com
+             fallback para o responsável da finalização quando nenhum foi escolhido. --}}
+        @if ($hasSelectedAssinantes)
+            @php $assinantePrincipal = $assinantes[0]; @endphp
+            <div class="signature-block">
+                ___________________________________<br>
+                {{ $assinantePrincipal['responsavel'] }} <br>
+                {{ $assinantePrincipal['unidade_nome'] }}
+            </div>
+        @else
+            <div class="signature-block">
+                ___________________________________<br>
+                {{ $processo->finalizacao->responsavel }} <br>
+                {{ $processo->finalizacao->orgao_responsavel }}
+            </div>
+        @endif
 
-        {{-- Assinaturas dos vencedores --}}
-        @if($processo->vencedores && $processo->vencedores->count() > 0)
+        {{-- Assinatura do vencedor: a Ata é individual por empresa, então exibe somente
+             o representante da empresa vinculada a esta Ata ($vencedores já vem filtrado
+             para o único vencedor pelo FinalizacaoPdfService). --}}
+        @if($vencedores && $vencedores->count() > 0)
             <div style="margin-top: 40px;">
-                @foreach($processo->vencedores as $vencedor)
+                @foreach($vencedores as $vencedor)
                     <div style="margin-bottom: 30px; text-align:center;">
                         ___________________________________<br>
                         <strong>{{ $vencedor->representante }}</strong>
