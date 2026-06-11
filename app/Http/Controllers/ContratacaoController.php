@@ -535,43 +535,27 @@ class ContratacaoController extends Controller
                         continue;
                     }
 
-                    // Calcular disponibilidade após este contrato
+                    // Calcular disponibilidade após este contrato (a partir do SALDO RESTANTE)
                     $disponivelApos = $estoque->quantidade_disponivel - $contratacaoData['quantidade_contratada'];
 
-                    // Verificar se já existe contratação para este lote e vencedor (pendente)
-                    $existente = LoteContratado::where('lote_id', $contratacaoData['lote_id'])
-                        ->where('vencedor_id', $contratacaoData['vencedor_id'])
-                        ->where('processo_id', $processo->id)
-                        ->where('status', 'PENDENTE')
-                        ->first();
+                    // Cada contratação é CUMULATIVA: sempre cria um novo registro e reserva
+                    // a quantidade do saldo restante do estoque. Assim, ao contratar o mesmo
+                    // item para um segundo contrato, o saldo é debitado do que sobrou (ex.:
+                    // 2800 → 2600) e não do total original. Para ALTERAR uma contratação já
+                    // existente, use a edição individual (não o fluxo em lote, que só adiciona).
+                    LoteContratado::create([
+                        'lote_id' => $contratacaoData['lote_id'],
+                        'vencedor_id' => $contratacaoData['vencedor_id'],
+                        'processo_id' => $processo->id,
+                        'quantidade_contratada' => $contratacaoData['quantidade_contratada'],
+                        'quantidade_disponivel_pos_contrato' => $disponivelApos,
+                        'valor_unitario' => $lote->vl_unit,
+                        'valor_total' => $contratacaoData['quantidade_contratada'] * $lote->vl_unit,
+                        'observacao' => $contratacaoData['observacao'] ?? null,
+                        'status' => 'PENDENTE',
+                    ]);
 
-                    if ($existente) {
-                        // Liberar quantidade anterior
-                        $estoque->liberarQuantidade($existente->quantidade_contratada);
-
-                        // Atualizar contratação existente
-                        $existente->update([
-                            'quantidade_contratada' => $contratacaoData['quantidade_contratada'],
-                            'quantidade_disponivel_pos_contrato' => $disponivelApos,
-                            'valor_total' => $contratacaoData['quantidade_contratada'] * $existente->valor_unitario,
-                            'observacao' => $contratacaoData['observacao'] ?? $existente->observacao,
-                        ]);
-                    } else {
-                        // Criar nova contratação
-                        LoteContratado::create([
-                            'lote_id' => $contratacaoData['lote_id'],
-                            'vencedor_id' => $contratacaoData['vencedor_id'],
-                            'processo_id' => $processo->id,
-                            'quantidade_contratada' => $contratacaoData['quantidade_contratada'],
-                            'quantidade_disponivel_pos_contrato' => $disponivelApos,
-                            'valor_unitario' => $lote->vl_unit,
-                            'valor_total' => $contratacaoData['quantidade_contratada'] * $lote->vl_unit,
-                            'observacao' => $contratacaoData['observacao'] ?? null,
-                            'status' => 'PENDENTE',
-                        ]);
-                    }
-
-                    // Atualizar estoque (reservar quantidade)
+                    // Atualizar estoque (reservar quantidade do saldo restante)
                     $estoque->reservarQuantidade($contratacaoData['quantidade_contratada']);
 
                     $salvas++;

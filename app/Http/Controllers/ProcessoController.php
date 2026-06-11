@@ -489,6 +489,56 @@ class ProcessoController extends Controller
     }
 
     /**
+     * Exclui uma republicação de edital (republicacao_edital / edital_adiado):
+     * remove o registro do documento e o respectivo arquivo PDF.
+     */
+    public function excluirRepublicacao(Processo $processo, Documento $documento)
+    {
+        try {
+            if (
+                $documento->processo_id != $processo->id ||
+                !in_array($documento->tipo_documento, ['republicacao_edital', 'edital_adiado'], true)
+            ) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Documento inválido ou não é uma republicação deste processo.'
+                ], 422);
+            }
+
+            if ($documento->caminho) {
+                $arquivo = public_path($documento->caminho);
+                if (file_exists($arquivo)) {
+                    unlink($arquivo);
+                }
+            }
+
+            $documento->delete();
+
+            Log::info('Republicação de edital excluída', [
+                'processo_id' => $processo->id,
+                'documento_id' => $documento->id,
+                'tipo' => $documento->tipo_documento,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Republicação excluída com sucesso.'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Erro ao excluir republicação', [
+                'processo_id' => $processo->id,
+                'documento_id' => $documento->id ?? null,
+                'erro' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao excluir republicação: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Criar edital com capa de republicação - NOVO MÉTODO
      */
     private function criarEditalComCapaRepublicacao(string $caminhoEdital, Processo $processo, ?string $justificativa = null): ?string

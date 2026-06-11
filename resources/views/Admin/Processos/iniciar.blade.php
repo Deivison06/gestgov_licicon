@@ -332,6 +332,15 @@
                                     </button>
                                 @endif
 
+                                @if ($isRepublicacao)
+                                    <button type="button"
+                                            onclick="excluirRepublicacao({{ $processo->id }}, {{ $doc['documento_id'] }})"
+                                            class="px-3 py-1.5 text-xs font-medium text-white transition-colors duration-200 bg-red-700 rounded-md hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1"
+                                            title="Excluir republicação">
+                                        Excluir
+                                    </button>
+                                @endif
+
                                 @if ($documentoGerado)
                                     @if ($isRepublicacao)
                                         <a href="{{ route('admin.processo.documento.dowload', ['processo' => $processo->id, 'tipo' => $doc['documento_id']]) }}"
@@ -801,6 +810,34 @@
         function fecharModal(modalId) {
             const modal = document.getElementById(modalId);
             if (modal) modal.classList.add('hidden');
+        }
+
+        // Exclui uma republicação de edital (remove registro + PDF).
+        async function excluirRepublicacao(processoId, documentoId) {
+            if (!confirm('Tem certeza que deseja excluir esta republicação de edital?\n\nO registro e o PDF serão removidos.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/admin/processos/${processoId}/republicacao/${documentoId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json',
+                    },
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert(data.message || 'Republicação excluída com sucesso.');
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Erro ao excluir republicação.');
+                }
+            } catch (error) {
+                alert('Erro ao excluir republicação: ' + error);
+            }
         }
 
         document.addEventListener('DOMContentLoaded', () => {

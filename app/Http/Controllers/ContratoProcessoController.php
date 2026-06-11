@@ -276,6 +276,61 @@ class ContratoProcessoController extends Controller
     }
 
     /**
+     * Exclui um contrato gerado: remove o registro e o PDF próprio. NÃO altera as
+     * contratações/saldo — os itens são devolvidos pela opção "remover contratação".
+     */
+    public function destroyContrato(Processo $processo, Contrato $contrato)
+    {
+        try {
+            if ($contrato->processo_id != $processo->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Contrato não pertence a este processo.'
+                ], 403);
+            }
+
+            if ($contrato->caminho) {
+                $arquivo = public_path($contrato->caminho);
+                if (file_exists($arquivo)) {
+                    unlink($arquivo);
+                }
+
+                // Remove também o registro em `documentos` (montagem do processo) que
+                // aponte para o mesmo arquivo, para não referenciar um PDF inexistente.
+                Documento::where('processo_id', $processo->id)
+                    ->where('tipo_documento', 'contrato')
+                    ->where('caminho', $contrato->caminho)
+                    ->delete();
+            }
+
+            $numero = $contrato->numero_sequencial;
+            $contrato->delete();
+
+            Log::info('Contrato excluído', [
+                'processo_id' => $processo->id,
+                'contrato_id' => $contrato->id,
+                'numero_sequencial' => $numero,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => "Contrato {$numero} excluído com sucesso.",
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Erro ao excluir contrato', [
+                'processo_id' => $processo->id,
+                'contrato_id' => $contrato->id ?? null,
+                'erro' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao excluir contrato: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * Gera o PDF do contrato
      */
     public function gerarPdf(Request $request, Processo $processo)

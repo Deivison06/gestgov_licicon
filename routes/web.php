@@ -249,6 +249,10 @@ Route::prefix('admin')
             Route::post('/republicar-processo', [ProcessoController::class, 'republicarProcesso'])
                 ->name('processos.republicar.processo');
 
+            // Excluir uma republicação de edital (remove registro + PDF)
+            Route::delete('/republicacao/{documento}', [ProcessoController::class, 'excluirRepublicacao'])
+                ->name('processos.republicacao.destroy');
+
             Route::post('/cancelar-licitacao', [ProcessoController::class, 'cancelarLicitacao'])
                 ->name('processos.cancelar.licitacao');
 
@@ -370,6 +374,10 @@ Route::prefix('admin')
             // Download do contrato
             Route::get('/download', [ContratoProcessoController::class, 'baixarContrato'])
                 ->name('download');
+
+            // Excluir um contrato gerado (remove registro + PDF; não altera contratações)
+            Route::delete('/{contrato}', [ContratoProcessoController::class, 'destroyContrato'])
+                ->name('destroy');
         });
 
         // ========================================

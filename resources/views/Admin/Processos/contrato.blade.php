@@ -929,6 +929,11 @@
                                                                 Baixar
                                                             </a>
                                                         @endif
+                                                        <button type="button"
+                                                                onclick="event.preventDefault(); event.stopPropagation(); excluirContrato({{ $contratoItem->id }}, {{ $contratoItem->numero_sequencial }})"
+                                                                class="px-3 py-1.5 text-xs font-medium text-white bg-red-600 rounded-lg hover:bg-red-700">
+                                                            Excluir
+                                                        </button>
                                                     </span>
                                                 </summary>
                                                 <div class="grid grid-cols-1 gap-2 px-4 py-3 text-xs border-t border-gray-100 sm:grid-cols-2">
@@ -2235,6 +2240,34 @@
             document.querySelectorAll('[data-contratos-homologacao]').forEach(el => {
                 el.style.display = (el.getAttribute('data-contratos-homologacao') === chave) ? '' : 'none';
             });
+        }
+
+        // Exclui um contrato gerado (registro + PDF). Não altera as contratações/saldo.
+        async function excluirContrato(contratoId, numeroSequencial) {
+            if (!confirm(`Tem certeza que deseja excluir o Contrato ${numeroSequencial}?\n\nO registro e o PDF serão removidos. As contratações (itens) NÃO são alteradas — use "remover contratação" para devolver os itens, se necessário.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/admin/processos/${processoId}/contrato/${contratoId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json',
+                    },
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    setTimeout(() => window.location.reload(), 1200);
+                } else {
+                    showMessage(data.message || 'Erro ao excluir contrato.', 'error');
+                }
+            } catch (error) {
+                showMessage('Erro ao excluir contrato: ' + error, 'error');
+            }
         }
 
         function gerarContrato(processoId, data, event, tipo = 'contrato') {
