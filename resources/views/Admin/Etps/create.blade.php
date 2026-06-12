@@ -365,9 +365,36 @@
                 <input type="text" id="novo_item_descricao" placeholder="Ex: Caneta esferográfica azul"
                     class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent text-sm"
                     autocomplete="off">
-                <p class="mt-1 text-xs text-gray-500">O item ficará disponível para seleção imediatamente após a criação.
-                </p>
             </div>
+
+            <div class="grid grid-cols-2 gap-4 mt-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Unidade *</label>
+                    <select id="novo_item_unidade" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent text-sm">
+                        <option value="UN" selected>UN (Unidade)</option>
+                        <option value="KG">KG (Quilograma)</option>
+                        <option value="CX">CX (Caixa)</option>
+                        <option value="PCT">PCT (Pacote)</option>
+                        <option value="L">L (Litro)</option>
+                        <option value="M">M (Metro)</option>
+                        <option value="RES">RES (Resma)</option>
+                        <option value="SAC">SAC (Saco)</option>
+                        <option value="FR">FR (Frasco)</option>
+                        <option value="KIT">KIT (Kit)</option>
+                        <option value="JG">JG (Jogo)</option>
+                        <option value="FD">FD (Fardo)</option>
+                        <option value="GL">GL (Galão)</option>
+                        <option value="RL">RL (Rolo)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Quantidade *</label>
+                    <input type="number" id="novo_item_quantidade" value="1" min="1"
+                        class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent text-sm">
+                </div>
+            </div>
+
+            <p class="mt-2 text-xs text-gray-500">O item será criado e adicionado diretamente à sua lista.</p>
 
             <div id="criar-item-erro"
                 class="hidden mt-3 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700"></div>
@@ -673,6 +700,10 @@
                                 class="buscar-item w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#009496] focus:border-[#009496] transition"
                                 data-lista="${listaId}">
                         </div>
+                        <button type="button" onclick="abrirModalCriarItem(${loteIndex})" 
+                            class="inline-flex items-center justify-center px-4 py-2 text-sm font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition shadow-sm whitespace-nowrap gap-2">
+                            <i class="fas fa-plus"></i> Novo Item Manual
+                        </button>
                         <button type="button" onclick="openModalPncp(${loteIndex})" 
                             class="inline-flex items-center justify-center px-4 py-2 text-sm font-bold text-white bg-[#009496] hover:bg-[#007a7a] rounded-lg transition shadow-sm whitespace-nowrap gap-2">
                             <i class="fas fa-globe"></i> Novo Item (PNCP)
@@ -698,7 +729,7 @@
             };
 
             /* ── SELEÇÃO / REMOÇÃO DE ITENS ── */
-            window.toggleItemSelecionado = function(checkbox, loteIndex) {
+            window.toggleItemSelecionado = function(checkbox, loteIndex, overrideUnidade = null, overrideQuantidade = null) {
                 const id = checkbox.value;
                 const descricao = checkbox.dataset.descricao;
                 const containerId = loteIndex !== null ? `itens-selecionados-lote-${loteIndex}` :
@@ -707,6 +738,9 @@
 
                 if (checkbox.checked) {
                     const namePrefix = loteIndex !== null ? `lotes[${loteIndex}][itens]` : 'itens';
+                    const selectedUnidade = overrideUnidade || 'UN';
+                    const selectedQuantidade = overrideQuantidade || '';
+
                     container.insertAdjacentHTML('beforeend', `
                     <div class="bg-white border border-gray-200 rounded-xl shadow-sm hover:border-[#009496]/30 transition overflow-hidden" id="item-${containerId}-${id}">
                         <div class="flex flex-col md:flex-row md:items-center justify-between p-4 gap-4 cursor-pointer" onclick="toggleAccordionItem('${containerId}-${id}')" title="Clique para expandir/recolher">
@@ -725,26 +759,26 @@
                                 <div class="flex flex-col gap-1">
                                     <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Unidade</span>
                                     <select name="${namePrefix}[${id}][unidade]" required class="rounded-lg border-gray-300 text-xs py-1.5 focus:border-[#009496] focus:ring-[#009496] w-32 bg-gray-50/50 hover:bg-gray-50 transition">
-                                        <option value="UN">UN (Unidade)</option>
-                                        <option value="KG">KG (Quilograma)</option>
-                                        <option value="CX">CX (Caixa)</option>
-                                        <option value="PCT">PCT (Pacote)</option>
-                                        <option value="L">L (Litro)</option>
-                                        <option value="M">M (Metro)</option>
-                                        <option value="RES">RES (Resma)</option>
-                                        <option value="SAC">SAC (Saco)</option>
-                                        <option value="FR">FR (Frasco)</option>
-                                        <option value="KIT">KIT (Kit)</option>
-                                        <option value="JG">JG (Jogo)</option>
-                                        <option value="FD">FD (Fardo)</option>
-                                        <option value="GL">GL (Galão)</option>
-                                        <option value="RL">RL (Rolo)</option>
+                                        <option value="UN" ${selectedUnidade === 'UN' ? 'selected' : ''}>UN (Unidade)</option>
+                                        <option value="KG" ${selectedUnidade === 'KG' ? 'selected' : ''}>KG (Quilograma)</option>
+                                        <option value="CX" ${selectedUnidade === 'CX' ? 'selected' : ''}>CX (Caixa)</option>
+                                        <option value="PCT" ${selectedUnidade === 'PCT' ? 'selected' : ''}>PCT (Pacote)</option>
+                                        <option value="L" ${selectedUnidade === 'L' ? 'selected' : ''}>L (Litro)</option>
+                                        <option value="M" ${selectedUnidade === 'M' ? 'selected' : ''}>M (Metro)</option>
+                                        <option value="RES" ${selectedUnidade === 'RES' ? 'selected' : ''}>RES (Resma)</option>
+                                        <option value="SAC" ${selectedUnidade === 'SAC' ? 'selected' : ''}>SAC (Saco)</option>
+                                        <option value="FR" ${selectedUnidade === 'FR' ? 'selected' : ''}>FR (Frasco)</option>
+                                        <option value="KIT" ${selectedUnidade === 'KIT' ? 'selected' : ''}>KIT (Kit)</option>
+                                        <option value="JG" ${selectedUnidade === 'JG' ? 'selected' : ''}>JG (Jogo)</option>
+                                        <option value="FD" ${selectedUnidade === 'FD' ? 'selected' : ''}>FD (Fardo)</option>
+                                        <option value="GL" ${selectedUnidade === 'GL' ? 'selected' : ''}>GL (Galão)</option>
+                                        <option value="RL" ${selectedUnidade === 'RL' ? 'selected' : ''}>RL (Rolo)</option>
                                     </select>
                                 </div>
                                 
                                 <div class="flex flex-col gap-1">
                                     <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Quantidade</span>
-                                    <input type="number" name="${namePrefix}[${id}][quantidade]" placeholder="Qtd" min="1" required class="rounded-lg border-gray-300 text-xs py-1.5 focus:border-[#009496] focus:ring-[#009496] w-20 bg-gray-50/50 hover:bg-gray-50 transition">
+                                    <input type="number" name="${namePrefix}[${id}][quantidade]" value="${selectedQuantidade}" placeholder="Qtd" min="1" required class="rounded-lg border-gray-300 text-xs py-1.5 focus:border-[#009496] focus:ring-[#009496] w-20 bg-gray-50/50 hover:bg-gray-50 transition">
                                 </div>
 
                                 <div class="flex items-end self-end pb-0.5 gap-2">
@@ -1340,9 +1374,13 @@
         /* ══════════════════════════════════════════════════════════
            MODAL: CRIAR ITEM RÁPIDO
         ══════════════════════════════════════════════════════════ */
-        window.abrirModalCriarItem = function() {
+        let activeLoteIndexManual = null;
+        window.abrirModalCriarItem = function(loteIndex = null) {
+            activeLoteIndexManual = loteIndex;
             document.getElementById('modalCriarItem').classList.remove('hidden');
             document.getElementById('novo_item_descricao').value = '';
+            document.getElementById('novo_item_unidade').value = 'UN';
+            document.getElementById('novo_item_quantidade').value = '1';
             document.getElementById('criar-item-erro').classList.add('hidden');
             document.getElementById('criar-item-sucesso').classList.add('hidden');
             setTimeout(() => document.getElementById('novo_item_descricao').focus(), 100);
@@ -1350,6 +1388,7 @@
 
         window.fecharModalCriarItem = function() {
             document.getElementById('modalCriarItem').classList.add('hidden');
+            activeLoteIndexManual = null;
         };
 
         document.getElementById('modal-criar-item-overlay').addEventListener('click', fecharModalCriarItem);
@@ -1364,6 +1403,8 @@
 
         window.confirmarCriarItem = function() {
             const descricao = document.getElementById('novo_item_descricao').value.trim();
+            const unidade = document.getElementById('novo_item_unidade').value;
+            const quantidade = document.getElementById('novo_item_quantidade').value;
             const erroDiv = document.getElementById('criar-item-erro');
             const sucessoDiv = document.getElementById('criar-item-sucesso');
             const btn = document.getElementById('btnConfirmarCriarItem');
@@ -1389,18 +1430,34 @@
                         'X-CSRF-TOKEN': getCsrfToken()
                     },
                     body: JSON.stringify({
-                        descricao_item: descricao
+                        descricao_item: descricao,
+                        unidade_medida: unidade
                     })
                 })
                 .then(handleCsrfExpirado)
                 .then(r => r.json())
                 .then(data => {
                     if (data.success) {
-                        adicionarItemAosListas(data.item);
-                        sucessoDiv.textContent = `Item "${data.item.descricao_item}" criado com sucesso!`;
+                        const item = data.item;
+                        adicionarItemAosListas(item);
+
+                        if (activeLoteIndexManual !== null) {
+                            const loteCheckbox = document.querySelector(`#lista_itens_lote_${activeLoteIndexManual} .item-checkbox[value="${item.id}"]`);
+                            if (loteCheckbox) {
+                                loteCheckbox.checked = true;
+                                toggleItemSelecionado(loteCheckbox, activeLoteIndexManual, unidade, quantidade);
+                            }
+                        } else {
+                            const globalCheckbox = document.querySelector(`#lista_itens_global .item-checkbox[value="${item.id}"]`);
+                            if (globalCheckbox) {
+                                globalCheckbox.checked = true;
+                                toggleItemSelecionado(globalCheckbox, null, unidade, quantidade);
+                            }
+                        }
+
+                        sucessoDiv.textContent = `Item "${item.descricao_item}" criado e selecionado com sucesso!`;
                         sucessoDiv.classList.remove('hidden');
-                        document.getElementById('novo_item_descricao').value = '';
-                        setTimeout(fecharModalCriarItem, 1500);
+                        setTimeout(fecharModalCriarItem, 1000);
                     } else {
                         erroDiv.textContent = data.message || 'Erro ao criar item.';
                         erroDiv.classList.remove('hidden');

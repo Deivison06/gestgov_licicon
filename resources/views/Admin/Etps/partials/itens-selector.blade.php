@@ -24,6 +24,12 @@
         </div>
 
         <button type="button" 
+            onclick="abrirModalCriarItem({{ $loteIndex !== null ? $loteIndex : 'null' }})" 
+            class="inline-flex items-center justify-center px-4 py-2 text-sm font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition shadow-sm whitespace-nowrap gap-2">
+            <i class="fas fa-plus"></i> Novo Item Manual
+        </button>
+
+        <button type="button" 
             onclick="openModalPncp({{ $loteIndex !== null ? $loteIndex : 'null' }})" 
             class="inline-flex items-center justify-center px-4 py-2 text-sm font-bold text-white bg-[#009496] hover:bg-[#007a7a] rounded-lg transition shadow-sm whitespace-nowrap gap-2">
             <i class="fas fa-globe"></i> Novo Item (PNCP)
