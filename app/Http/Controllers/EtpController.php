@@ -819,20 +819,30 @@ class EtpController extends Controller
         $sheet       = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Itens');
 
-        $headers = ['Descrição do Item', 'Unidade', 'Quantidade', 'Lote'];
+        $headers = ['Descrição do Item', 'Unidade', 'Quantidade'];
         foreach ($headers as $col => $header) {
             $sheet->setCellValueByColumnAndRow($col + 1, 1, $header);
+            $sheet->getStyleByColumnAndRow($col + 1, 1)->getFont()->setBold(true);
+            $sheet->getStyleByColumnAndRow($col + 1, 1)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFE2E8F0');
         }
 
         $row = 2;
 
         if ($etp->tipo_contratacao === 'lote' && $etp->lotes->count() > 0) {
             foreach ($etp->lotes as $lote) {
+                $sheet->setCellValueByColumnAndRow(1, $row, $lote->nome);
+                $sheet->mergeCells("A{$row}:C{$row}");
+                
+                $style = $sheet->getStyle("A{$row}:C{$row}");
+                $style->getFont()->setBold(true);
+                $style->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFE0F2FE');
+                $style->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+                $row++;
+
                 foreach ($lote->itens as $item) {
                     $sheet->setCellValueByColumnAndRow(1, $row, $item->descricao_item);
                     $sheet->setCellValueByColumnAndRow(2, $row, $item->pivot->unidade);
                     $sheet->setCellValueByColumnAndRow(3, $row, $item->pivot->quantidade);
-                    $sheet->setCellValueByColumnAndRow(4, $row, $lote->nome);
                     $row++;
                 }
             }
@@ -841,12 +851,11 @@ class EtpController extends Controller
                 $sheet->setCellValueByColumnAndRow(1, $row, $item->descricao_item);
                 $sheet->setCellValueByColumnAndRow(2, $row, $item->pivot->unidade);
                 $sheet->setCellValueByColumnAndRow(3, $row, $item->pivot->quantidade);
-                $sheet->setCellValueByColumnAndRow(4, $row, '');
                 $row++;
             }
         }
 
-        foreach (range('A', 'D') as $col) {
+        foreach (range('A', 'C') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 
