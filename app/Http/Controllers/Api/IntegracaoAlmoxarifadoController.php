@@ -88,7 +88,7 @@ class IntegracaoAlmoxarifadoController extends Controller
                         return [
                             'lote_numero' => $numeroLote,
                             'descricao' => $itemContratado->lote->descricao,
-                            'unidade' => $itemContratado->lote->unidade ?? 'UN',
+                            'unidade' => $itemContratado->lote->unidade ?? 'UND',
                             'quantidade' => (float) $itemContratado->quantidade_contratada,
                             'valor_unitario' => (float) $itemContratado->valor_unitario,
                             'valor_total' => (float) $itemContratado->valor_total,

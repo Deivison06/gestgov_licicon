@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Services\EtpItemService;
+use App\Enums\UnidadeMedidaEnum;
 
 class EtpItemController extends Controller
 {
@@ -19,8 +20,9 @@ class EtpItemController extends Controller
         $descricao = $request->get('descricao');
 
         $itens = $this->etpItemService->getAllPaged(15, $descricao);
+        $unidadesMedida = UnidadeMedidaEnum::casesWithLabels();
 
-        return view('Admin.EtpItens.index', compact('itens', 'descricao'));
+        return view('Admin.EtpItens.index', compact('itens', 'descricao', 'unidadesMedida'));
     }
 
 

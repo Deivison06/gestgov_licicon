@@ -401,20 +401,9 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Unidade *</label>
                     <select id="novo_item_unidade" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent text-sm">
-                        <option value="UN" selected>UN (Unidade)</option>
-                        <option value="KG">KG (Quilograma)</option>
-                        <option value="CX">CX (Caixa)</option>
-                        <option value="PCT">PCT (Pacote)</option>
-                        <option value="L">L (Litro)</option>
-                        <option value="M">M (Metro)</option>
-                        <option value="RES">RES (Resma)</option>
-                        <option value="SAC">SAC (Saco)</option>
-                        <option value="FR">FR (Frasco)</option>
-                        <option value="KIT">KIT (Kit)</option>
-                        <option value="JG">JG (Jogo)</option>
-                        <option value="FD">FD (Fardo)</option>
-                        <option value="GL">GL (Galão)</option>
-                        <option value="RL">RL (Rolo)</option>
+                        @foreach($unidadesMedida as $value => $label)
+                            <option value="{{ $value }}" {{ $value === 'UND' ? 'selected' : '' }}>{{ $label }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <div>
@@ -450,6 +439,7 @@
 
 
     <script>
+        const UNIDADES_MEDIDA = @json($unidadesMedida);
         /* ── CSRF helpers (lê sempre do <meta>, evita token obsoleto) ── */
         window.getCsrfToken = function () {
             const meta = document.querySelector('meta[name="csrf-token"]');
@@ -1085,7 +1075,7 @@
             activeLoteIndexManual = loteIndex;
             document.getElementById('modalCriarItem').classList.remove('hidden');
             document.getElementById('novo_item_descricao').value = '';
-            document.getElementById('novo_item_unidade').value = 'UN';
+            document.getElementById('novo_item_unidade').value = 'UND';
             document.getElementById('novo_item_quantidade').value = '1';
             document.getElementById('criar-item-erro').classList.add('hidden');
             document.getElementById('criar-item-sucesso').classList.add('hidden');
@@ -1428,16 +1418,9 @@
 
         /* ── CENTRALIZED ITEM HTML BUILDER ── */
         function renderUnidadeSelect(name, valorImportado) {
-            const opcoes = [
-                ['UN', 'UN (Unidade)'], ['KG', 'KG (Quilograma)'], ['CX', 'CX (Caixa)'],
-                ['PCT', 'PCT (Pacote)'], ['L', 'L (Litro)'], ['M', 'M (Metro)'],
-                ['RES', 'RES (Resma)'], ['SAC', 'SAC (Saco)'], ['FR', 'FR (Frasco)'],
-                ['KIT', 'KIT (Kit)'], ['JG', 'JG (Jogo)'], ['FD', 'FD (Fardo)'],
-                ['GL', 'GL (Galão)'], ['RL', 'RL (Rolo)']
-            ];
-            const val = (valorImportado || 'UN').toUpperCase();
-            const conhecidos = opcoes.map(o => o[0]);
-            let opts = opcoes.map(([v, l]) =>
+            const val = (valorImportado || 'UND').toUpperCase();
+            const conhecidos = Object.keys(UNIDADES_MEDIDA);
+            let opts = Object.entries(UNIDADES_MEDIDA).map(([v, l]) =>
                 `<option value="${v}"${v === val ? ' selected' : ''}>${l}</option>`
             ).join('');
 
@@ -1508,7 +1491,7 @@
             const container = document.getElementById(containerId);
 
             if (checkbox.checked) {
-                const finalUnidade = overrideUnidade || 'UN';
+                const finalUnidade = overrideUnidade || 'UND';
                 const finalQuantidade = overrideQuantidade || 1;
                 container.insertAdjacentHTML('beforeend', buildItemSelecionadoHtml(containerId, id, descricao, loteIndex, finalUnidade, finalQuantidade));
             } else {
@@ -1633,7 +1616,7 @@
                     itensDuplicar.push({
                         id: itemId,
                         descricao,
-                        unidade: unidadeEl?.value || 'UN',
+                        unidade: unidadeEl?.value || 'UND',
                         quantidade: qtdEl?.value || '1'
                     });
                 });

@@ -1318,7 +1318,7 @@
                                                 onchange="atualizarQuantidadeItem(this)"
                                                 placeholder="0,00">
                                             <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                                                <span class="text-xs text-gray-400">${lote.unidade || 'un'}</span>
+                                                <span class="text-xs text-gray-400">${lote.unidade || 'und'}</span>
                                             </div>
                                         </div>
                                     </td>
@@ -1507,7 +1507,7 @@
                                 ${item.quantidade.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                             </div>
                             <div class="text-xs text-gray-500">
-                                ${item.lote.unidade || 'un'}
+                                ${item.lote.unidade || 'und'}
                             </div>
                         </td>
                         <td class="px-4 py-3 text-sm font-medium text-gray-900">

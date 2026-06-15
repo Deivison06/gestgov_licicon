@@ -1,6 +1,5 @@
 @php
     $unidadeSalva = strtoupper(trim($item->pivot->unidade));
-    $unidadesPadrao = ['UN', 'KG', 'CX', 'PCT', 'L', 'M', 'RES', 'SAC', 'FR', 'KIT', 'JG', 'FD', 'GL', 'RL'];
 @endphp
 
 <div class="bg-white border border-gray-200 rounded-xl shadow-sm hover:border-[#009496]/30 transition overflow-hidden" 
@@ -26,21 +25,10 @@
             <div class="flex flex-col gap-1">
                 <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Unidade</span>
                 <select name="{{ $namePrefix }}[{{ $item->id }}][unidade]" required class="rounded-lg border-gray-300 text-xs py-1.5 focus:border-[#009496] focus:ring-[#009496] w-32 bg-gray-50/50 hover:bg-gray-50 transition">
-                    <option value="UN" {{ $unidadeSalva === 'UN' ? 'selected' : '' }}>UN (Unidade)</option>
-                    <option value="KG" {{ $unidadeSalva === 'KG' ? 'selected' : '' }}>KG (Quilograma)</option>
-                    <option value="CX" {{ $unidadeSalva === 'CX' ? 'selected' : '' }}>CX (Caixa)</option>
-                    <option value="PCT" {{ $unidadeSalva === 'PCT' ? 'selected' : '' }}>PCT (Pacote)</option>
-                    <option value="L" {{ $unidadeSalva === 'L' ? 'selected' : '' }}>L (Litro)</option>
-                    <option value="M" {{ $unidadeSalva === 'M' ? 'selected' : '' }}>M (Metro)</option>
-                    <option value="RES" {{ $unidadeSalva === 'RES' ? 'selected' : '' }}>RES (Resma)</option>
-                    <option value="SAC" {{ $unidadeSalva === 'SAC' ? 'selected' : '' }}>SAC (Saco)</option>
-                    <option value="FR" {{ $unidadeSalva === 'FR' ? 'selected' : '' }}>FR (Frasco)</option>
-                    <option value="KIT" {{ $unidadeSalva === 'KIT' ? 'selected' : '' }}>KIT (Kit)</option>
-                    <option value="JG" {{ $unidadeSalva === 'JG' ? 'selected' : '' }}>JG (Jogo)</option>
-                    <option value="FD" {{ $unidadeSalva === 'FD' ? 'selected' : '' }}>FD (Fardo)</option>
-                    <option value="GL" {{ $unidadeSalva === 'GL' ? 'selected' : '' }}>GL (Galão)</option>
-                    <option value="RL" {{ $unidadeSalva === 'RL' ? 'selected' : '' }}>RL (Rolo)</option>
-                    @if ($unidadeSalva && !in_array($unidadeSalva, $unidadesPadrao))
+                    @foreach($unidadesMedida as $value => $label)
+                        <option value="{{ $value }}" {{ $unidadeSalva === $value ? 'selected' : '' }}>{{ $label }}</option>
+                    @endforeach
+                    @if ($unidadeSalva && !isset($unidadesMedida[$unidadeSalva]))
                         <option value="{{ $unidadeSalva }}" selected>{{ $unidadeSalva }}</option>
                     @endif
                 </select>

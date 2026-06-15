@@ -1552,7 +1552,7 @@
                                     </td>
                                     <td class="px-4 py-3">
                                         <span class="font-medium">${parseFloat(lote.quantidade_disponivel).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
-                                        <span class="text-xs text-gray-500 ml-1">${lote.unidade || 'un'}</span>
+                                        <span class="text-xs text-gray-500 ml-1">${lote.unidade || 'und'}</span>
                                     </td>
                                     <td class="px-4 py-3">
                                         R$ ${parseFloat(lote.vl_unit).toLocaleString('pt-BR', {minimumFractionDigits: 2})}

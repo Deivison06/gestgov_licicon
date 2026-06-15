@@ -155,20 +155,9 @@
                     <label class="block text-sm font-medium leading-6 text-gray-900 mb-2">Unidade de Medida</label>
                     <select name="unidade_medida" id="create_unidade_medida" class="block w-full rounded-md border-0 py-2.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-[#009496] sm:text-sm sm:leading-6">
                         <option value="">Selecione...</option>
-                        <option value="UN">UN (Unidade)</option>
-                        <option value="KG">KG (Quilograma)</option>
-                        <option value="CX">CX (Caixa)</option>
-                        <option value="PCT">PCT (Pacote)</option>
-                        <option value="L">L (Litro)</option>
-                        <option value="M">M (Metro)</option>
-                        <option value="RES">RES (Resma)</option>
-                        <option value="SAC">SAC (Saco)</option>
-                        <option value="FR">FR (Frasco)</option>
-                        <option value="KIT">KIT (Kit)</option>
-                        <option value="JG">JG (Jogo)</option>
-                        <option value="FD">FD (Fardo)</option>
-                        <option value="GL">GL (Galão)</option>
-                        <option value="RL">RL (Rolo)</option>
+                        @foreach($unidadesMedida as $value => $label)
+                            <option value="{{ $value }}">{{ $label }}</option>
+                        @endforeach
                     </select>
                 </div>
             </div>
@@ -204,7 +193,12 @@
                 </div>
                 <div class="mb-4">
                     <label class="block text-sm font-medium leading-6 text-gray-900 mb-2">Unidade de Medida</label>
-                    <input type="text" name="unidade_medida" id="input_unidade_medida" placeholder="Ex: Unidade, Caixa, Kg, Metro" class="block w-full rounded-md border-0 py-2.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#009496] sm:text-sm sm:leading-6">
+                    <select name="unidade_medida" id="input_unidade_medida" class="block w-full rounded-md border-0 py-2.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-[#009496] sm:text-sm sm:leading-6">
+                        <option value="">Selecione...</option>
+                        @foreach($unidadesMedida as $value => $label)
+                            <option value="{{ $value }}">{{ $label }}</option>
+                        @endforeach
+                    </select>
                 </div>
             </div>
             <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end">

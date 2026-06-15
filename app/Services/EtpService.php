@@ -54,7 +54,7 @@ class EtpService
                 $itensFormatados = [];
                 foreach ($itens as $itemId => $itemData) {
                     $itensFormatados[$itemId] = [
-                        'unidade' => $itemData['unidade'] ?? 'UN',
+                        'unidade' => $itemData['unidade'] ?? 'UND',
                         'quantidade' => $itemData['quantidade'] ?? 0,
                     ];
                 }
@@ -73,7 +73,7 @@ class EtpService
                     foreach ($itensLote as $itemData) {
                         if (isset($itemData['item_id'])) {
                             $itensFormatados[$itemData['item_id']] = [
-                                'unidade' => $itemData['unidade'] ?? 'UN',
+                                'unidade' => $itemData['unidade'] ?? 'UND',
                                 'quantidade' => $itemData['quantidade'] ?? 0,
                             ];
                         }
@@ -147,7 +147,7 @@ class EtpService
                 $itensFormatados = [];
                 foreach ($itens as $itemId => $itemData) {
                     $itensFormatados[$itemId] = [
-                        'unidade' => $itemData['unidade'] ?? 'UN',
+                        'unidade' => $itemData['unidade'] ?? 'UND',
                         'quantidade' => $itemData['quantidade'] ?? 0,
                     ];
                 }
@@ -166,7 +166,7 @@ class EtpService
                     foreach ($itensLote as $itemData) {
                         if (isset($itemData['item_id'])) {
                             $itensFormatados[$itemData['item_id']] = [
-                                'unidade' => $itemData['unidade'] ?? 'UN',
+                                'unidade' => $itemData['unidade'] ?? 'UND',
                                 'quantidade' => $itemData['quantidade'] ?? 0,
                             ];
                         }

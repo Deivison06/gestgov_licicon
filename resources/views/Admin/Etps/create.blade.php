@@ -371,20 +371,9 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Unidade *</label>
                     <select id="novo_item_unidade" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent text-sm">
-                        <option value="UN" selected>UN (Unidade)</option>
-                        <option value="KG">KG (Quilograma)</option>
-                        <option value="CX">CX (Caixa)</option>
-                        <option value="PCT">PCT (Pacote)</option>
-                        <option value="L">L (Litro)</option>
-                        <option value="M">M (Metro)</option>
-                        <option value="RES">RES (Resma)</option>
-                        <option value="SAC">SAC (Saco)</option>
-                        <option value="FR">FR (Frasco)</option>
-                        <option value="KIT">KIT (Kit)</option>
-                        <option value="JG">JG (Jogo)</option>
-                        <option value="FD">FD (Fardo)</option>
-                        <option value="GL">GL (Galão)</option>
-                        <option value="RL">RL (Rolo)</option>
+                        @foreach($unidadesMedida as $value => $label)
+                            <option value="{{ $value }}" {{ $value === 'UND' ? 'selected' : '' }}>{{ $label }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <div>
@@ -417,6 +406,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.3/Sortable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
     <script>
+        const UNIDADES_MEDIDA = @json($unidadesMedida);
         /* ── CSRF helpers (lê sempre do <meta>, evita token obsoleto) ── */
         window.getCsrfToken = function () {
             const meta = document.querySelector('meta[name="csrf-token"]');
@@ -738,7 +728,7 @@
 
                 if (checkbox.checked) {
                     const namePrefix = loteIndex !== null ? `lotes[${loteIndex}][itens]` : 'itens';
-                    const selectedUnidade = overrideUnidade || 'UN';
+                    const selectedUnidade = overrideUnidade || 'UND';
                     const selectedQuantidade = overrideQuantidade || '';
 
                     container.insertAdjacentHTML('beforeend', `
@@ -758,22 +748,7 @@
                             <div class="flex items-center gap-3 flex-shrink-0" onclick="event.stopPropagation()">
                                 <div class="flex flex-col gap-1">
                                     <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Unidade</span>
-                                    <select name="${namePrefix}[${id}][unidade]" required class="rounded-lg border-gray-300 text-xs py-1.5 focus:border-[#009496] focus:ring-[#009496] w-32 bg-gray-50/50 hover:bg-gray-50 transition">
-                                        <option value="UN" ${selectedUnidade === 'UN' ? 'selected' : ''}>UN (Unidade)</option>
-                                        <option value="KG" ${selectedUnidade === 'KG' ? 'selected' : ''}>KG (Quilograma)</option>
-                                        <option value="CX" ${selectedUnidade === 'CX' ? 'selected' : ''}>CX (Caixa)</option>
-                                        <option value="PCT" ${selectedUnidade === 'PCT' ? 'selected' : ''}>PCT (Pacote)</option>
-                                        <option value="L" ${selectedUnidade === 'L' ? 'selected' : ''}>L (Litro)</option>
-                                        <option value="M" ${selectedUnidade === 'M' ? 'selected' : ''}>M (Metro)</option>
-                                        <option value="RES" ${selectedUnidade === 'RES' ? 'selected' : ''}>RES (Resma)</option>
-                                        <option value="SAC" ${selectedUnidade === 'SAC' ? 'selected' : ''}>SAC (Saco)</option>
-                                        <option value="FR" ${selectedUnidade === 'FR' ? 'selected' : ''}>FR (Frasco)</option>
-                                        <option value="KIT" ${selectedUnidade === 'KIT' ? 'selected' : ''}>KIT (Kit)</option>
-                                        <option value="JG" ${selectedUnidade === 'JG' ? 'selected' : ''}>JG (Jogo)</option>
-                                        <option value="FD" ${selectedUnidade === 'FD' ? 'selected' : ''}>FD (Fardo)</option>
-                                        <option value="GL" ${selectedUnidade === 'GL' ? 'selected' : ''}>GL (Galão)</option>
-                                        <option value="RL" ${selectedUnidade === 'RL' ? 'selected' : ''}>RL (Rolo)</option>
-                                    </select>
+                                    ${buildUnidadeSelectHtml(`${namePrefix}[${id}][unidade]`, selectedUnidade)}
                                 </div>
                                 
                                 <div class="flex flex-col gap-1">
@@ -890,7 +865,7 @@
                         itensDuplicar.push({
                             id: itemId,
                             descricao,
-                            unidade: unidadeEl?.value || 'UN',
+                            unidade: unidadeEl?.value || 'UND',
                             quantidade: qtdEl?.value || '1'
                         });
                     });
@@ -910,19 +885,8 @@
                 if (!newContainer) return;
 
                 const namePrefix = `lotes[${newIndex}][itens]`;
-                const unidades = ['UN','KG','CX','PCT','L','M','RES','SAC','FR','KIT','JG','FD','GL','RL'];
-                const unidadeLabels = {
-                    UN:'UN (Unidade)',KG:'KG (Quilograma)',CX:'CX (Caixa)',PCT:'PCT (Pacote)',
-                    L:'L (Litro)',M:'M (Metro)',RES:'RES (Resma)',SAC:'SAC (Saco)',
-                    FR:'FR (Frasco)',KIT:'KIT (Kit)',JG:'JG (Jogo)',FD:'FD (Fardo)',
-                    GL:'GL (Galão)',RL:'RL (Rolo)'
-                };
 
                 itensDuplicar.forEach(({ id, descricao, unidade, quantidade }) => {
-                    const opcoesUnidade = unidades.map(u =>
-                        `<option value="${u}" ${unidade === u ? 'selected' : ''}>${unidadeLabels[u]}</option>`
-                    ).join('');
-
                     newContainer.insertAdjacentHTML('beforeend', `
                     <div class="bg-white border border-gray-200 rounded-xl shadow-sm hover:border-[#009496]/30 transition overflow-hidden" id="item-itens-selecionados-lote-${newIndex}-${id}">
                         <div class="flex flex-col md:flex-row md:items-center justify-between p-4 gap-4 cursor-pointer" onclick="toggleAccordionItem('itens-selecionados-lote-${newIndex}-${id}')" title="Clique para expandir/recolher">
@@ -939,9 +903,7 @@
                             <div class="flex items-center gap-3 flex-shrink-0" onclick="event.stopPropagation()">
                                 <div class="flex flex-col gap-1">
                                     <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Unidade</span>
-                                    <select name="${namePrefix}[${id}][unidade]" required class="rounded-lg border-gray-300 text-xs py-1.5 focus:border-[#009496] focus:ring-[#009496] w-32 bg-gray-50/50 hover:bg-gray-50 transition">
-                                        ${opcoesUnidade}
-                                    </select>
+                                    ${buildUnidadeSelectHtml(`${namePrefix}[${id}][unidade]`, unidade)}
                                 </div>
                                 <div class="flex flex-col gap-1">
                                     <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Quantidade</span>
@@ -1379,7 +1341,7 @@
             activeLoteIndexManual = loteIndex;
             document.getElementById('modalCriarItem').classList.remove('hidden');
             document.getElementById('novo_item_descricao').value = '';
-            document.getElementById('novo_item_unidade').value = 'UN';
+            document.getElementById('novo_item_unidade').value = 'UND';
             document.getElementById('novo_item_quantidade').value = '1';
             document.getElementById('criar-item-erro').classList.add('hidden');
             document.getElementById('criar-item-sucesso').classList.add('hidden');
@@ -1720,16 +1682,9 @@
         }
 
         function buildUnidadeSelectHtml(name, valorImportado) {
-            const opcoes = [
-                ['UN','UN (Unidade)'],['KG','KG (Quilograma)'],['CX','CX (Caixa)'],
-                ['PCT','PCT (Pacote)'],['L','L (Litro)'],['M','M (Metro)'],
-                ['RES','RES (Resma)'],['SAC','SAC (Saco)'],['FR','FR (Frasco)'],
-                ['KIT','KIT (Kit)'],['JG','JG (Jogo)'],['FD','FD (Fardo)'],
-                ['GL','GL (Galão)'],['RL','RL (Rolo)']
-            ];
-            const val = (valorImportado || 'UN').toUpperCase();
-            const conhecidos = opcoes.map(o => o[0]);
-            let opts = opcoes.map(([v, l]) =>
+            const val = (valorImportado || 'UND').toUpperCase();
+            const conhecidos = Object.keys(UNIDADES_MEDIDA);
+            let opts = Object.entries(UNIDADES_MEDIDA).map(([v, l]) =>
                 `<option value="${v}"${v === val ? ' selected' : ''}>${l}</option>`
             ).join('');
             if (!conhecidos.includes(val) && valorImportado) {

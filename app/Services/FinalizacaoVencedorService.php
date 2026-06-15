@@ -222,7 +222,7 @@ class FinalizacaoVencedorService
                 'status' => $this->obterValorColuna($linha, 3, 'HOMOLOGADO'),
                 'item' => $this->obterValorColuna($linha, 4, ''),
                 'descricao' => $this->obterValorColuna($linha, 5, ''),
-                'unidade' => $this->obterValorColuna($linha, 6, 'UN'),
+                'unidade' => $this->obterValorColuna($linha, 6, 'UND'),
                 'marca' => $this->obterValorColuna($linha, 7, ''),
                 'modelo' => $this->obterValorColuna($linha, 8, ''),
                 'quantidade' => $this->parseFloat($this->obterValorColuna($linha, 9, 0)),

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\EtpItem;
 use App\Models\Unidade;
 use App\Models\User;
+use App\Enums\UnidadeMedidaEnum;
 use App\Services\EtpItemService;
 use App\Services\EtpService;
 use Illuminate\Http\Request;
@@ -61,6 +62,7 @@ class EtpController extends Controller
         $secretarias = Unidade::where('prefeitura_id', $prefeituraId)->orderBy('nome', 'asc')->get();
 
         $itens = $this->etpItemService->getAllForSelect();
+        $unidadesMedida = UnidadeMedidaEnum::casesWithLabels();
 
         Log::info('Dados carregados para criação de ETP', [
             'user_id' => auth()->id(),
@@ -68,7 +70,7 @@ class EtpController extends Controller
             'total_itens' => $itens->count()
         ]);
 
-        return view('Admin.Etps.create', compact('secretarias', 'itens'));
+        return view('Admin.Etps.create', compact('secretarias', 'itens', 'unidadesMedida'));
     }
 
     public function store(Request $request)
@@ -275,6 +277,7 @@ class EtpController extends Controller
         $prefeituraId = $isSuperAdmin ? $etp->prefeitura_id : $user->prefeitura_id;
         $secretarias  = Unidade::where('prefeitura_id', $prefeituraId)->orderBy('nome', 'asc')->get();
         $itens        = $this->etpItemService->getAllForSelect();
+        $unidadesMedida = UnidadeMedidaEnum::casesWithLabels();
 
         Log::info('Dados carregados para edição de ETP', [
             'user_id' => auth()->id(),
@@ -283,7 +286,7 @@ class EtpController extends Controller
             'total_itens' => $itens->count()
         ]);
 
-        return view('Admin.Etps.edit', compact('etp', 'secretarias', 'itens'));
+        return view('Admin.Etps.edit', compact('etp', 'secretarias', 'itens', 'unidadesMedida'));
     }
 
     public function update(Request $request, $id)
