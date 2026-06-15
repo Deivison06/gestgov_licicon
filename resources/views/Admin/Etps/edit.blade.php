@@ -319,16 +319,25 @@
                                 class="px-4 py-2.5 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all">
                                 Cancelar
                             </button>
-                            {{-- Salvar como rascunho (mantém status pendente) --}}
-                            <button type="button" onclick="submeterEtp('salvar')"
-                                class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-all shadow-sm">
-                                <i class="fas fa-save mr-2"></i> Salvar
-                            </button>
-                            {{-- Concluir (envia para análise → status em_analise) --}}
-                            <button type="button" onclick="submeterEtp('concluir')"
-                                class="px-8 py-3 text-sm font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 shadow-md transition-all">
-                                <i class="fas fa-check-circle mr-2"></i> Concluir ETP
-                            </button>
+
+                            @if (in_array($etp->status, ['pendente', 'recusado', 'em_analise']))
+                                {{-- Salvar como rascunho (mantém status pendente) --}}
+                                <button type="button" onclick="submeterEtp('salvar')"
+                                    class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-all shadow-sm">
+                                    <i class="fas fa-save mr-2"></i> Salvar
+                                </button>
+                                {{-- Concluir (envia para análise → status em_analise) --}}
+                                <button type="button" onclick="submeterEtp('concluir')"
+                                    class="px-8 py-3 text-sm font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 shadow-md transition-all">
+                                    <i class="fas fa-check-circle mr-2"></i> Concluir ETP
+                                </button>
+                            @else
+                                {{-- Salvar Alterações (Apenas atualiza os dados, não muda status) --}}
+                                <button type="button" onclick="submeterEtp('concluir')"
+                                    class="px-8 py-3 text-sm font-semibold text-white bg-[#009496] rounded-lg hover:bg-[#007a7a] shadow-md transition-all">
+                                    <i class="fas fa-save mr-2"></i> Salvar Alterações
+                                </button>
+                            @endif
                         </div>
                     </div>
                 </div>

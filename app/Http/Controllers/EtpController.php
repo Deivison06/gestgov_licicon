@@ -371,16 +371,22 @@ class EtpController extends Controller
 
         $data = $request->all();
 
-        // Define status conforme o botão clicado
-        $data['status'] = ($request->input('action_type') === 'concluir')
-            ? 'em_analise'
-            : 'pendente';
+        // Define status conforme o botão clicado, mas apenas se estiver em fase inicial
+        // Se já foi aprovado ou está em processo, mantém o status atual
+        if (in_array($etp->status, ['pendente', 'recusado', 'em_analise'])) {
+            $data['status'] = ($request->input('action_type') === 'concluir')
+                ? 'em_analise'
+                : 'pendente';
+        } else {
+            // Remove o status do $data para não sobrescrever o atual no update
+            unset($data['status']);
+        }
 
         Log::info('Status definido para atualização', [
             'user_id' => auth()->id(),
             'etp_id' => $id,
             'action_type' => $request->input('action_type'),
-            'novo_status' => $data['status']
+            'novo_status' => $data['status'] ?? $etp->status
         ]);
 
         try {
@@ -392,23 +398,28 @@ class EtpController extends Controller
                 'novo_status' => $etp->status
             ]);
 
-            $mensagem = $data['status'] === 'em_analise'
-                ? 'ETP concluído e enviado para análise com sucesso.'
-                : 'ETP salvo como rascunho com sucesso.';
+            // Define a mensagem de sucesso conforme o status resultante
+            if (isset($data['status'])) {
+                $mensagem = $data['status'] === 'em_analise'
+                    ? 'ETP concluído e enviado para análise com sucesso.'
+                    : 'ETP salvo como rascunho com sucesso.';
+            } else {
+                $mensagem = 'ETP atualizado com sucesso.';
+            }
 
             // Verifica se é uma requisição AJAX (salvar rascunho sem redirecionar)
             if ($request->ajax() || $request->wantsJson() || $request->input('should_redirect') == '0') {
                 Log::info('Retornando resposta JSON para atualização', [
                     'user_id' => auth()->id(),
                     'etp_id' => $id,
-                    'status' => $data['status']
+                    'status' => $etp->status
                 ]);
 
                 return response()->json([
                     'success' => true,
                     'message' => $mensagem,
                     'etp_id' => $etp->id,
-                    'status' => $data['status']
+                    'status' => $etp->status
                 ]);
             }
 
