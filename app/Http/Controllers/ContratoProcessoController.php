@@ -303,6 +303,13 @@ class ContratoProcessoController extends Controller
                     ->delete();
             }
 
+            // Desvincula as contratações deste contrato (mantém os itens e o saldo;
+            // apenas libera o vínculo para que possam ser reaproveitados em um novo
+            // contrato). NÃO altera EstoqueLote — isso é feito por "remover contratação".
+            \App\Models\LoteContratado::where('processo_id', $processo->id)
+                ->where('contrato_id', $contrato->id)
+                ->update(['contrato_id' => null]);
+
             $numero = $contrato->numero_sequencial;
             $contrato->delete();
 
@@ -350,7 +357,13 @@ class ContratoProcessoController extends Controller
             // contratante e os campos preenchidos no modal são persistidos no contrato.
             $contratoId = $request->input('contrato_id') ?: $request->query('contrato_id');
             $contrato = $this->resolverOuCriarContrato($processo, $homologacao, $contratoId ? (int) $contratoId : null);
+            $contratoNovo = $contrato->wasRecentlyCreated;
             $this->persistirDadosContrato($contrato, $processo, $homologacao, $validatedData['campos'], $validatedData['contratante']);
+
+            // Vincula a este contrato as contratações (itens) que ainda não pertencem a
+            // nenhum contrato — isolando o escopo de itens por contrato.
+            $this->vincularContratacoesAoContrato($processo, $homologacao, $contrato, $contratoNovo);
+
             $validatedData['contrato'] = $contrato;
 
             $data = $this->prepararDadosPdf($processo, $validatedData);
@@ -514,6 +527,36 @@ class ContratoProcessoController extends Controller
             'subcontratacao' => $campos['subcontratacao'] ?? $contrato->subcontratacao,
             'dados_contratante' => $snapshot,
         ]);
+    }
+
+    /**
+     * Vincula as contratações (itens) a um contrato específico, isolando o escopo de
+     * itens por contrato.
+     *
+     * - Contrato NOVO: "reivindica" as contratações ainda não vinculadas a nenhum
+     *   contrato (as que foram contratadas para esta geração), escopadas à homologação.
+     * - Regeração (contrato já existente): mantém exatamente os itens já vinculados —
+     *   não captura novos, para não roubar itens preparados para um próximo contrato.
+     */
+    private function vincularContratacoesAoContrato(
+        Processo $processo,
+        ?Homologacao $homologacao,
+        Contrato $contrato,
+        bool $contratoNovo
+    ): void {
+        if (!$contratoNovo) {
+            return;
+        }
+
+        $query = LoteContratado::where('processo_id', $processo->id)
+            ->whereNull('contrato_id');
+
+        if ($homologacao) {
+            $homologacao->loadMissing('lotes');
+            $query->whereIn('lote_id', $homologacao->lotes->pluck('id'));
+        }
+
+        $query->update(['contrato_id' => $contrato->id]);
     }
 
     /**
@@ -807,13 +850,30 @@ class ContratoProcessoController extends Controller
         $processo->load(['prefeitura', 'vencedores.lotes.contratados', 'finalizacao']);
 
         $homologacao = $validatedData['homologacao'] ?? null;
+        $contratoAtual = $validatedData['contrato'] ?? null;
 
-        // Carregar contratações — quando há homologação, restringe aos seus lotes.
+        // Carregar contratações — ISOLA estritamente os itens deste contrato.
         $contratacoesQuery = LoteContratado::where('processo_id', $processo->id)
             ->with(['lote', 'vencedor'])
             ->whereIn('status', ['PENDENTE', 'CONTRATADO']);
 
-        if ($homologacao) {
+        if ($contratoAtual && $contratoAtual->id) {
+            $temVinculadas = LoteContratado::where('processo_id', $processo->id)
+                ->where('contrato_id', $contratoAtual->id)
+                ->exists();
+
+            if ($temVinculadas) {
+                // Cada contrato lista apenas as contratações vinculadas a ELE (contrato_id).
+                $contratacoesQuery->where('contrato_id', $contratoAtual->id);
+            } elseif ($homologacao) {
+                // Compatibilidade (contratos sem vínculo ainda): usa os lotes da homologação,
+                // mas só as contratações ainda não vinculadas a nenhum contrato.
+                $homologacao->loadMissing('lotes');
+                $contratacoesQuery
+                    ->whereIn('lote_id', $homologacao->lotes->pluck('id'))
+                    ->whereNull('contrato_id');
+            }
+        } elseif ($homologacao) {
             $homologacao->loadMissing('lotes');
             $contratacoesQuery->whereIn('lote_id', $homologacao->lotes->pluck('id'));
         }
