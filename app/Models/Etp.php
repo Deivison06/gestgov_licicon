@@ -93,6 +93,7 @@ class Etp extends Model
                         'descricao'  => $item->descricao_item,
                         'und'        => $item->pivot->unidade,
                         'quantidade' => (float) $item->pivot->quantidade,
+                        'lote'       => $lote->nome,
                     ];
                 }
             }
@@ -103,6 +104,7 @@ class Etp extends Model
                     'descricao'  => $item->descricao_item,
                     'und'        => $item->pivot->unidade,
                     'quantidade' => (float) $item->pivot->quantidade,
+                    'lote'       => null,
                 ];
             }
         }

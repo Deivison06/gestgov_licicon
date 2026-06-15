@@ -112,18 +112,26 @@
                     $itens = is_array($detalhe->itens_especificaca_quantitativos_xml)
                     ? $detalhe->itens_especificaca_quantitativos_xml
                     : json_decode($detalhe->itens_especificaca_quantitativos_xml, true);
+                    $itensAgrupados = collect($itens)->groupBy(fn($i) => $i['lote'] ?? 'Sem Lote');
                     @endphp
                     @if ($itens && count($itens) > 0)
-                    @foreach ($itens as $item)
-                    <tr>
-                        <td>{{ $item['item'] ?? '' }}</td>
-                        <td style="text-align: left;">{{ $item['especificacoes'] ?? '' }}</td>
-                        <td>{{ $item['unidade'] ?? '' }}</td>
-                        <td>{{ $item['quantidade'] ?? '' }}</td>
-                        <td>{{ $item['valor_unitario'] ?? '' }}</td>
-                        <td>{{ $item['valor_total'] ?? '' }}</td>
-                    </tr>
-                    @endforeach
+                        @foreach ($itensAgrupados as $loteNome => $itensDoLote)
+                            @if ($loteNome !== 'Sem Lote')
+                                <tr style="background-color: #e9e9e9;">
+                                    <td colspan="6" style="text-align: left; font-weight: bold; padding-left: 10px;">{{ $loteNome }}</td>
+                                </tr>
+                            @endif
+                            @foreach ($itensDoLote as $item)
+                            <tr>
+                                <td>{{ $item['item'] ?? '' }}</td>
+                                <td style="text-align: left;">{{ $item['especificacoes'] ?? '' }}</td>
+                                <td>{{ $item['unidade'] ?? '' }}</td>
+                                <td>{{ $item['quantidade'] ?? '' }}</td>
+                                <td>{{ $item['valor_unitario'] ?? '' }}</td>
+                                <td>{{ $item['valor_total'] ?? '' }}</td>
+                            </tr>
+                            @endforeach
+                        @endforeach
                     @else
                     <tr>
                         <td colspan="6">Nenhum item encontrado</td>

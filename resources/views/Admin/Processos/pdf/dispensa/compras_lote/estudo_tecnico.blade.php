@@ -517,17 +517,26 @@
             <tbody>
                 @php
                 $itens = is_array($detalhe->itens_e_seus_quantitativos_xml) ? $detalhe->itens_e_seus_quantitativos_xml : json_decode($detalhe->itens_e_seus_quantitativos_xml, true);
+                // Group by lote
+                $itensAgrupados = collect($itens)->groupBy(fn($i) => $i['lote'] ?? 'Sem Lote');
                 @endphp
 
                 @if ($itens && count($itens) > 0)
-                @foreach ($itens as $item)
-                <tr>
-                    <td>{{ $item['numero'] ?? '' }}</td>
-                    <td style="text-align: left">{{ $item['descricao'] ?? '' }}</td>
-                    <td>{{ $item['und'] ?? '' }}</td>
-                    <td>{{ $item['quantidade'] ?? '' }}</td>
-                </tr>
-                @endforeach
+                    @foreach ($itensAgrupados as $loteNome => $itensDoLote)
+                        @if($loteNome !== 'Sem Lote')
+                            <tr style="background-color: #e9e9e9;">
+                                <td colspan="4" style="text-align: left; font-weight: bold; padding-left: 10px;">{{ $loteNome }}</td>
+                            </tr>
+                        @endif
+                        @foreach ($itensDoLote as $item)
+                        <tr>
+                            <td>{{ $item['numero'] ?? '' }}</td>
+                            <td style="text-align: left">{{ $item['descricao'] ?? '' }}</td>
+                            <td>{{ $item['und'] ?? '' }}</td>
+                            <td>{{ $item['quantidade'] ?? '' }}</td>
+                        </tr>
+                        @endforeach
+                    @endforeach
                 @else
                 <tr>
                     <td colspan="4">Nenhum item encontrado</td>
