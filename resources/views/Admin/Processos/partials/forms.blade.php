@@ -415,18 +415,104 @@
         </div>
 
         @if($processo->etp)
-            <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3">
-                <div class="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
-                    <i class="fas fa-link text-sm"></i>
+            <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-xl shadow-sm">
+                <div class="flex items-start justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                            <i class="fas fa-link text-lg"></i>
+                        </div>
+                        <div>
+                            <h5 class="text-sm font-bold text-emerald-900">ETP Inteligente Vinculado</h5>
+                            <p class="text-xs text-emerald-700 font-medium">
+                                Identificador: <span class="font-bold">ETP-{{ str_pad($processo->etp->id, 4, '0', STR_PAD_LEFT) }}/{{ $processo->etp->created_at->format('Y') }}</span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <a href="{{ route('admin.etps.show', $processo->etp->id) }}" target="_blank"
+                           class="inline-flex items-center px-3 py-1.5 text-xs font-bold text-blue-700 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 transition-all shadow-sm">
+                            <i class="fas fa-eye mr-1.5"></i> Ver ETP
+                        </a>
+                        @if($processo->modalidade === \App\Enums\ModalidadeEnum::DISPENSA)
+                        <button type="button" @click="desvincularEtp()"
+                                class="inline-flex items-center px-3 py-1.5 text-xs font-bold text-red-700 bg-white border border-red-200 rounded-lg hover:bg-red-50 transition-all shadow-sm">
+                            <i class="fas fa-unlink mr-1.5"></i> Desvincular
+                        </button>
+                        @endif
+                    </div>
                 </div>
-                <div class="flex-1 min-w-0">
-                    <p class="text-xs font-bold text-emerald-900">ETP Inteligente Vinculado</p>
-                    <p class="text-xs text-emerald-700">Os itens e quantitativos são fornecidos automaticamente pelo ETP. O upload de XLS está desabilitado.</p>
+                
+                <div class="mt-3 pt-3 border-t border-emerald-100">
+                    <p class="text-xs text-emerald-800">
+                        <i class="fas fa-info-circle mr-1"></i> Os itens deste ETP serão usados automaticamente na geração dos documentos. O upload de XLS está desabilitado.
+                    </p>
+
+                    {{-- Expandir/recolher itens do ETP --}}
+                    @php
+                        $isLote = $processo->etp->tipo_contratacao === 'lote';
+                        $etpItens = $processo->etp->all_itens;
+                    @endphp
+                    @if($etpItens->count() > 0)
+                    <div x-data="{ openEtpItens: false }" class="mt-2">
+                        <button type="button" @click="openEtpItens = !openEtpItens"
+                                class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 hover:text-emerald-900 transition-colors">
+                            <i :class="openEtpItens ? 'fa-chevron-up' : 'fa-chevron-down'" class="fas text-[9px]"></i>
+                            <span x-text="openEtpItens ? 'Recolher itens' : 'Ver {{ $etpItens->count() }} {{ $etpItens->count() === 1 ? 'item' : 'itens' }} {{ $isLote ? '(distribuídos em lotes)' : '' }}'"></span>
+                        </button>
+
+                        <div x-show="openEtpItens" x-transition class="mt-2 overflow-x-auto rounded-lg border border-emerald-200">
+                            <table class="w-full text-xs text-left">
+                                <thead class="bg-emerald-100 text-emerald-800 uppercase text-[10px] font-bold">
+                                    <tr>
+                                        <th class="px-2 py-1.5 w-8 text-center">#</th>
+                                        <th class="px-2 py-1.5">Descrição</th>
+                                        <th class="px-2 py-1.5 w-16 text-center">Und.</th>
+                                        <th class="px-2 py-1.5 w-20 text-right">Qtd.</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-emerald-50">
+                                    @if($isLote)
+                                        @foreach($processo->etp->lotes as $lote)
+                                            <tr class="bg-emerald-50/80">
+                                                <td colspan="4" class="px-2 py-1.5 font-bold text-emerald-900 border-y border-emerald-100">
+                                                    <i class="fas fa-layer-group mr-1"></i> Lote: {{ $lote->nome }}
+                                                </td>
+                                            </tr>
+                                            @foreach($lote->itens as $idx => $item)
+                                            <tr class="bg-white hover:bg-emerald-50/50">
+                                                <td class="px-2 py-1.5 text-center">
+                                                    <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold">{{ $idx + 1 }}</span>
+                                                </td>
+                                                <td class="px-2 py-1.5 text-gray-700">{{ $item->descricao_item }}</td>
+                                                <td class="px-2 py-1.5 text-center text-gray-500">{{ $item->pivot->unidade ?? '-' }}</td>
+                                                <td class="px-2 py-1.5 text-right font-medium text-gray-700">{{ $item->pivot->quantidade }}</td>
+                                            </tr>
+                                            @endforeach
+                                        @endforeach
+                                    @else
+                                        @foreach($etpItens as $idx => $item)
+                                        <tr class="bg-white hover:bg-emerald-50/50">
+                                            <td class="px-2 py-1.5 text-center">
+                                                <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold">{{ $idx + 1 }}</span>
+                                            </td>
+                                            <td class="px-2 py-1.5 text-gray-700">{{ $item->descricao_item }}</td>
+                                            <td class="px-2 py-1.5 text-center text-gray-500">{{ $item->pivot->unidade ?? '-' }}</td>
+                                            <td class="px-2 py-1.5 text-right font-medium text-gray-700">{{ $item->pivot->quantidade }}</td>
+                                        </tr>
+                                        @endforeach
+                                    @endif
+                                </tbody>
+                                <tfoot>
+                                    <tr class="bg-emerald-50 border-t border-emerald-200">
+                                        <td colspan="3" class="px-2 py-1.5 text-[10px] text-emerald-700 font-semibold uppercase">Total Geral</td>
+                                        <td class="px-2 py-1.5 text-right text-xs font-bold text-emerald-700">{{ $etpItens->count() }}</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                    @endif
                 </div>
-                <a href="{{ route('admin.etps.show', $processo->etp->id) }}" target="_blank"
-                   class="flex-shrink-0 inline-flex items-center px-3 py-1.5 text-xs font-bold text-blue-700 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 transition-all shadow-sm">
-                    <i class="fas fa-eye mr-1.5"></i> Ver ETP
-                </a>
             </div>
         @else
             {{-- DISPENSA: a vinculação do ETP acontece aqui, na Formalização da Demanda,
