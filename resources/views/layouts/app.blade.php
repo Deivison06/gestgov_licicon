@@ -946,6 +946,12 @@
                         <i class="nav-icon fas fa-clipboard-list"></i>
                         <span>PROCESSOS</span>
                     </a>
+
+                    <a href="{{ route('admin.planejamento.index') }}"
+                        class="nav-item {{ request()->routeIs('admin.planejamento.*') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-columns"></i>
+                        <span>PLANEJAMENTO</span>
+                    </a>
                     @endif
 
                     @can('atas e contratacoes')

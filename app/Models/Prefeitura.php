@@ -17,6 +17,7 @@ class Prefeitura extends Model
         'cnpj',
         'endereco',
         'cidade',
+        'cor',
         'telefone',
         'email',
         'autoridade_competente',

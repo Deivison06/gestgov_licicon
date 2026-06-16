@@ -38,7 +38,10 @@ class Processo extends Model
         'motivo_cancelamento', // Adicionado
         'data_adiamento', // Adicionado
         'justificativa_adiamento', // Adicionado
-        'processo_original_id' // Adicionado para republicação
+        'processo_original_id', // Adicionado para republicação
+        'planejamento_status',
+        'planejamento_data_abertura',
+        'planejamento_fim_recurso',
     ];
 
     protected $casts = [
@@ -48,6 +51,8 @@ class Processo extends Model
         'status' => ProcessoStatusEnum::class,
         'data_cancelamento' => 'date',
         'data_adiamento' => 'date',
+        'planejamento_data_abertura' => 'datetime',
+        'planejamento_fim_recurso' => 'datetime',
     ];
 
     // Relacionamento com Prefeitura
@@ -206,6 +211,11 @@ class Processo extends Model
         return $this->hasOne(Etp::class, 'processo_id');
     }
 
+    public function notas()
+    {
+        return $this->hasMany(ProcessoNota::class)->with('user')->latest();
+    }
+
     /**
      * Verificar se o processo está cancelado
      */
@@ -236,32 +246,13 @@ class Processo extends Model
     public function lotes(): HasManyThrough
     {
         return $this->hasManyThrough(
-            Lote::class,      // Model final
+            Lote::class,
             Vencedor::class,  // Model intermediário
             'processo_id',    // FK em vencedores
             'vencedor_id',    // FK em lotes
             'id',             // PK em processos
             'id'              // PK em vencedores
         );
-    }
-
-    // Adicione este accessor para garantir que o status seja sempre uma instância do enum
-    public function getStatusAttribute($value)
-    {
-        if ($value instanceof ProcessoStatusEnum) {
-            return $value;
-        }
-
-        return ProcessoStatusEnum::tryFrom($value) ?? ProcessoStatusEnum::EM_ANDAMENTO;
-    }
-
-    public function setStatusAttribute($value)
-    {
-        if ($value instanceof ProcessoStatusEnum) {
-            $this->attributes['status'] = $value->value;
-        } else {
-            $this->attributes['status'] = $value;
-        }
     }
 
     public function calcularStatusAutomatico(): ProcessoStatusEnum
@@ -293,6 +284,26 @@ class Processo extends Model
         }
 
         return false;
+    }
+
+    public function aguardandoRespostaRecurso(): bool
+    {
+        return $this->planejamento_status === 'em_recurso'
+            && $this->planejamento_fim_recurso !== null
+            && $this->planejamento_fim_recurso->isPast();
+    }
+
+    public static function calcularFimRecursoSessao(\Carbon\Carbon $inicio, int $diasUteis = 3): \Carbon\Carbon
+    {
+        $data = $inicio->copy();
+        $contagem = 0;
+        while ($contagem < $diasUteis) {
+            $data->addDay();
+            if ($data->isWeekday()) {
+                $contagem++;
+            }
+        }
+        return $data;
     }
 
 }

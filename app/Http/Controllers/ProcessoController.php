@@ -140,6 +140,13 @@ class ProcessoController extends Controller
             ->with('success', 'Processo criado com sucesso.');
     }
 
+    public function show(Processo $processo)
+    {
+        $processo->load(['prefeitura.unidades', 'user', 'detalhe', 'documentos', 'vencedores']);
+
+        return view('Admin.Processos.show', compact('processo'));
+    }
+
     public function edit(Processo $processo)
     {
         $prefeituras = Prefeitura::with('unidades')->get();

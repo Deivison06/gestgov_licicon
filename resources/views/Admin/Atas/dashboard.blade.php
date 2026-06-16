@@ -162,7 +162,7 @@
                                         <small class="text-muted">{{ $processo->modalidade->name ?? 'N/A' }}</small>
                                     </td>
                                     <td>{{ $processo->prefeitura->cidade }}</td>
-                                    <td>{{ Str::limit($processo->objeto, 60) }}</td>
+                                    <td>{{ Str::limit(html_entity_decode(strip_tags($processo->objeto)), 60) }}</td>
                                     <td>
                                         <span class="badge bg-primary">{{ $processo->lotesContratados->count() }}</span>
                                     </td>

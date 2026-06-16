@@ -21,6 +21,20 @@ use App\Http\Controllers\SolicitacaoController;
 use App\Http\Controllers\PcaController;
 use App\Http\Controllers\FiscalizacaoController;
 use App\Http\Controllers\IAController;
+use App\Http\Controllers\PlanejamentoController;
+
+// ================================================
+// PLANEJAMENTO
+// ================================================
+Route::prefix('admin/planejamento')
+    ->name('admin.planejamento.')
+    ->middleware(['auth', 'verified'])
+    ->group(function () {
+        Route::get('/', [PlanejamentoController::class, 'index'])->name('index');
+        Route::get('/{processo}', [PlanejamentoController::class, 'show'])->name('show');
+        Route::patch('/{processo}/status', [PlanejamentoController::class, 'updateStatus'])->name('status.update');
+        Route::post('/{processo}/notas', [PlanejamentoController::class, 'storeNota'])->name('notas.store');
+    });
 
 // ================================================
 // FISCALIZAÇÃO DE CONTRATOS
