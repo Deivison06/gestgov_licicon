@@ -12,6 +12,14 @@ use Illuminate\Support\Facades\Log;
 
 class AtaPdfService
 {
+    use \App\Services\Assinatura\ResolveLegacyAssinantesTrait;
+
+    public function __construct(
+        protected \App\Services\Assinatura\PdfWatermarkService $watermarkService,
+        protected \App\Services\Assinatura\DocumentoVersaoService $versaoService,
+        protected \App\Services\Assinatura\SolicitacaoService $solicitacaoService,
+    ) {}
+
     public function gerarESalvarContrato(Processo $processo, array $data): array
     {
         $contratacoesIds = $data['contratacoes_selecionadas'] ?? [];
@@ -49,9 +57,97 @@ class AtaPdfService
             'download_url' => $downloadUrl
         ]);
 
+        // =====================================================================
+        // Auto-trigger DESATIVADO — rodada apenas via "Solicitar Assinatura".
+        // =====================================================================
+        $rodadaAssinantes = [];
+        $infoAssinatura = null;
+
+        if (count($rodadaAssinantes) > 0) {
+            try {
+                $infoAssinatura = $this->iniciarRodadaAssinatura(
+                    $processo,
+                    $caminhoFinal['completo'] ?? $caminhoFinal['relativo'],
+                    $data['modo'] ?? 'paralelo',
+                    (int) ($data['prazo_dias'] ?? 7),
+                    $rodadaAssinantes,
+                    (int) ($data['solicitado_por_user_id'] ?? auth()->id() ?? 0)
+                );
+            } catch (\Throwable $e) {
+                Log::error('Falha ao iniciar rodada de assinatura — Ata', [
+                    'processo_id' => $processo->id,
+                    'erro'        => $e->getMessage(),
+                ]);
+            }
+        }
+
+        return array_filter([
+            'download_url' => $downloadUrl,
+            'assinatura'   => $infoAssinatura,
+        ], fn ($v) => $v !== null);
+    }
+
+    /**
+     * Pipeline assinatura para Ata:
+     * documentavel = Documento (a row contrato/ata persistida em salvarDocumento)
+     */
+    private function iniciarRodadaAssinatura(
+        Processo $processo,
+        string $caminhoPdfOriginal,
+        string $modo,
+        int $prazoDias,
+        array $rodadaAssinantes,
+        int $solicitadoPorUserId
+    ): array {
+        $caminhoAbsoluto = $this->resolverCaminhoAbsoluto($caminhoPdfOriginal);
+        $caminhoRascunho = $this->watermarkService->aplicarMarcaDagua(
+            $caminhoAbsoluto,
+            'AGUARDANDO ASSINATURAS'
+        );
+
+        // Pega o Documento mais recente desse processo (contrato/ata salvo por salvarDocumento)
+        $documento = Documento::query()
+            ->where('processo_id', $processo->id)
+            ->latest('id')
+            ->firstOrFail();
+
+        $versao = $this->versaoService->criarRascunho(
+            $documento,
+            $caminhoRascunho,
+            $solicitadoPorUserId
+        );
+
+        $listaAssinantes = collect($rodadaAssinantes)
+            ->map(fn ($a, $idx) => [
+                'user_id' => (int) ($a['id'] ?? $a['user_id'] ?? 0),
+                'ordem'   => $modo === 'sequencial' ? (int) ($a['ordem'] ?? $idx + 1) : 0,
+            ])
+            ->filter(fn ($a) => $a['user_id'] > 0)
+            ->values()
+            ->all();
+
+        $solicitacoes = $this->solicitacaoService->criarRodada(
+            $versao,
+            $listaAssinantes,
+            $solicitadoPorUserId,
+            now()->addDays(max(1, $prazoDias))
+        );
+
         return [
-            'download_url' => $downloadUrl
+            'versao_id'          => $versao->id,
+            'total_solicitacoes' => $solicitacoes->count(),
+            'modo'               => $modo,
+            'prazo_dias'         => $prazoDias,
         ];
+    }
+
+    private function resolverCaminhoAbsoluto(string $caminho): string
+    {
+        if (is_file($caminho)) {
+            return $caminho;
+        }
+        $candidato = public_path($caminho);
+        return is_file($candidato) ? $candidato : $caminho;
     }
 
     public function downloadAta(Processo $processo, ?string $nomeArquivo = null)

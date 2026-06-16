@@ -735,7 +735,11 @@
                 </div>
 
                 <!-- Botões -->
-                <div class="flex justify-end space-x-4 pt-6 border-t">
+                <div class="flex justify-end items-center space-x-4 pt-6 border-t">
+                    <x-botao-solicitar-assinatura
+                        :processo-id="$processo->id"
+                        tipo="ata_contratacao" />
+
                     <button onclick="gerarAtaFinal()"
                             class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium flex items-center">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2477,6 +2481,19 @@
 
                 console.log('DEBUG - Dados completos:', dados);
 
+                // PERSISTE seleção em documento_selecao_assinantes antes do POST.
+                // Tipo `ata_contratacao` deve casar com o slug usado pelo backend.
+                if (assinantes.length > 0 && typeof window.salvarSelecaoAntesDeGerar === 'function') {
+                    try {
+                        await window.salvarSelecaoAntesDeGerar(
+                            processoId, 'ata_contratacao', null, null,
+                            { assinantes }
+                        );
+                    } catch (e) {
+                        console.warn('Falha ao persistir seleção:', e);
+                    }
+                }
+
                 const response = await fetch(`/admin/atas/${processoId}/gerar`, {
                     method: 'POST',
                     headers: {
@@ -2490,7 +2507,11 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    mostrarMensagem('Contrato gerado com sucesso!', 'success');
+                    let msg = 'Contrato gerado com sucesso!';
+                    if (data.assinatura) {
+                        msg += ` Rodada de assinatura digital iniciada com ${data.assinatura.total_solicitacoes} solicitação(ões).`;
+                    }
+                    mostrarMensagem(msg, 'success');
 
                     // Fazer download automático
                     if (data.download_url) {

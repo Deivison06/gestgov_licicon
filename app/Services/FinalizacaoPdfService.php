@@ -9,22 +9,24 @@ use App\Models\AtaRegistroPreco;
 use Barryvdh\DomPDF\Facade\Pdf;
 use setasign\Fpdi\Tcpdf\Fpdi;
 use App\Models\Homologacao;
+use App\Services\Assinatura\DocumentoVersaoService;
+use App\Services\Assinatura\PdfWatermarkService;
+use App\Services\Assinatura\SolicitacaoService;
 use App\Services\FinalizacaoDocumentoService;
 use App\Services\HomologacaoService;
 use Illuminate\Support\Facades\Log;
 
 class FinalizacaoPdfService
 {
-    protected FinalizacaoDocumentoService $documentoService;
-    protected HomologacaoService $homologacaoService;
+    use \App\Services\Assinatura\ResolveLegacyAssinantesTrait;
 
     public function __construct(
-        FinalizacaoDocumentoService $documentoService,
-        HomologacaoService $homologacaoService
-    ) {
-        $this->documentoService = $documentoService;
-        $this->homologacaoService = $homologacaoService;
-    }
+        protected FinalizacaoDocumentoService $documentoService,
+        protected HomologacaoService $homologacaoService,
+        protected PdfWatermarkService $watermarkService,
+        protected DocumentoVersaoService $versaoService,
+        protected SolicitacaoService $solicitacaoService,
+    ) {}
 
     public function gerarPdf(Processo $processo, array $requestData): array
     {
@@ -70,11 +72,118 @@ class FinalizacaoPdfService
             'caminho' => $caminhoCompleto
         ]);
 
+        // =====================================================================
+        // Auto-trigger DESATIVADO — rodada apenas via "Solicitar Assinatura".
+        // =====================================================================
+        $assinantes = [];
+        $infoAssinatura = null;
+
+        if (count($assinantes) > 0) {
+            try {
+                $infoAssinatura = $this->iniciarRodadaAssinatura(
+                    $processo,
+                    $homologacao,
+                    $validatedData['documento'],
+                    $caminhoCompleto,
+                    $requestData['modo'] ?? 'paralelo',
+                    (int) ($requestData['prazo_dias'] ?? 7),
+                    $assinantes,
+                    (int) ($requestData['solicitado_por_user_id'] ?? auth()->id() ?? 0)
+                );
+            } catch (\Throwable $e) {
+                Log::error('Falha ao iniciar rodada de assinatura — Finalização', [
+                    'processo_id' => $processo->id,
+                    'documento'   => $validatedData['documento'],
+                    'erro'        => $e->getMessage(),
+                ]);
+                // Não revertemos o PDF — ele já está salvo. A rodada pode ser
+                // disparada manualmente depois.
+            }
+        }
+
+        return array_filter([
+            'success'    => true,
+            'caminho'    => $caminhoCompleto,
+            'documento'  => $validatedData['documento'],
+            'assinatura' => $infoAssinatura,
+        ], fn ($v) => $v !== null);
+    }
+
+    /**
+     * Aplica marca d'água, cria DocumentoVersao + rodada de SolicitacaoAssinatura.
+     *
+     * O documentavel é o Documento (a row criada por salvarDocumento). Cada PDF
+     * gerado pelo flow de finalização vira uma versão independente — mesmo se
+     * regerado, mantém histórico completo.
+     */
+    private function iniciarRodadaAssinatura(
+        Processo $processo,
+        ?Homologacao $homologacao,
+        string $tipoDocumento,
+        string $caminhoPdfOriginal,
+        string $modo,
+        int $prazoDias,
+        array $assinantes,
+        int $solicitadoPorUserId
+    ): array {
+        // 1) Marca d'água
+        $caminhoAbsoluto = $this->resolverCaminhoAbsoluto($caminhoPdfOriginal);
+        $caminhoRascunho = $this->watermarkService->aplicarMarcaDagua(
+            $caminhoAbsoluto,
+            'AGUARDANDO ASSINATURAS'
+        );
+
+        // 2) Documentavel = a row Documento gravada por salvarDocumento
+        $documento = Documento::query()
+            ->where('processo_id', $processo->id)
+            ->where('tipo_documento', $tipoDocumento)
+            ->when($homologacao, fn ($q) => $q->where('homologacao_id', $homologacao->id))
+            ->latest('id')
+            ->firstOrFail();
+
+        // 3) Versão
+        $versao = $this->versaoService->criarRascunho(
+            $documento,
+            $caminhoRascunho,
+            $solicitadoPorUserId
+        );
+
+        // 4) Normaliza assinantes
+        $listaAssinantes = collect($assinantes)
+            ->map(fn ($a, $idx) => [
+                'user_id' => (int) ($a['id'] ?? $a['user_id'] ?? 0),
+                'ordem'   => $modo === 'sequencial' ? (int) ($a['ordem'] ?? $idx + 1) : 0,
+            ])
+            ->filter(fn ($a) => $a['user_id'] > 0)
+            ->values()
+            ->all();
+
+        // 5) Rodada
+        $solicitacoes = $this->solicitacaoService->criarRodada(
+            $versao,
+            $listaAssinantes,
+            $solicitadoPorUserId,
+            now()->addDays(max(1, $prazoDias))
+        );
+
         return [
-            'success' => true,
-            'caminho' => $caminhoCompleto,
-            'documento' => $validatedData['documento']
+            'versao_id'          => $versao->id,
+            'total_solicitacoes' => $solicitacoes->count(),
+            'modo'               => $modo,
+            'prazo_dias'         => $prazoDias,
         ];
+    }
+
+    /**
+     * Resolve caminho absoluto. Aceita tanto path absoluto quanto relativo a public_path().
+     */
+    private function resolverCaminhoAbsoluto(string $caminho): string
+    {
+        if (is_file($caminho)) {
+            return $caminho;
+        }
+        $candidato = public_path($caminho);
+        return is_file($candidato) ? $candidato : $caminho;
     }
 
     /**
@@ -180,6 +289,18 @@ class FinalizacaoPdfService
         }
 
         return response()->download($caminhoAbsoluto);
+        // Se houver versão assinada consolidada, serve o PDF assinado
+        $caminhoAssinado = app(\App\Services\Assinatura\SelecaoAssinantesService::class)
+            ->caminhoPdfAssinado($documento);
+
+        if ($caminhoAssinado) {
+            return response()->download(
+                $caminhoAssinado,
+                basename($documento->caminho ?: 'documento.pdf')
+            );
+        }
+
+        return response()->download(public_path($documento->caminho));
     }
 
     public function gerarCaminhoTodosDocumentos(Processo $processo): string

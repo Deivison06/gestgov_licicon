@@ -159,6 +159,12 @@
                                     class="px-4 py-2 text-xs font-medium text-white transition-colors duration-200 bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
                                 Gerar PDF
                             </button>
+
+                            <x-botao-solicitar-assinatura
+                                :processo-id="$processo->id"
+                                :tipo="$tipo"
+                                :homologacao-id="$homologacaoId ?? null"
+                                :vencedor-id="$vencedorIdDoc ?? null" />
                         @else
                             <button type="button"
                                     onclick="gerarPdfSemAssinatura('{{ $processo->id }}', '{{ $tipo }}', event, {{ $homologacaoId ?? 'null' }}, {{ $vencedorIdParam }})"

@@ -12,8 +12,10 @@ class ExampleTest extends TestCase
      */
     public function test_the_application_returns_a_successful_response(): void
     {
+        // A raiz ("/") é o dashboard protegido (auth + verified): um visitante
+        // não autenticado é redirecionado para o login.
         $response = $this->get('/');
 
-        $response->assertStatus(200);
+        $response->assertRedirect(route('login'));
     }
 }

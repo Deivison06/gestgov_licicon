@@ -11,12 +11,14 @@ use Illuminate\Support\Facades\Log;
 
 class ProcessoPdfService
 {
-    protected ProcessoDocumentoService $documentoService;
+    use \App\Services\Assinatura\ResolveLegacyAssinantesTrait;
 
-    public function __construct(ProcessoDocumentoService $documentoService)
-    {
-        $this->documentoService = $documentoService;
-    }
+    public function __construct(
+        protected ProcessoDocumentoService $documentoService,
+        protected \App\Services\Assinatura\PdfWatermarkService $watermarkService,
+        protected \App\Services\Assinatura\DocumentoVersaoService $versaoService,
+        protected \App\Services\Assinatura\SolicitacaoService $solicitacaoService,
+    ) {}
 
     public function gerarPdf(Processo $processo, array $requestData): array
     {
@@ -54,11 +56,101 @@ class ProcessoPdfService
             'caminho' => $caminhoCompleto
         ]);
 
+        // =====================================================================
+        // Auto-trigger DESATIVADO — rodada apenas via "Solicitar Assinatura".
+        // =====================================================================
+        $assinantes = [];
+        $infoAssinatura = null;
+
+        if (count($assinantes) > 0) {
+            try {
+                $infoAssinatura = $this->iniciarRodadaAssinatura(
+                    $processo,
+                    $documentoSolicitado,
+                    $caminhoCompleto,
+                    $requestData['modo'] ?? 'paralelo',
+                    (int) ($requestData['prazo_dias'] ?? 7),
+                    $assinantes,
+                    (int) ($requestData['solicitado_por_user_id'] ?? auth()->id() ?? 0)
+                );
+            } catch (\Throwable $e) {
+                Log::error('Falha ao iniciar rodada de assinatura — Inicial', [
+                    'processo_id' => $processo->id,
+                    'documento'   => $documentoSolicitado,
+                    'erro'        => $e->getMessage(),
+                ]);
+            }
+        }
+
+        return array_filter([
+            'success'    => true,
+            'caminho'    => $caminhoCompleto,
+            'documento'  => $documentoSolicitado,
+            'assinatura' => $infoAssinatura,
+        ], fn ($v) => $v !== null);
+    }
+
+    /**
+     * Pipeline assinatura: marca d'água → DocumentoVersao polimórfico em Documento → rodada.
+     */
+    private function iniciarRodadaAssinatura(
+        Processo $processo,
+        string $tipoDocumento,
+        string $caminhoPdfOriginal,
+        string $modo,
+        int $prazoDias,
+        array $assinantes,
+        int $solicitadoPorUserId
+    ): array {
+        $caminhoAbsoluto = $this->resolverCaminhoAbsoluto($caminhoPdfOriginal);
+        $caminhoRascunho = $this->watermarkService->aplicarMarcaDagua(
+            $caminhoAbsoluto,
+            'AGUARDANDO ASSINATURAS'
+        );
+
+        $documento = Documento::query()
+            ->where('processo_id', $processo->id)
+            ->where('tipo_documento', $tipoDocumento)
+            ->latest('id')
+            ->firstOrFail();
+
+        $versao = $this->versaoService->criarRascunho(
+            $documento,
+            $caminhoRascunho,
+            $solicitadoPorUserId
+        );
+
+        $listaAssinantes = collect($assinantes)
+            ->map(fn ($a, $idx) => [
+                'user_id' => (int) ($a['id'] ?? $a['user_id'] ?? 0),
+                'ordem'   => $modo === 'sequencial' ? (int) ($a['ordem'] ?? $idx + 1) : 0,
+            ])
+            ->filter(fn ($a) => $a['user_id'] > 0)
+            ->values()
+            ->all();
+
+        $solicitacoes = $this->solicitacaoService->criarRodada(
+            $versao,
+            $listaAssinantes,
+            $solicitadoPorUserId,
+            now()->addDays(max(1, $prazoDias))
+        );
+
         return [
-            'success' => true,
-            'caminho' => $caminhoCompleto,
-            'documento' => $documentoSolicitado
+            'versao_id'          => $versao->id,
+            'total_solicitacoes' => $solicitacoes->count(),
+            'modo'               => $modo,
+            'prazo_dias'         => $prazoDias,
         ];
+    }
+
+    private function resolverCaminhoAbsoluto(string $caminho): string
+    {
+        if (is_file($caminho)) {
+            return $caminho;
+        }
+        $candidato = public_path($caminho);
+        return is_file($candidato) ? $candidato : $caminho;
     }
 
     private function normalizarDocumentoParaView(string $documento): string

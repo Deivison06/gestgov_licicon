@@ -8,7 +8,12 @@ use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\ProcessoController;
 use App\Http\Controllers\PrefeituraController;
 use App\Http\Controllers\ContratacaoController;
+use App\Http\Controllers\AssinanteController;
+use App\Http\Controllers\AssinaturaController;
 use App\Http\Controllers\ContratoProcessoController;
+use App\Http\Controllers\NotificacaoController;
+use App\Http\Controllers\SelecaoAssinanteController;
+use App\Http\Controllers\ValidacaoPublicaController;
 use App\Http\Controllers\FinalizacaoProcessoController;
 use App\Http\Controllers\AtaController;
 use App\Http\Controllers\ContratoManualController; // Adicionado
@@ -61,7 +66,7 @@ Route::prefix('admin/fiscalizacoes')
 // ================================================
 // PCA - PLANO DE CONTRATAÇÃO ANUAL
 // ================================================
-Route::prefix('admin/pcas')->name('admin.pcas.')->middleware(['auth', 'verified'])->group(function () {
+Route::prefix('admin/pcas')->name('admin.pcas.')->middleware(['auth', 'verified', 'role:diretor_licicon|gerente_licicon|colaborador_licicon'])->group(function () {
     Route::get('/', [PcaController::class, 'index'])->name('index');
     Route::get('/create', [PcaController::class, 'create'])->name('create');
     Route::post('/', [PcaController::class, 'store'])->name('store');
@@ -75,7 +80,7 @@ Route::prefix('admin/pcas')->name('admin.pcas.')->middleware(['auth', 'verified'
 // ================================================
 // SOLICITAÇÕES INTERNAS (Chat Administrativo)
 // ================================================
-Route::prefix('admin/solicitacoes')->name('admin.solicitacoes.')->middleware(['auth', 'verified'])->group(function () {
+Route::prefix('admin/solicitacoes')->name('admin.solicitacoes.')->middleware(['auth', 'verified', 'role:diretor_licicon|gerente_licicon|colaborador_licicon|prefeitura'])->group(function () {
     Route::get('/', [SolicitacaoController::class, 'index'])->name('index');
     Route::get('/create', [SolicitacaoController::class, 'create'])->name('create');
     Route::post('/', [SolicitacaoController::class, 'store'])->name('store');
@@ -90,6 +95,66 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+// ================================================
+// CENTRAL DE ASSINATURAS — qualquer user com role `assinante`
+// ================================================
+Route::middleware(['auth', 'verified'])
+    ->prefix('minhas-assinaturas')
+    ->name('minhas-assinaturas.')
+    ->group(function () {
+        Route::get('/',                         [AssinaturaController::class, 'index'])->name('index');
+        Route::get('/{solicitacao}',            [AssinaturaController::class, 'show'])->name('show');
+        Route::get('/{solicitacao}/pdf',        [AssinaturaController::class, 'visualizarPdf'])->name('pdf');
+        Route::post('/{solicitacao}/assinar',   [AssinaturaController::class, 'assinar'])->name('assinar');
+        Route::post('/{solicitacao}/recusar',   [AssinaturaController::class, 'recusar'])->name('recusar');
+    });
+
+// ================================================
+// SELEÇÃO DE ASSINANTES + SOLICITAÇÃO DE ASSINATURA
+// (persistência da seleção + disparo explícito da rodada)
+// ================================================
+Route::middleware(['auth', 'verified', 'role:diretor_licicon|gerente_licicon|colaborador_licicon'])
+    ->prefix('admin/processos/{processo}')
+    ->name('admin.processos.assinatura.')
+    ->group(function () {
+        Route::get('/selecao-assinantes',
+            [SelecaoAssinanteController::class, 'obter'])->name('selecao.obter');
+        Route::post('/selecao-assinantes',
+            [SelecaoAssinanteController::class, 'salvar'])->name('selecao.salvar');
+        Route::get('/selecao-assinantes/status',
+            [SelecaoAssinanteController::class, 'status'])->name('selecao.status');
+        Route::post('/solicitar-assinatura',
+            [SelecaoAssinanteController::class, 'solicitar'])->name('solicitar');
+    });
+
+// ================================================
+// NOTIFICAÇÕES (sininho do header — polling JSON)
+// ================================================
+Route::middleware('auth')
+    ->prefix('notificacoes')
+    ->name('notificacoes.')
+    ->group(function () {
+        Route::get('/',                     [NotificacaoController::class, 'index'])->name('index');
+        Route::post('/{id}/marcar-lida',    [NotificacaoController::class, 'marcarLida'])->name('marcar-lida');
+        Route::post('/marcar-todas-lidas',  [NotificacaoController::class, 'marcarTodasLidas'])->name('marcar-todas-lidas');
+    });
+
+// ================================================
+// VALIDAÇÃO PÚBLICA DE ASSINATURAS (sem auth + rate limit)
+// Acessada via QR code do PDF assinado ou digitando o código verificador.
+// ================================================
+Route::middleware('throttle:10,1')
+    ->prefix('autenticar')
+    ->name('autenticar.')
+    ->group(function () {
+        Route::get('/',                     [ValidacaoPublicaController::class, 'formulario'])->name('formulario');
+        Route::post('/buscar',              [ValidacaoPublicaController::class, 'buscar'])->name('buscar');
+        Route::get('/{codigo}',             [ValidacaoPublicaController::class, 'consultar'])->name('consultar')
+            ->where('codigo', '[A-Za-z0-9]+');
+        Route::get('/{codigo}/download',    [ValidacaoPublicaController::class, 'download'])->name('download')
+            ->where('codigo', '[A-Za-z0-9]+');
+    });
 
 // ================================================
 // IA — Geração de conteúdo nos textareas (DFD/ETP)
@@ -107,7 +172,7 @@ Route::get('/', [PrefeituraController::class, 'dashboard'])
 // ================================================
 // ETP INTELIGENTE (Secretário e Admin)
 // ================================================
-Route::prefix('admin/etps')->name('admin.etps.')->middleware(['auth', 'verified'])->group(function () {
+Route::prefix('admin/etps')->name('admin.etps.')->middleware(['auth', 'verified', 'role:diretor_licicon|gerente_licicon|colaborador_licicon|prefeitura'])->group(function () {
     Route::get('/', [EtpController::class, 'index'])->name('index');
     Route::get('/create', [EtpController::class, 'create'])->name('create');
     Route::post('/', [EtpController::class, 'store'])->name('store');
@@ -128,7 +193,7 @@ Route::prefix('admin/etps')->name('admin.etps.')->middleware(['auth', 'verified'
 
 
 // Admin ETPs Recebidos
-Route::prefix('admin/etps-recebidos')->name('admin.etps_recebidos.')->middleware(['auth', 'verified'])->group(function () {
+Route::prefix('admin/etps-recebidos')->name('admin.etps_recebidos.')->middleware(['auth', 'verified', 'role:diretor_licicon|gerente_licicon|colaborador_licicon'])->group(function () {
     Route::get('/', [AdminEtpController::class, 'index'])->name('index');
     Route::get('/{etp}', [AdminEtpController::class, 'show'])->name('show');
     Route::put('/{etp}/status', [AdminEtpController::class, 'alterarStatus'])->name('status');
@@ -136,7 +201,7 @@ Route::prefix('admin/etps-recebidos')->name('admin.etps_recebidos.')->middleware
 });
 
 // Admin Itens ETP
-Route::prefix('admin/etp-itens')->name('admin.etp_itens.')->middleware(['auth', 'verified'])->group(function () {
+Route::prefix('admin/etp-itens')->name('admin.etp_itens.')->middleware(['auth', 'verified', 'role:diretor_licicon|gerente_licicon|colaborador_licicon|prefeitura'])->group(function () {
     Route::get('/', [EtpItemController::class, 'index'])->name('index');
     Route::get('/create', [EtpItemController::class, 'create'])->name('create');
     Route::post('/', [EtpItemController::class, 'store'])->name('store');
@@ -166,7 +231,28 @@ Route::prefix('admin')
                 'update'  => 'usuarios.update',
                 'destroy' => 'usuarios.destroy',
             ])
-            ->except(['show']); // não tem show no CRUD de usuário
+            ->except(['show']) // não tem show no CRUD de usuário
+            ->middleware('role:diretor_licicon|gerente_licicon');
+
+        // ========================================
+        // 1.1 ASSINANTES (users com role `assinante`)
+        // ========================================
+        Route::prefix('assinantes')->name('assinantes.')->middleware('role:diretor_licicon|gerente_licicon')->group(function () {
+            Route::get('importar-csv', [AssinanteController::class, 'mostrarImportarCsv'])->name('importar-csv');
+            Route::post('importar-csv', [AssinanteController::class, 'processarImportarCsv'])->name('processar-csv');
+            Route::get('disponiveis', [AssinanteController::class, 'disponiveis'])->name('disponiveis');
+        });
+        Route::resource('assinantes', AssinanteController::class)
+            ->except(['show'])
+            ->names([
+                'index'   => 'assinantes.index',
+                'create'  => 'assinantes.create',
+                'store'   => 'assinantes.store',
+                'edit'    => 'assinantes.edit',
+                'update'  => 'assinantes.update',
+                'destroy' => 'assinantes.destroy',
+            ])
+            ->middleware('role:diretor_licicon|gerente_licicon');
 
         // ========================================
         // 2. PREFEITURAS
@@ -180,7 +266,8 @@ Route::prefix('admin')
                 'edit'    => 'prefeituras.edit',
                 'update'  => 'prefeituras.update',
                 'destroy' => 'prefeituras.destroy',
-            ]);
+            ])
+            ->middleware('role:diretor_licicon|gerente_licicon');
 
         // ========================================
         // 3. CONTRATOS MANUAIS (EXTERNOS)
@@ -210,12 +297,12 @@ Route::prefix('admin')
         // ========================================
         // 4. UNIDADES (vinculadas à prefeitura)
         // ========================================
-        Route::prefix('prefeituras/{prefeitura}')->group(function () {
+        Route::prefix('prefeituras/{prefeitura}')->middleware('role:diretor_licicon|gerente_licicon')->group(function () {
             Route::post('/unidades', [UnidadeController::class, 'storeUnidade'])
                 ->name('prefeituras.unidades.store');
         });
 
-        Route::prefix('unidades')->group(function () {
+        Route::prefix('unidades')->middleware('role:diretor_licicon|gerente_licicon')->group(function () {
             Route::get('/{id}', [UnidadeController::class, 'getUnidade'])
                 ->name('unidades.get');
             Route::put('/{id}', [UnidadeController::class, 'updateUnidade'])
@@ -226,14 +313,16 @@ Route::prefix('admin')
         // ========================================
         // 4.5. POLLING ASSÍNCRONO DE DOCUMENTOS
         // ========================================
-        Route::get('/documentos-async/status/{token}', [\App\Http\Controllers\ProcessoController::class, 'verificarStatusDownloadDocs'])
-            ->name('documentos.async.status');
-            
-        Route::get('/documentos-async/download/{token}', [\App\Http\Controllers\ProcessoController::class, 'finalizarDownloadDocs'])
-            ->name('documentos.async.download');
+        Route::middleware('role:diretor_licicon|gerente_licicon|colaborador_licicon')->group(function () {
+            Route::get('/documentos-async/status/{token}', [\App\Http\Controllers\ProcessoController::class, 'verificarStatusDownloadDocs'])
+                ->name('documentos.async.status');
 
-        Route::get('processos/gerar-numeros', [ProcessoController::class, 'gerarNumeros'])
-            ->name('processos.gerar-numeros');
+            Route::get('/documentos-async/download/{token}', [\App\Http\Controllers\ProcessoController::class, 'finalizarDownloadDocs'])
+                ->name('documentos.async.download');
+
+            Route::get('processos/gerar-numeros', [ProcessoController::class, 'gerarNumeros'])
+                ->name('processos.gerar-numeros');
+        });
 
         // ========================================
         // 5. PROCESSOS
@@ -247,12 +336,13 @@ Route::prefix('admin')
                 'edit'    => 'processos.edit',
                 'update'  => 'processos.update',
                 'destroy' => 'processos.destroy',
-            ]);
+            ])
+            ->middleware('role:diretor_licicon|gerente_licicon|colaborador_licicon');
 
         // ========================================
         // 6. DETALHES DO PROCESSO
         // ========================================
-        Route::prefix('processos/{processo}')->group(function () {
+        Route::prefix('processos/{processo}')->middleware('role:diretor_licicon|gerente_licicon|colaborador_licicon')->group(function () {
             // Iniciar processo
             Route::get('/iniciar', [ProcessoController::class, 'iniciar'])
                 ->name('processos.iniciar');
@@ -325,7 +415,7 @@ Route::prefix('admin')
         // ========================================
         // 7. FINALIZAÇÃO DO PROCESSO
         // ========================================
-        Route::prefix('processos/{processo}/finalizacao')->name('processos.finalizacao.')->group(function () {
+        Route::prefix('processos/{processo}/finalizacao')->name('processos.finalizacao.')->middleware('role:diretor_licicon|gerente_licicon|colaborador_licicon')->group(function () {
             // Finalizar processo
             Route::get('/', [FinalizacaoProcessoController::class, 'finalizar'])
                 ->name('finalizar');
@@ -370,7 +460,7 @@ Route::prefix('admin')
         // ========================================
         // 8. CONTRATO DO PROCESSO
         // ========================================
-        Route::prefix('processos/{processo}/contrato')->name('processos.contrato.')->group(function () {
+        Route::prefix('processos/{processo}/contrato')->name('processos.contrato.')->middleware('role:diretor_licicon|gerente_licicon|colaborador_licicon')->group(function () {
             // View de contrato
             Route::get('/', [ContratoProcessoController::class, 'contrato'])
                 ->name('index');
@@ -398,7 +488,7 @@ Route::prefix('admin')
         // ========================================
         // 9. CONTRATAÇÕES E ESTOQUE
         // ========================================
-        Route::prefix('processos/{processo}')->group(function () {
+        Route::prefix('processos/{processo}')->middleware('can:atas e contratacoes')->group(function () {
             // Contratações individuais
             Route::post('/contratacao', [ContratacaoController::class, 'store'])
                 ->name('processos.contratacao.store');
@@ -449,7 +539,7 @@ Route::prefix('admin')
         // ========================================
         // 10. CONTRATAÇÕES - ROTAS GERAIS (para compatibilidade)
         // ========================================
-        Route::prefix('contratacao')->name('processos.contratacao.')->group(function () {
+        Route::prefix('contratacao')->name('processos.contratacao.')->middleware('can:atas e contratacoes')->group(function () {
             Route::get('/', [ContratacaoController::class, 'index'])
                 ->name('index');
 
@@ -469,7 +559,7 @@ Route::prefix('admin')
         // ========================================
         // 11. CONTRATO - ROTAS ALTERNATIVAS (para compatibilidade)
         // ========================================
-        Route::prefix('contrato')->name('processo.contrato.')->group(function () {
+        Route::prefix('contrato')->name('processo.contrato.')->middleware('role:diretor_licicon|gerente_licicon|colaborador_licicon')->group(function () {
             Route::get('/processos/{processo}/pdf', [ContratoProcessoController::class, 'gerarPdf'])
                 ->name('gerar-pdf');
 
@@ -480,7 +570,7 @@ Route::prefix('admin')
         // ========================================
         // 12. FINALIZAÇÃO - ROTAS ALTERNATIVAS (para compatibilidade)
         // ========================================
-        Route::prefix('finalizacao')->name('processo.finalizar')->group(function () {
+        Route::prefix('finalizacao')->name('processo.finalizar')->middleware('role:diretor_licicon|gerente_licicon|colaborador_licicon')->group(function () {
             Route::get('/processos/{processo}/pdf', [FinalizacaoProcessoController::class, 'gerarPdf'])
                 ->name('documento.pdf');
 
@@ -492,10 +582,11 @@ Route::prefix('admin')
         });
 
         Route::get('/processos/by-prefeitura', [ProcessoController::class, 'byPrefeitura'])
-            ->name('atas.processos-by-prefeitura');
+            ->name('atas.processos-by-prefeitura')
+            ->middleware('can:atas e contratacoes');
 
 
-        Route::prefix('atas')->name('atas.')->group(function () {
+        Route::prefix('atas')->name('atas.')->middleware('can:atas e contratacoes')->group(function () {
             Route::get('/', [AtaController::class, 'index'])->name('index');
             Route::get('/dashboard', [AtaController::class, 'dashboard'])->name('dashboard');
             Route::get('/{processo}', [AtaController::class, 'show'])->name('show');
@@ -567,7 +658,7 @@ Route::prefix('admin/pncp')->name('admin.pncp.')->middleware(['auth', 'verified'
 // ================================================
 // PESQUISA DE PREÇOS — Módulo dedicado (página web)
 // ================================================
-Route::prefix('admin/pesquisa-preco')->name('admin.pesquisa_preco.')->middleware(['auth', 'verified'])->group(function () {
+Route::prefix('admin/pesquisa-preco')->name('admin.pesquisa_preco.')->middleware(['auth', 'verified', 'role:diretor_licicon|gerente_licicon|colaborador_licicon'])->group(function () {
     Route::get('/', [PesquisaPrecoController::class, 'index'])->name('index');
     Route::post('/itens', [PesquisaPrecoController::class, 'store'])->name('itens.store');
     Route::post('/itens/local', [PesquisaPrecoController::class, 'storeLocal'])->name('itens.storeLocal');

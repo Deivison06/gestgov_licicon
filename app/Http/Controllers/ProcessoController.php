@@ -292,7 +292,7 @@ class ProcessoController extends Controller
                 ->where('id', $tipo)
                 ->firstOrFail();
 
-            return response()->download(public_path($documento->caminho));
+            return $this->servirDocumentoOuAssinado($documento);
         }
 
         // "Edital" (original) deve baixar o documento original, sem trocar pelo mais recente
@@ -301,13 +301,32 @@ class ProcessoController extends Controller
                 ->where('tipo_documento', 'edital')
                 ->firstOrFail();
 
-            return response()->download(public_path($documento->caminho));
+            return $this->servirDocumentoOuAssinado($documento);
         }
 
         // Caso contrário, baixe o documento pelo tipo informado
         $documento = Documento::where('processo_id', $processo->id)
             ->where('tipo_documento', $tipo)
             ->firstOrFail();
+
+        return $this->servirDocumentoOuAssinado($documento);
+    }
+
+    /**
+     * Quando o documento já tem versão assinada consolidada, serve o PDF
+     * assinado; caso contrário, serve o original.
+     */
+    private function servirDocumentoOuAssinado(Documento $documento)
+    {
+        $caminhoAssinado = app(\App\Services\Assinatura\SelecaoAssinantesService::class)
+            ->caminhoPdfAssinado($documento);
+
+        if ($caminhoAssinado) {
+            return response()->download(
+                $caminhoAssinado,
+                basename($documento->caminho ?: 'documento.pdf')
+            );
+        }
 
         return response()->download(public_path($documento->caminho));
     }

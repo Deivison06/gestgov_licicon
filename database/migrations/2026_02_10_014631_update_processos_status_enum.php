@@ -9,6 +9,11 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // ALTER TABLE MODIFY ENUM é específico de MySQL — pula em outros drivers (testes em sqlite).
+        if (DB::getDriverName() !== 'mysql') {
+            return;
+        }
+
         // 1. Primeiro, adicionar uma coluna temporária para backup
         Schema::table('processos', function (Blueprint $table) {
             $table->string('old_status')->nullable()->after('status');
@@ -53,6 +58,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (DB::getDriverName() !== 'mysql') {
+            return;
+        }
+
         // 1. Adicionar coluna de backup para rollback
         Schema::table('processos', function (Blueprint $table) {
             $table->string('old_status')->nullable()->after('status');
