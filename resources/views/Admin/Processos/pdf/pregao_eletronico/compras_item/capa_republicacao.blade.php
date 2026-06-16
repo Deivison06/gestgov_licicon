@@ -137,10 +137,13 @@
         cujo objeto é {!! strip_tags($processo->objeto) !!}.
         Em virtude das alterações promovidas, fica reaberto o prazo para apresentação
         das propostas/documentos, nos termos do edital republicado.
-        {{ $processo->prefeitura->cidade }}, [Data].
+        @php
+    $dataFormatada = \Carbon\Carbon::parse($dataSelecionada)->translatedFormat('d \d\e F \d\e Y');
+@endphp
+{{ $processo->prefeitura->cidade }}, {{ $dataFormatada }}.
     </p>
 
-    <h6 style="text-align: center">[Agente de Contratação]</h6>
+    <h6 style="text-align: center">{{ $detalhe->agente_contratacao ?? $detalhe->pregoeiro ?? '____________________' }}</h6>
 
     {{-- QUEBRA DE PÁGINA --}}
     <div class="page-break"></div>
