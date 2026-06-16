@@ -323,6 +323,12 @@
                                     Gerar PDF
                                 </button>
 
+                                @if ($tipo !== 'capa' && $tipo !== 'publicacoes_avisos_licitacao')
+                                    <x-botao-solicitar-assinatura
+                                        :processo-id="$processo->id"
+                                        :tipo="$tipo" />
+                                @endif
+
                                 @if ($tipo === 'edital' && $documentoGerado)
                                     <button type="button"
                                             onclick="abrirModalRepublicarEdital({{ $processo->id }})"
@@ -1101,7 +1107,17 @@
         }
 
         function getAssinantes(tipoDocumento) {
+            // First try to get from the new inline component state
+            if (window.assinaturaConfig && window.assinaturaConfig[tipoDocumento] && window.assinaturaConfig[tipoDocumento].assinantes) {
+                if (window.assinaturaConfig[tipoDocumento].assinantes.length > 0) {
+                    return window.assinaturaConfig[tipoDocumento].assinantes;
+                }
+            }
+
+            // Fallback to legacy DOM reading
             const container = document.getElementById(`assinantes-container-${tipoDocumento}`);
+            if (!container) return [];
+            
             const selects = container.querySelectorAll('select[name="assinante_unidade[]"]');
             const assinantes = [];
 
@@ -1183,7 +1199,19 @@
 
             if (documentoId) url += `&documento_id=${documentoId}`;
             if (parecer) url += `&parecer=${parecer}`;
-            if (assinantes.length > 0) url += `&assinantes=${assinantesEncoded}`;
+            if (assinantes.length > 0) {
+                url += `&assinantes=${assinantesEncoded}`;
+                
+                // Inclui as configurações da rodada (modo e prazo)
+                if (window.assinaturaConfig && window.assinaturaConfig[documento]) {
+                    const conf = window.assinaturaConfig[documento];
+                    const rodada = {
+                        modo: conf.modo || 'paralelo',
+                        prazoDias: conf.prazoDias || 7
+                    };
+                    url += `&rodada_assinantes=${encodeURIComponent(JSON.stringify(rodada))}`;
+                }
+            }
 
             const button = event.currentTarget;
             const originalText = button.textContent;
@@ -1191,16 +1219,28 @@
             button.textContent = 'Gerando...';
             button.disabled = true;
 
-            fetch(url, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                }
-            })
+            // PERSISTE a seleção de assinantes na tabela `documento_selecao_assinantes`
+            // ANTES de gerar o PDF — assim "Solicitar Assinatura" encontra os dados depois.
+            const persistirSelecao = (assinantes.length > 0 && typeof window.salvarSelecaoAntesDeGerar === 'function')
+                ? window.salvarSelecaoAntesDeGerar(processoId, documento, null, null, { assinantes })
+                : Promise.resolve(null);
+
+            persistirSelecao
+                .catch(() => null)
+                .then(() => fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    }
+                }))
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        showMessage(data.message, 'success');
+                        let msg = data.message;
+                        if (data.assinatura) {
+                            msg += ` Rodada de assinatura digital iniciada com ${data.assinatura.total_solicitacoes} solicitação(ões).`;
+                        }
+                        showMessage(msg, 'success');
                         setTimeout(() => window.location.reload(), 2000);
                     } else {
                         showMessage(data.message, 'error');

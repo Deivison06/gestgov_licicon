@@ -11,5 +11,10 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('app:verificar-pendencias')
                  ->everyFiveMinutes();
+
+        // Expira solicitações pendentes vencidas e envia lembretes 24h antes
+        $schedule->command('assinaturas:expirar-pendentes')
+                 ->dailyAt('06:00')
+                 ->withoutOverlapping();
     }
 }

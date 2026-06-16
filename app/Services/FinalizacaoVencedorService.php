@@ -118,8 +118,8 @@ class FinalizacaoVencedorService
             'lotes.*.item' => 'required|string|max:50',
             'lotes.*.descricao' => 'required|string',
             'lotes.*.unidade' => 'required|string|max:20',
-            'lotes.*.marca' => 'nullable|string|max:100',
-            'lotes.*.modelo' => 'nullable|string|max:100',
+            'lotes.*.marca' => 'nullable|string|max:255',
+            'lotes.*.modelo' => 'nullable|string',
             'lotes.*.quantidade' => 'required|numeric|min:0',
             'lotes.*.vl_unit' => 'required|numeric|min:0',
         ]);

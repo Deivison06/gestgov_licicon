@@ -41,4 +41,24 @@ class UserFactory extends Factory
             'email_verified_at' => null,
         ]);
     }
+
+    /**
+     * Cria um user com is_assinante=true e atribui a role `assinante`.
+     */
+    public function assinante(): static
+    {
+        return $this->state(fn () => [
+            'is_assinante'    => true,
+            'numero_portaria' => 'PORT-' . fake()->numberBetween(100, 999) . '/2026',
+            'data_portaria'   => fake()->dateTimeBetween('-2 years')->format('Y-m-d'),
+        ])->afterCreating(function ($user) {
+            $role = \Spatie\Permission\Models\Role::firstOrCreate([
+                'name'       => 'assinante',
+                'guard_name' => 'web',
+            ]);
+            if (!$user->hasRole($role)) {
+                $user->assignRole($role);
+            }
+        });
+    }
 }

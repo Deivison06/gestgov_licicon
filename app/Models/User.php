@@ -18,7 +18,10 @@ class User extends Authenticatable
         'password',
         'cpf',
         'prefeitura_id',
-        'unidade_id'
+        'unidade_id',
+        'numero_portaria',
+        'data_portaria',
+        'is_assinante',
     ];
 
     protected $hidden = [
@@ -31,7 +34,14 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'data_portaria' => 'date',
+            'is_assinante' => 'boolean',
         ];
+    }
+
+    public function scopeAssinantes($query)
+    {
+        return $query->where('is_assinante', true);
     }
 
     // Relacionamento com Prefeitura

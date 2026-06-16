@@ -13,6 +13,7 @@ use App\Models\LoteContratado;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Enums\TipoProcedimentoEnum;
 use Illuminate\Support\Facades\Log;
+use \App\Services\Assinatura\ResolveLegacyAssinantesTrait;
 
 class ContratoProcessoController extends Controller
 {
@@ -27,6 +28,7 @@ class ContratoProcessoController extends Controller
         'cpf_responsavel',
         'razao_social',
     ];
+    
 
     // Configuração única para contrato
     protected $documentoConfig = [
@@ -340,8 +342,13 @@ class ContratoProcessoController extends Controller
     /**
      * Gera o PDF do contrato
      */
-    public function gerarPdf(Request $request, Processo $processo)
-    {
+    public function gerarPdf(
+        Request $request,
+        Processo $processo,
+        \App\Services\Assinatura\PdfWatermarkService $watermarkService,
+        \App\Services\Assinatura\DocumentoVersaoService $versaoService,
+        \App\Services\Assinatura\SolicitacaoService $solicitacaoService
+    ) {
         try {
             Log::info('Iniciando geração de PDF - Contrato', [
                 'processo_id' => $processo->id,
@@ -391,6 +398,37 @@ class ContratoProcessoController extends Controller
                 'contrato_id' => $contrato->id,
                 'numero_sequencial' => $contrato->numero_sequencial,
             ]);
+            // =====================================================================
+            // Auto-trigger DESATIVADO — a rodada de assinatura é disparada apenas
+            // via "Solicitar Assinatura" (endpoint /solicitar-assinatura).
+            // Gerar PDF agora SEMPRE só renderiza o arquivo.
+            // =====================================================================
+            $assinantes = [];
+            $infoAssinatura = null;
+
+            if (count($assinantes) > 0) {
+                $infoAssinatura = $this->iniciarRodadaAssinatura(
+                    $processo,
+                    $homologacao?->id,
+                    $caminhoCompleto,
+                    $request->input('modo', 'paralelo'),
+                    (int) $request->input('prazo_dias', 7),
+                    $assinantes,
+                    $request->user()->id,
+                    $watermarkService,
+                    $versaoService,
+                    $solicitacaoService
+                );
+            }
+
+            return response()->json(array_filter([
+                'success'   => true,
+                'message'   => $infoAssinatura
+                    ? '✅ Contrato gerado e enviado para assinatura.'
+                    : '✅ Contrato gerado com sucesso! Clique em "Download" para visualizar o arquivo.',
+                'documento' => 'contrato',
+                'assinatura' => $infoAssinatura,
+            ], fn ($v) => $v !== null));
 
         } catch (\DomainException $e) {
             Log::warning('Geração de contrato bloqueada', [
@@ -415,6 +453,72 @@ class ContratoProcessoController extends Controller
                 'message' => '❌ Ocorreu um erro inesperado ao gerar o contrato: ' . $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Orquestra: aplica marca d'água no PDF, cria versão, cria rodada de solicitações.
+     * Idempotente em caso de exceção parcial (transação no Service).
+     *
+     * @return array{versao_id:int, total_solicitacoes:int, modo:string, prazo_dias:int}
+     */
+    private function iniciarRodadaAssinatura(
+        Processo $processo,
+        ?int $homologacaoId,
+        string $caminhoPdfOriginal,
+        string $modo,
+        int $prazoDias,
+        array $assinantes,
+        int $solicitadoPorUserId,
+        \App\Services\Assinatura\PdfWatermarkService $watermarkService,
+        \App\Services\Assinatura\DocumentoVersaoService $versaoService,
+        \App\Services\Assinatura\SolicitacaoService $solicitacaoService
+    ): array {
+        // 1) Marca d'água
+        $caminhoRascunho = $watermarkService->aplicarMarcaDagua(
+            $caminhoPdfOriginal,
+            'AGUARDANDO ASSINATURAS'
+        );
+
+        // 2) Documentavel: usamos o Contrato persistido (não o processo) para que cada
+        //    contrato tenha sua própria árvore de versões.
+        $contrato = Contrato::where('processo_id', $processo->id)
+            ->where('homologacao_id', $homologacaoId)
+            ->latest('id')
+            ->firstOrFail();
+
+        // 3) Cria versão
+        $versao = $versaoService->criarRascunho(
+            $contrato,
+            $caminhoRascunho,
+            $solicitadoPorUserId
+        );
+
+        // 4) Monta lista normalizada para o SolicitacaoService
+        $listaAssinantes = collect($assinantes)
+            ->map(function ($a, $idx) use ($modo) {
+                return [
+                    'user_id' => (int) ($a['id'] ?? $a['user_id'] ?? 0),
+                    'ordem'   => $modo === 'sequencial' ? (int) ($a['ordem'] ?? $idx + 1) : 0,
+                ];
+            })
+            ->filter(fn ($a) => $a['user_id'] > 0)
+            ->values()
+            ->all();
+
+        // 5) Cria rodada
+        $solicitacoes = $solicitacaoService->criarRodada(
+            $versao,
+            $listaAssinantes,
+            $solicitadoPorUserId,
+            now()->addDays(max(1, $prazoDias))
+        );
+
+        return [
+            'versao_id'          => $versao->id,
+            'total_solicitacoes' => $solicitacoes->count(),
+            'modo'               => $modo,
+            'prazo_dias'         => $prazoDias,
+        ];
     }
 
     /**
@@ -617,6 +721,22 @@ class ContratoProcessoController extends Controller
 
             if (!file_exists($caminhoOriginal)) {
                 throw new \Exception('Arquivo do contrato não encontrado.');
+            }
+
+            // Se já existe versão assinada consolidada, serve direto o PDF assinado
+            // (não aplica o carimbo legacy — o PDF assinado já contém as assinaturas).
+            $caminhoAssinado = app(\App\Services\Assinatura\SelecaoAssinantesService::class)
+                ->caminhoPdfAssinado($documento);
+
+            if ($caminhoAssinado) {
+                Log::info('Download de contrato servindo versão assinada', [
+                    'processo_id' => $processo->id,
+                    'caminho_assinado' => $caminhoAssinado,
+                ]);
+                return response()->download(
+                    $caminhoAssinado,
+                    $this->gerarNomeDownload($processo, 'contrato_assinado.pdf')
+                );
             }
 
             Log::info('Iniciando download com carimbo - Contrato', [

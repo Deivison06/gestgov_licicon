@@ -2283,6 +2283,13 @@
 
         // Função auxiliar para obter os dados dos assinantes
         function getAssinantes(tipoDocumento) {
+            // First try to get from the new inline component state
+            if (window.assinaturaConfig && window.assinaturaConfig[tipoDocumento] && window.assinaturaConfig[tipoDocumento].assinantes) {
+                if (window.assinaturaConfig[tipoDocumento].assinantes.length > 0) {
+                    return window.assinaturaConfig[tipoDocumento].assinantes;
+                }
+            }
+
             const container = document.getElementById(`assinantes-container-${tipoDocumento}`);
             if (!container) return [];
             const selects = container.querySelectorAll('select[name="assinante_unidade[]"]');
@@ -2427,16 +2434,28 @@
             button.textContent = 'Gerando...';
             button.disabled = true;
 
-            fetch(url, {
+            // PERSISTE a seleção em documento_selecao_assinantes ANTES de gerar.
+            // Sem isso "Solicitar Assinatura" não acharia os assinantes salvos.
+            const persistirSelecao = (assinantes.length > 0 && typeof window.salvarSelecaoAntesDeGerar === 'function')
+                ? window.salvarSelecaoAntesDeGerar(processoId, documento, homologacaoId || null, vencedorId || null, { assinantes })
+                : Promise.resolve(null);
+
+            persistirSelecao
+                .catch(() => null)
+                .then(() => fetch(url, {
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     }
-                })
+                }))
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        showMessage(data.message, 'success');
+                        let msg = data.message;
+                        if (data.assinatura) {
+                            msg += ` Rodada de assinatura digital iniciada com ${data.assinatura.total_solicitacoes} solicitação(ões).`;
+                        }
+                        showMessage(msg, 'success');
                         setTimeout(() => {
                             window.location.reload();
                         }, 2000);

@@ -237,8 +237,30 @@ class ContratacaoController extends Controller
                 ->first();
 
             // 2. LIBERAR ESTOQUE SE CONTRATAÇÃO ESTIVER ATIVA
+            // Libera apenas o que estava de fato reservado (utilizada), preservando
+            // o invariante disponivel + utilizada = total. Se o estoque estiver
+            // inconsistente (ex.: utilizada=0 com contratação ativa), liberamos só
+            // o saldo realmente utilizado — assim a remoção não é bloqueada nem
+            // infla o disponível acima do total.
             if ($estoque && $contratacao->status !== 'CANCELADO') {
-                $estoque->liberarQuantidade($contratacao->quantidade_contratada);
+                $quantidade = (float) $contratacao->quantidade_contratada;
+                $liberar    = min($quantidade, (float) $estoque->quantidade_utilizada);
+
+                if ($liberar < $quantidade) {
+                    Log::warning('Estoque inconsistente ao remover contratação; liberando apenas o saldo utilizado', [
+                        'contratacao_id'        => $contratacao->id,
+                        'lote_id'               => $contratacao->lote_id,
+                        'processo_id'           => $processo->id,
+                        'quantidade_contratada' => $quantidade,
+                        'quantidade_utilizada'  => (float) $estoque->quantidade_utilizada,
+                        'quantidade_liberada'   => $liberar,
+                    ]);
+                }
+
+                $estoque->quantidade_disponivel += $liberar;
+                $estoque->quantidade_utilizada  -= $liberar;
+
+                $estoque->save();
             }
 
             // 3. REMOVER CONTRATAÇÃO

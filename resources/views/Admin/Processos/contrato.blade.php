@@ -610,6 +610,13 @@
                                                         Gerar novo contrato
                                                     </button>
 
+                                                    @if ($doc['requer_assinatura'] ?? false)
+                                                        <x-botao-solicitar-assinatura
+                                                            :processo-id="$processo->id"
+                                                            :tipo="$tipo"
+                                                            :homologacao-id="$homologacaoInicial ?? null" />
+                                                    @endif
+
                                                     @php
                                                         $downloadBase = route('admin.processo.contrato.download', ['processo' => $processo->id, 'tipo' => $tipo]);
                                                         $downloadHref = $homologacaoInicial
@@ -2313,16 +2320,28 @@
             button.textContent = 'Gerando...';
             button.disabled = true;
 
-            fetch(url, {
+            // PERSISTE seleção em documento_selecao_assinantes antes do PDF.
+            const homologId = window.currentHomologacaoId || null;
+            const persistirSelecao = (assinantes.length > 0 && typeof window.salvarSelecaoAntesDeGerar === 'function')
+                ? window.salvarSelecaoAntesDeGerar(processoId, tipo, homologId, null, { assinantes })
+                : Promise.resolve(null);
+
+            persistirSelecao
+                .catch(() => null)
+                .then(() => fetch(url, {
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     }
-                })
+                }))
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        showMessage(data.message, 'success');
+                        let msg = data.message;
+                        if (data.assinatura) {
+                            msg += ` Rodada de assinatura digital iniciada com ${data.assinatura.total_solicitacoes} solicitação(ões).`;
+                        }
+                        showMessage(msg, 'success');
                         setTimeout(() => {
                             window.location.reload();
                         }, 2000);

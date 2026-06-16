@@ -33,7 +33,12 @@ return new class extends Migration
             $table->index('modalidade_codigo');
             $table->index('codigo_situacao_compra');
             $table->index('data_publicacao_pncp');
-            $table->fullText('objeto', 'ft_pncp_objeto');
+
+            // Índice fulltext só em drivers que suportam (MySQL). O SQLite usado nos
+            // testes não suporta fulltext — a busca textual cai para LIKE nesse caso.
+            if (Schema::getConnection()->getDriverName() !== 'sqlite') {
+                $table->fullText('objeto', 'ft_pncp_objeto');
+            }
         });
     }
 

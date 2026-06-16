@@ -7,6 +7,9 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (DB::getDriverName() !== 'mysql') {
+            return;
+        }
         DB::statement("
             ALTER TABLE processos
             MODIFY tipo_contratacao
@@ -18,6 +21,9 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (DB::getDriverName() !== 'mysql') {
+            return;
+        }
         DB::statement("
             ALTER TABLE processos
             MODIFY tipo_contratacao

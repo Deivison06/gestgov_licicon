@@ -939,6 +939,28 @@
                     @endif
 
                     @if(auth()->user()->hasAnyRole(['diretor_licicon', 'gerente_licicon', 'colaborador_licicon', 'prefeitura']))
+                    {{-- Central de Assinaturas (qualquer user que seja assinante) --}}
+                    @if(auth()->user()->is_assinante)
+                        @php
+                            // Contagem de pendências do user logado (1 query por request).
+                            $pendentesAssinatura = \App\Models\SolicitacaoAssinatura::query()
+                                ->where('assinante_user_id', auth()->id())
+                                ->where('status', \App\Models\SolicitacaoAssinatura::STATUS_PENDENTE)
+                                ->count();
+                        @endphp
+                        <a href="{{ route('minhas-assinaturas.index') }}"
+                            class="nav-item {{ request()->routeIs('minhas-assinaturas.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-pen-fancy"></i>
+                            <span>MINHAS ASSINATURAS</span>
+                            @if ($pendentesAssinatura > 0)
+                                <span class="ml-auto inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-bold text-white bg-amber-500 rounded-full">
+                                    {{ $pendentesAssinatura > 99 ? '99+' : $pendentesAssinatura }}
+                                </span>
+                            @endif
+                        </a>
+                    @endif
+
+                    @if(auth()->user()->hasAnyRole(['diretor_licicon', 'gerente_licicon', 'colaborador_licicon']))
                     <div class="nav-section-title">Conteúdo do Site</div>
 
                     @if(auth()->user()->hasAnyRole(['diretor_licicon', 'gerente_licicon', 'colaborador_licicon']))
@@ -1065,6 +1087,12 @@
                         <span>USUÁRIOS</span>
                     </a>
 
+                    <a href="{{ route('admin.assinantes.index') }}"
+                        class="nav-item {{ request()->routeIs('admin.assinantes.*') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-signature"></i>
+                        <span>ASSINANTES</span>
+                    </a>
+
                     @endif
 
                 </nav>
@@ -1093,6 +1121,131 @@
             <header class="top-header">
                 <div class="header-actions">
                     @auth
+                        {{-- ====================================================== --}}
+                        {{-- Sininho de Assinaturas (visível para qualquer assinante) --}}
+                        {{-- ====================================================== --}}
+                        @if (auth()->user()->is_assinante)
+                            <div x-data="sininhoAssinaturas()"
+                                 x-init="iniciar()"
+                                 @click.outside="aberto = false"
+                                 class="relative">
+
+                                <button @click="aberto = !aberto"
+                                        class="relative p-2 text-gray-600 hover:text-[#009496] transition-colors">
+                                    <i class="fas fa-bell text-xl"></i>
+                                    <span x-show="count > 0"
+                                          x-cloak
+                                          x-text="count > 99 ? '99+' : count"
+                                          class="absolute -top-1 -right-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white bg-amber-500 rounded-full"></span>
+                                </button>
+
+                                {{-- Dropdown --}}
+                                <div x-show="aberto"
+                                     x-cloak
+                                     x-transition.opacity
+                                     class="absolute right-0 mt-2 w-96 max-h-[480px] bg-white rounded-xl shadow-xl border border-gray-200 z-50 flex flex-col">
+                                    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+                                        <h4 class="text-sm font-semibold text-gray-800">Notificações</h4>
+                                        <button x-show="count > 0"
+                                                @click="marcarTodasLidas()"
+                                                class="text-xs text-[#009496] hover:underline">
+                                            Marcar todas como lidas
+                                        </button>
+                                    </div>
+
+                                    <div class="flex-1 overflow-y-auto">
+                                        <template x-if="ultimas.length === 0">
+                                            <div class="p-8 text-center text-sm text-gray-500">
+                                                <i class="fas fa-bell-slash text-3xl text-gray-300 mb-2"></i>
+                                                <p>Nenhuma notificação ainda.</p>
+                                            </div>
+                                        </template>
+
+                                        <template x-for="n in ultimas" :key="n.id">
+                                            <a :href="n.url || '#'"
+                                               @click="marcarLida(n)"
+                                               :class="n.lida ? 'opacity-60' : ''"
+                                               class="flex items-start gap-3 px-4 py-3 border-b border-gray-100 hover:bg-gray-50">
+                                                <div :class="{
+                                                        'bg-amber-100 text-amber-700':  n.cor === 'amber',
+                                                        'bg-emerald-100 text-emerald-700': n.cor === 'emerald',
+                                                        'bg-red-100 text-red-700':     n.cor === 'red',
+                                                        'bg-gray-100 text-gray-600':   !['amber','emerald','red'].includes(n.cor),
+                                                     }"
+                                                     class="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center">
+                                                    <i :class="n.icone"></i>
+                                                </div>
+                                                <div class="flex-1 min-w-0">
+                                                    <p class="text-sm font-medium text-gray-900" x-text="n.mensagem"></p>
+                                                    <p x-show="n.documento" class="text-xs text-gray-500" x-text="n.documento"></p>
+                                                    <p class="text-xs text-gray-400 mt-0.5" x-text="n.criada_em"></p>
+                                                </div>
+                                                <span x-show="!n.lida" class="flex-shrink-0 w-2 h-2 bg-amber-500 rounded-full mt-2"></span>
+                                            </a>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <script>
+                                if (typeof window.sininhoAssinaturas !== 'function') {
+                                    window.sininhoAssinaturas = function () {
+                                        return {
+                                            aberto: false,
+                                            count: 0,
+                                            ultimas: [],
+
+                                            iniciar() {
+                                                this.atualizar();
+                                                setInterval(() => this.atualizar(), 30000); // polling 30s
+                                            },
+
+                                            async atualizar() {
+                                                try {
+                                                    const r = await fetch('{{ route('notificacoes.index') }}', {
+                                                        headers: {'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest'},
+                                                    });
+                                                    if (!r.ok) return;
+                                                    const j = await r.json();
+                                                    this.count   = j.count   ?? 0;
+                                                    this.ultimas = j.ultimas ?? [];
+                                                } catch (e) { /* silencioso */ }
+                                            },
+
+                                            async marcarLida(n) {
+                                                if (n.lida) return;
+                                                try {
+                                                    await fetch(`/notificacoes/${n.id}/marcar-lida`, {
+                                                        method: 'POST',
+                                                        headers: {
+                                                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                                            'Accept':       'application/json',
+                                                        },
+                                                    });
+                                                    n.lida = true;
+                                                    if (this.count > 0) this.count--;
+                                                } catch (e) { /* silencioso */ }
+                                            },
+
+                                            async marcarTodasLidas() {
+                                                try {
+                                                    await fetch('{{ route('notificacoes.marcar-todas-lidas') }}', {
+                                                        method: 'POST',
+                                                        headers: {
+                                                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                                            'Accept':       'application/json',
+                                                        },
+                                                    });
+                                                    this.count = 0;
+                                                    this.ultimas.forEach(n => n.lida = true);
+                                                } catch (e) { /* silencioso */ }
+                                            },
+                                        };
+                                    };
+                                }
+                            </script>
+                        @endif
+
                         @if(auth()->user()->hasAnyRole(['diretor_licicon', 'gerente_licicon']))
                             @php
                                 $notifications    = auth()->user()->unreadNotifications;
