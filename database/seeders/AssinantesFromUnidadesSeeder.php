@@ -106,7 +106,7 @@ class AssinantesFromUnidadesSeeder extends Seeder
                     }
                 } else {
                     $email = $this->gerarEmailUnico($servidor, $prefeitura);
-                    $senhaInicial = Str::random(12);
+                    $senhaInicial = 'GestCloud@2026';
 
                     $user = User::create([
                         'name'             => $servidor,
@@ -160,24 +160,37 @@ class AssinantesFromUnidadesSeeder extends Seeder
      */
     private function gerarEmailUnico(string $nome, Prefeitura $prefeitura): string
     {
-        $slugNome = Str::slug(Str::lower(Str::ascii($nome)), '.');
-        $slugPref = Str::slug(Str::lower(Str::ascii($prefeitura->cidade ?? $prefeitura->nome ?? "p{$prefeitura->id}")), '');
+        $partes = collect(explode(' ', Str::lower(Str::ascii(trim($nome)))))
+            ->filter()
+            ->values();
 
-        $base = "{$slugNome}.{$slugPref}@{$this->emailDomainSuffix}";
+        $primeiro = $partes->first();
+        $ultimo = $partes->last();
+
+        $cidade = Str::slug(
+            Str::lower(
+                Str::ascii($prefeitura->cidade ?? $prefeitura->nome ?? "p{$prefeitura->id}")
+            ),
+            ''
+        );
+
+        $base = "{$primeiro}{$ultimo}{$cidade}@{$this->emailDomainSuffix}";
 
         if (!User::where('email', $base)->exists()) {
             return $base;
         }
 
-        // Colisão — anexa contador
         for ($i = 2; $i < 1000; $i++) {
-            $candidato = "{$slugNome}.{$slugPref}-{$i}@{$this->emailDomainSuffix}";
+            $candidato = "{$primeiro}{$ultimo}{$cidade}{$i}@{$this->emailDomainSuffix}";
+
             if (!User::where('email', $candidato)->exists()) {
                 return $candidato;
             }
         }
 
-        throw new \RuntimeException("Não foi possível gerar e-mail único para '{$nome}'.");
+        throw new \RuntimeException(
+            "Não foi possível gerar e-mail único para '{$nome}'."
+        );
     }
 
     private function salvarRelatorio(array $linhas): string
