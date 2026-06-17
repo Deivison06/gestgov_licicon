@@ -13,6 +13,7 @@
     $statusUrl    = route('admin.processos.assinatura.selecao.status', $processoId);
     $salvarUrl    = route('admin.processos.assinatura.selecao.salvar', $processoId);
     $solicitarUrl = route('admin.processos.assinatura.solicitar', $processoId);
+    $cancelarUrl  = route('admin.processos.assinatura.cancelar', $processoId);
 @endphp
 
 <div id="{{ $compId }}"
@@ -23,7 +24,8 @@
      data-vencedor-id="{{ $vencedorId ?? '' }}"
      data-status-url="{{ $statusUrl }}"
      data-salvar-url="{{ $salvarUrl }}"
-     data-solicitar-url="{{ $solicitarUrl }}">
+     data-solicitar-url="{{ $solicitarUrl }}"
+     data-cancelar-url="{{ $cancelarUrl }}">
 
     {{-- Badge de status (atualizado pelo JS no init e após ações) --}}
     <span data-status-badge
@@ -41,6 +43,16 @@
             <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
         </svg>
         <span data-btn-label>Solicitar Assinatura</span>
+    </button>
+
+    {{-- Botão Cancelar rodada (renderiza quando há rodada ativa) --}}
+    <button type="button"
+            data-btn-cancelar
+            class="hidden items-center gap-1.5 px-3 py-2 text-xs font-semibold text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6L6 18M6 6l12 12"></path>
+        </svg>
+        <span>Cancelar rodada</span>
     </button>
 </div>
 
@@ -145,6 +157,18 @@
             });
         },
 
+        /** Cancela a rodada ativa do documento. */
+        async cancelar(cancelarUrl, tipo, homologacaoId, vencedorId) {
+            return this._fetch(cancelarUrl, {
+                method: 'POST',
+                body: JSON.stringify({
+                    tipo_documento: tipo,
+                    homologacao_id: homologacaoId || null,
+                    vencedor_id:    vencedorId    || null,
+                }),
+            });
+        },
+
         async status(statusUrl, tipo, homologacaoId, vencedorId) {
             const url = statusUrl
                 + `?tipo_documento=${encodeURIComponent(tipo)}`
@@ -190,8 +214,8 @@
     const ESTADOS = {
         sem_pdf:               { badge: ['bg-gray-100 text-gray-700', 'Sem PDF'],        botao: 'Gerar PDF antes' },
         pronto_para_solicitar: { badge: null,                                            botao: 'Solicitar Assinatura' },
-        aguardando:            { badge: ['bg-amber-100 text-amber-800', 'Aguardando'],   botao: 'Reenviar' },
-        parcialmente_assinado: { badge: ['bg-blue-100 text-blue-800', 'Em andamento'],   botao: 'Reenviar' },
+        aguardando:            { badge: ['bg-amber-100 text-amber-800', 'Aguardando'],   botao: null },
+        parcialmente_assinado: { badge: ['bg-blue-100 text-blue-800', 'Em andamento'],   botao: null },
         assinado:              { badge: ['bg-emerald-100 text-emerald-800', 'Assinado'], botao: null },
     };
 
@@ -218,10 +242,19 @@
             btn.classList.remove('hidden');
             btn.classList.add('inline-flex');
             btn.querySelector('[data-btn-label]').textContent = cfg.botao;
-            btn.disabled = !status.pode_solicitar && status.estado !== 'aguardando' && status.estado !== 'parcialmente_assinado';
+            btn.disabled = !status.pode_solicitar;
             btn.title = status.mensagem || '';
         } else {
             btn.classList.add('hidden');
+            btn.classList.remove('inline-flex');
+        }
+
+        // Botão de cancelar: visível só quando há rodada ativa.
+        const btnCancelar = root.querySelector('[data-btn-cancelar]');
+        if (btnCancelar) {
+            const ativa = status.estado === 'aguardando' || status.estado === 'parcialmente_assinado';
+            btnCancelar.classList.toggle('hidden', !ativa);
+            btnCancelar.classList.toggle('inline-flex', ativa);
         }
     }
 
@@ -244,19 +277,6 @@
         const btn  = root.querySelector('[data-btn-solicitar]');
         const orig = btn.querySelector('[data-btn-label]').textContent;
 
-        // Confirma se tem alerta de múltiplas pendentes
-        const status = await window.AssinaturaPersistencia.status(root.dataset.statusUrl, tipo, h, v);
-        if (status.estado === 'aguardando' || status.estado === 'parcialmente_assinado') {
-            const ok = confirm(
-                `Já existe uma rodada em andamento (${status.pendentes} pendente(s) de ${status.total}). ` +
-                `Deseja cancelá-la e iniciar uma nova rodada?`
-            );
-            if (!ok) return;
-            // TODO: endpoint de cancelamento — por hora bloqueia
-            showMsg(`Cancele a rodada atual em /minhas-assinaturas antes de iniciar outra.`, 'error');
-            return;
-        }
-
         btn.disabled = true;
         btn.querySelector('[data-btn-label]').textContent = 'Enviando...';
         try {
@@ -274,6 +294,32 @@
         } finally {
             btn.disabled = false;
             btn.querySelector('[data-btn-label]').textContent = orig;
+        }
+    }
+
+    async function aoClicarCancelar(root) {
+        const tipo = root.dataset.tipo;
+        const h    = root.dataset.homologacaoId || null;
+        const v    = root.dataset.vencedorId || null;
+        const btn  = root.querySelector('[data-btn-cancelar]');
+
+        if (!confirm('Cancelar a rodada de assinatura em andamento? As solicitações pendentes serão canceladas.')) {
+            return;
+        }
+
+        btn.disabled = true;
+        try {
+            const r = await window.AssinaturaPersistencia.cancelar(root.dataset.cancelarUrl, tipo, h, v);
+            if (r.success) {
+                showMsg(r.message || 'Rodada cancelada.', 'success');
+                await atualizarWidget(root);
+            } else {
+                showMsg(r.message || 'Falha ao cancelar.', 'error');
+            }
+        } catch (e) {
+            showMsg(e.message || 'Erro inesperado ao cancelar.', 'error');
+        } finally {
+            btn.disabled = false;
         }
     }
 
@@ -296,6 +342,8 @@
             root.dataset.bootDone = '1';
             const btn = root.querySelector('[data-btn-solicitar]');
             btn.addEventListener('click', () => aoClicarSolicitar(root));
+            const btnCancelar = root.querySelector('[data-btn-cancelar]');
+            if (btnCancelar) btnCancelar.addEventListener('click', () => aoClicarCancelar(root));
             atualizarWidget(root);
 
             // Hidrata seleção salva no window.assinaturaConfig (best-effort)

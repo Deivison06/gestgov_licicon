@@ -60,7 +60,7 @@ class StatusDocumentoAssinatura
      */
     public function rodadaAtiva(Documento $documento): Collection
     {
-        $versaoAtiva = $this->ultimaVersaoComRodadaAtiva($documento);
+        $versaoAtiva = $this->versaoAtiva($documento);
         if (!$versaoAtiva) {
             return collect();
         }
@@ -75,7 +75,7 @@ class StatusDocumentoAssinatura
 
     public function existeRodadaAtiva(Documento $documento): bool
     {
-        return $this->ultimaVersaoComRodadaAtiva($documento) !== null;
+        return $this->versaoAtiva($documento) !== null;
     }
 
     public function versaoConsolidada(Documento $documento): ?DocumentoVersao
@@ -135,7 +135,7 @@ class StatusDocumentoAssinatura
             ];
         }
 
-        $versaoAtiva = $this->ultimaVersaoComRodadaAtiva($documento);
+        $versaoAtiva = $this->versaoAtiva($documento);
         if ($versaoAtiva) {
             $solicitacoes = SolicitacaoAssinatura::query()->where('documento_versao_id', $versaoAtiva->id);
             $total        = (clone $solicitacoes)->count();
@@ -182,7 +182,7 @@ class StatusDocumentoAssinatura
             : null;
     }
 
-    private function ultimaVersaoComRodadaAtiva(Documento $documento): ?DocumentoVersao
+    public function versaoAtiva(Documento $documento): ?DocumentoVersao
     {
         return DocumentoVersao::query()
             ->where('documentavel_type', Documento::class)

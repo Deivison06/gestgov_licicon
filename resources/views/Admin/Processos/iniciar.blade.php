@@ -395,7 +395,13 @@
                                         <div class="pb-4 mb-6 border-b border-gray-200">
                                             <h4 class="mb-4 text-sm font-semibold text-gray-700">Seleção de Assinantes</h4>
 
-                                            <div id="assinantes-container-{{ $tipo }}" class="space-y-3">
+                                            <div id="assinantes-container-{{ $tipo }}" class="space-y-3"
+                                                 data-assinante-bridge
+                                                 data-tipo="{{ $tipo }}"
+                                                 data-homologacao-id=""
+                                                 data-vencedor-id=""
+                                                 data-obter-url="{{ route('admin.processos.assinatura.selecao.obter', $processo->id) }}"
+                                                 data-salvar-url="{{ route('admin.processos.assinatura.selecao.salvar', $processo->id) }}">
                                                 <div class="flex flex-col gap-3 p-4 bg-white border border-gray-200 rounded-lg assinante-item">
                                                     <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
                                                         {{-- Select da Unidade --}}
@@ -1902,4 +1908,6 @@
             }, 5000); // Poll a cada 5 segundos
         }
     </script>
+
+    @include('Admin.Processos.partials.assinante-bridge-script')
 @endsection
