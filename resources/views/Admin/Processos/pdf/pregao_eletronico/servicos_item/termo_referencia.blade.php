@@ -354,7 +354,7 @@
                                 $sumLote += $vTotal;
                             @endphp
                             <tr>
-                                <td>{{ $item['item'] ?? ($index + 1) }}</td>
+                                <td>{{ $loop->iteration }}</td>
                                 <td style="text-align: left;">{{ $item['especificacoes'] ?? '' }}</td>
                                 <td>{{ $item['unidade'] ?? '' }}</td>
                                 <td>{{ number_format($qtd, 2, ',', '.') }}</td>
