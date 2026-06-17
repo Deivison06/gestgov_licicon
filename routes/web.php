@@ -126,6 +126,8 @@ Route::middleware(['auth', 'verified', 'role:diretor_licicon|gerente_licicon|col
             [SelecaoAssinanteController::class, 'status'])->name('selecao.status');
         Route::post('/solicitar-assinatura',
             [SelecaoAssinanteController::class, 'solicitar'])->name('solicitar');
+        Route::post('/cancelar-assinatura',
+            [SelecaoAssinanteController::class, 'cancelar'])->name('cancelar');
     });
 
 // ================================================

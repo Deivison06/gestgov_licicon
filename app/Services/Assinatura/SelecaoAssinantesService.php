@@ -2,6 +2,7 @@
 
 namespace App\Services\Assinatura;
 
+use App\Assinatura\Application\Actions\CancelarRodadaAssinatura;
 use App\Assinatura\Application\Actions\SalvarSelecaoAssinantes;
 use App\Assinatura\Application\Actions\SolicitarAssinatura;
 use App\Assinatura\Application\Queries\StatusDocumentoAssinatura;
@@ -27,7 +28,8 @@ class SelecaoAssinantesService
     public function __construct(
         protected SalvarSelecaoAssinantes $salvarSelecao,
         protected SolicitarAssinatura $solicitarAssinatura,
-        protected StatusDocumentoAssinatura $consulta
+        protected StatusDocumentoAssinatura $consulta,
+        protected CancelarRodadaAssinatura $cancelarRodadaAssinatura
     ) {}
 
     public function salvar(
@@ -91,5 +93,18 @@ class SelecaoAssinantesService
     public function caminhoPdfAssinado(?Documento $documento): ?string
     {
         return $this->consulta->caminhoPdfAssinado($documento);
+    }
+
+    public function cancelarRodada(
+        Processo $processo,
+        string $tipoDocumento,
+        ?int $homologacaoId,
+        ?int $vencedorId,
+        int $userId,
+        ?string $motivo = null
+    ): int {
+        return $this->cancelarRodadaAssinatura->executar(
+            $processo, $tipoDocumento, $homologacaoId, $vencedorId, $userId, $motivo
+        );
     }
 }

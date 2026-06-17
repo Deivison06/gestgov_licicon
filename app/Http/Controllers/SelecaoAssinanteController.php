@@ -172,4 +172,48 @@ class SelecaoAssinanteController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * POST — Cancela a rodada de assinatura ativa do documento
+     */
+    public function cancelar(Request $request, Processo $processo)
+    {
+        $request->validate([
+            'tipo_documento' => ['required', 'string', 'max:80'],
+            'homologacao_id' => ['nullable', 'integer', 'exists:homologacoes,id'],
+            'vencedor_id'    => ['nullable', 'integer', 'exists:vencedores,id'],
+            'motivo'         => ['nullable', 'string', 'max:500'],
+        ]);
+
+        try {
+            $afetadas = $this->service->cancelarRodada(
+                $processo,
+                $request->input('tipo_documento'),
+                $request->integer('homologacao_id') ?: null,
+                $request->integer('vencedor_id') ?: null,
+                $request->user()->id,
+                $request->input('motivo')
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => "Rodada de assinatura cancelada — {$afetadas} solicitação(ões) afetada(s).",
+                'data'    => ['afetadas' => $afetadas],
+            ]);
+        } catch (\DomainException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 422);
+        } catch (\Throwable $e) {
+            Log::error('Erro ao cancelar rodada de assinatura', [
+                'processo_id' => $processo->id,
+                'erro'        => $e->getMessage(),
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro inesperado: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
 }
