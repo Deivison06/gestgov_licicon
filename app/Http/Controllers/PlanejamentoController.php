@@ -78,6 +78,66 @@ class PlanejamentoController extends Controller
         return view('Admin.Planejamento.index', compact('prefeituras', 'colunas', 'processos', 'statusConfig'));
     }
 
+    public function calendarioEventos(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $user = auth()->user();
+        $status = $request->input('status', 'todos'); // 'todos', 'aguardando_sessao', 'em_andamento', 'em_recurso'
+        $tipo = $request->input('tipo', 'sessao'); // 'sessao' ou 'recurso'
+
+        $query = Processo::with('prefeitura')
+            ->where('planejamento_status', '!=', 'concluida')
+            ->when($status !== 'todos', fn($q) => $q->where('planejamento_status', $status))
+            ->when($user->prefeitura_id, fn($q) => $q->where('prefeitura_id', $user->prefeitura_id))
+            ->where(function ($q) use ($tipo, $status) {
+                // Se o usuário filtrou especificamente por Recurso, ou se o tipo global é recurso
+                if ($status === 'em_recurso' || $tipo === 'recurso') {
+                    $q->whereNotNull('planejamento_fim_recurso');
+                } else {
+                    $q->whereNotNull('planejamento_data_abertura');
+                }
+            });
+
+        // Filtro opcional por prefeitura se for usuário global
+        if (!$user->prefeitura_id && $request->filled('prefeitura_id')) {
+            $query->where('prefeitura_id', $request->prefeitura_id);
+        }
+
+        $processos = $query->get();
+        $statusConfig = self::statusConfig();
+
+        $eventos = $processos->map(function ($p) use ($tipo, $status, $statusConfig) {
+            // Se o status filtrado for recurso, usamos a data de recurso, senão a de abertura
+            $usarDataRecurso = ($status === 'em_recurso' || ($status === 'todos' && $tipo === 'recurso'));
+            $data = $usarDataRecurso ? $p->planejamento_fim_recurso : $p->planejamento_data_abertura;
+            
+            // Definição da cor vibrante
+            $cor = $p->prefeitura->cor ?? match($p->planejamento_status) {
+                'em_elaboracao'     => '#4338ca', // indigo-700
+                'aguardando_sessao' => '#d97706', // amber-600
+                'em_andamento'      => '#059669', // emerald-600
+                'em_recurso'        => '#ea580c', // orange-600
+                default             => '#4b5563', // gray-600
+            };
+
+            return [
+                'id'              => $p->id,
+                'title'           => "({$p->numero_processo}) " . ($p->prefeitura->cidade ?? $p->prefeitura->nome ?? 'S/C'),
+                'start'           => $data ? $data->toDateString() : null,
+                'allDay'          => true,
+                'backgroundColor' => $cor,
+                'borderColor'     => $cor,
+                'textColor'       => '#ffffff',
+                'url'             => route('admin.planejamento.show', $p->id),
+                'extendedProps'   => [
+                    'objeto' => $p->objeto,
+                    'status' => $statusConfig[$p->planejamento_status]['label'] ?? 'N/A',
+                ]
+            ];
+        })->filter(fn($e) => !is_null($e['start']))->values();
+
+        return response()->json($eventos);
+    }
+
     public function show(Processo $processo): View
     {
         $user = auth()->user();

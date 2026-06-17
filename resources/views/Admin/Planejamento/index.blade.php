@@ -4,12 +4,7 @@
 
 @section('content')
 <div
-    x-data="{
-        modalAgendar: false,
-        processoId: null,
-        processoNumero: '',
-        dataMinima: '{{ now()->toDateString() }}'
-    }"
+    x-data="planejamentoPainel()"
     @abrir-modal-agendar.window="modalAgendar = true; processoId = $event.detail.id"
     class="py-6">
 
@@ -24,14 +19,25 @@
                     @if(request()->hasAny(['prefeitura_id', 'status', 'data_de', 'data_ate'])) filtrados @endif
                 </p>
             </div>
-            <a href="{{ route('admin.processos.create') }}"
-                class="inline-flex items-center gap-2 text-sm font-semibold bg-teal-700 hover:bg-teal-800 active:bg-teal-900 text-white rounded-xl px-4 py-2.5 transition-colors shadow-sm">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                </svg>
-                Novo Processo
-            </a>
+            <div class="flex items-center gap-3">
+                <button @click="modalCalendario = true; $nextTick(() => initCalendario())"
+                    class="inline-flex items-center gap-2 text-sm font-semibold bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-xl px-4 py-2.5 transition-colors shadow-sm">
+                    <svg class="w-4 h-4 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    Ver Calendário
+                </button>
+                <a href="{{ route('admin.processos.create') }}"
+                    class="inline-flex items-center gap-2 text-sm font-semibold bg-teal-700 hover:bg-teal-800 active:bg-teal-900 text-white rounded-xl px-4 py-2.5 transition-colors shadow-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Novo Processo
+                </a>
+            </div>
         </div>
+
+        @include('Admin.Planejamento._calendario_modal')
 
         {{-- Flash de sucesso --}}
         @if(session('sucesso'))
@@ -323,3 +329,165 @@
 
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('planejamentoPainel', () => ({
+        modalAgendar: false,
+        modalCalendario: false,
+        processoId: null,
+        dataMinima: '{{ now()->toDateString() }}',
+        tipoData: 'sessao',
+        statusFiltro: 'todos',
+
+        viewMode: 'month',
+        currentDate: new Date(),
+        eventos: [],
+        loadingEventos: false,
+
+        modalDetalhes: false,
+        eventoSelecionado: null,
+
+        // ── Helpers ──────────────────────────────────────────────
+
+        dateToStr(date) {
+            const yr = date.getFullYear();
+            const mo = String(date.getMonth() + 1).padStart(2, '0');
+            const dt = String(date.getDate()).padStart(2, '0');
+            return `${yr}-${mo}-${dt}`;
+        },
+
+        eventosParaDia(date) {
+            const str = this.dateToStr(date);
+            return this.eventos.filter(e => e.start === str);
+        },
+
+        // ── Geração das grades ────────────────────────────────────
+
+        diasMes() {
+            const year  = this.currentDate.getFullYear();
+            const month = this.currentDate.getMonth();
+            const firstDay  = new Date(year, month, 1);
+            const lastDay   = new Date(year, month + 1, 0);
+            const startDow  = firstDay.getDay(); // 0=Dom
+            const todayStr  = this.dateToStr(new Date());
+            const days = [];
+
+            // Padding início (dias do mês anterior)
+            for (let i = 0; i < startDow; i++) {
+                const d = new Date(year, month, 1 - startDow + i);
+                days.push({ date: d, currentMonth: false, isToday: false });
+            }
+
+            // Dias do mês atual
+            for (let i = 1; i <= lastDay.getDate(); i++) {
+                const d = new Date(year, month, i);
+                days.push({ date: d, currentMonth: true, isToday: this.dateToStr(d) === todayStr });
+            }
+
+            // Padding fim — completar 6 semanas (42 células)
+            let extra = 1;
+            while (days.length < 42) {
+                days.push({ date: new Date(year, month + 1, extra++), currentMonth: false, isToday: false });
+            }
+
+            return days;
+        },
+
+        diasSemana() {
+            const base = new Date(this.currentDate);
+            base.setDate(base.getDate() - base.getDay()); // recua para o Domingo
+            const todayStr = this.dateToStr(new Date());
+            const nomes = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+
+            return Array.from({ length: 7 }, (_, i) => {
+                const d = new Date(base.getFullYear(), base.getMonth(), base.getDate() + i);
+                const dStr = this.dateToStr(d);
+                return {
+                    date: d,
+                    dateStr: dStr,
+                    nomeDia: nomes[d.getDay()],
+                    mesAbrev: d.toLocaleDateString('pt-BR', { month: 'short' }),
+                    isToday: dStr === todayStr,
+                };
+            });
+        },
+
+        // ── Navegação ────────────────────────────────────────────
+
+        prevPeriodo() {
+            const d = new Date(this.currentDate);
+            this.viewMode === 'month'
+                ? d.setMonth(d.getMonth() - 1)
+                : d.setDate(d.getDate() - 7);
+            this.currentDate = d;
+        },
+
+        nextPeriodo() {
+            const d = new Date(this.currentDate);
+            this.viewMode === 'month'
+                ? d.setMonth(d.getMonth() + 1)
+                : d.setDate(d.getDate() + 7);
+            this.currentDate = d;
+        },
+
+        irParaHoje() {
+            this.currentDate = new Date();
+        },
+
+        periodoLabel() {
+            if (this.viewMode === 'month') {
+                return this.currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+            }
+            const dias  = this.diasSemana();
+            const first = dias[0].date;
+            const last  = dias[6].date;
+            const opts  = { day: 'numeric', month: 'short' };
+            return `${first.toLocaleDateString('pt-BR', opts)} – ${last.toLocaleDateString('pt-BR', opts)}, ${last.getFullYear()}`;
+        },
+
+        // ── Dados ────────────────────────────────────────────────
+
+        async fetchEventos() {
+            this.loadingEventos = true;
+            try {
+                const res = await fetch(
+                    `{{ route('admin.planejamento.eventos') }}?tipo=${this.tipoData}&status=${this.statusFiltro}`
+                );
+                this.eventos = await res.json();
+            } catch (e) {
+                console.error('Erro ao carregar eventos:', e);
+            } finally {
+                this.loadingEventos = false;
+            }
+        },
+
+        initCalendario() {
+            this.fetchEventos();
+        },
+
+        alternarStatus(status) {
+            this.statusFiltro = status;
+            this.fetchEventos();
+        },
+
+        // ── Modal de detalhes ────────────────────────────────────
+
+        abrirDetalhes(evento) {
+            const [yr, mo, dt] = evento.start.split('-').map(Number);
+            const date = new Date(yr, mo - 1, dt);
+            this.eventoSelecionado = {
+                title:         evento.title,
+                objeto:        evento.extendedProps.objeto,
+                status:        evento.extendedProps.status,
+                cor:           evento.backgroundColor,
+                url:           evento.url,
+                dataFormatted: date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }),
+            };
+            this.modalDetalhes = true;
+        },
+    }));
+});
+</script>
+@endpush
