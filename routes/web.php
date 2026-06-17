@@ -28,7 +28,7 @@ use App\Http\Controllers\PlanejamentoController;
 // ================================================
 Route::prefix('admin/planejamento')
     ->name('admin.planejamento.')
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth', 'verified', 'can:planejamento'])
     ->group(function () {
         Route::get('/', [PlanejamentoController::class, 'index'])->name('index');
         Route::get('/{processo}', [PlanejamentoController::class, 'show'])->name('show');

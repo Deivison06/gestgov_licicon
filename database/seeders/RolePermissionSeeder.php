@@ -19,6 +19,7 @@ class RolePermissionSeeder extends Seeder
             'etp inteligente',
             'fiscalizar contratos',
             'atas e contratacoes', // 👈 nova permissão
+            'planejamento',
         ];
 
         // Cria todas as permissões (sem duplicar)
@@ -33,16 +34,17 @@ class RolePermissionSeeder extends Seeder
         $roles = [
             'diretor_licicon'    => $permissions, // tudo
             'gerente_licicon'    => [
-            'criar processos',
-            'dar seguimento processos',
-            'assinar processos',
-            'contratos',
-            'etp inteligente',
-            'fiscalizar contratos',
-            'atas e contratacoes',
+                'criar processos',
+                'dar seguimento processos',
+                'assinar processos',
+                'contratos',
+                'etp inteligente',
+                'fiscalizar contratos',
+                'atas e contratacoes',
+                'planejamento',
             ],
-            'colaborador_licicon' => ['dar seguimento processos', 'atas e contratacoes'],
-            'prefeitura'          => ['assinar processos', 'contratos', 'etp inteligente', 'atas e contratacoes'],
+            'colaborador_licicon' => ['dar seguimento processos', 'atas e contratacoes', 'planejamento'],
+            'prefeitura'          => ['assinar processos', 'contratos', 'etp inteligente', 'atas e contratacoes', 'planejamento'],
         ];
 
         // Sincroniza permissões de cada role

@@ -938,20 +938,24 @@
                     </a>
                     @endif
 
-                    @if(auth()->user()->hasAnyRole(['diretor_licicon', 'gerente_licicon', 'colaborador_licicon']))
+                    @if(auth()->user()->hasAnyRole(['diretor_licicon', 'gerente_licicon', 'colaborador_licicon', 'prefeitura']))
                     <div class="nav-section-title">Conteúdo do Site</div>
 
+                    @if(auth()->user()->hasAnyRole(['diretor_licicon', 'gerente_licicon', 'colaborador_licicon']))
                     <a href="{{ route('admin.processos.index') }}"
                         class="nav-item {{ request()->routeIs('admin.processos.*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-clipboard-list"></i>
                         <span>PROCESSOS</span>
                     </a>
+                    @endif
 
+                    @can('planejamento')
                     <a href="{{ route('admin.planejamento.index') }}"
                         class="nav-item {{ request()->routeIs('admin.planejamento.*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-columns"></i>
                         <span>PLANEJAMENTO</span>
                     </a>
+                    @endcan
                     @endif
 
                     @can('atas e contratacoes')

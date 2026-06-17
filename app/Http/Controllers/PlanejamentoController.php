@@ -50,7 +50,16 @@ class PlanejamentoController extends Controller
 
     public function index(Request $request): View
     {
-        $prefeituras  = Prefeitura::orderBy('nome')->get();
+        $user = auth()->user();
+
+        // Se o usuário estiver vinculado a uma prefeitura, força o filtro
+        if ($user->prefeitura_id) {
+            $request->merge(['prefeitura_id' => $user->prefeitura_id]);
+            $prefeituras = Prefeitura::where('id', $user->prefeitura_id)->get();
+        } else {
+            $prefeituras = Prefeitura::orderBy('nome')->get();
+        }
+
         $statusConfig = self::statusConfig();
 
         $processos = Processo::with('prefeitura', 'notas')
@@ -71,6 +80,11 @@ class PlanejamentoController extends Controller
 
     public function show(Processo $processo): View
     {
+        $user = auth()->user();
+        if ($user->prefeitura_id && $processo->prefeitura_id !== $user->prefeitura_id) {
+            abort(403, 'Acesso negado.');
+        }
+
         $processo->load(['prefeitura', 'notas.user', 'detalhe']);
         $statusConfig = self::statusConfig();
 
@@ -79,6 +93,11 @@ class PlanejamentoController extends Controller
 
     public function updateStatus(Request $request, Processo $processo): RedirectResponse
     {
+        $user = auth()->user();
+        if ($user->prefeitura_id && $processo->prefeitura_id !== $user->prefeitura_id) {
+            abort(403, 'Acesso negado.');
+        }
+
         $novoStatus = $request->input('planejamento_status');
 
         match ($novoStatus) {
@@ -93,6 +112,11 @@ class PlanejamentoController extends Controller
 
     public function storeNota(Request $request, Processo $processo): RedirectResponse
     {
+        $user = auth()->user();
+        if ($user->prefeitura_id && $processo->prefeitura_id !== $user->prefeitura_id) {
+            abort(403, 'Acesso negado.');
+        }
+
         $request->validate([
             'texto' => ['required', 'string', 'max:1000'],
             'anexo' => ['nullable', 'file', 'max:10240', 'mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,gif'],

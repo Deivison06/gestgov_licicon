@@ -112,24 +112,28 @@
                 <div class="flex flex-wrap items-center gap-2.5">
 
                     {{-- Prefeitura --}}
-                    <div class="flex-1 min-w-[200px]">
-                        <div class="relative">
-                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                                </svg>
+                    @if(auth()->user()->prefeitura_id)
+                        <input type="hidden" name="prefeitura_id" value="{{ auth()->user()->prefeitura_id }}">
+                    @else
+                        <div class="flex-1 min-w-[200px]">
+                            <div class="relative">
+                                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                    </svg>
+                                </div>
+                                <select id="prefeitura_id" name="prefeitura_id"
+                                    class="w-full pl-9 pr-3 py-2 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-700 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:bg-white transition-colors">
+                                    <option value="">Todas as prefeituras</option>
+                                    @foreach($prefeituras as $prefeitura)
+                                        <option value="{{ $prefeitura->id }}" @selected(request('prefeitura_id') == $prefeitura->id)>
+                                            {{ $prefeitura->nome }}
+                                        </option>
+                                    @endforeach
+                                </select>
                             </div>
-                            <select id="prefeitura_id" name="prefeitura_id"
-                                class="w-full pl-9 pr-3 py-2 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-700 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:bg-white transition-colors">
-                                <option value="">Todas as prefeituras</option>
-                                @foreach($prefeituras as $prefeitura)
-                                    <option value="{{ $prefeitura->id }}" @selected(request('prefeitura_id') == $prefeitura->id)>
-                                        {{ $prefeitura->nome }}
-                                    </option>
-                                @endforeach
-                            </select>
                         </div>
-                    </div>
+                    @endif
 
                     {{-- Botão período --}}
                     <button type="button" @click="showPeriodo = !showPeriodo"
