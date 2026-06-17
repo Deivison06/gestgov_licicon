@@ -28,7 +28,7 @@ use Spatie\Permission\Models\Role;
  */
 class AssinantesFromUnidadesSeeder extends Seeder
 {
-    private string $emailDomainSuffix = 'assinantes.gestgov.local';
+    private string $emailDomainSuffix = 'gestcloud.org';
 
     public function run(): void
     {
