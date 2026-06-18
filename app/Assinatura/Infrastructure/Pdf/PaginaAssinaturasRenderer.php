@@ -42,8 +42,16 @@ class PaginaAssinaturasRenderer
         $pdf->SetMargins(15, 15, 15);
         $pdf->SetAutoPageBreak(true, 20);
 
-        // 1) Copia todas as páginas do rascunho preservando orientação
-        $totalPaginas = $pdf->setSourceFile($versao->caminho_pdf);
+        // Se o rascunho tiver o sufixo _watermark, usa o original limpo para a consolidação
+        $caminhoBase = $versao->caminho_pdf;
+        $caminhoLimpo = preg_replace('/_watermark\.pdf$/i', '.pdf', $caminhoBase);
+        
+        if ($caminhoLimpo !== $caminhoBase && file_exists($caminhoLimpo)) {
+            $caminhoBase = $caminhoLimpo;
+        }
+
+        // 1) Copia todas as páginas do arquivo preservando orientação
+        $totalPaginas = $pdf->setSourceFile($caminhoBase);
         for ($i = 1; $i <= $totalPaginas; $i++) {
             $tplId = $pdf->importPage($i);
             $size  = $pdf->getTemplateSize($tplId);
