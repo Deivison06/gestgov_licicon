@@ -959,6 +959,7 @@
                             @endif
                         </a>
                     @endif
+                    @endif
 
                     @if(auth()->user()->hasAnyRole(['diretor_licicon', 'gerente_licicon', 'colaborador_licicon']))
                     <div class="nav-section-title">Conteúdo do Site</div>
