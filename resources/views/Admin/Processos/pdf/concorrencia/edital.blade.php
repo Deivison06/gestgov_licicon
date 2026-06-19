@@ -1177,6 +1177,11 @@
                 exercício social, devidamente assinada pelo Representante Legal da Empresa e
                 pelo Contador responsável.
             </p>
+            @if (!empty($detalhe?->qualificacao_economica))
+                <div style="text-align: justify;">
+                    {!! preg_replace('/<\/?ul[^>]*>/', '', $detalhe->qualificacao_economica) !!}
+                </div>
+            @endif
             <p>8.7. <span style="font-weight: bold;">QUALIFICAÇÃO TÉCNICA.</span> </p>
             <p style="text-align: justify;">
                 8.7.1. Registro ou inscrição da empresa licitante no CREA (Conselho Regional

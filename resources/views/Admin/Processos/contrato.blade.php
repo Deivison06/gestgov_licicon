@@ -1035,6 +1035,25 @@
                                     </div>
                                 </div>
 
+                                <!-- Contratar % dos quantitativos -->
+                                <div class="flex flex-wrap items-center gap-2 p-3 mb-3 border border-blue-200 rounded-lg bg-blue-50">
+                                    <label for="percentual-contratacao-contrato" class="text-sm font-medium text-blue-900 whitespace-nowrap">
+                                        Contratar % dos quantitativos:
+                                    </label>
+                                    <input type="number" id="percentual-contratacao-contrato" min="1" max="100" step="1"
+                                           placeholder="Ex.: 80"
+                                           class="w-24 px-2 py-1 text-sm border border-blue-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                    <span class="text-sm text-blue-900">%</span>
+                                    <button type="button" onclick="aplicarPercentualContratacaoContrato()"
+                                            class="px-3 py-1 ml-auto text-sm text-white bg-blue-600 rounded hover:bg-blue-700">
+                                        Aplicar
+                                    </button>
+                                    <p class="w-full mt-1 text-xs text-gray-500">
+                                        Calcula <code class="px-1 bg-gray-100 rounded">floor(qtd_disponível × %)</code> por item.
+                                        Itens cujo resultado for 0 são ignorados.
+                                    </p>
+                                </div>
+
                                 <!-- Tabela de Itens -->
                                 <div class="overflow-x-auto border border-gray-200 rounded-lg">
                                     <table class="min-w-full divide-y divide-gray-200">
@@ -1402,6 +1421,64 @@
                     itensSelecionados.set(loteId, item);
                 }
             }
+        }
+
+        /**
+         * Aplica um percentual à quantidade disponível de cada item do modal:
+         *   quantidade = floor(quantidade_disponivel * percentual / 100)
+         * Marca automaticamente os itens com resultado > 0 e ignora os que derem 0.
+         */
+        function aplicarPercentualContratacaoContrato() {
+            const inputPercent = document.getElementById('percentual-contratacao-contrato');
+            if (!inputPercent) return;
+
+            const percentual = parseFloat(inputPercent.value);
+            if (isNaN(percentual) || percentual < 1 || percentual > 100) {
+                showMessageContratacao('Informe um percentual entre 1 e 100.', 'error');
+                return;
+            }
+
+            if (!Array.isArray(itensDisponiveis) || itensDisponiveis.length === 0) {
+                showMessageContratacao('Carregue os itens de um vencedor antes de aplicar o percentual.', 'warning');
+                return;
+            }
+
+            let aplicados = 0;
+            let ignorados = 0;
+
+            itensDisponiveis.forEach((lote, index) => {
+                const loteId   = String(lote.id);
+                const checkbox = document.querySelector(`.item-checkbox[data-lote-id="${loteId}"]`);
+                const input    = document.getElementById(`quantidade_${loteId}`);
+                if (!checkbox || !input) return;
+
+                const disponivel = parseFloat(lote.quantidade_disponivel || 0);
+                const calculado  = Math.floor(disponivel * percentual / 100);
+
+                if (calculado > 0) {
+                    if (!checkbox.checked) {
+                        checkbox.checked = true;
+                        toggleItemSelecionado(checkbox, index); // habilita input + registra
+                    }
+                    input.value = calculado;
+                    atualizarQuantidadeItem(input);             // atualiza o mapa (respeita o máximo)
+                    aplicados++;
+                } else {
+                    if (checkbox.checked) {
+                        checkbox.checked = false;
+                        toggleItemSelecionado(checkbox, index); // desmarca + remove do mapa
+                    }
+                    ignorados++;
+                }
+            });
+
+            atualizarContadorSelecionados();
+            atualizarCheckboxMestre();
+
+            const detalhe = ignorados > 0
+                ? `${aplicados} item(ns) preenchido(s), ${ignorados} ignorado(s) (resultado = 0)`
+                : `${aplicados} item(ns) preenchido(s)`;
+            showMessageContratacao(`${percentual}% aplicado — ${detalhe}.`, 'success');
         }
 
         function selecionarTodosItens() {
