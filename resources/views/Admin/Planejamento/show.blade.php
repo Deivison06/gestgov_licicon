@@ -8,9 +8,12 @@
     $aguardandoResposta = $processo->aguardandoRespostaRecurso();
     $ordemStatus        = array_keys($statusConfig);
     $indiceAtual        = array_search($processo->planejamento_status, $ordemStatus);
+    $totalDocs          = $checklist->count();
+    $geradosDocs        = $checklist->where('gerado', true)->count();
+    $percentual         = $totalDocs > 0 ? round(($geradosDocs / $totalDocs) * 100) : 0;
 @endphp
 
-<div class="py-6"
+<div class="py-6 px-4 sm:px-6 lg:px-8"
     x-data="{
         modalAgendar: false,
         modalNota: {{ $errors->hasAny(['texto', 'anexo']) ? 'true' : 'false' }},
@@ -18,7 +21,7 @@
         dataMinima: '{{ now()->toDateString() }}'
     }">
 
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-5">
+    <div class="space-y-5">
 
         {{-- Cabeçalho --}}
         <div class="flex items-center justify-between flex-wrap gap-3">
@@ -64,224 +67,227 @@
             </div>
         @endif
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div class="space-y-4">
 
-            {{-- ── Coluna principal ────────────────────────────────── --}}
-            <div class="lg:col-span-2 space-y-4">
+            {{-- Dados gerais --}}
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                <div class="h-1 {{ $cfg['cor_head'] }}"></div>
+                <div class="p-5 space-y-5">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Dados do Processo</h3>
+                        <a href="{{ route('admin.processos.show', $processo) }}"
+                            class="inline-flex items-center gap-1.5 text-xs font-semibold text-teal-600 hover:text-teal-800 transition-colors">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                            </svg>
+                            Ver processo completo
+                        </a>
+                    </div>
 
-                {{-- Dados gerais --}}
-                <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                    <div class="h-1 {{ $cfg['cor_head'] }}"></div>
-                    <div class="p-5 space-y-5">
-                        <div class="flex items-center justify-between">
-                            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Dados do Processo</h3>
-                            <a href="{{ route('admin.processos.show', $processo) }}"
-                                class="inline-flex items-center gap-1.5 text-xs font-semibold text-teal-600 hover:text-teal-800 transition-colors">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-                                </svg>
-                                Ver processo completo
-                            </a>
+                    @if($processo->objeto)
+                        <div>
+                            <p class="text-xs text-gray-400 font-medium mb-1">Objeto</p>
+                            <p class="text-gray-800 leading-relaxed">{{ html_entity_decode(strip_tags($processo->objeto)) }}</p>
                         </div>
+                        <hr class="border-gray-100">
+                    @endif
 
-                        @if($processo->objeto)
+                    <div class="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3">
+                        <div>
+                            <p class="text-xs text-gray-400 font-medium mb-1">Prefeitura</p>
+                            <p class="text-gray-900 font-semibold">{{ $processo->prefeitura->nome ?? '—' }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-400 font-medium mb-1">Número</p>
+                            <p class="text-gray-900 font-mono font-semibold">{{ $processo->numero_processo ?? $processo->numero_procedimento ?? '—' }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-400 font-medium mb-1">Modalidade</p>
+                            <p class="text-gray-800">{{ $processo->modalidade?->getDisplayName() ?? '—' }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-400 font-medium mb-1">Tipo de Contratação</p>
+                            <p class="text-gray-800">{{ $processo->tipo_contratacao_nome }}</p>
+                        </div>
+                        @if($processo->planejamento_data_abertura)
                             <div>
-                                <p class="text-xs text-gray-400 font-medium mb-1">Objeto</p>
-                                <p class="text-gray-800 leading-relaxed">{{ html_entity_decode(strip_tags($processo->objeto)) }}</p>
+                                <p class="text-xs text-gray-400 font-medium mb-1">Data de Abertura</p>
+                                <p class="text-gray-900 font-semibold">{{ $processo->planejamento_data_abertura->format('d/m/Y') }}</p>
                             </div>
-                            <hr class="border-gray-100">
                         @endif
-
-                        <div class="grid grid-cols-2 gap-x-6 gap-y-4">
+                        @if($processo->planejamento_fim_recurso)
                             <div>
-                                <p class="text-xs text-gray-400 font-medium mb-1">Prefeitura</p>
-                                <p class="text-gray-900 font-semibold">{{ $processo->prefeitura->nome ?? '—' }}</p>
+                                <p class="text-xs text-gray-400 font-medium mb-1">Prazo do Recurso</p>
+                                <p class="font-semibold {{ $aguardandoResposta ? 'text-red-600' : 'text-orange-600' }}">
+                                    {{ $processo->planejamento_fim_recurso->format('d/m/Y') }}
+                                    @if($aguardandoResposta)
+                                        <span class="ml-1 text-xs bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full font-bold">vencido</span>
+                                    @endif
+                                </p>
                             </div>
-                            <div>
-                                <p class="text-xs text-gray-400 font-medium mb-1">Número</p>
-                                <p class="text-gray-900 font-mono font-semibold">{{ $processo->numero_processo ?? $processo->numero_procedimento ?? '—' }}</p>
-                            </div>
-                            <div>
-                                <p class="text-xs text-gray-400 font-medium mb-1">Modalidade</p>
-                                <p class="text-gray-800">{{ $processo->modalidade?->getDisplayName() ?? '—' }}</p>
-                            </div>
-                            <div>
-                                <p class="text-xs text-gray-400 font-medium mb-1">Tipo de Contratação</p>
-                                <p class="text-gray-800">{{ $processo->tipo_contratacao_nome }}</p>
-                            </div>
-
-                            @if($processo->planejamento_data_abertura)
-                                <div>
-                                    <p class="text-xs text-gray-400 font-medium mb-1">Data de Abertura</p>
-                                    <p class="text-gray-900 font-semibold">{{ $processo->planejamento_data_abertura->format('d/m/Y') }}</p>
-                                </div>
-                            @endif
-
-                            @if($processo->planejamento_fim_recurso)
-                                <div>
-                                    <p class="text-xs text-gray-400 font-medium mb-1">Prazo do Recurso</p>
-                                    <p class="font-semibold {{ $aguardandoResposta ? 'text-red-600' : 'text-orange-600' }}">
-                                        {{ $processo->planejamento_fim_recurso->format('d/m/Y') }}
-                                        @if($aguardandoResposta)
-                                            <span class="ml-1 text-xs bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full font-bold">vencido</span>
-                                        @endif
-                                    </p>
-                                </div>
-                            @endif
-
-                            <div>
-                                <p class="text-xs text-gray-400 font-medium mb-1">Criado em</p>
-                                <p class="text-gray-700">{{ $processo->created_at->format('d/m/Y H:i') }}</p>
-                            </div>
-                            <div>
-                                <p class="text-xs text-gray-400 font-medium mb-1">Última atualização</p>
-                                <p class="text-gray-700">{{ $processo->updated_at->format('d/m/Y H:i') }}</p>
-                            </div>
+                        @endif
+                        <div>
+                            <p class="text-xs text-gray-400 font-medium mb-1">Criado em</p>
+                            <p class="text-gray-700">{{ $processo->created_at->format('d/m/Y H:i') }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-400 font-medium mb-1">Última atualização</p>
+                            <p class="text-gray-700">{{ $processo->updated_at->format('d/m/Y H:i') }}</p>
                         </div>
                     </div>
                 </div>
-
-                {{-- Linha do tempo --}}
-                <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-5">Linha do Tempo</h3>
-                    <ol class="flex items-start w-full">
-                        @foreach($statusConfig as $status => $cfgTl)
-                            @php $indice = array_search($status, $ordemStatus); @endphp
-                            <li class="flex items-center {{ !$loop->last ? 'flex-1' : '' }}">
-                                <div class="flex flex-col items-center">
-                                    <div @class([
-                                        'w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ring-2 ring-offset-2',
-                                        'text-white ring-current ' . $cfgTl['cor_head'] => $indice === $indiceAtual,
-                                        'text-white ring-transparent opacity-70 ' . $cfgTl['cor_head'] => $indice < $indiceAtual,
-                                        'bg-gray-100 text-gray-400 ring-transparent' => $indice > $indiceAtual,
-                                    ])>
-                                        @if($indice < $indiceAtual)
-                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                            </svg>
-                                        @else
-                                            {{ $indice + 1 }}
-                                        @endif
-                                    </div>
-                                    <span @class([
-                                        'text-xs mt-2 text-center leading-tight max-w-[72px]',
-                                        'font-bold text-gray-900' => $indice === $indiceAtual,
-                                        'text-gray-500'           => $indice < $indiceAtual,
-                                        'text-gray-300'           => $indice > $indiceAtual,
-                                    ])>{{ $cfgTl['label'] }}</span>
-                                </div>
-                                @if(!$loop->last)
-                                    <div @class([
-                                        'flex-1 h-0.5 mx-2 mb-5 rounded-full',
-                                        'bg-gray-400' => $indice < $indiceAtual,
-                                        'bg-gray-200' => $indice >= $indiceAtual,
-                                    ])></div>
-                                @endif
-                            </li>
-                        @endforeach
-                    </ol>
-                </div>
-
-                {{-- Ações --}}
-                <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Ações</h3>
-                    <div class="flex flex-wrap gap-3">
-
-                        @if($processo->planejamento_status === 'em_elaboracao')
-                            <button @click="modalAgendar = true"
-                                class="inline-flex items-center gap-2 text-sm font-semibold bg-amber-500 hover:bg-amber-600 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm">
-                                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                </svg>
-                                Agendar Sessão
-                            </button>
-                        @endif
-
-                        @if($processo->planejamento_status === 'em_andamento')
-                            <form method="POST" action="{{ route('admin.planejamento.status.update', $processo) }}">
-                                @csrf @method('PATCH')
-                                <input type="hidden" name="planejamento_status" value="concluida">
-                                <button type="submit" class="inline-flex items-center gap-2 text-sm font-semibold bg-green-600 hover:bg-green-700 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm">
-                                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                                    </svg>
-                                    Concluir Sessão
-                                </button>
-                            </form>
-                            <form method="POST" action="{{ route('admin.planejamento.status.update', $processo) }}">
-                                @csrf @method('PATCH')
-                                <input type="hidden" name="planejamento_status" value="em_recurso">
-                                <button type="submit" class="inline-flex items-center gap-2 text-sm font-semibold bg-orange-500 hover:bg-orange-600 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm">
-                                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                    </svg>
-                                    Iniciar Recurso
-                                </button>
-                            </form>
-                        @endif
-
-                        @if($processo->planejamento_status === 'em_recurso' && $aguardandoResposta)
-                            <form method="POST" action="{{ route('admin.planejamento.status.update', $processo) }}">
-                                @csrf @method('PATCH')
-                                <input type="hidden" name="planejamento_status" value="concluida">
-                                <button type="submit" class="inline-flex items-center gap-2 text-sm font-semibold bg-slate-600 hover:bg-slate-700 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm">
-                                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                                    </svg>
-                                    Encaminhar para Conclusão
-                                </button>
-                            </form>
-                        @endif
-
-                        @if($processo->planejamento_status === 'aguardando_sessao')
-                            <div class="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5">
-                                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
-                                Aguardando avanço automático na data de abertura
-                            </div>
-                        @endif
-
-                        @if($processo->planejamento_status === 'concluida')
-                            <div class="flex items-center gap-2 text-sm border rounded-xl px-4 py-2.5 {{ $cfg['cor_badge'] }} border-current">
-                                <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                                </svg>
-                                Este processo está concluído
-                            </div>
-                        @endif
-
-                    </div>
-                </div>
-
             </div>
 
-            {{-- ── Sidebar de Notas ─────────────────────────────────── --}}
-            <div id="notas">
-                <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-
-                    <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-                        <div>
-                            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Notas</h3>
-                            @if($processo->notas->count() > 0)
-                                <p class="text-xs text-gray-400 mt-0.5">
-                                    {{ $processo->notas->count() }} {{ $processo->notas->count() === 1 ? 'registro' : 'registros' }}
-                                </p>
+            {{-- Linha do tempo --}}
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-5">Linha do Tempo</h3>
+                <ol class="flex items-start w-full">
+                    @foreach($statusConfig as $status => $cfgTl)
+                        @php $indice = array_search($status, $ordemStatus); @endphp
+                        <li class="flex items-center {{ !$loop->last ? 'flex-1' : '' }}">
+                            <div class="flex flex-col items-center">
+                                <div @class([
+                                    'w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ring-2 ring-offset-2',
+                                    'text-white ring-current ' . $cfgTl['cor_head'] => $indice === $indiceAtual,
+                                    'text-white ring-transparent opacity-70 ' . $cfgTl['cor_head'] => $indice < $indiceAtual,
+                                    'bg-gray-100 text-gray-400 ring-transparent' => $indice > $indiceAtual,
+                                ])>
+                                    @if($indice < $indiceAtual)
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                        </svg>
+                                    @else
+                                        {{ $indice + 1 }}
+                                    @endif
+                                </div>
+                                <span @class([
+                                    'text-xs mt-2 text-center leading-tight max-w-[72px]',
+                                    'font-bold text-gray-900' => $indice === $indiceAtual,
+                                    'text-gray-500'           => $indice < $indiceAtual,
+                                    'text-gray-300'           => $indice > $indiceAtual,
+                                ])>{{ $cfgTl['label'] }}</span>
+                            </div>
+                            @if(!$loop->last)
+                                <div @class([
+                                    'flex-1 h-0.5 mx-2 mb-5 rounded-full',
+                                    'bg-gray-400' => $indice < $indiceAtual,
+                                    'bg-gray-200' => $indice >= $indiceAtual,
+                                ])></div>
                             @endif
-                        </div>
-                        <button @click="modalNota = true"
-                            class="inline-flex items-center gap-1.5 text-xs font-semibold bg-teal-700 hover:bg-teal-800 text-white rounded-lg px-3 py-1.5 transition-colors shadow-sm">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                            </svg>
-                            Nova Nota
-                        </button>
-                    </div>
+                        </li>
+                    @endforeach
+                </ol>
+            </div>
 
-                    <div class="divide-y divide-gray-50">
-                        @forelse($processo->notas as $nota)
+            {{-- Ações --}}
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Ações</h3>
+                <div class="flex flex-wrap gap-3">
+
+                    @if($processo->planejamento_status === 'em_elaboracao')
+                        <button @click="modalAgendar = true"
+                            class="inline-flex items-center gap-2 text-sm font-semibold bg-amber-500 hover:bg-amber-600 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm">
+                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            Agendar Sessão
+                        </button>
+                    @endif
+
+                    @if($processo->planejamento_status === 'em_andamento')
+                        <form method="POST" action="{{ route('admin.planejamento.status.update', $processo) }}">
+                            @csrf @method('PATCH')
+                            <input type="hidden" name="planejamento_status" value="concluida">
+                            <button type="submit" class="inline-flex items-center gap-2 text-sm font-semibold bg-green-600 hover:bg-green-700 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm">
+                                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                Concluir Sessão
+                            </button>
+                        </form>
+                        <form method="POST" action="{{ route('admin.planejamento.status.update', $processo) }}">
+                            @csrf @method('PATCH')
+                            <input type="hidden" name="planejamento_status" value="em_recurso">
+                            <button type="submit" class="inline-flex items-center gap-2 text-sm font-semibold bg-orange-500 hover:bg-orange-600 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm">
+                                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                Iniciar Recurso
+                            </button>
+                        </form>
+                    @endif
+
+                    @if($processo->planejamento_status === 'em_recurso' && $aguardandoResposta)
+                        <form method="POST" action="{{ route('admin.planejamento.status.update', $processo) }}">
+                            @csrf @method('PATCH')
+                            <input type="hidden" name="planejamento_status" value="concluida">
+                            <button type="submit" class="inline-flex items-center gap-2 text-sm font-semibold bg-slate-600 hover:bg-slate-700 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm">
+                                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                </svg>
+                                Encaminhar para Conclusão
+                            </button>
+                        </form>
+                    @endif
+
+                    @if($processo->planejamento_status === 'aguardando_sessao')
+                        <div class="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5">
+                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            Aguardando avanço automático na data de abertura
+                        </div>
+                    @endif
+
+                    @if($processo->planejamento_status === 'concluida')
+                        <div class="flex items-center gap-2 text-sm border rounded-xl px-4 py-2.5 {{ $cfg['cor_badge'] }} border-current">
+                            <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                            Este processo está concluído
+                        </div>
+                    @endif
+
+                </div>
+            </div>
+
+            {{-- Notas --}}
+            <div id="notas" class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+
+                <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+                    <div>
+                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Notas</h3>
+                        @if($processo->notas->count() > 0)
+                            <p class="text-xs text-gray-400 mt-0.5">
+                                {{ $processo->notas->count() }} {{ $processo->notas->count() === 1 ? 'registro' : 'registros' }}
+                            </p>
+                        @endif
+                    </div>
+                    <button @click="modalNota = true"
+                        class="inline-flex items-center gap-1.5 text-xs font-semibold bg-teal-700 hover:bg-teal-800 text-white rounded-lg px-3 py-1.5 transition-colors shadow-sm">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        Nova Nota
+                    </button>
+                </div>
+
+                @if($processo->notas->isEmpty())
+                    <div class="flex flex-col items-center justify-center py-10 text-center px-4">
+                        <svg class="w-10 h-10 text-gray-200 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
+                        </svg>
+                        <p class="text-sm font-medium text-gray-400">Nenhuma nota ainda</p>
+                        <p class="text-xs text-gray-300 mt-1">Registre observações sobre o andamento.</p>
+                    </div>
+                @else
+                    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 divide-y sm:divide-y-0">
+                        @foreach($processo->notas as $nota)
                             @php $notaCfg = $statusConfig[$nota->status_em_vigor] ?? null; @endphp
-                            <div class="px-4 py-4 space-y-2">
+                            <div class="px-5 py-4 space-y-2 border-b border-gray-50
+                                {{ !$loop->last ? 'sm:border-r' : '' }}
+                                {{ $loop->iteration > 2 ? 'sm:border-t' : '' }}
+                                {{ $loop->iteration > 3 ? 'xl:border-t' : '' }}">
                                 <div class="flex items-center gap-2">
                                     <div class="w-7 h-7 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center text-xs font-bold shrink-0">
                                         {{ strtoupper(substr($nota->user->name ?? '?', 0, 1)) }}
@@ -309,22 +315,100 @@
                                     </div>
                                 @endif
                             </div>
-                        @empty
-                            <div class="flex flex-col items-center justify-center py-12 text-center px-4">
-                                <svg class="w-10 h-10 text-gray-200 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
-                                </svg>
-                                <p class="text-sm font-medium text-gray-400">Nenhuma nota ainda</p>
-                                <p class="text-xs text-gray-300 mt-1">Registre observações sobre o andamento.</p>
-                            </div>
-                        @endforelse
+                        @endforeach
                     </div>
-                </div>
+                @endif
             </div>
 
-        </div>{{-- /grid --}}
+            {{-- Checklist de Documentos --}}
+            @if($checklist->isNotEmpty())
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between gap-4">
+                    <div>
+                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Documentos do Processo</h3>
+                        <p class="text-xs text-gray-400 mt-0.5">
+                            {{ $geradosDocs }} de {{ $totalDocs }} {{ $totalDocs === 1 ? 'documento gerado' : 'documentos gerados' }}
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-3 shrink-0">
+                        <a href="{{ route('admin.processos.iniciar', $processo) }}"
+                            class="inline-flex items-center gap-1.5 text-xs font-semibold bg-[#052323] hover:bg-[#0a3a3a] text-white rounded-lg px-3 py-1.5 transition-colors shadow-sm">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                            </svg>
+                            Gerar Documentos
+                        </a>
+                        <div class="w-28 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                            <div class="h-full rounded-full transition-all duration-500
+                                {{ $percentual === 100 ? 'bg-green-500' : ($percentual >= 50 ? 'bg-teal-500' : 'bg-amber-400') }}"
+                                style="width: {{ $percentual }}%"></div>
+                        </div>
+                        <span class="text-xs font-bold {{ $percentual === 100 ? 'text-green-600' : 'text-gray-500' }}">
+                            {{ $percentual }}%
+                        </span>
+                    </div>
+                </div>
 
-    </div>
+                @php $pendentes = $checklist->where('gerado', false); @endphp
+                @if($pendentes->isNotEmpty())
+                    <div class="px-5 py-3 bg-amber-50 border-b border-amber-100 flex items-start gap-3">
+                        <svg class="w-4 h-4 shrink-0 text-amber-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+                        </svg>
+                        <div class="min-w-0">
+                            <p class="text-xs font-bold text-amber-800 mb-1">
+                                {{ $pendentes->count() }} {{ $pendentes->count() === 1 ? 'documento pendente' : 'documentos pendentes' }}:
+                            </p>
+                            <p class="text-xs text-amber-700 leading-relaxed">
+                                {{ $pendentes->map(fn($i) => Str::title(mb_strtolower($i['titulo'])))->join(', ') }}
+                            </p>
+                        </div>
+                    </div>
+                @endif
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x-0">
+                    @foreach($checklist as $item)
+                        <div class="flex items-start gap-3 px-4 py-3 border-b border-gray-50 last:border-b-0
+                            {{ $loop->iteration % 2 === 0 ? 'sm:border-l border-gray-50' : '' }}">
+
+                            {{-- Indicador --}}
+                            @if($item['gerado'])
+                                <div class="shrink-0 mt-0.5 w-5 h-5 rounded-full bg-green-100 flex items-center justify-center">
+                                    <svg class="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                    </svg>
+                                </div>
+                            @else
+                                <div class="shrink-0 mt-0.5 w-5 h-5 rounded-full border-2 border-dashed border-gray-200"></div>
+                            @endif
+
+                            {{-- Título + data --}}
+                            <div class="flex-1 min-w-0">
+                                <p class="text-xs font-semibold leading-tight
+                                    {{ $item['gerado'] ? 'text-gray-700' : 'text-gray-400' }}">
+                                    {{ Str::title(mb_strtolower($item['titulo'])) }}
+                                </p>
+                                @if($item['gerado'] && $item['gerado_em'])
+                                    <p class="text-[10px] text-gray-400 mt-0.5">
+                                        {{ \Carbon\Carbon::parse($item['gerado_em'])->format('d/m/Y \à\s H:i') }}
+                                    </p>
+                                @elseif(!$item['gerado'])
+                                    <p class="text-[10px] text-gray-300 mt-0.5">Pendente</p>
+                                @endif
+                            </div>
+
+                            {{-- Cor do tipo --}}
+                            <div class="shrink-0 w-1.5 h-1.5 rounded-full mt-1.5 opacity-60"
+                                style="background-color: {{ $item['cor'] }}"></div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
+
+        </div>{{-- /space-y-4 --}}
+
+    </div>{{-- /space-y-5 --}}
 
     {{-- Modal: Agendar Sessão --}}
     <div x-show="modalAgendar"

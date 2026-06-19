@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Prefeitura;
 use App\Models\Processo;
 use App\Models\ProcessoNota;
+use App\Services\ProcessoDocumentoService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -62,7 +63,7 @@ class PlanejamentoController extends Controller
 
         $statusConfig = self::statusConfig();
 
-        $processos = Processo::with('prefeitura', 'notas')
+        $processos = Processo::with('prefeitura', 'notas')->withCount('documentos')
             ->when($request->filled('prefeitura_id'), fn($q) => $q->where('prefeitura_id', $request->prefeitura_id))
             ->when($request->filled('status'), fn($q) => $q->where('planejamento_status', $request->status))
             ->when($request->filled('data_de'), fn($q) => $q->where('planejamento_data_abertura', '>=', $request->data_de))
@@ -145,10 +146,24 @@ class PlanejamentoController extends Controller
             abort(403, 'Acesso negado.');
         }
 
-        $processo->load(['prefeitura', 'notas.user', 'detalhe']);
+        $processo->load(['prefeitura', 'notas.user', 'detalhe', 'documentos']);
         $statusConfig = self::statusConfig();
 
-        return view('Admin.Planejamento.show', compact('processo', 'statusConfig'));
+        $tiposDocumentos  = app(ProcessoDocumentoService::class)->getDocumentosPorModalidade($processo);
+        $documentosGerados = $processo->documentos->keyBy('tipo_documento');
+
+        $checklist = collect($tiposDocumentos)->map(function ($cfg, $tipo) use ($documentosGerados) {
+            // Entradas dinâmicas (republicacao_edital_{id}) já têm documento_id: sempre geradas
+            if (isset($cfg['documento_id'])) {
+                $doc = $documentosGerados->firstWhere('id', $cfg['documento_id']);
+                return ['titulo' => $cfg['titulo'], 'cor' => $cfg['cor'], 'gerado' => true, 'gerado_em' => $doc?->gerado_em];
+            }
+
+            $doc = $documentosGerados->get($tipo);
+            return ['titulo' => $cfg['titulo'], 'cor' => $cfg['cor'], 'gerado' => $doc !== null, 'gerado_em' => $doc?->gerado_em];
+        });
+
+        return view('Admin.Planejamento.show', compact('processo', 'statusConfig', 'checklist'));
     }
 
     public function updateStatus(Request $request, Processo $processo): RedirectResponse
