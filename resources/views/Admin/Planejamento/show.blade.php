@@ -138,7 +138,7 @@
                 </div>
             </div>
 
-            {{-- Linha do tempo --}}
+            {{-- Linha do tempo + ações contextuais --}}
             <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
                 <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-5">Linha do Tempo</h3>
                 <ol class="flex items-start w-full">
@@ -177,12 +177,9 @@
                         </li>
                     @endforeach
                 </ol>
-            </div>
 
-            {{-- Ações --}}
-            <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Ações</h3>
-                <div class="flex flex-wrap gap-3">
+                {{-- Ações contextuais ao status atual --}}
+                <div class="mt-5 pt-5 border-t border-gray-100 flex flex-wrap gap-3">
 
                     @if($processo->planejamento_status === 'em_elaboracao')
                         <button @click="modalAgendar = true"
@@ -192,6 +189,15 @@
                             </svg>
                             Agendar Sessão
                         </button>
+                    @endif
+
+                    @if($processo->planejamento_status === 'aguardando_sessao')
+                        <div class="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5">
+                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            Aguardando avanço automático na data de abertura
+                        </div>
                     @endif
 
                     @if($processo->planejamento_status === 'em_andamento')
@@ -230,21 +236,43 @@
                         </form>
                     @endif
 
-                    @if($processo->planejamento_status === 'aguardando_sessao')
-                        <div class="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5">
+                    @if($processo->planejamento_status === 'em_recurso' && !$aguardandoResposta)
+                        <div class="flex items-center gap-2 text-sm text-orange-700 bg-orange-50 border border-orange-200 rounded-xl px-4 py-2.5">
                             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            Aguardando avanço automático na data de abertura
+                            Prazo do recurso: {{ $processo->planejamento_fim_recurso?->format('d/m/Y') ?? '—' }}
                         </div>
                     @endif
 
                     @if($processo->planejamento_status === 'concluida')
-                        <div class="flex items-center gap-2 text-sm border rounded-xl px-4 py-2.5 {{ $cfg['cor_badge'] }} border-current">
-                            <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        <form method="POST" action="{{ route('admin.planejamento.status.update', $processo) }}"
+                            onsubmit="return confirm('Confirmar início da finalização deste processo?')">
+                            @csrf @method('PATCH')
+                            <input type="hidden" name="planejamento_status" value="finalizacao">
+                            <button type="submit" class="inline-flex items-center gap-2 text-sm font-semibold bg-teal-700 hover:bg-teal-800 text-white rounded-xl px-5 py-2.5 transition-colors shadow-sm">
+                                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                                </svg>
+                                Iniciar Finalização
+                            </button>
+                        </form>
+                    @endif
+
+                    @if($processo->planejamento_status === 'finalizacao')
+                        <div class="flex items-center gap-3 text-sm border rounded-xl px-4 py-2.5 bg-teal-50 border-teal-200 text-teal-800">
+                            <svg class="w-4 h-4 shrink-0 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            Este processo está concluído
+                            <span>
+                                Finalização iniciada
+                                @if($processo->finalizacaoIniciador)
+                                    por <strong>{{ $processo->finalizacaoIniciador->name }}</strong>
+                                @endif
+                                @if($processo->finalizacao_iniciada_em)
+                                    em {{ $processo->finalizacao_iniciada_em->format('d/m/Y \à\s H:i') }}
+                                @endif
+                            </span>
                         </div>
                     @endif
 

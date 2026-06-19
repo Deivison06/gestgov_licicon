@@ -231,7 +231,7 @@
              DESKTOP: Kanban (>= md)
              ==================================================== --}}
         <div class="hidden md:block overflow-x-auto pb-4">
-            <div class="grid grid-cols-5 gap-3 min-w-[1040px]">
+            <div class="grid grid-cols-6 gap-3 min-w-[1240px]">
 
                 @foreach($statusConfig as $status => $cfg)
                     <div class="flex flex-col rounded-xl overflow-hidden border {{ $cfg['cor_col'] }} shadow-sm min-h-[280px]">

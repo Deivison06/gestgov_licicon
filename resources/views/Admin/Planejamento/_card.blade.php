@@ -153,13 +153,40 @@
                 </form>
             @endif
 
+            @if($processo->planejamento_status === 'concluida')
+                <form method="POST" action="{{ route('admin.planejamento.status.update', $processo) }}"
+                    onsubmit="return confirm('Confirmar início da finalização deste processo?')">
+                    @csrf @method('PATCH')
+                    <input type="hidden" name="planejamento_status" value="finalizacao">
+                    <button type="submit"
+                        class="w-full inline-flex items-center justify-center gap-1.5 text-xs font-semibold bg-teal-700 hover:bg-teal-800 text-white rounded-lg px-3 py-2 transition-colors shadow-sm">
+                        <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                        </svg>
+                        Iniciar Finalização
+                    </button>
+                </form>
+            @endif
+
+            @if($processo->planejamento_status === 'finalizacao' && $processo->finalizacaoIniciador)
+                <div class="flex items-center gap-1.5 bg-teal-50 border border-teal-100 rounded-lg px-2.5 py-1.5">
+                    <svg class="w-3.5 h-3.5 shrink-0 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    </svg>
+                    <span class="text-xs text-teal-700">
+                        {{ $processo->finalizacaoIniciador->name }}
+                        &bull; {{ $processo->finalizacao_iniciada_em->format('d/m/Y H:i') }}
+                    </span>
+                </div>
+            @endif
+
         </div>
 
     </div>
 
     {{-- Rodapé --}}
     <div class="flex items-center justify-between px-3 py-2 bg-gray-50 border-t border-gray-100">
-        <a href="{{ route('admin.planejamento.show', $processo) }}#notas"
+        <!-- <a href="{{ route('admin.planejamento.show', $processo) }}#notas"
             class="flex items-center gap-1.5 text-xs text-gray-400 hover:text-teal-600 transition-colors">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
@@ -169,7 +196,7 @@
             @else
                 Adicionar nota
             @endif
-        </a>
+        </a> -->
         <a href="{{ route('admin.processos.show', $processo) }}"
             class="text-xs text-gray-400 hover:text-teal-600 font-semibold transition-colors flex items-center gap-1"
             title="Ver processo completo">

@@ -41,10 +41,16 @@ class PlanejamentoController extends Controller
                 'cor_badge' => 'bg-orange-100 text-orange-700',
             ],
             'concluida' => [
-                'label'     => 'Concluída',
+                'label'     => 'Sessão Concluída',
                 'cor_col'   => 'border-green-200 bg-green-50/50',
                 'cor_head'  => 'bg-green-600 text-white',
                 'cor_badge' => 'bg-green-100 text-green-700',
+            ],
+            'finalizacao' => [
+                'label'     => 'Finalização',
+                'cor_col'   => 'border-teal-200 bg-teal-50/50',
+                'cor_head'  => 'bg-teal-700 text-white',
+                'cor_badge' => 'bg-teal-100 text-teal-700',
             ],
         ];
     }
@@ -130,7 +136,7 @@ class PlanejamentoController extends Controller
                 'textColor'       => '#ffffff',
                 'url'             => route('admin.planejamento.show', $p->id),
                 'extendedProps'   => [
-                    'objeto' => $p->objeto,
+                    'objeto' => $p->objeto ? html_entity_decode(strip_tags($p->objeto)) : null,
                     'status' => $statusConfig[$p->planejamento_status]['label'] ?? 'N/A',
                 ]
             ];
@@ -146,7 +152,7 @@ class PlanejamentoController extends Controller
             abort(403, 'Acesso negado.');
         }
 
-        $processo->load(['prefeitura', 'notas.user', 'detalhe', 'documentos']);
+        $processo->load(['prefeitura', 'notas.user', 'detalhe', 'documentos', 'finalizacaoIniciador']);
         $statusConfig = self::statusConfig();
 
         $tiposDocumentos  = app(ProcessoDocumentoService::class)->getDocumentosPorModalidade($processo);
@@ -179,6 +185,7 @@ class PlanejamentoController extends Controller
             'aguardando_sessao' => $this->avancarParaAguardando($request, $processo),
             'concluida'         => $this->concluir($processo),
             'em_recurso'        => $this->iniciarRecurso($processo),
+            'finalizacao'       => $this->iniciarFinalizacao($processo),
             default             => abort(422, 'Transição de status inválida.'),
         };
 
@@ -261,6 +268,21 @@ class PlanejamentoController extends Controller
         $processo->update([
             'planejamento_status'      => 'em_recurso',
             'planejamento_fim_recurso' => Processo::calcularFimRecursoSessao(Carbon::now()),
+        ]);
+    }
+
+    private function iniciarFinalizacao(Processo $processo): void
+    {
+        abort_if(
+            $processo->planejamento_status !== 'concluida',
+            422,
+            'Transição inválida para Finalização.'
+        );
+
+        $processo->update([
+            'planejamento_status'         => 'finalizacao',
+            'finalizacao_iniciada_por_id' => auth()->id(),
+            'finalizacao_iniciada_em'     => Carbon::now(),
         ]);
     }
 }

@@ -42,6 +42,8 @@ class Processo extends Model
         'planejamento_status',
         'planejamento_data_abertura',
         'planejamento_fim_recurso',
+        'finalizacao_iniciada_por_id',
+        'finalizacao_iniciada_em',
     ];
 
     protected $casts = [
@@ -53,6 +55,7 @@ class Processo extends Model
         'data_adiamento' => 'date',
         'planejamento_data_abertura' => 'datetime',
         'planejamento_fim_recurso' => 'datetime',
+        'finalizacao_iniciada_em' => 'datetime',
     ];
 
     // Relacionamento com Prefeitura
@@ -214,6 +217,11 @@ class Processo extends Model
     public function notas()
     {
         return $this->hasMany(ProcessoNota::class)->with('user')->latest();
+    }
+
+    public function finalizacaoIniciador()
+    {
+        return $this->belongsTo(User::class, 'finalizacao_iniciada_por_id');
     }
 
     /**
