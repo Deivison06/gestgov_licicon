@@ -185,7 +185,7 @@
 
         // Substitui os códigos pelos textos legíveis
         $vigencia_formatada = collect($vigencia)
-        ->map(fn($item) => $opcoes_vigencia[$item] ?? ucfirst(str_replace('_', ' ', $item)))
+        ->map(fn($item) => $item === 'outro' ? ($detalhe->prazo_vigencia_outro ?? '________________.') : ($opcoes_vigencia[$item] ?? ucfirst(str_replace('_', ' ', $item))))
         ->implode(', ');
 
         $outro_vigencia = $detalhe->prazo_vigencia_outro ?? '________________.';
