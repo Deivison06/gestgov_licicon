@@ -14,9 +14,9 @@ use Tests\Feature\Assinatura\Helpers\CriaProcessoMinimoTrait;
 use Tests\TestCase;
 
 /**
- * Documentos que reúnem subdocumentos com assinantes diferentes (ex.: estudo_tecnico
- * = ETP + Mapa de Riscos) devem gerar UMA página de assinatura por subdocumento,
- * cada uma com o seu respectivo assinante (mapeamento posicional pela seleção).
+ * A consolidação acrescenta UMA única página de assinaturas ao final do documento,
+ * listando todas as assinaturas (mesmo quando há assinantes diferentes, como no
+ * estudo_tecnico = ETP + Mapa de Riscos).
  */
 class ConsolidacaoMultiSubdocumentoTest extends TestCase
 {
@@ -42,7 +42,7 @@ class ConsolidacaoMultiSubdocumentoTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_estudo_tecnico_gera_uma_pagina_de_assinatura_por_subdocumento(): void
+    public function test_estudo_tecnico_consolida_todas_assinaturas_em_pagina_unica(): void
     {
         $processoId = $this->criarProcessoMinimo();
         $rascunho   = $this->criarPdfFake(); // 1 página
@@ -95,18 +95,16 @@ class ConsolidacaoMultiSubdocumentoTest extends TestCase
         $caminho = $this->service->consolidar($versao);
         $this->arquivosTemporarios[] = $caminho;
 
-        // 1 página do rascunho + 2 páginas de assinatura (uma por subdocumento)
+        // 1 página do rascunho + 1 única página de assinaturas (todos os assinantes)
         $this->assertSame(
-            $this->contarPaginas($rascunho) + 2,
+            $this->contarPaginas($rascunho) + 1,
             $this->contarPaginas($caminho),
-            'Deveria haver uma página de assinatura por subdocumento (ETP e Mapa de Riscos).'
+            'Deveria haver uma única página de assinaturas com todos os assinantes.'
         );
 
-        // Conteúdo (quando pdftotext disponível): títulos e assinantes corretos
+        // Conteúdo (quando pdftotext disponível): ambos os assinantes na mesma página
         $texto = $this->extrairTexto($caminho);
         if ($texto !== null) {
-            $this->assertStringContainsString('INSTRUMENTOS DE PLANEJAMENTO', $texto);
-            $this->assertStringContainsString('MAPA DE GERENCIAMENTO DE RISCOS', $texto);
             $this->assertStringContainsString(strtoupper($assinante0->name), $texto);
             $this->assertStringContainsString(strtoupper($assinante1->name), $texto);
         }

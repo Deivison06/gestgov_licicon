@@ -2,23 +2,14 @@
 
 namespace App\Assinatura\Infrastructure\Pdf;
 
-use App\Assinatura\Application\Support\AssinanteResolver;
-use App\Models\DocumentoSelecaoAssinantes;
 use App\Models\DocumentoVersao;
 use Illuminate\Support\Collection;
 use setasign\Fpdi\Tcpdf\Fpdi;
 
 /**
  * Renderização FPDI/TCPDF do PDF consolidado: copia o rascunho página a página e
- * acrescenta a(s) página(s) de assinaturas (blocos estilo SEI + QR + código).
- *
- * Quando o documento tem assinantes DIFERENTES por subdocumento (ex.: estudo_tecnico
- * = ETP assinado por um, Mapa de Riscos por outro), gera UMA página de assinatura
- * por subdocumento — cada uma com o título do subdocumento e apenas a assinatura do
- * seu respectivo assinante. O mapeamento é posicional: assinante[0] -> 1º subdocumento,
- * assinante[1] -> 2º, etc. (mesma ordem usada nos templates), lido da seleção salva
- * (DocumentoSelecaoAssinantes). Para os demais documentos, gera uma única página com
- * todas as assinaturas.
+ * acrescenta, ao final, UMA única página de assinaturas com todas as assinaturas do
+ * documento (blocos estilo SEI + QR + código).
  *
  * Responsabilidade ÚNICA de desenho — separada da orquestração de consolidação
  * (idempotência, hash, persistência, log) que vive em AssinaturaConsolidacaoService.
@@ -26,26 +17,12 @@ use setasign\Fpdi\Tcpdf\Fpdi;
 class PaginaAssinaturasRenderer
 {
     /**
-     * Títulos dos subdocumentos (na ORDEM dos assinantes) para tipos de documento
-     * que reúnem mais de um documento assinado por pessoas diferentes no mesmo PDF.
-     * Cada subdocumento gera UMA página de assinatura própria, todas acrescentadas
-     * ao FINAL do documento consolidado (na ordem dos assinantes).
-     */
-    private const SUBDOCUMENTOS = [
-        'estudo_tecnico' => [
-            'INSTRUMENTOS DE PLANEJAMENTO / ESTUDO TÉCNICO PRELIMINAR (ETP)',
-            'MAPA DE GERENCIAMENTO DE RISCOS',
-        ],
-    ];
-
-    /**
      * URL base da página pública de validação. Usada no QR/rodapé do PDF.
      */
     private string $urlValidacaoBase;
 
-    public function __construct(
-        private readonly AssinanteResolver $assinanteResolver
-    ) {
+    public function __construct()
+    {
         // Usa route helper se disponível, senão constrói manualmente. Útil em testes
         // onde a rota pode ainda não ter sido carregada.
         try {
@@ -84,123 +61,20 @@ class PaginaAssinaturasRenderer
             $pdf->useTemplate($tplId);
         }
 
-        // 2) Página(s) de assinatura: uma por subdocumento (assinantes diferentes) ou
-        //    uma única com todas as assinaturas.
-        $paginas = $this->montarPaginasAssinatura($versao);
-        foreach ($paginas as $pagina) {
-            $pdf->AddPage('P', 'A4');
-            $this->renderizarPaginaAssinaturas($pdf, $versao, $pagina['assinaturas'], $pagina['titulo']);
-        }
+        // 2) Página única com todas as assinaturas, ao final do documento.
+        $assinaturas = $versao->assinaturas->sortBy('assinado_em')->values();
+        $pdf->AddPage('P', 'A4');
+        $this->renderizarPaginaAssinaturas($pdf, $versao, $assinaturas);
 
         $pdf->Output($caminhoSaida, 'F');
     }
 
-    /**
-     * Define as páginas de assinatura a renderizar.
-     *
-     * @return array<int, array{titulo: ?string, assinaturas: Collection}>
-     */
-    private function montarPaginasAssinatura(DocumentoVersao $versao): array
-    {
-        $porSubdocumento = $this->paginasPorSubdocumento($versao);
-        if ($porSubdocumento !== null) {
-            return $porSubdocumento;
-        }
-
-        // Padrão: uma página com todas as assinaturas.
-        return [[
-            'titulo'      => null,
-            'assinaturas' => $versao->assinaturas->sortBy('assinado_em')->values(),
-        ]];
-    }
-
-    /**
-     * Quando o documento reúne subdocumentos com assinantes diferentes, retorna uma
-     * página por subdocumento (título + assinatura do respectivo assinante). Caso
-     * contrário (tipo sem config, ou só um assinante), retorna null.
-     *
-     * @return array<int, array{titulo: string, assinaturas: Collection}>|null
-     */
-    private function paginasPorSubdocumento(DocumentoVersao $versao): ?array
-    {
-        $versao->loadMissing('documentavel');
-        $documento = $versao->documentavel;
-
-        $tipo = $documento->tipo_documento ?? null;
-        if (!$tipo || !isset(self::SUBDOCUMENTOS[$tipo])) {
-            return null;
-        }
-
-        $selecao = DocumentoSelecaoAssinantes::query()
-            ->where('processo_id', $documento->processo_id)
-            ->where('tipo_documento', $tipo)
-            ->where('homologacao_id', $documento->homologacao_id ?? null)
-            ->first();
-
-        $selecionados = ($selecao && is_array($selecao->assinantes))
-            ? array_values($selecao->assinantes)
-            : [];
-
-        // Só faz sentido dividir quando há mais de um assinante distinto.
-        if (count($selecionados) < 2) {
-            return null;
-        }
-
-        $titulos = self::SUBDOCUMENTOS[$tipo];
-        $paginas = [];
-
-        foreach ($titulos as $i => $titulo) {
-            if (!isset($selecionados[$i])) {
-                break;
-            }
-            $assinatura = $this->assinaturaDoSelecionado($versao, $selecionados[$i]);
-            if (!$assinatura) {
-                continue;
-            }
-            $paginas[] = [
-                'titulo'      => $titulo,
-                'assinaturas' => collect([$assinatura]),
-            ];
-        }
-
-        // Se não conseguimos mapear ao menos 2 subdocumentos, cai no padrão (página única).
-        return count($paginas) >= 2 ? $paginas : null;
-    }
-
-    /**
-     * Resolve a AssinaturaDigital correspondente a um assinante selecionado
-     * (por user_id explícito ou pelo nome do responsável).
-     */
-    private function assinaturaDoSelecionado(DocumentoVersao $versao, array $selecionado)
-    {
-        $userId = $selecionado['user_id'] ?? $selecionado['id'] ?? null;
-
-        if (!$userId && !empty($selecionado['responsavel'])) {
-            $user = $this->assinanteResolver->resolverUserPorNome($selecionado['responsavel']);
-            $userId = $user?->id;
-        }
-
-        if (!$userId) {
-            return null;
-        }
-
-        return $versao->assinaturas->firstWhere('assinante_user_id', (int) $userId);
-    }
-
-    private function renderizarPaginaAssinaturas(Fpdi $pdf, DocumentoVersao $versao, Collection $assinaturas, ?string $titulo = null): void
+    private function renderizarPaginaAssinaturas(Fpdi $pdf, DocumentoVersao $versao, Collection $assinaturas): void
     {
         // Título da página
         $pdf->SetFont('helvetica', 'B', 14);
         $pdf->SetTextColor(0, 0, 0);
         $pdf->Cell(0, 8, 'ASSINATURAS DIGITAIS', 0, 1, 'C');
-
-        // Subtítulo com o nome do subdocumento (quando aplicável)
-        if ($titulo) {
-            $pdf->SetFont('helvetica', 'B', 10);
-            $pdf->SetTextColor(0, 116, 124);
-            $pdf->MultiCell(0, 5, $titulo, 0, 'C');
-            $pdf->Ln(1);
-        }
 
         $pdf->SetFont('helvetica', '', 9);
         $pdf->SetTextColor(80, 80, 80);
