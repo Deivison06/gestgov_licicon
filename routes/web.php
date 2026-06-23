@@ -40,6 +40,7 @@ Route::prefix('admin/planejamento')
         Route::post('/reordenar', [PlanejamentoController::class, 'reorder'])->name('reorder');
         Route::get('/{processo}', [PlanejamentoController::class, 'show'])->name('show');
         Route::patch('/{processo}/status', [PlanejamentoController::class, 'updateStatus'])->name('status.update');
+        Route::patch('/{processo}/finalizar-prazo-recurso', [PlanejamentoController::class, 'finalizarPrazoRecurso'])->name('finalizar.prazo.recurso');
         Route::post('/{processo}/notas', [PlanejamentoController::class, 'storeNota'])->name('notas.store');
     });
 

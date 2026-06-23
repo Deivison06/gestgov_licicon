@@ -126,7 +126,8 @@
             @endif
 
             @if($processo->planejamento_status === 'em_andamento')
-                <form method="POST" action="{{ route('admin.planejamento.status.update', $processo) }}">
+                <form method="POST" action="{{ route('admin.planejamento.status.update', $processo) }}"
+                    onsubmit="return confirm('Confirmar conclusão da sessão deste processo?')">
                     @csrf @method('PATCH')
                     <input type="hidden" name="planejamento_status" value="concluida">
                     <button type="submit"
@@ -137,7 +138,8 @@
                         Concluir Sessão
                     </button>
                 </form>
-                <form method="POST" action="{{ route('admin.planejamento.status.update', $processo) }}">
+                <form method="POST" action="{{ route('admin.planejamento.status.update', $processo) }}"
+                    onsubmit="return confirm('Confirmar início do prazo de recurso? O prazo de 3 dias úteis começará a contar agora.')">
                     @csrf @method('PATCH')
                     <input type="hidden" name="planejamento_status" value="em_recurso">
                     <button type="submit"
@@ -151,7 +153,8 @@
             @endif
 
             @if($processo->planejamento_status === 'em_recurso' && $aguardandoResposta)
-                <form method="POST" action="{{ route('admin.planejamento.status.update', $processo) }}">
+                <form method="POST" action="{{ route('admin.planejamento.status.update', $processo) }}"
+                    onsubmit="return confirm('Confirmar encaminhamento para conclusão?')">
                     @csrf @method('PATCH')
                     <input type="hidden" name="planejamento_status" value="concluida">
                     <button type="submit"

@@ -318,6 +318,30 @@ class PlanejamentoController extends Controller
         ]);
     }
 
+    public function finalizarPrazoRecurso(Processo $processo): RedirectResponse
+    {
+        $user = auth()->user();
+        if ($user->prefeitura_id && $processo->prefeitura_id !== $user->prefeitura_id) {
+            abort(403, 'Acesso negado.');
+        }
+
+        abort_if(
+            $processo->planejamento_status !== 'em_recurso',
+            422,
+            'Ação inválida: o processo não está em recurso.'
+        );
+
+        abort_if(
+            $processo->aguardandoRespostaRecurso(),
+            422,
+            'O prazo de recurso já foi encerrado.'
+        );
+
+        $processo->update(['planejamento_fim_recurso' => Carbon::now()->subSecond()]);
+
+        return back()->with('sucesso', 'Prazo de recurso finalizado. O processo aguarda resposta ao recurso.');
+    }
+
     private function iniciarFinalizacao(Processo $processo): void
     {
         abort_if(
