@@ -24,7 +24,7 @@ class UsuarioRequest extends FormRequest
         $role = $roleId ? Role::find($roleId) : null;
         $permissions = $this->input('permissions', []);
 
-        $isPrefeituraRequired = $role && $role->name === 'prefeitura';
+        $isPrefeituraRequired = $role && str_contains(strtolower($role->name), 'prefeitura');
 
         $fiscalizarPerm = Permission::where('name', 'fiscalizar contratos')->first();
         $isFiscal = $fiscalizarPerm && in_array($fiscalizarPerm->id, $permissions);

@@ -45,6 +45,7 @@ class RolePermissionSeeder extends Seeder
             ],
             'colaborador_licicon' => ['dar seguimento processos', 'atas e contratacoes', 'planejamento'],
             'prefeitura'          => ['assinar processos', 'contratos', 'etp inteligente', 'atas e contratacoes', 'planejamento'],
+            'Prefeitura - Personalizado' => [], // Sem permissões padrão, o admin adiciona manualmente
         ];
 
         // Sincroniza permissões de cada role

@@ -135,10 +135,12 @@
 
                     @foreach($permissions as $permission)
                         @php
-                            // Considera marcado se tem como direta OU herdada da role
                             $isViaRole = in_array($permission->id, $userViaRolePermissions);
                             $isDirect  = in_array($permission->id, $userDirectPermissions);
-                            $isChecked = $isDirect || $isViaRole;
+                            // Checkboxes controlam APENAS permissões diretas.
+                            // Permissões herdadas da role ficam desmarcadas por padrão —
+                            // o admin escolhe livremente o que quer atribuir como direta.
+                            $isChecked = $isDirect;
                         @endphp
                         <div class="flex items-center mb-2">
                             <input type="checkbox"
@@ -207,7 +209,7 @@ document.addEventListener('DOMContentLoaded', function() {
             prefeituraSelect.removeAttribute('required');
         } else {
             divPrefeitura.style.display = 'block';
-            if (roleName === 'prefeitura') prefeituraSelect.setAttribute('required', 'required');
+            if (roleName.includes('prefeitura')) prefeituraSelect.setAttribute('required', 'required');
         }
 
         const fiscalCheck = Array.from(document.querySelectorAll('input[name="permissions[]"]'))

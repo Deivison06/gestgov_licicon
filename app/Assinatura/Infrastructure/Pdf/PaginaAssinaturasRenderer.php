@@ -28,6 +28,8 @@ class PaginaAssinaturasRenderer
     /**
      * Títulos dos subdocumentos (na ORDEM dos assinantes) para tipos de documento
      * que reúnem mais de um documento assinado por pessoas diferentes no mesmo PDF.
+     * Cada subdocumento gera UMA página de assinatura própria, todas acrescentadas
+     * ao FINAL do documento consolidado (na ordem dos assinantes).
      */
     private const SUBDOCUMENTOS = [
         'estudo_tecnico' => [

@@ -222,7 +222,7 @@
         @foreach ($assinantes as $assinante)
             <br>
             <div class="signature-block" style="display: inline-block; margin: 0 40px;">
-                ___________________________________<br>
+                <span style="font-weight: 700;">Assinado digitalmente por</span><br>
                 <p style="line-height: 1.2;">
                     {{ $assinante['responsavel'] }} <br>
                     <span>{{ $assinante['unidade_nome'] }}</span>
@@ -308,7 +308,7 @@
 
         <div style="margin-top: 40px; text-align: center;">
             <div class="signature-block" style="display: inline-block; margin: 0 40px;">
-                ___________________________________<br>
+                <span style="font-weight: 700;">Assinado digitalmente por</span><br>
                 <p style="line-height: 1.2;">
                     {{ $primeiroAssinante['responsavel'] }} <br>
                     <span>{{ $primeiroAssinante['unidade_nome'] }}</span>

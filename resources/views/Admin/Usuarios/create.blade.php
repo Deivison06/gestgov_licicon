@@ -176,7 +176,7 @@ document.addEventListener('DOMContentLoaded', function() {
             prefeituraSelect.removeAttribute('required');
         } else {
             divPrefeitura.style.display = 'block';
-            if (roleName === 'prefeitura') prefeituraSelect.setAttribute('required', 'required');
+            if (roleName.includes('prefeitura')) prefeituraSelect.setAttribute('required', 'required');
         }
 
         const fiscalCheck = Array.from(document.querySelectorAll('input[name="permissions[]"]'))
