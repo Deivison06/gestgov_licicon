@@ -325,7 +325,7 @@
                         </div>
 
                         {{-- Cards --}}
-                        <div class="flex flex-col gap-2 p-2 flex-1">
+                        <div class="kanban-column-cards flex flex-col gap-2 p-2 flex-1">
                             @foreach($grupo as $processo)
                                 @include('Admin.Planejamento._card', ['ocultarCidade' => true, 'ocultarAcoes' => true])
                             @endforeach
