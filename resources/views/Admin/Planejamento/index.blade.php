@@ -70,15 +70,16 @@
             {{-- Pills de status --}}
             <div class="flex flex-wrap items-center gap-2 px-4 py-3 border-b border-gray-100 bg-gray-50/60">
                 @php
-                    $statusAtivo = request('status');
-                    $paramsBase  = request()->only('prefeitura_id', 'data_de', 'data_ate');
-                    $totalGeral  = collect($colunas)->sum(fn($col) => $col->count());
+                    $statusAtivo    = request('status');
+                    $modalidadeAtiva = request('modalidade');
+                    $paramsBase     = request()->only('prefeitura_id', 'data_de', 'data_ate');
+                    $totalGeral     = collect($colunas)->sum(fn($col) => $col->count());
                 @endphp
 
                 <span class="text-xs font-semibold text-gray-400 shrink-0 mr-0.5">Status</span>
                 <span class="w-px h-4 bg-gray-200 shrink-0"></span>
 
-                <a href="{{ route('admin.planejamento.index', $paramsBase) }}"
+                <a href="{{ route('admin.planejamento.index', array_merge($paramsBase, $modalidadeAtiva ? ['modalidade' => $modalidadeAtiva] : [])) }}"
                     @class([
                         'inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all duration-150',
                         'bg-gray-800 text-white border-gray-800 shadow-sm' => ! $statusAtivo,
@@ -94,7 +95,7 @@
 
                 @foreach($statusConfig as $status => $cfg)
                     @php $count = $colunas[$status]->count(); @endphp
-                    <a href="{{ route('admin.planejamento.index', array_merge($paramsBase, ['status' => $status])) }}"
+                    <a href="{{ route('admin.planejamento.index', array_merge($paramsBase, ['status' => $status], $modalidadeAtiva ? ['modalidade' => $modalidadeAtiva] : [])) }}"
                         @class([
                             'inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all duration-150',
                             $cfg['cor_badge'] . ' border-current shadow-sm' => $statusAtivo === $status,
@@ -106,6 +107,32 @@
                             'bg-black/10' => $statusAtivo === $status,
                             'bg-gray-100 text-gray-500' => $statusAtivo !== $status,
                         ])>{{ $count }}</span>
+                    </a>
+                @endforeach
+            </div>
+
+            {{-- Pills de modalidade --}}
+            <div class="flex flex-wrap items-center gap-2 px-4 py-2.5 border-b border-gray-100">
+                <span class="text-xs font-semibold text-gray-400 shrink-0 mr-0.5">Modalidade</span>
+                <span class="w-px h-4 bg-gray-200 shrink-0"></span>
+
+                <a href="{{ route('admin.planejamento.index', array_merge($paramsBase, $statusAtivo ? ['status' => $statusAtivo] : [])) }}"
+                    @class([
+                        'text-xs font-semibold px-3 py-1 rounded-full border transition-all duration-150',
+                        'bg-gray-800 text-white border-gray-800 shadow-sm' => ! $modalidadeAtiva,
+                        'bg-white text-gray-500 border-gray-200 hover:border-gray-300 hover:text-gray-700' => $modalidadeAtiva,
+                    ])>
+                    Todas
+                </a>
+
+                @foreach($modalidades as $mod)
+                    <a href="{{ route('admin.planejamento.index', array_merge($paramsBase, ['modalidade' => $mod->value], $statusAtivo ? ['status' => $statusAtivo] : [])) }}"
+                        @class([
+                            'text-xs font-semibold px-3 py-1 rounded-full border transition-all duration-150',
+                            'bg-teal-700 text-white border-teal-700 shadow-sm' => $modalidadeAtiva == $mod->value,
+                            'bg-white text-gray-500 border-gray-200 hover:border-teal-300 hover:text-teal-700' => $modalidadeAtiva != $mod->value,
+                        ])>
+                        {{ $mod->getDisplayName() }}
                     </a>
                 @endforeach
             </div>
@@ -157,6 +184,9 @@
                     @if(request('status'))
                         <input type="hidden" name="status" value="{{ request('status') }}">
                     @endif
+                    @if(request('modalidade'))
+                        <input type="hidden" name="modalidade" value="{{ request('modalidade') }}">
+                    @endif
 
                     {{-- Ações --}}
                     <div class="flex gap-2 ml-auto">
@@ -167,7 +197,7 @@
                             </svg>
                             Filtrar
                         </button>
-                        @if(request('prefeitura_id') || request('status') || request('data_de') || request('data_ate'))
+                        @if(request('prefeitura_id') || request('status') || request('modalidade') || request('data_de') || request('data_ate'))
                             <a href="{{ route('admin.planejamento.index') }}"
                                 class="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-400 hover:text-red-500 rounded-lg px-3 py-2 hover:bg-red-50 transition-all duration-150">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

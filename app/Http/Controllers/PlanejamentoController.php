@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ModalidadeEnum;
 use App\Models\Prefeitura;
 use App\Models\Processo;
 use App\Models\ProcessoNota;
@@ -73,6 +74,7 @@ class PlanejamentoController extends Controller
             ->whereNotIn('status', ['FINALIZADO', 'CANCELADO'])
             ->when($request->filled('prefeitura_id'), fn($q) => $q->where('prefeitura_id', $request->prefeitura_id))
             ->when($request->filled('status'), fn($q) => $q->where('planejamento_status', $request->status))
+            ->when($request->filled('modalidade'), fn($q) => $q->where('modalidade', $request->modalidade))
             ->when($request->filled('data_de'), fn($q) => $q->where('planejamento_data_abertura', '>=', $request->data_de))
             ->when($request->filled('data_ate'), fn($q) => $q->where('planejamento_data_abertura', '<=', $request->data_ate))
             ->orderBy('updated_at', 'desc')
@@ -83,7 +85,9 @@ class PlanejamentoController extends Controller
             $colunas[$status] = $processos->filter(fn($p) => $p->planejamento_status === $status)->values();
         }
 
-        return view('Admin.Planejamento.index', compact('prefeituras', 'colunas', 'processos', 'statusConfig'));
+        $modalidades = ModalidadeEnum::cases();
+
+        return view('Admin.Planejamento.index', compact('prefeituras', 'colunas', 'processos', 'statusConfig', 'modalidades'));
     }
 
     public function calendarioEventos(Request $request): \Illuminate\Http\JsonResponse
@@ -92,9 +96,12 @@ class PlanejamentoController extends Controller
         $status = $request->input('status', 'todos'); // 'todos', 'aguardando_sessao', 'em_andamento', 'em_recurso'
         $tipo = $request->input('tipo', 'sessao'); // 'sessao' ou 'recurso'
 
+        $modalidade = $request->input('modalidade');
+
         $query = Processo::with('prefeitura')
             ->where('planejamento_status', '!=', 'concluida')
             ->when($status !== 'todos', fn($q) => $q->where('planejamento_status', $status))
+            ->when($modalidade, fn($q) => $q->where('modalidade', $modalidade))
             ->when($user->prefeitura_id, fn($q) => $q->where('prefeitura_id', $user->prefeitura_id))
             ->where(function ($q) use ($tipo, $status) {
                 // Se o usuário filtrou especificamente por Recurso, ou se o tipo global é recurso
