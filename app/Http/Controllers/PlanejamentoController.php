@@ -70,6 +70,7 @@ class PlanejamentoController extends Controller
         $statusConfig = self::statusConfig();
 
         $processos = Processo::with('prefeitura', 'notas')->withCount('documentos')
+            ->whereNotIn('status', ['FINALIZADO', 'CANCELADO'])
             ->when($request->filled('prefeitura_id'), fn($q) => $q->where('prefeitura_id', $request->prefeitura_id))
             ->when($request->filled('status'), fn($q) => $q->where('planejamento_status', $request->status))
             ->when($request->filled('data_de'), fn($q) => $q->where('planejamento_data_abertura', '>=', $request->data_de))
