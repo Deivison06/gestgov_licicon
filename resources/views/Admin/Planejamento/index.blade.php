@@ -275,7 +275,7 @@
                         </div>
 
                         {{-- Cards da coluna --}}
-                        <div class="flex flex-col gap-2 p-2 flex-1">
+                        <div class="kanban-column-cards flex flex-col gap-2 p-2 flex-1">
                             @forelse($colunas[$status] as $processo)
                                 @include('Admin.Planejamento._card')
                             @empty
@@ -368,5 +368,53 @@
     </div>
 
 </div>
+
+@push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.3/Sortable.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const columns = document.querySelectorAll('.kanban-column-cards');
+            columns.forEach(column => {
+                new Sortable(column, {
+                    animation: 150,
+                    ghostClass: 'sortable-ghost',
+                    draggable: '.kanban-card',
+                    onEnd: function (evt) {
+                        const cardIds = Array.from(column.querySelectorAll('.kanban-card')).map(card => card.getAttribute('data-id'));
+                        
+                        fetch('{{ route('admin.planejamento.reorder') }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify({ ids: cardIds })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.sucesso) {
+                                console.log('Ordem atualizada com sucesso');
+                            } else {
+                                alert('Erro ao atualizar a ordem. Por favor, tente novamente.');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Erro de conexão ao atualizar a ordem.');
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+@endpush
+
+<style>
+    .sortable-ghost {
+        opacity: 0.4;
+        border: 2px dashed #0f766e !important;
+        background-color: #f0fdfa !important;
+    }
+</style>
 @endsection
 

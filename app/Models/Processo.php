@@ -42,6 +42,7 @@ class Processo extends Model
         'planejamento_status',
         'planejamento_data_abertura',
         'planejamento_fim_recurso',
+        'planejamento_ordem',
         'finalizacao_iniciada_por_id',
         'finalizacao_iniciada_em',
     ];
@@ -314,4 +315,12 @@ class Processo extends Model
         return $data;
     }
 
+    protected static function booted()
+    {
+        static::updating(function ($processo) {
+            if ($processo->isDirty('planejamento_status')) {
+                $processo->planejamento_ordem = 0;
+            }
+        });
+    }
 }

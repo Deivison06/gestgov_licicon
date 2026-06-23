@@ -6,7 +6,7 @@
     $corPref            = $processo->prefeitura->cor ?? '#0f766e';
 @endphp
 
-<div class="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-150 overflow-hidden flex flex-col">
+<div data-id="{{ $processo->id }}" class="kanban-card cursor-grab active:cursor-grabbing bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-150 overflow-hidden flex flex-col">
 
     <div class="h-1.5 "></div>
 

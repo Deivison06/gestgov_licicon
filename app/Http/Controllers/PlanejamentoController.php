@@ -77,6 +77,7 @@ class PlanejamentoController extends Controller
             ->when($request->filled('modalidade'), fn($q) => $q->where('modalidade', $request->modalidade))
             ->when($request->filled('data_de'), fn($q) => $q->where('planejamento_data_abertura', '>=', $request->data_de))
             ->when($request->filled('data_ate'), fn($q) => $q->where('planejamento_data_abertura', '<=', $request->data_ate))
+            ->orderBy('planejamento_ordem', 'asc')
             ->orderBy('updated_at', 'desc')
             ->get();
 
@@ -231,6 +232,27 @@ class PlanejamentoController extends Controller
         ]);
 
         return back()->with('sucesso', 'Nota adicionada com sucesso.');
+    }
+
+    public function reorder(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $request->validate([
+            'ids' => ['required', 'array'],
+            'ids.*' => ['required', 'integer', 'exists:processos,id'],
+        ]);
+
+        $ids = $request->input('ids');
+        $user = auth()->user();
+
+        foreach ($ids as $index => $id) {
+            $query = Processo::where('id', $id);
+            if ($user->prefeitura_id) {
+                $query->where('prefeitura_id', $user->prefeitura_id);
+            }
+            $query->update(['planejamento_ordem' => $index]);
+        }
+
+        return response()->json(['sucesso' => true]);
     }
 
     private function avancarParaAguardando(Request $request, Processo $processo): void

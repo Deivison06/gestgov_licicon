@@ -32,6 +32,7 @@ Route::prefix('admin/planejamento')
     ->group(function () {
         Route::get('/', [PlanejamentoController::class, 'index'])->name('index');
         Route::get('/eventos-calendario', [PlanejamentoController::class, 'calendarioEventos'])->name('eventos');
+        Route::post('/reordenar', [PlanejamentoController::class, 'reorder'])->name('reorder');
         Route::get('/{processo}', [PlanejamentoController::class, 'show'])->name('show');
         Route::patch('/{processo}/status', [PlanejamentoController::class, 'updateStatus'])->name('status.update');
         Route::post('/{processo}/notas', [PlanejamentoController::class, 'storeNota'])->name('notas.store');
