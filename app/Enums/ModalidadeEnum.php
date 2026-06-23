@@ -21,6 +21,16 @@ enum ModalidadeEnum: int implements DisplayNameable
         };
     }
 
+    public function sigla(): string
+    {
+        return match ($this) {
+            self::CONCORRENCIA      => 'CC',
+            self::DISPENSA          => 'DL',
+            self::INEXIGIBILIDADE   => 'IL',
+            self::PREGAO_ELETRONICO => 'PE',
+        };
+    }
+
     public static function values(): array
     {
         return array_column(self::cases(), 'value');

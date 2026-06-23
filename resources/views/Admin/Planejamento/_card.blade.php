@@ -29,8 +29,12 @@
         {{-- Número + badge de status (mobile) --}}
         <div class="flex items-center justify-between gap-2">
             <a href="{{ route('admin.planejamento.show', $processo) }}"
-                class="font-mono text-xs font-semibold text-gray-400 hover:text-teal-600 transition-colors shrink-0">
-                #{{ $processo->numero_processo ?? $processo->numero_procedimento ?? '#'.$processo->id }}
+                class="font-mono text-xs font-semibold text-gray-500 hover:text-teal-600 transition-colors shrink-0">
+                @if($processo->modalidade && ($processo->numero_processo ?? $processo->numero_procedimento))
+                    <span class="">{{ $processo->modalidade->sigla() }} </span>{{ $processo->numero_processo ?? $processo->numero_procedimento }}
+                @else
+                    #{{ $processo->numero_processo ?? $processo->numero_procedimento ?? $processo->id }}
+                @endif
             </a>
             @isset($exibirStatus)
                 <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full {{ $cfg['cor_badge'] }}">
