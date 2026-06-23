@@ -61,17 +61,17 @@ class FinalizacaoService
         $homologacao = $this->resolverHomologacao($processo, $data);
         $vencedor = $this->resolverVencedor($processo, $data);
 
-        // Quando o front envia vencedor_id, salvamos primeiro os campos específicos da Ata
-        // (número, cargo, data) — o restante (se houver) continua indo para Homologacao.
         if ($homologacao && $vencedor) {
             $this->salvarNaAtaRegistroPreco($processo, $homologacao, $vencedor, $data);
         }
+
+        $finalizacao = $this->salvarNaFinalizacao($processo, $data);
 
         if ($homologacao) {
             return $this->salvarNaHomologacao($processo, $homologacao, $data);
         }
 
-        return $this->salvarNaFinalizacao($processo, $data);
+        return $finalizacao;
     }
 
     private function resolverVencedor(Processo $processo, array $data): ?Vencedor
@@ -152,7 +152,7 @@ class FinalizacaoService
                 continue;
             }
 
-            if (!in_array($field, $this->excludedFields)) {
+            if (!in_array($field, $this->excludedFields) && in_array($field, $finalizacao->getFillable(), true)) {
                 $finalizacao->{$field} = $value;
             }
         }

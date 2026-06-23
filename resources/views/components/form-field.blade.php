@@ -203,19 +203,30 @@
         @endif
     </div>
 
-     {{-- Botões de Confirmação CORRIGIDOS para datetime --}}
     <div class="flex pt-6 space-x-1">
-        {{-- Botão Salvar para datetime --}}
-        <button
-            type="button"
-            @click="saveField('{{ $name }}')"
-            x-show="!confirmed.{{ $name }}"
-            :disabled="!{{ $name }}_date || !{{ $name }}_time"
-            :class="(!{{ $name }}_date || !{{ $name }}_time) ? '{{ $disabledButtonClasses }}' : '{{ $saveButtonClasses }}'"
-            title="Confirmar"
-        >
-            ✓
-        </button>
+        {{-- Botão Salvar --}}
+        @if ($type === 'datetime')
+            <button
+                type="button"
+                @click="saveField('{{ $name }}')"
+                x-show="!confirmed.{{ $name }}"
+                :disabled="!{{ $name }}_date || !{{ $name }}_time"
+                :class="(!{{ $name }}_date || !{{ $name }}_time) ? '{{ $disabledButtonClasses }}' : '{{ $saveButtonClasses }}'"
+                title="Confirmar"
+            >
+                ✓
+            </button>
+        @else
+            <button
+                type="button"
+                @click="saveField('{{ $name }}')"
+                x-show="!confirmed.{{ $name }}"
+                class="{{ $saveButtonClasses }}"
+                title="Confirmar"
+            >
+                ✓
+            </button>
+        @endif
 
         {{-- Botão Cancelar/Editar --}}
         <button
