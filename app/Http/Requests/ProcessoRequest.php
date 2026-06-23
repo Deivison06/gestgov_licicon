@@ -30,6 +30,7 @@ class ProcessoRequest extends FormRequest
             'numero_processo' => 'nullable|string|max:10',
             'numero_procedimento' => 'required|string|max:10',
             'objeto' => 'required|string',
+            'nome_resumido' => 'nullable|string|max:255',
             'tipo_procedimento' => ['nullable', 'int' , new Enum(TipoProcedimentoEnum::class)], // 1 para SERVIÇOS, 2 para COMPRAS
             'tipo_contratacao' => ['nullable', 'int' , new Enum(TipoContratacaoEnum::class)], // 1 para LOTE, 2 para ITEM
             'responsavel_numeracao' => 'nullable|string|max:255',

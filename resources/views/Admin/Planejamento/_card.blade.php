@@ -37,8 +37,14 @@
             @endisset
         </div>
 
-        {{-- Objeto --}}
-        @if($processo->objeto)
+        {{-- Nome Resumido / Objeto --}}
+        @if($processo->nome_resumido)
+            <a href="{{ route('admin.planejamento.show', $processo) }}"
+                class="text-sm font-semibold text-gray-800 leading-snug hover:text-indigo-700 transition-colors -mt-0.5"
+                title="{{ $processo->nome_resumido }}">
+                {{ Str::limit($processo->nome_resumido, 75) }}
+            </a>
+        @elseif($processo->objeto)
             <a href="{{ route('admin.planejamento.show', $processo) }}"
                 class="text-sm text-gray-700 leading-snug hover:text-indigo-700 transition-colors -mt-0.5"
                 title="{{ html_entity_decode(strip_tags($processo->objeto)) }}">

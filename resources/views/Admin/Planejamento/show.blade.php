@@ -84,6 +84,14 @@
                         </a>
                     </div>
 
+                    @if($processo->nome_resumido)
+                        <div>
+                            <p class="text-xs text-gray-400 font-medium mb-1">Identificação de Controle / Nome Resumido</p>
+                            <p class="text-gray-900 font-semibold leading-relaxed">{{ $processo->nome_resumido }}</p>
+                        </div>
+                        <hr class="border-gray-100">
+                    @endif
+
                     @if($processo->objeto)
                         <div>
                             <p class="text-xs text-gray-400 font-medium mb-1">Objeto</p>

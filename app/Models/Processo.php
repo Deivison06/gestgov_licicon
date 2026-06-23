@@ -23,6 +23,7 @@ class Processo extends Model
         'numero_processo',
         'numero_procedimento',
         'objeto',
+        'nome_resumido',
         'tipo_procedimento',
         'tipo_contratacao',
         'unidade_numeracao',

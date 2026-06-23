@@ -144,6 +144,21 @@
                             </div>
                         </div>
 
+                        {{-- IDENTIFICAÇÃO DE CONTROLE / NOME RESUMIDO --}}
+                        <div class="md:col-span-2">
+                            <label for="nome_resumido" class="block text-sm font-medium text-gray-700">
+                                Identificação de Controle / Nome Resumido
+                                <span class="ml-1 text-xs text-gray-400 font-normal">— utilizado no quadro de planejamento</span>
+                            </label>
+                            <input type="text" name="nome_resumido" id="nome_resumido"
+                                value="{{ old('nome_resumido', $processo->nome_resumido) }}"
+                                placeholder="Ex: Reforma da Escola X, Aquisição de Computadores..."
+                                class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">
+                            @error('nome_resumido')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
                         {{-- OBJETO --}}
                         <div class="md:col-span-2">
                             <textarea name="objeto" id="objeto" rows="4" class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">{{ old('objeto', $processo->objeto) }}</textarea>
