@@ -147,6 +147,7 @@
             </div>
 
             {{-- Linha do tempo + ações contextuais --}}
+            @if($processo->modalidade !== \App\Enums\ModalidadeEnum::INEXIGIBILIDADE)
             <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
                 <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-5">Linha do Tempo</h3>
                 <ol class="flex items-start w-full">
@@ -286,6 +287,7 @@
 
                 </div>
             </div>
+            @endif
 
             {{-- Notas --}}
             <div id="notas" class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">

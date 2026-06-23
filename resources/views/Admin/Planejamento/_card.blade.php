@@ -13,6 +13,7 @@
     <div class="p-3 flex flex-col gap-2.5 flex-1">
 
         {{-- Prefeitura: destaque com cor da cidade --}}
+        @unless($ocultarCidade ?? false)
         <div class="flex items-center gap-2 rounded-lg px-2.5 py-1.5"
             style="background-color: {{ $corPref }};">
             <svg class="w-3.5 h-3.5 shrink-0" style="color: rgba(255,255,255,0.75);"
@@ -23,6 +24,7 @@
                 {{ $cidade }}
             </span>
         </div>
+        @endunless
 
         {{-- Número + badge de status (mobile) --}}
         <div class="flex items-center justify-between gap-2">
@@ -85,6 +87,7 @@
         @endif
 
         {{-- Data de abertura da sessão --}}
+        @unless($ocultarAcoes ?? false)
         @if($processo->planejamento_data_abertura && in_array($processo->planejamento_status, ['aguardando_sessao', 'em_andamento']))
             <div class="flex items-center gap-1.5 bg-blue-50 border border-blue-100 rounded-lg px-2.5 py-1.5">
                 <svg class="w-3.5 h-3.5 shrink-0 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -95,6 +98,7 @@
                 </span>
             </div>
         @endif
+        @endunless
 
         {{-- Aviso: sem documentos gerados --}}
         @if($processo->documentos_count === 0)
@@ -107,6 +111,7 @@
         @endif
 
         {{-- Botões de ação --}}
+        @unless($ocultarAcoes ?? false)
         <div class="flex flex-col gap-1.5 mt-auto pt-1"
             x-data="{ processoId: {{ $processo->id }} }">
 
@@ -187,6 +192,7 @@
             @endif
 
         </div>
+        @endunless
 
     </div>
 

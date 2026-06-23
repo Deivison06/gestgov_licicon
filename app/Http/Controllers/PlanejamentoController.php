@@ -69,26 +69,44 @@ class PlanejamentoController extends Controller
         }
 
         $statusConfig = self::statusConfig();
+        $visao        = $request->input('visao', 'padrao');
 
-        $processos = Processo::with('prefeitura', 'notas')->withCount('documentos')
+        $query = Processo::with('prefeitura', 'notas')->withCount('documentos')
             ->whereNotIn('status', ['FINALIZADO', 'CANCELADO'])
             ->when($request->filled('prefeitura_id'), fn($q) => $q->where('prefeitura_id', $request->prefeitura_id))
             ->when($request->filled('status'), fn($q) => $q->where('planejamento_status', $request->status))
-            ->when($request->filled('modalidade'), fn($q) => $q->where('modalidade', $request->modalidade))
             ->when($request->filled('data_de'), fn($q) => $q->where('planejamento_data_abertura', '>=', $request->data_de))
-            ->when($request->filled('data_ate'), fn($q) => $q->where('planejamento_data_abertura', '<=', $request->data_ate))
-            ->orderBy('planejamento_ordem', 'asc')
-            ->orderBy('updated_at', 'desc')
-            ->get();
+            ->when($request->filled('data_ate'), fn($q) => $q->where('planejamento_data_abertura', '<=', $request->data_ate));
+
+        if ($visao === 'inexigibilidade') {
+            // Visão especial: somente INEXIGIBILIDADE
+            $query->where('modalidade', ModalidadeEnum::INEXIGIBILIDADE->value);
+        } else {
+            // Visão padrão: todas exceto INEXIGIBILIDADE
+            $query->where('modalidade', '!=', ModalidadeEnum::INEXIGIBILIDADE->value)
+                ->when($request->filled('modalidade'), fn($q) => $q->where('modalidade', $request->modalidade));
+        }
+
+        $processos = $query->orderBy('planejamento_ordem', 'asc')->orderBy('updated_at', 'desc')->get();
 
         $colunas = [];
         foreach (array_keys($statusConfig) as $status) {
             $colunas[$status] = $processos->filter(fn($p) => $p->planejamento_status === $status)->values();
         }
 
+        // Agrupamento por prefeitura para a visão de inexigibilidade/dispensa
+        $colunasPorPrefeitura = $processos
+            ->groupBy(fn($p) => $p->prefeitura_id)
+            ->sortKeys()
+            ->map(fn($grupo) => $grupo->values())
+            ->sortBy(fn($grupo) => $grupo->first()->prefeitura->nome ?? '')
+            ->values();
+
         $modalidades = ModalidadeEnum::cases();
 
-        return view('Admin.Planejamento.index', compact('prefeituras', 'colunas', 'processos', 'statusConfig', 'modalidades'));
+        return view('Admin.Planejamento.index', compact(
+            'prefeituras', 'colunas', 'processos', 'statusConfig', 'modalidades', 'visao', 'colunasPorPrefeitura'
+        ));
     }
 
     public function calendarioEventos(Request $request): \Illuminate\Http\JsonResponse

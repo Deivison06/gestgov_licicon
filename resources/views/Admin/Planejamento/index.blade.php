@@ -63,18 +63,50 @@
         @endif
 
         {{-- ====================================================
+             TABS DE VISÃO
+             ==================================================== --}}
+        @php
+            $paramsVisao = request()->only('prefeitura_id', 'data_de', 'data_ate');
+        @endphp
+        <div class="flex items-center gap-1 bg-white border border-gray-200 rounded-xl shadow-sm p-1 self-start">
+            <a href="{{ route('admin.planejamento.index', array_merge($paramsVisao, ['visao' => 'padrao'])) }}"
+                @class([
+                    'inline-flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-lg transition-all duration-150',
+                    'bg-teal-700 text-white shadow-sm' => $visao === 'padrao',
+                    'text-gray-500 hover:text-gray-700 hover:bg-gray-50' => $visao !== 'padrao',
+                ])>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/>
+                </svg>
+                Fluxo Padrão
+            </a>
+            <a href="{{ route('admin.planejamento.index', array_merge($paramsVisao, ['visao' => 'inexigibilidade'])) }}"
+                @class([
+                    'inline-flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-lg transition-all duration-150',
+                    'bg-violet-700 text-white shadow-sm' => $visao === 'inexigibilidade',
+                    'text-gray-500 hover:text-gray-700 hover:bg-gray-50' => $visao !== 'inexigibilidade',
+                ])>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                </svg>
+                Inexigibilidade
+            </a>
+        </div>
+
+        {{-- ====================================================
              FILTROS
              ==================================================== --}}
         <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
 
             {{-- Pills de status --}}
+            @php
+                $statusAtivo    = request('status');
+                $modalidadeAtiva = request('modalidade');
+                $paramsBase     = request()->only('prefeitura_id', 'data_de', 'data_ate', 'visao');
+                $totalGeral     = collect($colunas)->sum(fn($col) => $col->count());
+            @endphp
+            @if($visao !== 'inexigibilidade')
             <div class="flex flex-wrap items-center gap-2 px-4 py-3 border-b border-gray-100 bg-gray-50/60">
-                @php
-                    $statusAtivo    = request('status');
-                    $modalidadeAtiva = request('modalidade');
-                    $paramsBase     = request()->only('prefeitura_id', 'data_de', 'data_ate');
-                    $totalGeral     = collect($colunas)->sum(fn($col) => $col->count());
-                @endphp
 
                 <span class="text-xs font-semibold text-gray-400 shrink-0 mr-0.5">Status</span>
                 <span class="w-px h-4 bg-gray-200 shrink-0"></span>
@@ -110,37 +142,52 @@
                     </a>
                 @endforeach
             </div>
+            @endif
 
             {{-- Pills de modalidade --}}
             <div class="flex flex-wrap items-center gap-2 px-4 py-2.5 border-b border-gray-100">
                 <span class="text-xs font-semibold text-gray-400 shrink-0 mr-0.5">Modalidade</span>
                 <span class="w-px h-4 bg-gray-200 shrink-0"></span>
 
-                <a href="{{ route('admin.planejamento.index', array_merge($paramsBase, $statusAtivo ? ['status' => $statusAtivo] : [])) }}"
-                    @class([
-                        'text-xs font-semibold px-3 py-1 rounded-full border transition-all duration-150',
-                        'bg-gray-800 text-white border-gray-800 shadow-sm' => ! $modalidadeAtiva,
-                        'bg-white text-gray-500 border-gray-200 hover:border-gray-300 hover:text-gray-700' => $modalidadeAtiva,
-                    ])>
-                    Todas
-                </a>
-
-                @foreach($modalidades as $mod)
-                    <a href="{{ route('admin.planejamento.index', array_merge($paramsBase, ['modalidade' => $mod->value], $statusAtivo ? ['status' => $statusAtivo] : [])) }}"
+                @if($visao === 'inexigibilidade')
+                    {{-- Visão inexigibilidade: sem filtro de modalidade (é fixa) --}}
+                    <span class="text-xs font-semibold px-3 py-1 rounded-full border bg-violet-700 text-white border-violet-700 shadow-sm">
+                        INEXIGIBILIDADE
+                    </span>
+                @else
+                    {{-- Visão padrão: todas as modalidades exceto INEXIGIBILIDADE --}}
+                    @php
+                        $modalidadesPadrao = collect($modalidades)->filter(
+                            fn($m) => $m->value !== \App\Enums\ModalidadeEnum::INEXIGIBILIDADE->value
+                        );
+                    @endphp
+                    <a href="{{ route('admin.planejamento.index', array_merge($paramsBase, $statusAtivo ? ['status' => $statusAtivo] : [])) }}"
                         @class([
                             'text-xs font-semibold px-3 py-1 rounded-full border transition-all duration-150',
-                            'bg-teal-700 text-white border-teal-700 shadow-sm' => $modalidadeAtiva == $mod->value,
-                            'bg-white text-gray-500 border-gray-200 hover:border-teal-300 hover:text-teal-700' => $modalidadeAtiva != $mod->value,
+                            'bg-gray-800 text-white border-gray-800 shadow-sm' => ! $modalidadeAtiva,
+                            'bg-white text-gray-500 border-gray-200 hover:border-gray-300 hover:text-gray-700' => $modalidadeAtiva,
                         ])>
-                        {{ $mod->getDisplayName() }}
+                        Todas
                     </a>
-                @endforeach
+                    @foreach($modalidadesPadrao as $mod)
+                        <a href="{{ route('admin.planejamento.index', array_merge($paramsBase, ['modalidade' => $mod->value], $statusAtivo ? ['status' => $statusAtivo] : [])) }}"
+                            @class([
+                                'text-xs font-semibold px-3 py-1 rounded-full border transition-all duration-150',
+                                'bg-teal-700 text-white border-teal-700 shadow-sm' => $modalidadeAtiva == $mod->value,
+                                'bg-white text-gray-500 border-gray-200 hover:border-teal-300 hover:text-teal-700' => $modalidadeAtiva != $mod->value,
+                            ])>
+                            {{ $mod->getDisplayName() }}
+                        </a>
+                    @endforeach
+                @endif
             </div>
 
             {{-- Formulário de filtros --}}
             <form method="GET" action="{{ route('admin.planejamento.index') }}"
                 x-data="{ showPeriodo: {{ request()->hasAny(['data_de', 'data_ate']) ? 'true' : 'false' }} }"
                 class="px-4 py-3.5 space-y-3">
+
+                <input type="hidden" name="visao" value="{{ $visao }}">
 
                 <div class="flex flex-wrap items-center gap-2.5">
 
@@ -198,7 +245,7 @@
                             Filtrar
                         </button>
                         @if(request('prefeitura_id') || request('status') || request('modalidade') || request('data_de') || request('data_ate'))
-                            <a href="{{ route('admin.planejamento.index') }}"
+                            <a href="{{ route('admin.planejamento.index', ['visao' => $visao]) }}"
                                 class="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-400 hover:text-red-500 rounded-lg px-3 py-2 hover:bg-red-50 transition-all duration-150">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -238,6 +285,61 @@
             </form>
         </div>
 
+        @if($visao === 'inexigibilidade')
+
+        {{-- ====================================================
+             VISÃO INEXIGIBILIDADE / DISPENSA: colunas por cidade
+             ==================================================== --}}
+        @if($colunasPorPrefeitura->isEmpty())
+            <div class="flex flex-col items-center justify-center py-20 text-center bg-white rounded-xl border border-gray-200 shadow-sm">
+                <div class="w-16 h-16 bg-violet-50 rounded-full flex items-center justify-center mb-4">
+                    <svg class="w-7 h-7 text-violet-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                    </svg>
+                </div>
+                <p class="text-gray-500 font-medium">Nenhum processo de inexigibilidade encontrado</p>
+                <p class="text-sm text-gray-400 mt-1">Tente ajustar os filtros.</p>
+            </div>
+        @else
+        <div class="overflow-x-auto pb-4">
+            <div class="flex gap-3" style="min-width: max-content;">
+
+                @foreach($colunasPorPrefeitura as $grupo)
+                    @php
+                        $prefeitura = $grupo->first()->prefeitura;
+                        $corPref    = $prefeitura->cor ?? '#7c3aed';
+                        $cidade     = $prefeitura->cidade ?? $prefeitura->nome ?? '—';
+                    @endphp
+
+                    <div class="flex flex-col rounded-xl overflow-hidden border border-violet-200 bg-violet-50/40 shadow-sm min-h-[280px] w-[220px] shrink-0">
+
+                        {{-- Cabeçalho da coluna --}}
+                        <div class="px-3 py-3 flex items-center justify-between gap-2"
+                            style="background-color: {{ $corPref }};">
+                            <span class="text-sm font-bold truncate leading-tight text-white" title="{{ $cidade }}">
+                                {{ $cidade }}
+                            </span>
+                            <span class="text-xs font-bold bg-black/20 text-white rounded-full px-2.5 py-0.5 shrink-0 tabular-nums min-w-[1.75rem] text-center">
+                                {{ $grupo->count() }}
+                            </span>
+                        </div>
+
+                        {{-- Cards --}}
+                        <div class="flex flex-col gap-2 p-2 flex-1">
+                            @foreach($grupo as $processo)
+                                @include('Admin.Planejamento._card', ['ocultarCidade' => true, 'ocultarAcoes' => true])
+                            @endforeach
+                        </div>
+
+                    </div>
+                @endforeach
+
+            </div>
+        </div>
+        @endif
+
+        @else
+
         {{-- ====================================================
              MOBILE: lista empilhada (< md)
              ==================================================== --}}
@@ -258,7 +360,7 @@
         </div>
 
         {{-- ====================================================
-             DESKTOP: Kanban (>= md)
+             DESKTOP: Kanban por fase (>= md)
              ==================================================== --}}
         <div class="hidden md:block overflow-x-auto pb-4">
             <div class="grid grid-cols-6 gap-3 min-w-[1240px]">
@@ -293,6 +395,8 @@
 
             </div>
         </div>
+
+        @endif
 
     </div>
 
