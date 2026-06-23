@@ -206,7 +206,7 @@
                         @endif
                         @foreach ($itensDoLote as $item)
                             <tr>
-                                <td>{{ $item['item'] ?? '' }}</td>
+                                <td>{{ $loop->iteration ?? '' }}</td>
                                 <td style="text-align: left;">{{ $item['especificacoes'] ?? '' }}</td>
                                 <td>{{ $item['unidade'] ?? '' }}</td>
                                 <td>{{ $item['quantidade'] ?? '' }}</td>

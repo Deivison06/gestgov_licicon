@@ -6,7 +6,7 @@
     $corPref            = $processo->prefeitura->cor ?? '#0f766e';
 @endphp
 
-<div class="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-150 overflow-hidden flex flex-col">
+<div data-id="{{ $processo->id }}" class="kanban-card cursor-grab active:cursor-grabbing bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-150 overflow-hidden flex flex-col">
 
     <div class="h-1.5 "></div>
 
@@ -37,8 +37,14 @@
             @endisset
         </div>
 
-        {{-- Objeto --}}
-        @if($processo->objeto)
+        {{-- Nome Resumido / Objeto --}}
+        @if($processo->nome_resumido)
+            <a href="{{ route('admin.planejamento.show', $processo) }}"
+                class="text-sm font-semibold text-gray-800 leading-snug hover:text-indigo-700 transition-colors -mt-0.5"
+                title="{{ $processo->nome_resumido }}">
+                {{ Str::limit($processo->nome_resumido, 75) }}
+            </a>
+        @elseif($processo->objeto)
             <a href="{{ route('admin.planejamento.show', $processo) }}"
                 class="text-sm text-gray-700 leading-snug hover:text-indigo-700 transition-colors -mt-0.5"
                 title="{{ html_entity_decode(strip_tags($processo->objeto)) }}">
@@ -105,7 +111,7 @@
             x-data="{ processoId: {{ $processo->id }} }">
 
             @if($processo->planejamento_status === 'em_elaboracao')
-                <button @click="$dispatch('abrir-modal-agendar', { id: {{ $processo->id }} })"
+                <button @click="$dispatch('abrir-modal-agendar', { id: {{ $processo->id }}, dataSessao: '{{ $processo->detalhe?->data_hora?->toDateString() ?? '' }}' })"
                     class="w-full inline-flex items-center justify-center gap-1.5 text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white rounded-lg px-3 py-2 transition-colors shadow-sm">
                     <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>

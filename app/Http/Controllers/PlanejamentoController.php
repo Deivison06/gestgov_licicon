@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ModalidadeEnum;
 use App\Models\Prefeitura;
 use App\Models\Processo;
 use App\Models\ProcessoNota;
@@ -70,10 +71,13 @@ class PlanejamentoController extends Controller
         $statusConfig = self::statusConfig();
 
         $processos = Processo::with('prefeitura', 'notas')->withCount('documentos')
+            ->whereNotIn('status', ['FINALIZADO', 'CANCELADO'])
             ->when($request->filled('prefeitura_id'), fn($q) => $q->where('prefeitura_id', $request->prefeitura_id))
             ->when($request->filled('status'), fn($q) => $q->where('planejamento_status', $request->status))
+            ->when($request->filled('modalidade'), fn($q) => $q->where('modalidade', $request->modalidade))
             ->when($request->filled('data_de'), fn($q) => $q->where('planejamento_data_abertura', '>=', $request->data_de))
             ->when($request->filled('data_ate'), fn($q) => $q->where('planejamento_data_abertura', '<=', $request->data_ate))
+            ->orderBy('planejamento_ordem', 'asc')
             ->orderBy('updated_at', 'desc')
             ->get();
 
@@ -82,7 +86,9 @@ class PlanejamentoController extends Controller
             $colunas[$status] = $processos->filter(fn($p) => $p->planejamento_status === $status)->values();
         }
 
-        return view('Admin.Planejamento.index', compact('prefeituras', 'colunas', 'processos', 'statusConfig'));
+        $modalidades = ModalidadeEnum::cases();
+
+        return view('Admin.Planejamento.index', compact('prefeituras', 'colunas', 'processos', 'statusConfig', 'modalidades'));
     }
 
     public function calendarioEventos(Request $request): \Illuminate\Http\JsonResponse
@@ -91,9 +97,12 @@ class PlanejamentoController extends Controller
         $status = $request->input('status', 'todos'); // 'todos', 'aguardando_sessao', 'em_andamento', 'em_recurso'
         $tipo = $request->input('tipo', 'sessao'); // 'sessao' ou 'recurso'
 
+        $modalidade = $request->input('modalidade');
+
         $query = Processo::with('prefeitura')
             ->where('planejamento_status', '!=', 'concluida')
             ->when($status !== 'todos', fn($q) => $q->where('planejamento_status', $status))
+            ->when($modalidade, fn($q) => $q->where('modalidade', $modalidade))
             ->when($user->prefeitura_id, fn($q) => $q->where('prefeitura_id', $user->prefeitura_id))
             ->where(function ($q) use ($tipo, $status) {
                 // Se o usuário filtrou especificamente por Recurso, ou se o tipo global é recurso
@@ -225,6 +234,27 @@ class PlanejamentoController extends Controller
         return back()->with('sucesso', 'Nota adicionada com sucesso.');
     }
 
+    public function reorder(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $request->validate([
+            'ids' => ['required', 'array'],
+            'ids.*' => ['required', 'integer', 'exists:processos,id'],
+        ]);
+
+        $ids = $request->input('ids');
+        $user = auth()->user();
+
+        foreach ($ids as $index => $id) {
+            $query = Processo::where('id', $id);
+            if ($user->prefeitura_id) {
+                $query->where('prefeitura_id', $user->prefeitura_id);
+            }
+            $query->update(['planejamento_ordem' => $index]);
+        }
+
+        return response()->json(['sucesso' => true]);
+    }
+
     private function avancarParaAguardando(Request $request, Processo $processo): void
     {
         abort_if(
@@ -234,10 +264,9 @@ class PlanejamentoController extends Controller
         );
 
         $request->validate([
-            'data_abertura' => ['required', 'date', 'after_or_equal:today'],
+            'data_abertura' => ['required', 'date'],
         ], [
-            'data_abertura.required'       => 'A data de abertura é obrigatória.',
-            'data_abertura.after_or_equal' => 'A data de abertura não pode ser no passado.',
+            'data_abertura.required' => 'A data de abertura é obrigatória.',
         ]);
 
         $processo->update([

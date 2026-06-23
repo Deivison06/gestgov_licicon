@@ -5,7 +5,7 @@
 @section('content')
 <div
     x-data="planejamentoPainel()"
-    @abrir-modal-agendar.window="modalAgendar = true; processoId = $event.detail.id"
+    @abrir-modal-agendar.window="modalAgendar = true; processoId = $event.detail.id; dataSessao = $event.detail.dataSessao || ''"
     class="py-6">
 
     <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 space-y-5">
@@ -70,15 +70,16 @@
             {{-- Pills de status --}}
             <div class="flex flex-wrap items-center gap-2 px-4 py-3 border-b border-gray-100 bg-gray-50/60">
                 @php
-                    $statusAtivo = request('status');
-                    $paramsBase  = request()->only('prefeitura_id', 'data_de', 'data_ate');
-                    $totalGeral  = collect($colunas)->sum(fn($col) => $col->count());
+                    $statusAtivo    = request('status');
+                    $modalidadeAtiva = request('modalidade');
+                    $paramsBase     = request()->only('prefeitura_id', 'data_de', 'data_ate');
+                    $totalGeral     = collect($colunas)->sum(fn($col) => $col->count());
                 @endphp
 
                 <span class="text-xs font-semibold text-gray-400 shrink-0 mr-0.5">Status</span>
                 <span class="w-px h-4 bg-gray-200 shrink-0"></span>
 
-                <a href="{{ route('admin.planejamento.index', $paramsBase) }}"
+                <a href="{{ route('admin.planejamento.index', array_merge($paramsBase, $modalidadeAtiva ? ['modalidade' => $modalidadeAtiva] : [])) }}"
                     @class([
                         'inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all duration-150',
                         'bg-gray-800 text-white border-gray-800 shadow-sm' => ! $statusAtivo,
@@ -94,7 +95,7 @@
 
                 @foreach($statusConfig as $status => $cfg)
                     @php $count = $colunas[$status]->count(); @endphp
-                    <a href="{{ route('admin.planejamento.index', array_merge($paramsBase, ['status' => $status])) }}"
+                    <a href="{{ route('admin.planejamento.index', array_merge($paramsBase, ['status' => $status], $modalidadeAtiva ? ['modalidade' => $modalidadeAtiva] : [])) }}"
                         @class([
                             'inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all duration-150',
                             $cfg['cor_badge'] . ' border-current shadow-sm' => $statusAtivo === $status,
@@ -106,6 +107,32 @@
                             'bg-black/10' => $statusAtivo === $status,
                             'bg-gray-100 text-gray-500' => $statusAtivo !== $status,
                         ])>{{ $count }}</span>
+                    </a>
+                @endforeach
+            </div>
+
+            {{-- Pills de modalidade --}}
+            <div class="flex flex-wrap items-center gap-2 px-4 py-2.5 border-b border-gray-100">
+                <span class="text-xs font-semibold text-gray-400 shrink-0 mr-0.5">Modalidade</span>
+                <span class="w-px h-4 bg-gray-200 shrink-0"></span>
+
+                <a href="{{ route('admin.planejamento.index', array_merge($paramsBase, $statusAtivo ? ['status' => $statusAtivo] : [])) }}"
+                    @class([
+                        'text-xs font-semibold px-3 py-1 rounded-full border transition-all duration-150',
+                        'bg-gray-800 text-white border-gray-800 shadow-sm' => ! $modalidadeAtiva,
+                        'bg-white text-gray-500 border-gray-200 hover:border-gray-300 hover:text-gray-700' => $modalidadeAtiva,
+                    ])>
+                    Todas
+                </a>
+
+                @foreach($modalidades as $mod)
+                    <a href="{{ route('admin.planejamento.index', array_merge($paramsBase, ['modalidade' => $mod->value], $statusAtivo ? ['status' => $statusAtivo] : [])) }}"
+                        @class([
+                            'text-xs font-semibold px-3 py-1 rounded-full border transition-all duration-150',
+                            'bg-teal-700 text-white border-teal-700 shadow-sm' => $modalidadeAtiva == $mod->value,
+                            'bg-white text-gray-500 border-gray-200 hover:border-teal-300 hover:text-teal-700' => $modalidadeAtiva != $mod->value,
+                        ])>
+                        {{ $mod->getDisplayName() }}
                     </a>
                 @endforeach
             </div>
@@ -157,6 +184,9 @@
                     @if(request('status'))
                         <input type="hidden" name="status" value="{{ request('status') }}">
                     @endif
+                    @if(request('modalidade'))
+                        <input type="hidden" name="modalidade" value="{{ request('modalidade') }}">
+                    @endif
 
                     {{-- Ações --}}
                     <div class="flex gap-2 ml-auto">
@@ -167,7 +197,7 @@
                             </svg>
                             Filtrar
                         </button>
-                        @if(request('prefeitura_id') || request('status') || request('data_de') || request('data_ate'))
+                        @if(request('prefeitura_id') || request('status') || request('modalidade') || request('data_de') || request('data_ate'))
                             <a href="{{ route('admin.planejamento.index') }}"
                                 class="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-400 hover:text-red-500 rounded-lg px-3 py-2 hover:bg-red-50 transition-all duration-150">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -245,7 +275,7 @@
                         </div>
 
                         {{-- Cards da coluna --}}
-                        <div class="flex flex-col gap-2 p-2 flex-1">
+                        <div class="kanban-column-cards flex flex-col gap-2 p-2 flex-1">
                             @forelse($colunas[$status] as $processo)
                                 @include('Admin.Planejamento._card')
                             @empty
@@ -304,11 +334,21 @@
                     @method('PATCH')
                     <input type="hidden" name="planejamento_status" value="aguardando_sessao">
                     <div class="space-y-4">
+                        <div x-show="dataSessao" class="flex items-start gap-2.5 bg-amber-50 border border-amber-200 rounded-lg px-3.5 py-2.5" style="display:none">
+                            <svg class="w-4 h-4 shrink-0 text-amber-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clip-rule="evenodd"/>
+                            </svg>
+                            <p class="text-xs text-amber-800">
+                                Data detectada automaticamente dos dados do processo.
+                                Você pode alterá-la se necessário.
+                            </p>
+                        </div>
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-1.5">
                                 Data de Abertura <span class="text-red-500">*</span>
                             </label>
-                            <input type="date" name="data_abertura" required :min="dataMinima"
+                            <input type="date" name="data_abertura" required
+                                :value="dataSessao"
                                 class="w-full rounded-lg border-gray-300 shadow-sm text-sm focus:ring-amber-500 focus:border-amber-500">
                         </div>
                         <div class="flex justify-end gap-3 pt-1">
@@ -328,5 +368,53 @@
     </div>
 
 </div>
+
+@push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.3/Sortable.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const columns = document.querySelectorAll('.kanban-column-cards');
+            columns.forEach(column => {
+                new Sortable(column, {
+                    animation: 150,
+                    ghostClass: 'sortable-ghost',
+                    draggable: '.kanban-card',
+                    onEnd: function (evt) {
+                        const cardIds = Array.from(column.querySelectorAll('.kanban-card')).map(card => card.getAttribute('data-id'));
+                        
+                        fetch('{{ route('admin.planejamento.reorder') }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify({ ids: cardIds })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.sucesso) {
+                                console.log('Ordem atualizada com sucesso');
+                            } else {
+                                alert('Erro ao atualizar a ordem. Por favor, tente novamente.');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Erro de conexão ao atualizar a ordem.');
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+@endpush
+
+<style>
+    .sortable-ghost {
+        opacity: 0.4;
+        border: 2px dashed #0f766e !important;
+        background-color: #f0fdfa !important;
+    }
+</style>
 @endsection
 

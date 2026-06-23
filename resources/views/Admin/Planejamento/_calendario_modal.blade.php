@@ -7,9 +7,11 @@ document.addEventListener('alpine:init', () => {
         modalAgendar: false,
         modalCalendario: false,
         processoId: null,
+        dataSessao: '',
         dataMinima: '{{ now()->toDateString() }}',
         tipoData: 'sessao',
         statusFiltro: 'todos',
+        modalidadeFiltro: '',
 
         viewMode: 'month',
         currentDate: new Date(),
@@ -122,9 +124,12 @@ document.addEventListener('alpine:init', () => {
         async fetchEventos() {
             this.loadingEventos = true;
             try {
-                const res = await fetch(
-                    `{{ route('admin.planejamento.eventos') }}?tipo=${this.tipoData}&status=${this.statusFiltro}`
-                );
+                const params = new URLSearchParams({
+                    tipo: this.tipoData,
+                    status: this.statusFiltro,
+                    ...(this.modalidadeFiltro ? { modalidade: this.modalidadeFiltro } : {}),
+                });
+                const res = await fetch(`{{ route('admin.planejamento.eventos') }}?${params}`);
                 this.eventos = await res.json();
             } catch (e) {
                 console.error('Erro ao carregar eventos:', e);
@@ -139,6 +144,11 @@ document.addEventListener('alpine:init', () => {
 
         alternarStatus(status) {
             this.statusFiltro = status;
+            this.fetchEventos();
+        },
+
+        alternarModalidade(modalidade) {
+            this.modalidadeFiltro = this.modalidadeFiltro === modalidade ? '' : modalidade;
             this.fetchEventos();
         },
 
@@ -223,7 +233,22 @@ document.addEventListener('alpine:init', () => {
                     </button>
                 </div>
 
-                {{-- Linha 2: navegação + troca de view --}}
+                {{-- Linha 2: filtros de modalidade --}}
+                <div class="flex flex-wrap items-center gap-1.5">
+                    <span class="text-xs font-semibold text-gray-400 shrink-0">Modalidade</span>
+                    <span class="w-px h-3.5 bg-gray-200 shrink-0"></span>
+                    @foreach(\App\Enums\ModalidadeEnum::cases() as $mod)
+                        <button @click="alternarModalidade('{{ $mod->value }}')"
+                            :class="modalidadeFiltro === '{{ $mod->value }}'
+                                ? 'bg-teal-700 text-white border-teal-700 shadow-sm'
+                                : 'bg-white text-gray-500 border-gray-200 hover:border-teal-300 hover:text-teal-700'"
+                            class="text-xs font-semibold px-2.5 py-1 rounded-full border transition-all duration-150">
+                            {{ $mod->getDisplayName() }}
+                        </button>
+                    @endforeach
+                </div>
+
+                {{-- Linha 3: navegação + troca de view --}}
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">
                         <button @click="prevPeriodo()"

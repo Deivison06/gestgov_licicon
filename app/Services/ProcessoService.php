@@ -137,7 +137,24 @@ class ProcessoService
         }
 
         $detalhe->save();
+
+        if (!empty($data['data_hora'])) {
+            $this->sincronizarDataAberturaPlanejamento($processo, $data['data_hora']);
+        }
+
         return $detalhe;
+    }
+
+    private function sincronizarDataAberturaPlanejamento(Processo $processo, string $dataHora): void
+    {
+        $dataAbertura = \Carbon\Carbon::parse($dataHora);
+        $updates = ['planejamento_data_abertura' => $dataAbertura];
+
+        if ($processo->planejamento_status === 'em_elaboracao') {
+            $updates['planejamento_status'] = 'aguardando_sessao';
+        }
+
+        $processo->update($updates);
     }
 
     private function processarArquivos(array $data, ProcessoDetalhe $detalhe): void
