@@ -234,10 +234,9 @@ class PlanejamentoController extends Controller
         );
 
         $request->validate([
-            'data_abertura' => ['required', 'date', 'after_or_equal:today'],
+            'data_abertura' => ['required', 'date'],
         ], [
-            'data_abertura.required'       => 'A data de abertura é obrigatória.',
-            'data_abertura.after_or_equal' => 'A data de abertura não pode ser no passado.',
+            'data_abertura.required' => 'A data de abertura é obrigatória.',
         ]);
 
         $processo->update([

@@ -7,6 +7,7 @@ document.addEventListener('alpine:init', () => {
         modalAgendar: false,
         modalCalendario: false,
         processoId: null,
+        dataSessao: '',
         dataMinima: '{{ now()->toDateString() }}',
         tipoData: 'sessao',
         statusFiltro: 'todos',

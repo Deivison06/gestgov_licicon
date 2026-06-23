@@ -105,7 +105,7 @@
             x-data="{ processoId: {{ $processo->id }} }">
 
             @if($processo->planejamento_status === 'em_elaboracao')
-                <button @click="$dispatch('abrir-modal-agendar', { id: {{ $processo->id }} })"
+                <button @click="$dispatch('abrir-modal-agendar', { id: {{ $processo->id }}, dataSessao: '{{ $processo->detalhe?->data_hora?->toDateString() ?? '' }}' })"
                     class="w-full inline-flex items-center justify-center gap-1.5 text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white rounded-lg px-3 py-2 transition-colors shadow-sm">
                     <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
