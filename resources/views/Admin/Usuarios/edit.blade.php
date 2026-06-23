@@ -128,23 +128,35 @@
                 <div class="p-4 border border-gray-200 rounded-lg">
                     <h4 class="mb-3 font-medium text-gray-700">Permissões Diretas</h4>
                     @php
-                        // Obter todas as permissões do usuário (incluindo herdadas)
-                        $userAllPermissions = $usuario->getAllPermissions()->pluck('id')->toArray();
+                        // Permissões diretas do usuário e permissões herdadas via role
+                        $userDirectPermissions  = $usuario->getDirectPermissions()->pluck('id')->toArray();
+                        $userViaRolePermissions = $usuario->getPermissionsViaRoles()->pluck('id')->toArray();
                     @endphp
 
                     @foreach($permissions as $permission)
+                        @php
+                            // Considera marcado se tem como direta OU herdada da role
+                            $isViaRole = in_array($permission->id, $userViaRolePermissions);
+                            $isDirect  = in_array($permission->id, $userDirectPermissions);
+                            $isChecked = $isDirect || $isViaRole;
+                        @endphp
                         <div class="flex items-center mb-2">
                             <input type="checkbox"
                                 name="permissions[]"
                                 value="{{ $permission->id }}"
                                 id="permission_{{ $permission->id }}"
-                                {{ in_array($permission->id, $userAllPermissions) ? 'checked' : '' }}
-                                {{ $usuario->hasRole('prefeitura') && $permission->name == 'contratos' ? 'checked disabled' : '' }}
+                                {{ $isChecked ? 'checked' : '' }}
                                 class="h-4 w-4 text-[#009496] focus:ring-[#009496] border-gray-300 rounded">
-                            <label for="permission_{{ $permission->id }}" class="block ml-2 text-sm text-gray-700">
+                            <label for="permission_{{ $permission->id }}" class="flex items-center gap-1.5 ml-2 text-sm text-gray-700 cursor-pointer">
                                 {{ $permission->name }}
-                                @if($usuario->hasRole('prefeitura') && $permission->name == 'contratos')
-                                    <span class="text-xs text-gray-500">(herdada da função Prefeitura)</span>
+                                @if($isViaRole && !$isDirect)
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-100 text-blue-700">
+                                        via role
+                                    </span>
+                                @elseif($isViaRole && $isDirect)
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-purple-100 text-purple-700">
+                                        role + direta
+                                    </span>
                                 @endif
                             </label>
                         </div>
