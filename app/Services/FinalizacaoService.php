@@ -65,17 +65,20 @@ class FinalizacaoService
             $this->salvarNaAtaRegistroPreco($processo, $homologacao, $vencedor, $data);
         }
 
-        // Os arquivos enviados (uploads) só podem ser movidos UMA vez: o temporário
-        // é consumido no primeiro move(). Quando há homologação, os anexos pertencem
-        // a ela; caso contrário, à Finalização. Evita o segundo move() no mesmo
-        // UploadedFile (que falharia com "was not uploaded due to an unknown error").
-        $finalizacao = $this->salvarNaFinalizacao($processo, $data, processarArquivos: $homologacao === null);
+        $finalizacao = $this->salvarNaFinalizacao($processo, $data);
 
         if ($homologacao) {
-            return $this->salvarNaHomologacao($processo, $homologacao, $data);
+            $homologacao = $this->salvarNaHomologacao($processo, $homologacao, $data);
         }
 
-        return $finalizacao;
+        // Move cada upload UMA única vez, para o alvo que de fato o armazena: campos
+        // existentes na Homologação (quando há) vão para ela; os demais, para a
+        // Finalização. Espelha a leitura em FinalizacaoPdfService::obterAnexos e evita
+        // mover o mesmo UploadedFile duas vezes (o temporário é consumido no 1º move(),
+        // o 2º falharia com "was not uploaded due to an unknown error").
+        $this->processarArquivos($data, $finalizacao, $homologacao);
+
+        return $homologacao ?? $finalizacao;
     }
 
     private function resolverVencedor(Processo $processo, array $data): ?Vencedor
@@ -139,14 +142,10 @@ class FinalizacaoService
         return $homologacao;
     }
 
-    private function salvarNaFinalizacao(Processo $processo, array $data, bool $processarArquivos = true): Finalizacao
+    private function salvarNaFinalizacao(Processo $processo, array $data): Finalizacao
     {
         $finalizacao = $processo->finalizacao ?? new Finalizacao();
         $finalizacao->processo_id = $processo->id;
-
-        if ($processarArquivos) {
-            $this->processarArquivos($data, $finalizacao);
-        }
 
         foreach ($data as $field => $value) {
             if (strpos($field, 'data_doc_') === 0) {
@@ -169,8 +168,6 @@ class FinalizacaoService
 
     private function salvarNaHomologacao(Processo $processo, Homologacao $homologacao, array $data): Homologacao
     {
-        $this->processarArquivos($data, $homologacao);
-
         foreach ($data as $field => $value) {
             if (strpos($field, 'data_doc_') === 0) {
                 $tipoDocumento = substr($field, 9);
@@ -194,12 +191,23 @@ class FinalizacaoService
         return $homologacao;
     }
 
-    private function processarArquivos(array $data, Model $alvo): void
+    /**
+     * Move cada upload para o alvo correto, UMA única vez. Um campo que pertence à
+     * Homologação (quando existe) é armazenado nela; os demais, na Finalização —
+     * espelhando a resolução de fonte em FinalizacaoPdfService::obterAnexos.
+     */
+    private function processarArquivos(array $data, Finalizacao $finalizacao, ?Homologacao $homologacao): void
     {
         foreach ($this->arquivosConfig as $campo => $metodo) {
-            if (isset($data[$campo]) && $data[$campo] instanceof \Illuminate\Http\UploadedFile) {
-                $this->{$metodo}($data[$campo], $alvo, $campo);
+            if (!isset($data[$campo]) || !($data[$campo] instanceof \Illuminate\Http\UploadedFile)) {
+                continue;
             }
+
+            $alvo = ($homologacao && in_array($campo, $homologacao->getFillable(), true))
+                ? $homologacao
+                : $finalizacao;
+
+            $this->{$metodo}($data[$campo], $alvo, $campo);
         }
     }
 
@@ -218,6 +226,7 @@ class FinalizacaoService
 
         $file->move($destinationPath, $filename);
         $alvo->{$campo} = 'uploads/anexos_finalizacao/' . $filename;
+        $alvo->save();
 
         Log::info("Arquivo salvo - Finalização: {$alvo->{$campo}}");
     }
