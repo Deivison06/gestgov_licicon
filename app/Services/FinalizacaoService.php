@@ -65,7 +65,11 @@ class FinalizacaoService
             $this->salvarNaAtaRegistroPreco($processo, $homologacao, $vencedor, $data);
         }
 
-        $finalizacao = $this->salvarNaFinalizacao($processo, $data);
+        // Os arquivos enviados (uploads) só podem ser movidos UMA vez: o temporário
+        // é consumido no primeiro move(). Quando há homologação, os anexos pertencem
+        // a ela; caso contrário, à Finalização. Evita o segundo move() no mesmo
+        // UploadedFile (que falharia com "was not uploaded due to an unknown error").
+        $finalizacao = $this->salvarNaFinalizacao($processo, $data, processarArquivos: $homologacao === null);
 
         if ($homologacao) {
             return $this->salvarNaHomologacao($processo, $homologacao, $data);
@@ -135,12 +139,14 @@ class FinalizacaoService
         return $homologacao;
     }
 
-    private function salvarNaFinalizacao(Processo $processo, array $data): Finalizacao
+    private function salvarNaFinalizacao(Processo $processo, array $data, bool $processarArquivos = true): Finalizacao
     {
         $finalizacao = $processo->finalizacao ?? new Finalizacao();
         $finalizacao->processo_id = $processo->id;
 
-        $this->processarArquivos($data, $finalizacao);
+        if ($processarArquivos) {
+            $this->processarArquivos($data, $finalizacao);
+        }
 
         foreach ($data as $field => $value) {
             if (strpos($field, 'data_doc_') === 0) {
