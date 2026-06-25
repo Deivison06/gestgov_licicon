@@ -863,7 +863,7 @@
         @if ($hasSelectedAssinantes)
             @php $assinantePrincipal = $assinantes[0]; @endphp
             <div class="signature-block">
-                <span style="font-weight: 700;">Assinado digitalmente por</span><br>
+                ___________________________________<br>
                 {{ $assinantePrincipal['responsavel'] }} <br>
                 {{ $assinantePrincipal['unidade_nome'] }}
             </div>

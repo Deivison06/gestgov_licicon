@@ -751,7 +751,7 @@
 
                 <div style="margin-top: 40px; text-align: center;">
                     <div class="signature-block" style="display: inline-block; margin: 0 40px;">
-                        <span style="font-weight: 700;">Assinado digitalmente por</span><br>
+                        ___________________________________<br>
                         <p style="line-height: 1.2;">
                             {{ $primeiroAssinante['responsavel'] }} <br>
                             <span>{{ $primeiroAssinante['unidade_nome'] }}</span>
@@ -1803,7 +1803,7 @@
             {{-- Renderiza apenas o primeiro assinante --}}
             <div style="margin-top:40px; text-align:center;">
                 <div class="signature-block" style="display:inline-block; margin:0 40px;">
-                    <span style="font-weight: 700;">Assinado digitalmente por</span><br>
+                    ___________________________________<br>
                     <p style="line-height:1.2; margin:0;">
                         {{ $primeiroAssinante['responsavel'] }}<br>
                         <span style="color:#4b5563;">{{ $primeiroAssinante['unidade_nome'] }}</span>
@@ -1905,7 +1905,7 @@
 
                 <div style="margin-top: 40px; text-align: center;">
                     <div class="signature-block" style="display: inline-block; margin: 0 40px;">
-                        <span style="font-weight: 700;">Assinado digitalmente por</span><br>
+                        ___________________________________<br>
                         <p style="line-height: 1.2;">
                             {{ $primeiroAssinante['responsavel'] }} <br>
                             <span>{{ $primeiroAssinante['unidade_nome'] }}</span>
@@ -2064,7 +2064,7 @@
 
             <div style="margin-top: 40px; text-align: center;">
                 <div class="signature-block" style="display: inline-block; margin: 0 40px;">
-                    <span style="font-weight: 700;">Assinado digitalmente por</span><br>
+                    ___________________________________<br>
                     <p style="line-height: 1.2;">
                         {{ $primeiroAssinante['responsavel'] }} <br>
                         <span>{{ $primeiroAssinante['unidade_nome'] }}</span>
