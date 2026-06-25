@@ -2625,6 +2625,16 @@
                 async saveField(field) {
                     console.log('Salvando campo:', field);
 
+                    // Evita envios duplicados simultâneos do MESMO campo. Uploads grandes
+                    // demoram; sem isso o usuário reclica e dispara vários uploads em
+                    // paralelo (todos travados), sem nenhum feedback.
+                    this._uploading = this._uploading || {};
+                    if (this._uploading[field]) {
+                        console.warn('Envio já em andamento para', field, '- ignorando clique.');
+                        showMessage('Envio de ' + field + ' já em andamento, aguarde...', 'info');
+                        return;
+                    }
+
                     // Lista de campos permitidos - INCLUIR TODOS OS CAMPOS NECESSÁRIOS
                     const allowedFields = [
                         // Campos de arquivo
@@ -2686,19 +2696,40 @@
                         console.log('Valor do campo texto:', this[field]);
                     }
 
+                    this._uploading[field] = true;
+
+                    // Feedback imediato — uploads grandes podem levar minutos.
+                    if (this.isFileField(field)) {
+                        const fi = document.getElementById(field);
+                        const nome = (fi && fi.files.length) ? fi.files[0].name : '';
+                        const mb = (fi && fi.files.length) ? Math.round(fi.files[0].size / 1048576) : 0;
+                        showMessage('Enviando ' + (nome || field) + (mb ? ' (' + mb + ' MB)' : '') + '... isso pode levar alguns minutos, não feche a página.', 'info');
+                    }
+
+                    // Timeout de segurança: se o servidor/proxy "engolir" o upload sem
+                    // responder, aborta e mostra erro em vez de travar para sempre.
+                    const ctrl = new AbortController();
+                    const timeoutId = setTimeout(() => ctrl.abort(), 20 * 60 * 1000);
+
                     try {
                         const response = await fetch("{{ route('admin.processos.finalizacao.store', $processo) }}", {
                             method: 'POST',
                             headers: {
                                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                             },
-                            body: formData
+                            body: formData,
+                            signal: ctrl.signal
                         });
 
-                        const responseData = await response.json();
-                        console.log('Resposta do servidor:', responseData);
+                        // Lê como texto e tenta JSON — assim respostas de erro do servidor
+                        // (413/504/500 em HTML) viram mensagem clara com o status, em vez
+                        // de cair silenciosamente em "nada aconteceu".
+                        const raw = await response.text();
+                        let responseData = null;
+                        try { responseData = raw ? JSON.parse(raw) : null; } catch (e) { responseData = null; }
+                        console.log('Resposta do servidor:', response.status, responseData ?? raw.slice(0, 300));
 
-                        if (response.ok && responseData.success) {
+                        if (response.ok && responseData && responseData.success) {
                             this.confirmed[field] = true;
 
                             if (responseData.data && responseData.data[field]) {
@@ -2717,14 +2748,24 @@
                             }
                         } else {
                             this.confirmed[field] = false;
-                            console.error('Erro ao salvar campo:', field, responseData);
-                            const errorMessage = responseData.message || 'Erro ao salvar ' + field;
+                            console.error('Erro ao salvar campo:', field, 'HTTP', response.status, raw.slice(0, 500));
+                            const errorMessage = (responseData && responseData.message)
+                                ? responseData.message
+                                : ('Falha ao salvar ' + field + ' (HTTP ' + response.status + '). Arquivo grande demais ou bloqueado pelo servidor.');
                             showMessage(errorMessage, 'error');
                         }
                     } catch (error) {
                         this.confirmed[field] = false;
-                        console.error('Erro de rede ao salvar campo:', field, error);
-                        showMessage('Erro de rede ao salvar ' + field, 'error');
+                        if (error.name === 'AbortError') {
+                            console.error('Upload abortado por timeout:', field);
+                            showMessage('O envio de ' + field + ' demorou demais e foi cancelado. Verifique o tamanho do arquivo e os limites do servidor.', 'error');
+                        } else {
+                            console.error('Erro de rede ao salvar campo:', field, error);
+                            showMessage('Erro de rede ao salvar ' + field, 'error');
+                        }
+                    } finally {
+                        clearTimeout(timeoutId);
+                        this._uploading[field] = false;
                     }
                 },
 
