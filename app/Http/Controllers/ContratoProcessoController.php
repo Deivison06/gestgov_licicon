@@ -692,6 +692,7 @@ class ContratoProcessoController extends Controller
         try {
             // Download por contrato específico (novo fluxo de múltiplos contratos).
             $contratoId = $request->query('contrato_id');
+            $documento = null; // Inicializa para evitar "Undefined variable" no fluxo por contrato_id
             if ($contratoId) {
                 $contrato = Contrato::where('processo_id', $processo->id)
                     ->where('id', $contratoId)
