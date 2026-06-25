@@ -120,6 +120,17 @@
     $dataInicio  = $datasItems->isNotEmpty()
         ? $datasItems->min()->format('d/m/Y')
         : $dataFim;
+
+    // Mapa de etp_item_id => nome do lote (apenas para ETPs com tipo_contratacao = 'lote')
+    $loteMap  = [];
+    $hasLotes = $processo->etp && $processo->etp->tipo_contratacao === 'lote';
+    if ($hasLotes) {
+        foreach ($processo->etp->lotes as $lote) {
+            foreach ($lote->itens as $etpItem) {
+                $loteMap[$etpItem->id] = $lote->nome;
+            }
+        }
+    }
 @endphp
 
 {{-- ── CABEÇALHO ──────────────────────────────────────────────── --}}
@@ -207,6 +218,11 @@
     $painel = is_array($detalhe->painel_preco_tce)
         ? $detalhe->painel_preco_tce
         : json_decode($detalhe->painel_preco_tce ?? '[]', true);
+    $painelPorLote = collect($painel ?? [])->groupBy(
+        fn($i) => $hasLotes ? ($loteMap[$i['etp_item_id'] ?? 0] ?? 'Sem Lote') : '__all__'
+    );
+    // Converte string BR "1.234,56" → float para somar totais de lote
+    $parseBrStr = fn($v) => (float) str_replace(',', '.', str_replace('.', '', $v ?? ''));
 @endphp
 <table>
     <thead>
@@ -222,17 +238,35 @@
         </tr>
     </thead>
     <tbody>
-        @forelse($painel ?? [] as $item)
-        <tr>
-            <td class="left">{{ $item['item'] ?? '' }}</td>
-            <td>{{ $item['valor_tce_1'] ?? '' }}</td>
-            <td>{{ $item['valor_tce_2'] ?? '' }}</td>
-            <td>{{ $item['valor_tce_3'] ?? '' }}</td>
-            <td><strong>{{ $item['media'] ?? '' }}</strong></td>
-        </tr>
-        @empty
+        @if($painelPorLote->isNotEmpty())
+            @foreach($painelPorLote as $loteNome => $itensLote)
+                @if($hasLotes)
+                <tr style="background-color: #c8d3da; border-top: 2px solid #607d8b;">
+                    <td colspan="5" style="text-align:left; font-weight:bold; padding: 5px 10px; font-size:8.5pt; border-left: 4px solid #607d8b;">{{ $loteNome }}</td>
+                </tr>
+                @endif
+                @foreach($itensLote as $item)
+                <tr>
+                    <td class="left">{{ $item['item'] ?? '' }}</td>
+                    <td>{{ $item['valor_tce_1'] ?? '' }}</td>
+                    <td>{{ $item['valor_tce_2'] ?? '' }}</td>
+                    <td>{{ $item['valor_tce_3'] ?? '' }}</td>
+                    <td><strong>{{ $item['media'] ?? '' }}</strong></td>
+                </tr>
+                @endforeach
+                @if($hasLotes)
+                @php
+                    $totalLoteTce = $itensLote->sum(fn($i) => $parseBrStr($i['media'] ?? ''));
+                @endphp
+                <tr style="background-color: #f0f0f0; border-top: 2px solid #607d8b;">
+                    <td colspan="4" style="text-align:right; font-weight:bold; padding-right:8px;">TOTAL DO LOTE</td>
+                    <td style="font-weight:bold;">R$ {{ number_format($totalLoteTce, 2, ',', '.') }}</td>
+                </tr>
+                @endif
+            @endforeach
+        @else
         <tr><td colspan="5" style="text-align:center;">Nenhum dado disponível</td></tr>
-        @endforelse
+        @endif
     </tbody>
 </table>
 
@@ -243,6 +277,11 @@
         ? $detalhe->fornecedor_local_precos
         : (json_decode($detalhe->fornecedor_local_precos ?? '[]', true) ?? []);
     $fmt = fn($v) => ($v !== null && $v !== '') ? 'R$ ' . number_format((float)$v, 2, ',', '.') : '—';
+    $flPorLote = collect($flPrecos)->groupBy(
+        fn($i) => $hasLotes ? ($loteMap[$i['etp_item_id'] ?? 0] ?? 'Sem Lote') : '__all__'
+    );
+    $calcMediaFL = fn($fl) => collect([$fl['f1_preco'] ?? null, $fl['f2_preco'] ?? null, $fl['f3_preco'] ?? null])
+        ->filter(fn($v) => $v !== null && $v !== '');
 @endphp
 <table>
     <thead>
@@ -258,161 +297,221 @@
         </tr>
     </thead>
     <tbody>
-        @forelse($flPrecos as $fl)
-        @php
-            $vals  = collect([$fl['f1_preco'] ?? null, $fl['f2_preco'] ?? null, $fl['f3_preco'] ?? null])
-                        ->filter(fn($v) => $v !== null && $v !== '');
-            $media = $vals->count() > 0 ? $vals->avg() : null;
-        @endphp
-        <tr>
-            <td class="left">{{ $fl['descricao'] ?? '' }}</td>
-            <td>{{ $fmt($fl['f1_preco'] ?? null) }}</td>
-            <td>{{ $fmt($fl['f2_preco'] ?? null) }}</td>
-            <td>{{ $fmt($fl['f3_preco'] ?? null) }}</td>
-            <td><strong>{{ $media !== null ? 'R$ ' . number_format($media, 2, ',', '.') : '—' }}</strong></td>
-        </tr>
-        @empty
+        @if($flPorLote->isNotEmpty())
+            @foreach($flPorLote as $loteNome => $itensLote)
+                @if($hasLotes)
+                <tr style="background-color: #c8d3da; border-top: 2px solid #607d8b;">
+                    <td colspan="5" style="text-align:left; font-weight:bold; padding: 5px 10px; font-size:8.5pt; border-left: 4px solid #607d8b;">{{ $loteNome }}</td>
+                </tr>
+                @endif
+                @php $totalLoteFL = 0; @endphp
+                @foreach($itensLote as $fl)
+                @php
+                    $vals  = $calcMediaFL($fl);
+                    $media = $vals->count() > 0 ? $vals->avg() : null;
+                    if ($media !== null) $totalLoteFL += $media;
+                @endphp
+                <tr>
+                    <td class="left">{{ $fl['descricao'] ?? '' }}</td>
+                    <td>{{ $fmt($fl['f1_preco'] ?? null) }}</td>
+                    <td>{{ $fmt($fl['f2_preco'] ?? null) }}</td>
+                    <td>{{ $fmt($fl['f3_preco'] ?? null) }}</td>
+                    <td><strong>{{ $media !== null ? 'R$ ' . number_format($media, 2, ',', '.') : '—' }}</strong></td>
+                </tr>
+                @endforeach
+                @if($hasLotes)
+                <tr style="background-color: #f0f0f0; border-top: 2px solid #607d8b;">
+                    <td colspan="4" style="text-align:right; font-weight:bold; padding-right:8px;">TOTAL DO LOTE</td>
+                    <td style="font-weight:bold;">R$ {{ number_format($totalLoteFL, 2, ',', '.') }}</td>
+                </tr>
+                @endif
+            @endforeach
+        @else
         <tr><td colspan="5" style="text-align:center;">Nenhum dado disponível</td></tr>
-        @endforelse
+        @endif
     </tbody>
 </table>
 
 {{-- ── TABELA CESTA DE PREÇOS ─────────────────────────────────── --}}
 @elseif($tipoRelatorio === 'cesta_preco')
 @php
-    $todosItens = $processo->pesquisaPrecoItens ?? collect();
-    $grupos     = $todosItens->groupBy(fn($i) => $i->etp_item_id
-        ? 'id_' . $i->etp_item_id
-        : 'desc_' . strtolower(trim($i->descricao)));
-    $numGrupo   = 0;
+    $todosItens   = $processo->pesquisaPrecoItens ?? collect();
+    $itensPorLote = $todosItens->groupBy(
+        fn($i) => $hasLotes ? ($loteMap[$i->etp_item_id ?? 0] ?? 'Sem Lote') : '__all__'
+    );
+    $numGrupo = 0;
 @endphp
 
-@forelse($grupos as $grupoItens)
-@php
-    $numGrupo++;
-    $primeiro    = $grupoItens->first();
-    $titulo      = $primeiro->descricao;
-    if ($primeiro->etp_item_id && $processo->etp) {
-        $etpItem = $processo->etp->all_itens->firstWhere('id', $primeiro->etp_item_id);
-        if ($etpItem) $titulo = $etpItem->descricao_item;
-    }
-    // PNCP primeiro, fornecedor local por último
-    $grupoItens = $grupoItens->sortBy(fn($i) => $i->orgao_nome === 'PREÇOS DO FORNECEDOR LOCAL' ? 1 : 0);
-    $precos  = $grupoItens->pluck('valor_unitario')->filter();
-    $media   = $precos->count() > 0 ? $precos->avg() : null;
-    $numRef  = 0;
-@endphp
-
-<p class="item-titulo">ITEM {{ $numGrupo }}: {{ $titulo }}</p>
-<table>
-    <thead>
-        <tr>
-            <th style="width:8%;">Nº DO<br>PREÇO<br>PESQUISADO</th>
-            <th style="width:35%;">ÓRGÃO PÚBLICO E IDENTIFICAÇÃO DO PROCESSO</th>
-            <th style="width:23%;">LINK DO PNCP</th>
-            <th style="width:12%;">DATA DA<br>LICITAÇÃO</th>
-            <th style="width:12%;">PREÇO</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach($grupoItens as $ref)
-        @php $numRef++; @endphp
-        @if($ref->orgao_nome === 'PREÇOS DO FORNECEDOR LOCAL')
-        <tr>
-            <td>{{ $numRef }}</td>
-            <td class="left">PREÇOS DO FORNECEDOR LOCAL
-                @if($ref->fornecedor_nome) <br><small style="font-size:7pt;">{{ $ref->fornecedor_nome }}</small>@endif
-            </td>
-            <td>---------</td>
-            <td>----------</td>
-            <td>R$ {{ number_format($ref->valor_unitario, 2, ',', '.') }}</td>
-        </tr>
-        @else
-        <tr>
-            <td>{{ $numRef }}</td>
-            <td class="left">{{ $ref->orgao_nome }}
-                @php
-                    $identificacao = trim(($ref->modalidade ? $ref->modalidade . ' ' : '') . ($ref->numero_processo ?? ''));
-                @endphp
-                @if($identificacao) <br><small style="font-size:7pt;">{{ $identificacao }}</small>@endif
-            </td>
-            <td style="font-size:6.5pt; word-break:break-all;">{{ $ref->link_pncp ?? '—' }}</td>
-            <td>{{ $ref->data_publicacao ? \Carbon\Carbon::parse($ref->data_publicacao)->format('d/m/Y') : '—' }}</td>
-            <td>R$ {{ number_format($ref->valor_unitario, 2, ',', '.') }}</td>
-        </tr>
+@if($todosItens->isNotEmpty())
+    @foreach($itensPorLote as $loteNomeCesta => $itensDolote)
+        @if($hasLotes)
+        <div style="margin: 14pt 0 0; padding: 5px 10px 5px 14px; background-color: #c8d3da; border-left: 4px solid #607d8b; font-weight:bold; font-size:9pt;">{{ $loteNomeCesta }}</div>
         @endif
+        @php
+            $grupos = $itensDolote->groupBy(fn($i) => $i->etp_item_id
+                ? 'id_' . $i->etp_item_id
+                : 'desc_' . strtolower(trim($i->descricao)));
+            $totalLoteCesta = 0;
+        @endphp
+        @foreach($grupos as $grupoItens)
+        @php
+            $numGrupo++;
+            $primeiro    = $grupoItens->first();
+            $titulo      = $primeiro->descricao;
+            if ($primeiro->etp_item_id && $processo->etp) {
+                $etpItem = $processo->etp->all_itens->firstWhere('id', $primeiro->etp_item_id);
+                if ($etpItem) $titulo = $etpItem->descricao_item;
+            }
+            // PNCP primeiro, fornecedor local por último
+            $grupoItens = $grupoItens->sortBy(fn($i) => $i->orgao_nome === 'PREÇOS DO FORNECEDOR LOCAL' ? 1 : 0);
+            $precos  = $grupoItens->pluck('valor_unitario')->filter();
+            $media   = $precos->count() > 0 ? $precos->avg() : null;
+            if ($media !== null) $totalLoteCesta += $media;
+            $numRef  = 0;
+        @endphp
+
+        <p class="item-titulo">ITEM {{ $numGrupo }}: {{ $titulo }}</p>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:8%;">Nº DO<br>PREÇO<br>PESQUISADO</th>
+                    <th style="width:35%;">ÓRGÃO PÚBLICO E IDENTIFICAÇÃO DO PROCESSO</th>
+                    <th style="width:23%;">LINK DO PNCP</th>
+                    <th style="width:12%;">DATA DA<br>LICITAÇÃO</th>
+                    <th style="width:12%;">PREÇO</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($grupoItens as $ref)
+                @php $numRef++; @endphp
+                @if($ref->orgao_nome === 'PREÇOS DO FORNECEDOR LOCAL')
+                <tr>
+                    <td>{{ $numRef }}</td>
+                    <td class="left">PREÇOS DO FORNECEDOR LOCAL
+                        @if($ref->fornecedor_nome) <br><small style="font-size:7pt;">{{ $ref->fornecedor_nome }}</small>@endif
+                    </td>
+                    <td>---------</td>
+                    <td>----------</td>
+                    <td>R$ {{ number_format($ref->valor_unitario, 2, ',', '.') }}</td>
+                </tr>
+                @else
+                <tr>
+                    <td>{{ $numRef }}</td>
+                    <td class="left">{{ $ref->orgao_nome }}
+                        @php
+                            $identificacao = trim(($ref->modalidade ? $ref->modalidade . ' ' : '') . ($ref->numero_processo ?? ''));
+                        @endphp
+                        @if($identificacao) <br><small style="font-size:7pt;">{{ $identificacao }}</small>@endif
+                    </td>
+                    <td style="font-size:6.5pt; word-break:break-all;">{{ $ref->link_pncp ?? '—' }}</td>
+                    <td>{{ $ref->data_publicacao ? \Carbon\Carbon::parse($ref->data_publicacao)->format('d/m/Y') : '—' }}</td>
+                    <td>R$ {{ number_format($ref->valor_unitario, 2, ',', '.') }}</td>
+                </tr>
+                @endif
+                @endforeach
+                <tr>
+                    <td colspan="4" style="text-align:right; font-weight:bold; padding-right:8px;">MÉDIA DOS PREÇOS OBTIDOS</td>
+                    <td style="font-weight:bold;">{{ $media !== null ? 'R$ ' . number_format($media, 2, ',', '.') : '—' }}</td>
+                </tr>
+            </tbody>
+        </table>
         @endforeach
-        <tr>
-            <td colspan="4" style="text-align:right; font-weight:bold; padding-right:8px;">MÉDIA DOS PREÇOS OBTIDOS</td>
-            <td style="font-weight:bold;">{{ $media !== null ? 'R$ ' . number_format($media, 2, ',', '.') : '—' }}</td>
-        </tr>
-    </tbody>
-</table>
-@empty
+        @if($hasLotes)
+        <table style="margin-top: -8pt; margin-bottom: 10pt;">
+            <tr style="background-color: #f0f0f0; border-top: 2px solid #607d8b;">
+                <td style="text-align:right; font-weight:bold; padding: 4px 8px; width:88%;">TOTAL DO LOTE</td>
+                <td style="font-weight:bold; text-align:center; width:12%;">R$ {{ number_format($totalLoteCesta, 2, ',', '.') }}</td>
+            </tr>
+        </table>
+        @endif
+    @endforeach
+@else
 <p style="text-align:center;">Nenhuma referência de preço coletada.</p>
-@endforelse
+@endif
 
 {{-- ── TABELA PNCP ─────────────────────────────────────────────── --}}
 @elseif($tipoRelatorio === 'pncp')
 @php
-    $itensPncp  = ($processo->pesquisaPrecoItens ?? collect())
-                    ->where('orgao_nome', '!=', 'PREÇOS DO FORNECEDOR LOCAL');
-    $grupos     = $itensPncp->groupBy(fn($i) => $i->etp_item_id
-        ? 'id_' . $i->etp_item_id
-        : 'desc_' . strtolower(trim($i->descricao)));
-    $numGrupo   = 0;
+    $itensPncp        = ($processo->pesquisaPrecoItens ?? collect())
+                          ->where('orgao_nome', '!=', 'PREÇOS DO FORNECEDOR LOCAL');
+    $itensPorLotePncp = $itensPncp->groupBy(
+        fn($i) => $hasLotes ? ($loteMap[$i->etp_item_id ?? 0] ?? 'Sem Lote') : '__all__'
+    );
+    $numGrupo = 0;
 @endphp
 
-@forelse($grupos as $grupoItens)
-@php
-    $numGrupo++;
-    $primeiro = $grupoItens->first();
-    $titulo   = $primeiro->descricao;
-    if ($primeiro->etp_item_id && $processo->etp) {
-        $etpItem = $processo->etp->all_itens->firstWhere('id', $primeiro->etp_item_id);
-        if ($etpItem) $titulo = $etpItem->descricao_item;
-    }
-    $precos  = $grupoItens->pluck('valor_unitario')->filter();
-    $media   = $precos->count() > 0 ? $precos->avg() : null;
-    $numRef  = 0;
-@endphp
+@if($itensPncp->isNotEmpty())
+    @foreach($itensPorLotePncp as $loteNomePncp => $itensDolotePncp)
+        @if($hasLotes)
+        <div style="margin: 14pt 0 0; padding: 5px 10px 5px 14px; background-color: #c8d3da; border-left: 4px solid #607d8b; font-weight:bold; font-size:9pt;">{{ $loteNomePncp }}</div>
+        @endif
+        @php
+            $grupos = $itensDolotePncp->groupBy(fn($i) => $i->etp_item_id
+                ? 'id_' . $i->etp_item_id
+                : 'desc_' . strtolower(trim($i->descricao)));
+            $totalLotePncp = 0;
+        @endphp
+        @foreach($grupos as $grupoItens)
+        @php
+            $numGrupo++;
+            $primeiro = $grupoItens->first();
+            $titulo   = $primeiro->descricao;
+            if ($primeiro->etp_item_id && $processo->etp) {
+                $etpItem = $processo->etp->all_itens->firstWhere('id', $primeiro->etp_item_id);
+                if ($etpItem) $titulo = $etpItem->descricao_item;
+            }
+            $precos  = $grupoItens->pluck('valor_unitario')->filter();
+            $media   = $precos->count() > 0 ? $precos->avg() : null;
+            if ($media !== null) $totalLotePncp += $media;
+            $numRef  = 0;
+        @endphp
 
-<p class="item-titulo">ITEM {{ $numGrupo }}: {{ $titulo }}</p>
-<table>
-    <thead>
-        <tr>
-            <th style="width:8%;">Nº DO<br>PREÇO<br>PESQUISADO</th>
-            <th style="width:37%;">ÓRGÃO PÚBLICO E IDENTIFICAÇÃO DO PROCESSO</th>
-            <th style="width:23%;">LINK DO PNCP</th>
-            <th style="width:12%;">DATA DA<br>LICITAÇÃO</th>
-            <th style="width:12%;">PREÇO</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach($grupoItens as $ref)
-        @php $numRef++; @endphp
-        <tr>
-            <td>{{ $numRef }}</td>
-            <td class="left">{{ $ref->orgao_nome }}
-                @php
-                    $identificacao = trim(($ref->modalidade ? $ref->modalidade . ' ' : '') . ($ref->numero_processo ?? ''));
-                @endphp
-                @if($identificacao) <br><small style="font-size:7pt;">{{ $identificacao }}</small>@endif
-            </td>
-            <td style="font-size:6.5pt; word-break:break-all;">{{ $ref->link_pncp ?? '—' }}</td>
-            <td>{{ $ref->data_publicacao ? \Carbon\Carbon::parse($ref->data_publicacao)->format('d/m/Y') : '—' }}</td>
-            <td>R$ {{ number_format($ref->valor_unitario, 2, ',', '.') }}</td>
-        </tr>
+        <p class="item-titulo">ITEM {{ $numGrupo }}: {{ $titulo }}</p>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:8%;">Nº DO<br>PREÇO<br>PESQUISADO</th>
+                    <th style="width:37%;">ÓRGÃO PÚBLICO E IDENTIFICAÇÃO DO PROCESSO</th>
+                    <th style="width:23%;">LINK DO PNCP</th>
+                    <th style="width:12%;">DATA DA<br>LICITAÇÃO</th>
+                    <th style="width:12%;">PREÇO</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($grupoItens as $ref)
+                @php $numRef++; @endphp
+                <tr>
+                    <td>{{ $numRef }}</td>
+                    <td class="left">{{ $ref->orgao_nome }}
+                        @php
+                            $identificacao = trim(($ref->modalidade ? $ref->modalidade . ' ' : '') . ($ref->numero_processo ?? ''));
+                        @endphp
+                        @if($identificacao) <br><small style="font-size:7pt;">{{ $identificacao }}</small>@endif
+                    </td>
+                    <td style="font-size:6.5pt; word-break:break-all;">{{ $ref->link_pncp ?? '—' }}</td>
+                    <td>{{ $ref->data_publicacao ? \Carbon\Carbon::parse($ref->data_publicacao)->format('d/m/Y') : '—' }}</td>
+                    <td>R$ {{ number_format($ref->valor_unitario, 2, ',', '.') }}</td>
+                </tr>
+                @endforeach
+                <tr>
+                    <td colspan="4" style="text-align:right; font-weight:bold; padding-right:8px;">MÉDIA DOS PREÇOS OBTIDOS</td>
+                    <td style="font-weight:bold;">{{ $media !== null ? 'R$ ' . number_format($media, 2, ',', '.') : '—' }}</td>
+                </tr>
+            </tbody>
+        </table>
         @endforeach
-        <tr>
-            <td colspan="4" style="text-align:right; font-weight:bold; padding-right:8px;">MÉDIA DOS PREÇOS OBTIDOS</td>
-            <td style="font-weight:bold;">{{ $media !== null ? 'R$ ' . number_format($media, 2, ',', '.') : '—' }}</td>
-        </tr>
-    </tbody>
-</table>
-@empty
+        @if($hasLotes)
+        <table style="margin-top: -8pt; margin-bottom: 10pt;">
+            <tr style="background-color: #f0f0f0; border-top: 2px solid #607d8b;">
+                <td style="text-align:right; font-weight:bold; padding: 4px 8px; width:88%;">TOTAL DO LOTE</td>
+                <td style="font-weight:bold; text-align:center; width:12%;">R$ {{ number_format($totalLotePncp, 2, ',', '.') }}</td>
+            </tr>
+        </table>
+        @endif
+    @endforeach
+@else
 <p style="text-align:center;">Nenhuma referência de preço coletada no PNCP.</p>
-@endforelse
+@endif
 
 @endif
 {{-- /fim tabelas --}}
