@@ -938,8 +938,7 @@
                     </a>
                     @endif
 
-                    @if(auth()->user()->hasAnyRole(['diretor_licicon', 'gerente_licicon', 'colaborador_licicon', 'prefeitura']))
-                    {{-- Central de Assinaturas (qualquer user que seja assinante) --}}
+                    {{-- Central de Assinaturas (qualquer user que seja assinante, independente de papel) --}}
                     @if(auth()->user()->is_assinante)
                         @php
                             // Contagem de pendências do user logado (1 query por request).
@@ -958,7 +957,6 @@
                                 </span>
                             @endif
                         </a>
-                    @endif
                     @endif
 
                     @if(auth()->user()->hasAnyRole(['diretor_licicon', 'gerente_licicon', 'colaborador_licicon']))
