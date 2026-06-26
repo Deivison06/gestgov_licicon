@@ -1047,13 +1047,27 @@ class FinalizacaoPdfService
             $listaArquivos = tempnam(sys_get_temp_dir(), 'gs_list_finalizacao_');
             file_put_contents($listaArquivos, implode("\n", $arquivosValidos));
 
+            // Tenta pdfunite primeiro (Extremamente mais rápido, não re-encoda)
+            $returnCode = 0;
+            exec('command -v pdfunite', $out, $returnCode);
+            if ($returnCode === 0) {
+                $arquivosStr = implode(' ', array_map('escapeshellarg', $arquivosValidos));
+                $cmdUnite = "pdfunite {$arquivosStr} " . escapeshellarg($outputPath);
+                Log::info('Executando pdfunite (Alta velocidade)', ['comando' => $cmdUnite]);
+                exec($cmdUnite . ' 2>&1', $output, $returnCode);
+                if ($returnCode === 0 && file_exists($outputPath) && filesize($outputPath) > 0) {
+                    return true;
+                }
+            }
+
+            // Fallback Ghostscript (Otimizado, sem prepress para ser mais rápido)
             $comando = sprintf(
-                'gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -dPDFSETTINGS=/prepress -sOutputFile="%s" @"%s"',
+                'gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -dFastWebView -dCompatibilityLevel=1.4 -sOutputFile="%s" @"%s"',
                 $outputPath,
                 $listaArquivos
             );
 
-            Log::info('Executando Ghostscript - Finalização', [
+            Log::info('Executando Ghostscript (Fallback)', [
                 'comando' => $comando,
                 'quantidade_arquivos' => count($arquivosValidos)
             ]);
@@ -1066,16 +1080,15 @@ class FinalizacaoPdfService
             $outputTamanho = $outputExiste ? filesize($outputPath) : 0;
 
             if ($returnCode === 0 && $outputExiste && $outputTamanho > 0) {
-                Log::info('PDFs mesclados com sucesso usando Ghostscript - Finalização', [
+                Log::info('PDFs mesclados com sucesso', [
                     'arquivo_saida' => $outputPath,
                     'tamanho' => $outputTamanho
                 ]);
                 return true;
             } else {
-                Log::error('Erro ao mesclar PDFs com Ghostscript - Finalização', [
+                Log::error('Erro ao mesclar PDFs', [
                     'return_code' => $returnCode,
-                    'arquivo_saida_existe' => $outputExiste,
-                    'arquivo_saida_tamanho' => $outputTamanho
+                    'output' => implode("\n", $output)
                 ]);
                 return false;
             }
@@ -1185,7 +1198,7 @@ class FinalizacaoPdfService
                 'processo_id' => $processo->id,
                 'paginas_inicializacao' => $processo->contTotalPage ?? 0,
                 'paginas_finalizacao' => $paginasFinalizacao,
-                'total_para_contrato' => $totalPaginas
+                'total_para_contrato' => ($processo->contTotalPage ?? 0) + $paginasFinalizacao
             ]);
         } catch (\Exception $e) {
             Log::error('Erro ao atualizar contador para contrato', [

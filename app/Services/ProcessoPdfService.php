@@ -833,17 +833,30 @@ class ProcessoPdfService extends AbstractService
             $listaArquivos = tempnam(sys_get_temp_dir(), 'gs_list_');
             file_put_contents($listaArquivos, implode("\n", $arquivosValidos));
 
+            // Tenta pdfunite primeiro (Extremamente mais rápido, não re-encoda)
+            $returnCode = 0;
+            exec('command -v pdfunite', $out, $returnCode);
+            if ($returnCode === 0) {
+                $arquivosStr = implode(' ', array_map('escapeshellarg', $arquivosValidos));
+                $cmdUnite = "pdfunite {$arquivosStr} " . escapeshellarg($outputPath);
+                Log::info('Executando pdfunite (Alta velocidade)', ['comando' => $cmdUnite]);
+                exec($cmdUnite . ' 2>&1', $output, $returnCode);
+                if ($returnCode === 0 && file_exists($outputPath) && filesize($outputPath) > 0) {
+                    return true;
+                }
+            }
+
+            // Fallback Ghostscript (Otimizado, sem prepress para ser mais rápido)
             $comando = sprintf(
-                'gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -dPDFSETTINGS=/prepress -sOutputFile="%s" @"%s"',
+                'gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -dFastWebView -dCompatibilityLevel=1.4 -sOutputFile="%s" @"%s"',
                 $outputPath,
                 $listaArquivos
             );
 
-            Log::info('Executando Ghostscript - COMANDO', [
+            Log::info('Executando Ghostscript (Fallback)', [
                 'comando' => $comando,
                 'arquivos_entrada' => $arquivosValidos,
-                'quantidade_arquivos' => count($arquivosValidos),
-                'arquivo_saida' => $outputPath
+                'quantidade_arquivos' => count($arquivosValidos)
             ]);
 
             $output = [];
@@ -854,20 +867,15 @@ class ProcessoPdfService extends AbstractService
             $outputTamanho = $outputExiste ? filesize($outputPath) : 0;
 
             if ($returnCode === 0 && $outputExiste && $outputTamanho > 0) {
-                Log::info('PDFs mesclados com sucesso usando Ghostscript', [
+                Log::info('PDFs mesclados com sucesso', [
                     'arquivo_saida' => $outputPath,
-                    'tamanho' => $outputTamanho,
-                    'return_code' => $returnCode,
-                    'output_ghostscript' => implode("\n", array_slice($output, 0, 10))
+                    'tamanho' => $outputTamanho
                 ]);
                 return true;
             } else {
-                Log::error('Erro ao mesclar PDFs com Ghostscript', [
+                Log::error('Erro ao mesclar PDFs', [
                     'return_code' => $returnCode,
-                    'output' => implode("\n", $output),
-                    'arquivos_entrada' => $arquivosValidos,
-                    'arquivo_saida_existe' => $outputExiste,
-                    'arquivo_saida_tamanho' => $outputTamanho
+                    'output' => implode("\n", $output)
                 ]);
                 return false;
             }
