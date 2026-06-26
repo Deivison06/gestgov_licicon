@@ -1097,12 +1097,19 @@ class FinalizacaoPdfService
         $paginaAtual = 1;
 
         try {
+            Log::info("Iniciando mesclarECarimbarEmLote - {$fase}", [
+                'processo_id' => $processo->id,
+                'total_arquivos' => count($arquivos)
+            ]);
+
             $pageCountTotal = 0;
             foreach ($arquivos as $arquivo) {
                 if (file_exists($arquivo) && filesize($arquivo) > 0) {
                     $pageCountTotal += $this->contarPaginasPdf($arquivo);
                 }
             }
+
+            Log::info("Total de páginas a carimbar calculado: {$pageCountTotal}");
 
             if ($pageCountTotal === 0) {
                 return null;
@@ -1115,6 +1122,8 @@ class FinalizacaoPdfService
 
                 $pageCount = $this->contarPaginasPdf($arquivo);
                 if ($pageCount === 0) continue;
+
+                Log::info("Carimbando arquivo", ['arquivo' => basename($arquivo), 'paginas' => $pageCount]);
 
                 for ($i = 1; $i <= $pageCount; $i += $chunkSize) {
                     $pdf = new Fpdi();
@@ -1142,9 +1151,11 @@ class FinalizacaoPdfService
                 }
             }
 
+            Log::info("Mesclando os chunks gerados via Ghostscript", ['total_chunks' => count($chunksTemp)]);
             $sucesso = $this->mesclarPdfsComGhostscript($chunksTemp, $caminhoSaida);
 
             if ($sucesso && file_exists($caminhoSaida) && filesize($caminhoSaida) > 0) {
+                Log::info("PDF mesclado e carimbado gerado com sucesso", ['caminho_saida' => $caminhoSaida]);
                 return $caminhoSaida;
             }
 
