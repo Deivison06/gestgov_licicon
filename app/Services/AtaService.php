@@ -3,61 +3,18 @@
 namespace App\Services;
 
 use App\Models\Processo;
-use App\Models\Prefeitura;
-use App\Models\Documento;
-use App\Models\LoteContratado;
-use App\Models\EstoqueLote;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
+use App\Repositories\AtaRepository;
 
-class AtaService
+class AtaService extends AbstractService
 {
+    public function __construct(
+        private AtaRepository $repo
+    ) {
+    }
+
     public function getProcessosFiltrados($prefeituraId = null, $processoId = null, $search = null)
     {
-        $query = Processo::with([
-            'prefeitura',
-            'lotesContratados',
-            'lotes',
-            'user',
-            'vencedores'
-        ]);
-
-        // 1. FILTROS GLOBAIS (Sempre aplicados com AND)
-        // Use ->value se for um Backed Enum (PHP 8.1+)
-        $query->where('modalidade', \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO->value ?? \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO);
-
-        $query->whereHas('detalhe', function($q) {
-            $q->where('tipo_srp', 'sim');
-        });
-
-        $query->has('vencedores');
-
-        // 2. FILTROS ESPECÍFICOS
-        if ($prefeituraId) {
-            $query->where('prefeitura_id', $prefeituraId);
-        }
-
-        if ($processoId) {
-            $query->where('id', $processoId);
-        }
-
-        // 3. FILTRO DE PESQUISA (Agrupado para não quebrar os filtros acima)
-        if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('objeto', 'like', "%{$search}%")
-                ->orWhere('numero_processo', 'like', "%{$search}%")
-                ->orWhere('numero_procedimento', 'like', "%{$search}%")
-                ->orWhereHas('prefeitura', function($q2) use ($search) {
-                    $q2->where('nome', 'like', "%{$search}%")
-                        ->orWhere('cidade', 'like', "%{$search}%");
-                })
-                ->orWhereHas('vencedores', function($q3) use ($search) {
-                    $q3->where('razao_social', 'like', "%{$search}%");
-                });
-            });
-        }
-
-        return $query->orderBy('created_at', 'desc')->get();
+        return $this->repo->processosFiltrados($prefeituraId, $processoId, $search);
     }
 
 
@@ -77,16 +34,11 @@ class AtaService
         $dadosAtas = $this->prepararDadosAtaTodosLotes($processo);
         $contratacoes = $this->carregarContratacoesPendentes($processo);
 
-        $documentos = Documento::where('processo_id', $processo->id)
-            ->where('tipo_documento', 'contrato')
-            ->orderBy('gerado_em', 'desc')
-            ->get();
+        $documentos = $this->repo->documentosContrato($processo);
 
-        $dadosAta = Documento::where('processo_id', $processo->id)
-            ->where('tipo_documento', 'contrato')
-            ->first();
+        $dadosAta = $this->repo->primeiroDocumentoContrato($processo);
 
-        $contrato = \App\Models\Contrato::where('processo_id', $processo->id)->first();
+        $contrato = $this->repo->contratoDoProcesso($processo);
 
         $totalContratos = $documentos->count();
 
@@ -95,13 +47,9 @@ class AtaService
             return (float) $lote->quantidade * (float) $lote->vl_unit;
         });
 
-        $valorRealContratado = (float) LoteContratado::where('processo_id', $processo->id)
-            ->where('status', 'CONTRATADO')
-            ->sum('valor_total');
-            
-        $valorPendenteContratacao = (float) LoteContratado::where('processo_id', $processo->id)
-            ->where('status', 'PENDENTE')
-            ->sum('valor_total');
+        $valorRealContratado = $this->repo->somaLotesContratadosPorStatus($processo->id, 'CONTRATADO');
+
+        $valorPendenteContratacao = $this->repo->somaLotesContratadosPorStatus($processo->id, 'PENDENTE');
 
         $saldoAContratar = $valorLicitado - $valorRealContratado;
 
@@ -148,27 +96,7 @@ class AtaService
 
     public function getProcessosParaDashboard(?string $prefeituraId = null)
     {
-        $query = Processo::query()
-            ->with([
-                'prefeitura',
-                'lotesContratados' => function($query) {
-                    $query->whereIn('status', ['PENDENTE', 'CONTRATADO']);
-                }
-            ]);
-
-        // FILTRO OBRIGATÓRIO: Apenas Pregão Eletrônico
-        $query->where('modalidade', \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO);
-
-        // FILTRO OBRIGATÓRIO: Apenas do tipo SRP
-        $query->whereHas('detalhe', function($q) {
-            $q->where('tipo_srp', 'sim');
-        });
-
-        if ($prefeituraId) {
-            $query->where('prefeitura_id', $prefeituraId);
-        }
-
-        return $query->orderBy('created_at', 'desc')->get();
+        return $this->repo->processosParaDashboard($prefeituraId);
     }
 
     public function calcularEstatisticas($processos): array
@@ -192,12 +120,7 @@ class AtaService
 
     private function carregarContratacoesPendentes(Processo $processo)
     {
-        return LoteContratado::where('processo_id', $processo->id)
-            ->where('status', 'PENDENTE')
-            ->with(['lote', 'vencedor'])
-            ->orderBy('created_at', 'desc')
-            ->get()
-            ->groupBy('vencedor_id');
+        return $this->repo->contratacoesPendentes($processo);
     }
 
     private function prepararDadosAtaTodosLotes(Processo $processo): array
@@ -217,9 +140,7 @@ class AtaService
                 ->where('status', 'PENDENTE')
                 ->sum('quantidade_contratada');
 
-            $estoque = EstoqueLote::where('lote_id', $lote->id)
-                ->where('processo_id', $processo->id)
-                ->first();
+            $estoque = $this->repo->estoqueLote($lote->id, $processo->id);
 
             // O Licitado é fixo do Lote
             $quantidadeLicitada = (float) $lote->quantidade;

@@ -4,15 +4,20 @@ namespace App\Services;
 
 use App\Models\Processo;
 use App\Models\Finalizacao;
-use App\Models\Documento;
 use App\Models\Homologacao;
 use App\Models\Vencedor;
-use App\Models\AtaRegistroPreco;
+use App\Repositories\FinalizacaoRepository;
+use App\Support\FileStorage;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
 
-class FinalizacaoService
+class FinalizacaoService extends AbstractService
 {
+    public function __construct(
+        private FinalizacaoRepository $repo
+    ) {
+    }
+
     protected array $arquivosConfig = [
         'anexo_atos_sessao' => 'salvarAnexo',
         'anexo_proposta' => 'salvarAnexo',
@@ -88,9 +93,7 @@ class FinalizacaoService
             return null;
         }
 
-        return Vencedor::where('processo_id', $processo->id)
-            ->where('id', $vencedorId)
-            ->first();
+        return $this->repo->acharVencedor($processo->id, $vencedorId);
     }
 
     /**
@@ -103,11 +106,7 @@ class FinalizacaoService
         Vencedor $vencedor,
         array $data
     ): void {
-        $ata = AtaRegistroPreco::firstOrNew([
-            'homologacao_id' => $homologacao->id,
-            'vencedor_id' => $vencedor->id,
-        ]);
-        $ata->processo_id = $processo->id;
+        $ata = $this->repo->ataParaUpsert($processo->id, $homologacao->id, $vencedor->id);
 
         foreach ($this->camposDaAta as $campo) {
             if (array_key_exists($campo, $data)) {
@@ -131,9 +130,7 @@ class FinalizacaoService
             return null;
         }
 
-        $homologacao = Homologacao::where('processo_id', $processo->id)
-            ->where('id', $homologacaoId)
-            ->first();
+        $homologacao = $this->repo->acharHomologacao($processo->id, $homologacaoId);
 
         if (!$homologacao) {
             throw new \DomainException('Homologação não pertence a este processo.');
@@ -144,16 +141,13 @@ class FinalizacaoService
 
     private function salvarNaFinalizacao(Processo $processo, array $data): Finalizacao
     {
-        $finalizacao = $processo->finalizacao ?? new Finalizacao();
+        $finalizacao = $this->repo->finalizacaoDoProcesso($processo);
         $finalizacao->processo_id = $processo->id;
 
         foreach ($data as $field => $value) {
             if (strpos($field, 'data_doc_') === 0) {
                 $tipoDocumento = substr($field, 9);
-                Documento::updateOrCreate(
-                    ['processo_id' => $processo->id, 'tipo_documento' => $tipoDocumento, 'homologacao_id' => null],
-                    ['data_selecionada' => $value]
-                );
+                $this->repo->upsertDataDocumento($processo->id, null, $tipoDocumento, $value);
                 continue;
             }
 
@@ -171,14 +165,7 @@ class FinalizacaoService
         foreach ($data as $field => $value) {
             if (strpos($field, 'data_doc_') === 0) {
                 $tipoDocumento = substr($field, 9);
-                Documento::updateOrCreate(
-                    [
-                        'processo_id' => $processo->id,
-                        'homologacao_id' => $homologacao->id,
-                        'tipo_documento' => $tipoDocumento,
-                    ],
-                    ['data_selecionada' => $value]
-                );
+                $this->repo->upsertDataDocumento($processo->id, $homologacao->id, $tipoDocumento, $value);
                 continue;
             }
 
@@ -217,15 +204,7 @@ class FinalizacaoService
             return;
         }
 
-        $filename = $campo . '_' . time() . '.' . $file->getClientOriginalExtension();
-        $destinationPath = public_path('uploads/anexos_finalizacao');
-
-        if (!file_exists($destinationPath)) {
-            mkdir($destinationPath, 0777, true);
-        }
-
-        $file->move($destinationPath, $filename);
-        $alvo->{$campo} = 'uploads/anexos_finalizacao/' . $filename;
+        $alvo->{$campo} = FileStorage::salvar($file, 'uploads/anexos_finalizacao', $campo);
         $alvo->save();
 
         Log::info("Arquivo salvo - Finalização: {$alvo->{$campo}}");

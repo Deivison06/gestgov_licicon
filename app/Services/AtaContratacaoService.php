@@ -10,7 +10,7 @@ use App\Models\EstoqueLote;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-class AtaContratacaoService
+class AtaContratacaoService extends AbstractService
 {
     public function getLotesDisponiveis(Processo $processo, $vencedorId): array
     {

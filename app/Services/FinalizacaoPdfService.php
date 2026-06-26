@@ -360,17 +360,19 @@ class FinalizacaoPdfService
         $nomeArquivo = "processo_finalizacao_" . str_replace(['/', '\\'], '_', $processo->numero_processo) . "_todos_documentos_" . now()->format('Ymd_His') . '.pdf';
         $caminhoArquivo = public_path('uploads/documentos_finalizacao/' . $nomeArquivo);
 
+        $caminhoCarimbado = $this->mesclarECarimbarEmLote($arquivos, $caminhoArquivo, $processo, 'finalizar');
+
+        if ($caminhoCarimbado) {
+            $pageCount = $this->contarPaginasPdf($caminhoCarimbado);
+            $this->atualizarContadorContrato($processo, $pageCount);
+            return $caminhoCarimbado;
+        }
+
         $sucesso = $this->mesclarPdfsComGhostscript($arquivos, $caminhoArquivo);
 
         if ($sucesso) {
-            $caminhoCarimbado = $this->adicionarCarimboAoPdfComGhostscript($caminhoArquivo, $processo);
-
-            if ($caminhoCarimbado) {
-                return $caminhoCarimbado;
-            } else {
-                Log::warning('PDF mesclado com Ghostscript sem carimbo - Finalização', ['processo_id' => $processo->id]);
-                return $caminhoArquivo;
-            }
+            Log::warning('PDF mesclado com Ghostscript sem carimbo - Finalização', ['processo_id' => $processo->id]);
+            return $caminhoArquivo;
         } else {
             throw new \Exception('Erro ao mesclar documentos com Ghostscript');
         }
@@ -1089,70 +1091,68 @@ class FinalizacaoPdfService
         }
     }
 
-    private function adicionarCarimboAoPdfComGhostscript(string $caminhoPdf, Processo $processo): ?string
+    private function mesclarECarimbarEmLote(array $arquivos, string $caminhoSaida, Processo $processo, string $fase = 'finalizar'): ?string
     {
         $chunksTemp = [];
+        $paginaAtual = 1;
 
         try {
-            $pageCount = $this->contarPaginasPdf($caminhoPdf);
+            $pageCountTotal = 0;
+            foreach ($arquivos as $arquivo) {
+                if (file_exists($arquivo) && filesize($arquivo) > 0) {
+                    $pageCountTotal += $this->contarPaginasPdf($arquivo);
+                }
+            }
 
-            if ($pageCount === 0) {
-                Log::error('PDF vazio ou inválido - Finalização', ['caminho' => $caminhoPdf]);
+            if ($pageCountTotal === 0) {
                 return null;
             }
 
-            $caminhoCarimbado = str_replace('.pdf', '_carimbado.pdf', $caminhoPdf);
-            $chunkSize = 50; // Processar em blocos de 50 páginas para equilibrar memória e performance
+            $chunkSize = 50; // Processar em blocos para equilibrar memória e performance
 
-            for ($i = 1; $i <= $pageCount; $i += $chunkSize) {
-                $pdf = new Fpdi();
-                $this->configurarFonte($pdf);
-                $pdf->setSourceFile($caminhoPdf);
+            foreach ($arquivos as $arquivo) {
+                if (!file_exists($arquivo) || filesize($arquivo) == 0) continue;
 
-                $fimChunk = min($i + $chunkSize - 1, $pageCount);
-                
-                Log::info("Processando chunk de carimbo: {$i} até {$fimChunk}", [
-                    'processo_id' => $processo->id,
-                    'total_paginas' => $pageCount
-                ]);
+                $pageCount = $this->contarPaginasPdf($arquivo);
+                if ($pageCount === 0) continue;
 
-                for ($pagina = $i; $pagina <= $fimChunk; $pagina++) {
-                    $tplId = $pdf->importPage($pagina);
-                    $size = $pdf->getTemplateSize($tplId);
-                    $orientation = $size['width'] > $size['height'] ? 'L' : 'P';
-                    $pdf->AddPage($orientation, [$size['width'], $size['height']]);
-                    $pdf->useTemplate($tplId);
+                for ($i = 1; $i <= $pageCount; $i += $chunkSize) {
+                    $pdf = new Fpdi();
+                    $this->configurarFonte($pdf);
+                    $pdf->setSourceFile($arquivo);
 
-                    // Aplica o carimbo em todas as páginas
-                    $this->adicionarCarimbo($pdf, $processo, $pagina, $pageCount);
+                    $fimChunk = min($i + $chunkSize - 1, $pageCount);
+
+                    for ($pagina = $i; $pagina <= $fimChunk; $pagina++) {
+                        $tplId = $pdf->importPage($pagina);
+                        $size = $pdf->getTemplateSize($tplId);
+                        $orientation = $size['width'] > $size['height'] ? 'L' : 'P';
+                        $pdf->AddPage($orientation, [$size['width'], $size['height']]);
+                        $pdf->useTemplate($tplId);
+
+                        $this->adicionarCarimbo($pdf, $processo, $paginaAtual, $pageCountTotal);
+
+                        $paginaAtual++;
+                    }
+
+                    $tempPath = sys_get_temp_dir() . "/chunk_{$fase}_" . uniqid() . '.pdf';
+                    $pdf->Output($tempPath, 'F');
+                    $chunksTemp[] = $tempPath;
+                    unset($pdf);
                 }
-
-                $tempPath = sys_get_temp_dir() . "/chunk_finalizacao_{$i}_" . uniqid() . '.pdf';
-                $pdf->Output($tempPath, 'F');
-                $chunksTemp[] = $tempPath;
-                
-                // Força limpeza de memória
-                unset($pdf);
             }
 
-            $sucesso = $this->mesclarPdfsComGhostscript($chunksTemp, $caminhoCarimbado);
+            $sucesso = $this->mesclarPdfsComGhostscript($chunksTemp, $caminhoSaida);
 
-            if ($sucesso && file_exists($caminhoCarimbado) && filesize($caminhoCarimbado) > 0) {
-                $this->atualizarContadorContrato($processo, $pageCount);
-
-                if (file_exists($caminhoPdf)) {
-                    unlink($caminhoPdf);
-                }
-                rename($caminhoCarimbado, $caminhoPdf);
-                return $caminhoPdf;
-            } else {
-                Log::error('Falha ao mesclar chunks carimbados - Finalização');
-                return null;
+            if ($sucesso && file_exists($caminhoSaida) && filesize($caminhoSaida) > 0) {
+                return $caminhoSaida;
             }
+
+            return null;
         } catch (\Exception $e) {
-            Log::error('Erro ao adicionar carimbo ao PDF com Ghostscript - Finalização', [
-                'caminho' => $caminhoPdf,
-                'erro' => $e->getMessage()
+            Log::error('Erro ao mesclar e carimbar PDFs em lote - Finalização', [
+                'erro' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
             return null;
         } finally {

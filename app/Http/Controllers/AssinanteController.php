@@ -41,7 +41,7 @@ class AssinanteController extends Controller
         }
 
         if (!empty($filtros['prefeitura_id'])) {
-            $query->where('prefeitura_id', $filtros['prefeitura_id']);
+            $query->daPrefeitura($filtros['prefeitura_id']);
         }
 
         // status `ativo`/`inativo` é baseado em is_assinante — todos aqui são ativos

@@ -10,7 +10,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use setasign\Fpdi\Tcpdf\Fpdi;
 use Illuminate\Support\Facades\Log;
 
-class AtaPdfService
+class AtaPdfService extends AbstractService
 {
     use \App\Services\Assinatura\ResolveLegacyAssinantesTrait;
 

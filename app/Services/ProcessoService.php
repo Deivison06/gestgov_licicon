@@ -2,18 +2,20 @@
 
 namespace App\Services;
 
-use App\Models\Documento;
-use App\Models\Lote;
 use App\Models\Processo;
 use App\Models\ProcessoDetalhe;
-use App\Models\Reserva;
-use App\Models\Vencedor;
+use App\Repositories\ProcessoRepository;
 use Illuminate\Support\Facades\DB;
 use Log;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
-class ProcessoService
+class ProcessoService extends AbstractService
 {
+    public function __construct(
+        private ProcessoRepository $repo
+    ) {
+    }
+
     protected array $excludedFields = [
         '_token',
         'processo_id',
@@ -51,18 +53,18 @@ class ProcessoService
 
     public function create(array $data): Processo
     {
-        return Processo::create($data);
+        return $this->repo->create($data);
     }
 
     public function update(Processo $processo, array $data): Processo
     {
-        $processo->update($data);
+        $this->repo->update($processo, $data);
         return $processo;
     }
 
     public function delete(Processo $processo): void
     {
-        $processo->delete();
+        $this->repo->delete($processo);
     }
 
     public function gerarProximoNumeroProcesso(int $prefeituraId): string
@@ -70,10 +72,7 @@ class ProcessoService
         $anoAtual = now()->year;
 
         // Busca o último processo da prefeitura no ano atual que siga o padrão NNN/YYYY
-        $ultimoProcesso = Processo::where('prefeitura_id', $prefeituraId)
-            ->where('numero_processo', 'like', "%/{$anoAtual}")
-            ->orderByRaw('CAST(SUBSTRING_INDEX(numero_processo, "/", 1) AS UNSIGNED) DESC')
-            ->first();
+        $ultimoProcesso = $this->repo->ultimoProcessoNumerado($prefeituraId, $anoAtual);
 
         $proximoNumero = 1;
         if ($ultimoProcesso) {
@@ -113,10 +112,7 @@ class ProcessoService
 
             if (!empty($dadosContrato)) {
                 $dadosContrato['processo_id'] = $processo->id;
-                \App\Models\Contrato::updateOrCreate(
-                    ['processo_id' => $processo->id],
-                    $dadosContrato
-                );
+                $this->repo->upsertContrato($processo->id, $dadosContrato);
             }
         }
 
@@ -124,10 +120,7 @@ class ProcessoService
             // Se o campo for uma data de documento (ex: data_doc_capa)
             if (strpos($field, 'data_doc_') === 0) {
                 $tipoDocumento = substr($field, 9);
-                Documento::updateOrCreate(
-                    ['processo_id' => $processo->id, 'tipo_documento' => $tipoDocumento],
-                    ['data_selecionada' => $value]
-                );
+                $this->repo->upsertDataDocumento($processo->id, $tipoDocumento, $value);
                 continue;
             }
 

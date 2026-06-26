@@ -10,7 +10,7 @@ use App\Services\FinalizacaoPdfService;
 use App\Services\FinalizacaoVencedorService;
 use App\Services\HomologacaoService;
 
-class FinalizacaoProcessoController extends Controller
+class FinalizacaoProcessoController extends AbstractController
 {
     protected FinalizacaoService $finalizacaoService;
     protected FinalizacaoDocumentoService $documentoService;
@@ -123,138 +123,82 @@ class FinalizacaoProcessoController extends Controller
         try {
             $homologacao = $this->homologacaoService->criarNovaHomologacao($processo);
 
-            return response()->json([
-                'success' => true,
+            return $this->jsonOk([
                 'message' => "Homologação #{$homologacao->numero_sequencial} criada com sucesso.",
                 'homologacao' => $homologacao,
             ]);
         } catch (\DomainException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 422);
+            return $this->jsonFail($e->getMessage(), 422);
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Erro ao gerar nova homologação', [
                 'processo_id' => $processo->id,
                 'erro' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Erro ao criar homologação: ' . $e->getMessage(),
-            ], 500);
+            return $this->jsonFail('Erro ao criar homologação: ' . $e->getMessage(), 500);
         }
     }
 
     public function storeFinalizacao(Request $request, Processo $processo)
     {
-        try {
-            $finalizacao = $this->finalizacaoService->salvarFinalizacao($processo, $request->all());
-
-            return response()->json([
-                'success' => true,
-                'data' => $finalizacao->toArray()
-            ]);
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Erro ao salvar finalizacao do processo', [
-                'processo_id' => $processo->id,
-                'erro' => $e->getMessage()
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Erro ao salvar os dados: ' . $e->getMessage()
-            ], 500);
-        }
+        return $this->tryJson(
+            fn () => $this->jsonOk([
+                'data' => $this->finalizacaoService->salvarFinalizacao($processo, $request->all())->toArray(),
+            ]),
+            'Erro ao salvar finalizacao do processo',
+            'Erro ao salvar os dados',
+            ['processo_id' => $processo->id],
+        );
     }
 
     public function storeVencedores(Request $request, Processo $processo)
     {
-        try {
-            $resultado = $this->vencedorService->salvarVencedores($processo, $request->all());
+        return $this->tryJson(function () use ($request, $processo) {
+            $this->vencedorService->salvarVencedores($processo, $request->all());
 
             $processo->load('vencedores.lotes');
 
-            return response()->json([
-                'success' => true,
+            return $this->jsonOk([
                 'message' => 'Vencedor salvo com sucesso!',
-                'vencedores' => $processo->vencedores
+                'vencedores' => $processo->vencedores,
             ]);
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Erro ao salvar vencedor', [
-                'processo_id' => $processo->id,
-                'erro' => $e->getMessage()
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Erro ao salvar vencedor: ' . $e->getMessage()
-            ], 500);
-        }
+        }, 'Erro ao salvar vencedor', 'Erro ao salvar vencedor', ['processo_id' => $processo->id]);
     }
 
     public function importarExcel(Request $request, Processo $processo)
     {
-        try {
+        return $this->tryJson(function () use ($request, $processo) {
             $resultado = $this->vencedorService->importarExcel($processo, $request->all());
 
-            return response()->json([
-                'success' => true,
+            return $this->jsonOk([
                 'message' => '✅ Arquivo processado com sucesso! ' . count($resultado['lotes']) . ' itens importados.',
                 'lotes' => $resultado['lotes'],
-                'vencedor' => $resultado['vencedor']
+                'vencedor' => $resultado['vencedor'],
             ]);
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Erro ao importar Excel', [
-                'processo_id' => $processo->id,
-                'erro' => $e->getMessage()
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Erro ao importar arquivo: ' . $e->getMessage()
-            ], 500);
-        }
+        }, 'Erro ao importar Excel', 'Erro ao importar arquivo', ['processo_id' => $processo->id]);
     }
 
     public function getVencedores(Processo $processo)
     {
         try {
-            $vencedores = $this->vencedorService->getVencedores($processo);
-
-            return response()->json([
-                'success' => true,
-                'vencedores' => $vencedores
+            return $this->jsonOk([
+                'vencedores' => $this->vencedorService->getVencedores($processo),
             ]);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erro ao buscar vencedores: ' . $e->getMessage()
-            ], 500);
+            return $this->jsonFail('Erro ao buscar vencedores: ' . $e->getMessage(), 500);
         }
     }
 
     public function gerarPdf(Request $request, Processo $processo)
     {
-        try {
-            $resultado = $this->pdfService->gerarPdf($processo, $request->all());
+        return $this->tryJson(function () use ($request, $processo) {
+            $this->pdfService->gerarPdf($processo, $request->all());
 
-            return response()->json([
-                'success' => true,
+            return $this->jsonOk([
                 'message' => '✅ PDF gerado com sucesso! Clique em "Download" para visualizar o arquivo.',
-                'documento' => $request->query('documento')
+                'documento' => $request->query('documento'),
             ]);
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Erro ao gerar PDF - Finalização', [
-                'processo_id' => $processo->id,
-                'erro' => $e->getMessage()
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => '❌ Ocorreu um erro inesperado ao gerar o PDF: ' . $e->getMessage(),
-            ], 500);
-        }
+        }, 'Erro ao gerar PDF - Finalização', '❌ Ocorreu um erro inesperado ao gerar o PDF', ['processo_id' => $processo->id]);
     }
 
     public function baixarDocumento(Request $request, Processo $processo, $tipo)
@@ -281,30 +225,6 @@ class FinalizacaoProcessoController extends Controller
 
     public function baixarTodosDocumentos(Processo $processo)
     {
-        try {
-            $token = \Illuminate\Support\Str::uuid()->toString();
-            
-            // Coloca a indicação inicial de "na fila"
-            \Illuminate\Support\Facades\Cache::put("doc_status_{$token}", ['status' => 'na_fila', 'fase' => 'finalizar'], now()->addHours(2));
-            
-            // Dispara na fila Default
-            \App\Jobs\GerarTodosDocumentosJob::dispatch($processo->id, 'finalizar', $token);
-
-            return response()->json([
-                'success' => true,
-                'token'   => $token,
-                'message' => 'Processamento iniciado em segundo plano.'
-            ]);
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Erro ao colocar na fila todos os documentos (Finalizacao)', [
-                'processo_id' => $processo->id,
-                'erro' => $e->getMessage(),
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Erro ao iniciar download: ' . $e->getMessage()
-            ], 500);
-        }
+        return $this->dispararDownloadEmLote($processo->id, 'finalizar');
     }
 }

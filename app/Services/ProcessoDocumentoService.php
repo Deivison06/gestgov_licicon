@@ -7,7 +7,7 @@ use App\Models\Processo;
 use App\Enums\ModalidadeEnum;
 use App\Enums\TipoProcedimentoEnum;
 
-class ProcessoDocumentoService
+class ProcessoDocumentoService extends AbstractService
 {
     /**
      * Campos que pertencem à MINUTA em Pregão/Concorrência, mas que em

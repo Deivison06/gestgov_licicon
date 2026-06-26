@@ -16,7 +16,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-class ProcessoController extends Controller
+class ProcessoController extends AbstractController
 {
     protected ProcessoService $processoService;
     protected ProcessoPdfService $pdfService;
@@ -357,32 +357,7 @@ class ProcessoController extends Controller
 
     public function baixarTodosDocumentos(Processo $processo)
     {
-        try {
-            $token = \Illuminate\Support\Str::uuid()->toString();
-            
-            // Coloca a indicação inicial de "na fila"
-            \Illuminate\Support\Facades\Cache::put("doc_status_{$token}", ['status' => 'na_fila', 'fase' => 'iniciar'], now()->addHours(2));
-            
-            // Dispara na fila Default
-            \App\Jobs\GerarTodosDocumentosJob::dispatch($processo->id, 'iniciar', $token);
-
-            return response()->json([
-                'success' => true,
-                'token'   => $token,
-                'message' => 'Processamento iniciado em segundo plano.'
-            ]);
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Erro ao colocar na fila todos os documentos (Iniciar)', [
-                'processo_id' => $processo->id,
-                'erro' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Erro ao iniciar download: ' . $e->getMessage()
-            ], 500);
-        }
+        return $this->dispararDownloadEmLote($processo->id, 'iniciar');
     }
 
     public function republicarEdital(Request $request, Processo $processo)

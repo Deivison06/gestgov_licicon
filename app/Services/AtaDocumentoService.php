@@ -7,7 +7,7 @@ use App\Models\Documento;
 use App\Models\LoteContratado;
 use Illuminate\Support\Facades\Log;
 
-class AtaDocumentoService
+class AtaDocumentoService extends AbstractService
 {
     protected array $camposPermitidos = [
         'numero_contrato',
