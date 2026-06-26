@@ -878,11 +878,11 @@
         {{-- Assinatura do vencedor: a Ata é individual por empresa, então exibe somente
              o representante da empresa vinculada a esta Ata ($vencedores já vem filtrado
              para o único vencedor pelo FinalizacaoPdfService). --}}
-        <div class="signature-block">
+        {{-- <div class="signature-block">
             ___________________________________<br>
             {{ $finalizacao->responsavel ?? '' }} <br>
             {{ $finalizacao->orgao_responsavel ?? '' }}
-        </div>
+        </div> --}}
 
         {{-- Assinaturas dos vencedores --}}
         @if($vencedores && $vencedores->count() > 0)
