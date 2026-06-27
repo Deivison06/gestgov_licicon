@@ -78,12 +78,18 @@ class PlanejamentoController extends Controller
             ->when($request->filled('data_de'), fn($q) => $q->where('planejamento_data_abertura', '>=', $request->data_de))
             ->when($request->filled('data_ate'), fn($q) => $q->where('planejamento_data_abertura', '<=', $request->data_ate));
 
+        $modalidadesEspeciais = [ModalidadeEnum::DISPENSA->value, ModalidadeEnum::INEXIGIBILIDADE->value];
+
         if ($visao === 'inexigibilidade') {
-            // Visão especial: somente INEXIGIBILIDADE
-            $query->where('modalidade', ModalidadeEnum::INEXIGIBILIDADE->value);
+            // Visão especial: DISPENSA e INEXIGIBILIDADE, com filtro opcional entre as duas
+            $query->when(
+                $request->filled('modalidade') && in_array((int) $request->modalidade, $modalidadesEspeciais),
+                fn($q) => $q->where('modalidade', $request->modalidade),
+                fn($q) => $q->whereIn('modalidade', $modalidadesEspeciais),
+            );
         } else {
-            // Visão padrão: todas exceto INEXIGIBILIDADE
-            $query->where('modalidade', '!=', ModalidadeEnum::INEXIGIBILIDADE->value)
+            // Fluxo padrão: apenas CONCORRÊNCIA e PREGÃO ELETRÔNICO
+            $query->whereNotIn('modalidade', $modalidadesEspeciais)
                 ->when($request->filled('modalidade'), fn($q) => $q->where('modalidade', $request->modalidade));
         }
 

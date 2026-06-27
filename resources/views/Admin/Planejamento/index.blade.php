@@ -89,7 +89,7 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                 </svg>
-                Inexigibilidade
+                Inexigibilidade / Dispensa
             </a>
         </div>
 
@@ -150,16 +150,12 @@
                 <span class="w-px h-4 bg-gray-200 shrink-0"></span>
 
                 @if($visao === 'inexigibilidade')
-                    {{-- Visão inexigibilidade: sem filtro de modalidade (é fixa) --}}
-                    <span class="text-xs font-semibold px-3 py-1 rounded-full border bg-violet-700 text-white border-violet-700 shadow-sm">
-                        INEXIGIBILIDADE
-                    </span>
-                @else
-                    {{-- Visão padrão: todas as modalidades exceto INEXIGIBILIDADE --}}
+                    {{-- Visão especial: filtro entre Dispensa e Inexigibilidade --}}
                     @php
-                        $modalidadesPadrao = collect($modalidades)->filter(
-                            fn($m) => $m->value !== \App\Enums\ModalidadeEnum::INEXIGIBILIDADE->value
-                        );
+                        $modalidadesEspeciais = collect($modalidades)->filter(fn($m) => in_array($m->value, [
+                            \App\Enums\ModalidadeEnum::DISPENSA->value,
+                            \App\Enums\ModalidadeEnum::INEXIGIBILIDADE->value,
+                        ]));
                     @endphp
                     <a href="{{ route('admin.planejamento.index', array_merge($paramsBase, $statusAtivo ? ['status' => $statusAtivo] : [])) }}"
                         @class([
@@ -167,7 +163,33 @@
                             'bg-gray-800 text-white border-gray-800 shadow-sm' => ! $modalidadeAtiva,
                             'bg-white text-gray-500 border-gray-200 hover:border-gray-300 hover:text-gray-700' => $modalidadeAtiva,
                         ])>
-                        Todas
+                        Ambas
+                    </a>
+                    @foreach($modalidadesEspeciais as $mod)
+                        <a href="{{ route('admin.planejamento.index', array_merge($paramsBase, ['modalidade' => $mod->value], $statusAtivo ? ['status' => $statusAtivo] : [])) }}"
+                            @class([
+                                'text-xs font-semibold px-3 py-1 rounded-full border transition-all duration-150',
+                                'bg-violet-700 text-white border-violet-700 shadow-sm' => $modalidadeAtiva == $mod->value,
+                                'bg-white text-gray-500 border-gray-200 hover:border-violet-300 hover:text-violet-700' => $modalidadeAtiva != $mod->value,
+                            ])>
+                            {{ $mod->getDisplayName() }}
+                        </a>
+                    @endforeach
+                @else
+                    {{-- Fluxo padrão: apenas CONCORRÊNCIA e PREGÃO ELETRÔNICO --}}
+                    @php
+                        $modalidadesPadrao = collect($modalidades)->filter(fn($m) => ! in_array($m->value, [
+                            \App\Enums\ModalidadeEnum::DISPENSA->value,
+                            \App\Enums\ModalidadeEnum::INEXIGIBILIDADE->value,
+                        ]));
+                    @endphp
+                    <a href="{{ route('admin.planejamento.index', array_merge($paramsBase, $statusAtivo ? ['status' => $statusAtivo] : [])) }}"
+                        @class([
+                            'text-xs font-semibold px-3 py-1 rounded-full border transition-all duration-150',
+                            'bg-gray-800 text-white border-gray-800 shadow-sm' => ! $modalidadeAtiva,
+                            'bg-white text-gray-500 border-gray-200 hover:border-gray-300 hover:text-gray-700' => $modalidadeAtiva,
+                        ])>
+                        Ambas
                     </a>
                     @foreach($modalidadesPadrao as $mod)
                         <a href="{{ route('admin.planejamento.index', array_merge($paramsBase, ['modalidade' => $mod->value], $statusAtivo ? ['status' => $statusAtivo] : [])) }}"
