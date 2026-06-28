@@ -63,120 +63,77 @@
         @endif
 
         {{-- ====================================================
-             TABS DE VISÃO
+             BARRA PRINCIPAL: tabs + modalidade + toggle filtros
              ==================================================== --}}
         @php
-            $paramsVisao = request()->only('prefeitura_id', 'data_de', 'data_ate');
+            $statusAtivo      = request('status');
+            $modalidadeAtiva  = request('modalidade');
+            $paramsBase       = request()->only('prefeitura_id', 'data_de', 'data_ate', 'visao');
+            $paramsVisao      = request()->only('prefeitura_id', 'data_de', 'data_ate');
+            $totalGeral       = collect($colunas)->sum(fn($col) => $col->count());
+            $temFiltrosAtivos = request()->hasAny(['prefeitura_id', 'status', 'data_de', 'data_ate']);
         @endphp
-        <div class="flex items-center gap-1 bg-white border border-gray-200 rounded-xl shadow-sm p-1 self-start">
-            <a href="{{ route('admin.planejamento.index', array_merge($paramsVisao, ['visao' => 'padrao'])) }}"
-                @class([
-                    'inline-flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-lg transition-all duration-150',
-                    'bg-teal-700 text-white shadow-sm' => $visao === 'padrao',
-                    'text-gray-500 hover:text-gray-700 hover:bg-gray-50' => $visao !== 'padrao',
-                ])>
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/>
-                </svg>
-                Fluxo Padrão
-            </a>
-            <a href="{{ route('admin.planejamento.index', array_merge($paramsVisao, ['visao' => 'inexigibilidade'])) }}"
-                @class([
-                    'inline-flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-lg transition-all duration-150',
-                    'bg-violet-700 text-white shadow-sm' => $visao === 'inexigibilidade',
-                    'text-gray-500 hover:text-gray-700 hover:bg-gray-50' => $visao !== 'inexigibilidade',
-                ])>
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                </svg>
-                Inexigibilidade / Dispensa
-            </a>
-        </div>
 
-        {{-- ====================================================
-             FILTROS
-             ==================================================== --}}
-        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden"
+            x-data="{
+                showFiltros: {{ $temFiltrosAtivos ? 'true' : 'false' }},
+                showPeriodo: {{ request()->hasAny(['data_de', 'data_ate']) ? 'true' : 'false' }}
+            }">
 
-            {{-- Pills de status --}}
-            @php
-                $statusAtivo    = request('status');
-                $modalidadeAtiva = request('modalidade');
-                $paramsBase     = request()->only('prefeitura_id', 'data_de', 'data_ate', 'visao');
-                $totalGeral     = collect($colunas)->sum(fn($col) => $col->count());
-            @endphp
-            @if($visao !== 'inexigibilidade')
-            <div class="flex flex-wrap items-center gap-2 px-4 py-3 border-b border-gray-100 bg-gray-50/60">
+            {{-- Linha principal --}}
+            <div class="flex items-center gap-2 px-3 py-2 flex-wrap">
 
-                <span class="text-xs font-semibold text-gray-400 shrink-0 mr-0.5">Status</span>
-                <span class="w-px h-4 bg-gray-200 shrink-0"></span>
-
-                <a href="{{ route('admin.planejamento.index', array_merge($paramsBase, $modalidadeAtiva ? ['modalidade' => $modalidadeAtiva] : [])) }}"
-                    @class([
-                        'inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all duration-150',
-                        'bg-gray-800 text-white border-gray-800 shadow-sm' => ! $statusAtivo,
-                        'bg-white text-gray-500 border-gray-200 hover:border-gray-300 hover:text-gray-700 hover:bg-white' => $statusAtivo,
-                    ])>
-                    Todos
-                    <span @class([
-                        'text-xs px-1.5 py-0.5 rounded-full font-bold',
-                        'bg-white/20 text-white' => ! $statusAtivo,
-                        'bg-gray-100 text-gray-600' => $statusAtivo,
-                    ])>{{ $totalGeral }}</span>
-                </a>
-
-                @foreach($statusConfig as $status => $cfg)
-                    @php $count = $colunas[$status]->count(); @endphp
-                    <a href="{{ route('admin.planejamento.index', array_merge($paramsBase, ['status' => $status], $modalidadeAtiva ? ['modalidade' => $modalidadeAtiva] : [])) }}"
+                {{-- Tabs de visão --}}
+                <div class="flex items-center gap-0.5 bg-gray-100 rounded-lg p-0.5 shrink-0">
+                    <a href="{{ route('admin.planejamento.index', array_merge($paramsVisao, ['visao' => 'padrao'])) }}"
                         @class([
-                            'inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all duration-150',
-                            $cfg['cor_badge'] . ' border-current shadow-sm' => $statusAtivo === $status,
-                            'bg-white text-gray-500 border-gray-200 hover:border-gray-300 hover:text-gray-700 hover:bg-white' => $statusAtivo !== $status,
+                            'inline-flex items-center gap-1.5 text-sm font-semibold px-3.5 py-1.5 rounded-md transition-all duration-150',
+                            'bg-white text-teal-700 shadow-sm ring-1 ring-gray-200' => $visao === 'padrao',
+                            'text-gray-500 hover:text-gray-700' => $visao !== 'padrao',
                         ])>
-                        {{ $cfg['label'] }}
-                        <span @class([
-                            'text-xs px-1.5 py-0.5 rounded-full font-bold',
-                            'bg-black/10' => $statusAtivo === $status,
-                            'bg-gray-100 text-gray-500' => $statusAtivo !== $status,
-                        ])>{{ $count }}</span>
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/>
+                        </svg>
+                        Fluxo Padrão
                     </a>
-                @endforeach
-            </div>
-            @endif
+                    <a href="{{ route('admin.planejamento.index', array_merge($paramsVisao, ['visao' => 'inexigibilidade'])) }}"
+                        @class([
+                            'inline-flex items-center gap-1.5 text-sm font-semibold px-3.5 py-1.5 rounded-md transition-all duration-150',
+                            'bg-white text-violet-700 shadow-sm ring-1 ring-gray-200' => $visao === 'inexigibilidade',
+                            'text-gray-500 hover:text-gray-700' => $visao !== 'inexigibilidade',
+                        ])>
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                        </svg>
+                        Inexigibilidade / Dispensa
+                    </a>
+                </div>
 
-            {{-- Pills de modalidade --}}
-            <div class="flex flex-wrap items-center gap-2 px-4 py-2.5 border-b border-gray-100">
-                <span class="text-xs font-semibold text-gray-400 shrink-0 mr-0.5">Modalidade</span>
-                <span class="w-px h-4 bg-gray-200 shrink-0"></span>
+                <span class="w-px h-5 bg-gray-200 shrink-0 self-center"></span>
 
+                {{-- Pills de modalidade --}}
                 @if($visao === 'inexigibilidade')
-                    {{-- Visão especial: filtro entre Dispensa e Inexigibilidade --}}
                     @php
                         $modalidadesEspeciais = collect($modalidades)->filter(fn($m) => in_array($m->value, [
                             \App\Enums\ModalidadeEnum::DISPENSA->value,
                             \App\Enums\ModalidadeEnum::INEXIGIBILIDADE->value,
                         ]));
                     @endphp
-                    <a href="{{ route('admin.planejamento.index', array_merge($paramsBase, $statusAtivo ? ['status' => $statusAtivo] : [])) }}"
+                    <a href="{{ route('admin.planejamento.index', $paramsBase) }}"
                         @class([
                             'text-xs font-semibold px-3 py-1 rounded-full border transition-all duration-150',
                             'bg-gray-800 text-white border-gray-800 shadow-sm' => ! $modalidadeAtiva,
                             'bg-white text-gray-500 border-gray-200 hover:border-gray-300 hover:text-gray-700' => $modalidadeAtiva,
-                        ])>
-                        Ambas
-                    </a>
+                        ])>AMBAS</a>
                     @foreach($modalidadesEspeciais as $mod)
-                        <a href="{{ route('admin.planejamento.index', array_merge($paramsBase, ['modalidade' => $mod->value], $statusAtivo ? ['status' => $statusAtivo] : [])) }}"
+                        <a href="{{ route('admin.planejamento.index', array_merge($paramsBase, ['modalidade' => $mod->value])) }}"
                             @class([
                                 'text-xs font-semibold px-3 py-1 rounded-full border transition-all duration-150',
                                 'bg-violet-700 text-white border-violet-700 shadow-sm' => $modalidadeAtiva == $mod->value,
                                 'bg-white text-gray-500 border-gray-200 hover:border-violet-300 hover:text-violet-700' => $modalidadeAtiva != $mod->value,
-                            ])>
-                            {{ $mod->getDisplayName() }}
-                        </a>
+                            ])>{{ $mod->getDisplayName() }}</a>
                     @endforeach
                 @else
-                    {{-- Fluxo padrão: apenas CONCORRÊNCIA e PREGÃO ELETRÔNICO --}}
                     @php
                         $modalidadesPadrao = collect($modalidades)->filter(fn($m) => ! in_array($m->value, [
                             \App\Enums\ModalidadeEnum::DISPENSA->value,
@@ -188,68 +145,82 @@
                             'text-xs font-semibold px-3 py-1 rounded-full border transition-all duration-150',
                             'bg-gray-800 text-white border-gray-800 shadow-sm' => ! $modalidadeAtiva,
                             'bg-white text-gray-500 border-gray-200 hover:border-gray-300 hover:text-gray-700' => $modalidadeAtiva,
-                        ])>
-                        Ambas
-                    </a>
+                        ])>AMBAS</a>
                     @foreach($modalidadesPadrao as $mod)
                         <a href="{{ route('admin.planejamento.index', array_merge($paramsBase, ['modalidade' => $mod->value], $statusAtivo ? ['status' => $statusAtivo] : [])) }}"
                             @class([
                                 'text-xs font-semibold px-3 py-1 rounded-full border transition-all duration-150',
                                 'bg-teal-700 text-white border-teal-700 shadow-sm' => $modalidadeAtiva == $mod->value,
                                 'bg-white text-gray-500 border-gray-200 hover:border-teal-300 hover:text-teal-700' => $modalidadeAtiva != $mod->value,
-                            ])>
-                            {{ $mod->getDisplayName() }}
-                        </a>
+                            ])>{{ $mod->getDisplayName() }}</a>
                     @endforeach
                 @endif
+
+                {{-- Botão toggle filtros --}}
+                <button type="button" @click="showFiltros = !showFiltros"
+                    :class="showFiltros ? 'bg-gray-100 border-gray-300 text-gray-700' : 'border-gray-200 text-gray-400 hover:border-gray-300 hover:text-gray-600'"
+                    class="relative ml-auto inline-flex items-center gap-1.5 text-sm font-semibold border rounded-lg px-3 py-1.5 transition-all duration-150">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+                    </svg>
+                    <span x-text="showFiltros ? 'Ocultar' : 'Filtros'"></span>
+                    @if($temFiltrosAtivos)
+                        <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-teal-400 rounded-full border-2 border-white"></span>
+                    @endif
+                </button>
             </div>
 
-            {{-- Formulário de filtros --}}
-            <form method="GET" action="{{ route('admin.planejamento.index') }}"
-                x-data="{ showPeriodo: {{ request()->hasAny(['data_de', 'data_ate']) ? 'true' : 'false' }} }"
-                class="px-4 py-3.5 space-y-3">
+            {{-- Painel recolhível --}}
+            <div x-show="showFiltros"
+                x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0 -translate-y-1"
+                x-transition:enter-end="opacity-100 translate-y-0"
+                x-transition:leave="transition ease-in duration-150"
+                x-transition:leave-start="opacity-100 translate-y-0"
+                x-transition:leave-end="opacity-0 -translate-y-1"
+                class="border-t border-gray-100"
+                style="display: none">
 
-                <input type="hidden" name="visao" value="{{ $visao }}">
+                {{-- Pills de status (fluxo padrão apenas) --}}
+                @if($visao !== 'inexigibilidade')
+                <div class="flex flex-wrap items-center gap-2 px-4 py-3 border-b border-gray-100 bg-gray-50/60">
+                    <span class="text-xs font-semibold text-gray-400 shrink-0 mr-0.5">Status</span>
+                    <span class="w-px h-4 bg-gray-200 shrink-0"></span>
+                    <a href="{{ route('admin.planejamento.index', array_merge($paramsBase, $modalidadeAtiva ? ['modalidade' => $modalidadeAtiva] : [])) }}"
+                        @class([
+                            'inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all duration-150',
+                            'bg-gray-800 text-white border-gray-800 shadow-sm' => ! $statusAtivo,
+                            'bg-white text-gray-500 border-gray-200 hover:border-gray-300 hover:text-gray-700 hover:bg-white' => $statusAtivo,
+                        ])>
+                        Todos
+                        <span @class([
+                            'text-xs px-1.5 py-0.5 rounded-full font-bold',
+                            'bg-white/20 text-white' => ! $statusAtivo,
+                            'bg-gray-100 text-gray-600' => $statusAtivo,
+                        ])>{{ $totalGeral }}</span>
+                    </a>
+                    @foreach($statusConfig as $status => $cfg)
+                        @php $count = $colunas[$status]->count(); @endphp
+                        <a href="{{ route('admin.planejamento.index', array_merge($paramsBase, ['status' => $status], $modalidadeAtiva ? ['modalidade' => $modalidadeAtiva] : [])) }}"
+                            @class([
+                                'inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all duration-150',
+                                $cfg['cor_badge'] . ' border-current shadow-sm' => $statusAtivo === $status,
+                                'bg-white text-gray-500 border-gray-200 hover:border-gray-300 hover:text-gray-700 hover:bg-white' => $statusAtivo !== $status,
+                            ])>
+                            {{ $cfg['label'] }}
+                            <span @class([
+                                'text-xs px-1.5 py-0.5 rounded-full font-bold',
+                                'bg-black/10' => $statusAtivo === $status,
+                                'bg-gray-100 text-gray-500' => $statusAtivo !== $status,
+                            ])>{{ $count }}</span>
+                        </a>
+                    @endforeach
+                </div>
+                @endif
 
-                <div class="flex flex-wrap items-center gap-2.5">
-
-                    {{-- Prefeitura --}}
-                    @if(auth()->user()->prefeitura_id)
-                        <input type="hidden" name="prefeitura_id" value="{{ auth()->user()->prefeitura_id }}">
-                    @else
-                        <div class="flex-1 min-w-[200px]">
-                            <div class="relative">
-                                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                                    </svg>
-                                </div>
-                                <select id="prefeitura_id" name="prefeitura_id"
-                                    class="w-full pl-9 pr-3 py-2 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-700 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:bg-white transition-colors">
-                                    <option value="">Todas as prefeituras</option>
-                                    @foreach($prefeituras as $prefeitura)
-                                        <option value="{{ $prefeitura->id }}" @selected(request('prefeitura_id') == $prefeitura->id)>
-                                            {{ $prefeitura->nome }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-                    @endif
-
-                    {{-- Botão período --}}
-                    <button type="button" @click="showPeriodo = !showPeriodo"
-                        :class="showPeriodo ? 'bg-teal-600 border-teal-600 text-white shadow-sm' : 'bg-gray-50 border-gray-200 text-gray-600 hover:border-teal-400 hover:text-teal-700'"
-                        class="relative inline-flex items-center gap-2 text-sm font-semibold border rounded-lg px-3 py-2 transition-all duration-150">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                        </svg>
-                        <span x-text="showPeriodo ? 'Ocultar' : 'Período'"></span>
-                        @if(request('data_de') || request('data_ate'))
-                            <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-teal-400 rounded-full border-2 border-white"></span>
-                        @endif
-                    </button>
-
+                {{-- Formulário: prefeitura + período --}}
+                <form method="GET" action="{{ route('admin.planejamento.index') }}" class="px-4 py-3 space-y-3">
+                    <input type="hidden" name="visao" value="{{ $visao }}">
                     @if(request('status'))
                         <input type="hidden" name="status" value="{{ request('status') }}">
                     @endif
@@ -257,54 +228,92 @@
                         <input type="hidden" name="modalidade" value="{{ request('modalidade') }}">
                     @endif
 
-                    {{-- Ações --}}
-                    <div class="flex gap-2 ml-auto">
-                        <button type="submit"
-                            class="inline-flex items-center gap-1.5 text-sm font-semibold bg-teal-700 hover:bg-teal-800 text-white rounded-lg px-4 py-2 transition-colors shadow-sm">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
-                            </svg>
-                            Filtrar
-                        </button>
-                        @if(request('prefeitura_id') || request('status') || request('modalidade') || request('data_de') || request('data_ate'))
-                            <a href="{{ route('admin.planejamento.index', ['visao' => $visao]) }}"
-                                class="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-400 hover:text-red-500 rounded-lg px-3 py-2 hover:bg-red-50 transition-all duration-150">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                </svg>
-                                Limpar
-                            </a>
+                    <div class="flex flex-wrap items-center gap-2.5">
+                        {{-- Prefeitura --}}
+                        @if(auth()->user()->prefeitura_id)
+                            <input type="hidden" name="prefeitura_id" value="{{ auth()->user()->prefeitura_id }}">
+                        @else
+                            <div class="flex-1 min-w-[200px]">
+                                <div class="relative">
+                                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                        </svg>
+                                    </div>
+                                    <select id="prefeitura_id" name="prefeitura_id"
+                                        class="w-full pl-9 pr-3 py-2 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-700 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:bg-white transition-colors">
+                                        <option value="">Todas as prefeituras</option>
+                                        @foreach($prefeituras as $prefeitura)
+                                            <option value="{{ $prefeitura->id }}" @selected(request('prefeitura_id') == $prefeitura->id)>
+                                                {{ $prefeitura->nome }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
                         @endif
-                    </div>
-                </div>
 
-                {{-- Painel de período --}}
-                <div x-show="showPeriodo"
-                    x-transition:enter="transition ease-out duration-200"
-                    x-transition:enter-start="opacity-0 -translate-y-2"
-                    x-transition:enter-end="opacity-100 translate-y-0"
-                    x-transition:leave="transition ease-in duration-150"
-                    x-transition:leave-start="opacity-100 translate-y-0"
-                    x-transition:leave-end="opacity-0 -translate-y-2"
-                    class="rounded-xl border border-teal-100 bg-teal-50/40 p-3.5"
-                    style="display: none">
+                        {{-- Botão período --}}
+                        <button type="button" @click="showPeriodo = !showPeriodo"
+                            :class="showPeriodo ? 'bg-teal-600 border-teal-600 text-white shadow-sm' : 'bg-gray-50 border-gray-200 text-gray-600 hover:border-teal-400 hover:text-teal-700'"
+                            class="relative inline-flex items-center gap-2 text-sm font-semibold border rounded-lg px-3 py-2 transition-all duration-150">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            <span x-text="showPeriodo ? 'Ocultar' : 'Período'"></span>
+                            @if(request('data_de') || request('data_ate'))
+                                <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-teal-400 rounded-full border-2 border-white"></span>
+                            @endif
+                        </button>
 
-                    <div class="flex flex-wrap items-end gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-teal-700 mb-1.5">De</label>
-                            <input type="date" name="data_de" value="{{ request('data_de') }}"
-                                class="rounded-lg border-teal-200 bg-white shadow-sm text-sm focus:ring-teal-500 focus:border-teal-500">
+                        {{-- Ações --}}
+                        <div class="flex gap-2 ml-auto">
+                            <button type="submit"
+                                class="inline-flex items-center gap-1.5 text-sm font-semibold bg-teal-700 hover:bg-teal-800 text-white rounded-lg px-4 py-2 transition-colors shadow-sm">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+                                </svg>
+                                Filtrar
+                            </button>
+                            @if($temFiltrosAtivos)
+                                <a href="{{ route('admin.planejamento.index', ['visao' => $visao]) }}"
+                                    class="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-400 hover:text-red-500 rounded-lg px-3 py-2 hover:bg-red-50 transition-all duration-150">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                    Limpar
+                                </a>
+                            @endif
                         </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-teal-700 mb-1.5">Até</label>
-                            <input type="date" name="data_ate" value="{{ request('data_ate') }}"
-                                class="rounded-lg border-teal-200 bg-white shadow-sm text-sm focus:ring-teal-500 focus:border-teal-500">
-                        </div>
-                        <p class="text-xs text-teal-600/70 self-end pb-2">Filtra pela data de abertura da sessão</p>
                     </div>
-                </div>
 
-            </form>
+                    {{-- Painel de período --}}
+                    <div x-show="showPeriodo"
+                        x-transition:enter="transition ease-out duration-200"
+                        x-transition:enter-start="opacity-0 -translate-y-2"
+                        x-transition:enter-end="opacity-100 translate-y-0"
+                        x-transition:leave="transition ease-in duration-150"
+                        x-transition:leave-start="opacity-100 translate-y-0"
+                        x-transition:leave-end="opacity-0 -translate-y-2"
+                        class="rounded-xl border border-teal-100 bg-teal-50/40 p-3.5"
+                        style="display: none">
+                        <div class="flex flex-wrap items-end gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-teal-700 mb-1.5">De</label>
+                                <input type="date" name="data_de" value="{{ request('data_de') }}"
+                                    class="rounded-lg border-teal-200 bg-white shadow-sm text-sm focus:ring-teal-500 focus:border-teal-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-teal-700 mb-1.5">Até</label>
+                                <input type="date" name="data_ate" value="{{ request('data_ate') }}"
+                                    class="rounded-lg border-teal-200 bg-white shadow-sm text-sm focus:ring-teal-500 focus:border-teal-500">
+                            </div>
+                            <p class="text-xs text-teal-600/70 self-end pb-2">Filtra pela data de abertura da sessão</p>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
         </div>
 
         @if($visao === 'inexigibilidade')
