@@ -45,7 +45,9 @@ class OpenAiService
         $payload = [
             'model'       => $options['model'] ?? $this->model,
             'temperature' => $options['temperature'] ?? $this->temperature,
-            'max_tokens'  => $options['max_tokens'] ?? $this->maxTokens,
+            // `max_completion_tokens` substitui o antigo `max_tokens`: é exigido pelos
+            // modelos mais novos (família GPT-5 / o-series) e aceito pelos demais.
+            'max_completion_tokens' => $options['max_tokens'] ?? $this->maxTokens,
             'messages'    => [
                 ['role' => 'system', 'content' => $systemPrompt],
                 ['role' => 'user',   'content' => $userPrompt],
@@ -54,29 +56,14 @@ class OpenAiService
 
         $inicio = microtime(true);
 
-        try {
-            $response = Http::withToken($this->apiKey)
-                ->timeout($this->timeout)
-                ->retry(2, 250, function ($exception) {
-                    // Retry só em falhas transitórias (conexão / 5xx),
-                    // nunca em 401/403/429 — esses precisam subir limpos.
-                    return $exception instanceof ConnectionException;
-                }, throw: false)
-                ->acceptJson()
-                ->asJson()
-                ->post(rtrim($this->baseUrl, '/') . '/chat/completions', $payload);
-        } catch (ConnectionException $e) {
-            throw new OpenAiServiceException(
-                OpenAiServiceException::TIMEOUT,
-                'Timeout ou falha de conexão com a OpenAI.',
-                $e
-            );
-        } catch (\Throwable $e) {
-            throw new OpenAiServiceException(
-                OpenAiServiceException::NETWORK,
-                'Falha de rede ao chamar OpenAI: ' . $e->getMessage(),
-                $e
-            );
+        $response = $this->enviarRequisicao($payload);
+
+        // Self-healing: alguns modelos (GPT-5 / o-series) só aceitam temperature=1
+        // (default) e recusam valores custom. Se for esse o caso, reenvia sem a
+        // temperature — funciona para esses modelos e para os que aceitam custom.
+        if ($response->status() === 400 && $this->erroDeParametro($response, 'temperature')) {
+            unset($payload['temperature']);
+            $response = $this->enviarRequisicao($payload);
         }
 
         $latencyMs = (int) round((microtime(true) - $inicio) * 1000);
@@ -139,6 +126,53 @@ class OpenAiService
             'usage'      => $data['usage'] ?? [],
             'latency_ms' => $latencyMs,
         ];
+    }
+
+    /**
+     * Envia o payload ao endpoint de chat completions, tratando falhas de
+     * conexão como exceções semânticas. Reutilizado pelo retry de self-healing.
+     */
+    private function enviarRequisicao(array $payload): \Illuminate\Http\Client\Response
+    {
+        try {
+            return Http::withToken($this->apiKey)
+                ->timeout($this->timeout)
+                ->retry(2, 250, function ($exception) {
+                    // Retry só em falhas transitórias (conexão / 5xx),
+                    // nunca em 401/403/429 — esses precisam subir limpos.
+                    return $exception instanceof ConnectionException;
+                }, throw: false)
+                ->acceptJson()
+                ->asJson()
+                ->post(rtrim($this->baseUrl, '/') . '/chat/completions', $payload);
+        } catch (ConnectionException $e) {
+            throw new OpenAiServiceException(
+                OpenAiServiceException::TIMEOUT,
+                'Timeout ou falha de conexão com a OpenAI.',
+                $e
+            );
+        } catch (\Throwable $e) {
+            throw new OpenAiServiceException(
+                OpenAiServiceException::NETWORK,
+                'Falha de rede ao chamar OpenAI: ' . $e->getMessage(),
+                $e
+            );
+        }
+    }
+
+    /**
+     * Detecta se a resposta 400 da OpenAI reclama de um parâmetro específico
+     * (ex.: 'temperature'), pelo campo error.param ou pela mensagem.
+     */
+    private function erroDeParametro(\Illuminate\Http\Client\Response $response, string $param): bool
+    {
+        $erro = $response->json('error') ?? [];
+
+        if (($erro['param'] ?? null) === $param) {
+            return true;
+        }
+
+        return str_contains(mb_strtolower((string) ($erro['message'] ?? '')), $param);
     }
 
     /**
