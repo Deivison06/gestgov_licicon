@@ -346,9 +346,5 @@
         @endif
     </div>
 
-    <div class="footer">
-        GestGov · Relatório gerado automaticamente em {{ now()->format('d/m/Y \à\s H:i') }}
-    </div>
-
 </body>
 </html>
