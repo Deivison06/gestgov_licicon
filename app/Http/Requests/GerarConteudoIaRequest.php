@@ -19,7 +19,9 @@ class GerarConteudoIaRequest extends FormRequest
 
         return [
             'campo'       => ['required', 'string', Rule::in($camposPermitidos)],
-            'instrucao'   => ['required', 'string', 'min:3', 'max:1000'],
+            // No fluxo automático (geração ao abrir o acordeão) NÃO há instrução do
+            // usuário — o contexto vem do processo (nome resumido). Opcional.
+            'instrucao'   => ['nullable', 'string', 'max:1000'],
             'processo_id' => ['nullable', 'integer', 'exists:processos,id'],
         ];
     }

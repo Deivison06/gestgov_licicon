@@ -15,7 +15,9 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(OpenAiService::class, function ($app) {
-            $cfg = $app['config']->get('services.openai', []);
+            // Config centralizada em config/openai.php (fallback para services.openai
+            // por compatibilidade). O modelo é trocável apenas pela env OPENAI_MODEL.
+            $cfg = $app['config']->get('openai', $app['config']->get('services.openai', []));
 
             return new OpenAiService(
                 apiKey:      $cfg['api_key']     ?? null,

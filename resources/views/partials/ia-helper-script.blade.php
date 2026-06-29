@@ -148,6 +148,73 @@
         setTimeout(() => { toast.style.opacity = '0'; }, tipo === 'error' ? 4500 : 2500);
         setTimeout(() => toast.remove(), tipo === 'error' ? 5000 : 3000);
     };
+
+    /**
+     * Gera (ou regenera) o texto de UM campo de IA.
+     *
+     * @param {HTMLElement} el    elemento com data-ia-campo (textarea)
+     * @param {boolean}     force quando true (botão "Regenerar"), ignora os guards
+     *                            de performance e o conteúdo existente.
+     *
+     * Guards de performance (force=false):
+     *  - se já foi gerado nesta sessão (data-ia-gerado=1) → não chama de novo;
+     *  - se o campo já tem conteúdo (salvo do banco ou digitado) → não sobrescreve;
+     *  - evita chamadas concorrentes para o mesmo campo (data-ia-loading).
+     */
+    window.iaGerarCampo = async function (el, force = false) {
+        if (!el) return;
+
+        const campo = el.getAttribute('data-ia-campo');
+        if (!campo) return;
+        const processoId = el.getAttribute('data-ia-processo') || null;
+
+        if (!force && el.getAttribute('data-ia-gerado') === '1') return;
+
+        const atual = (el.value || '').trim();
+        if (!force && atual.length > 0) {
+            // Já existe texto (sugestão/edição/salvo): considera resolvido.
+            el.setAttribute('data-ia-gerado', '1');
+            return;
+        }
+
+        if (el.getAttribute('data-ia-loading') === '1') return;
+        el.setAttribute('data-ia-loading', '1');
+
+        const placeholderOriginal = el.getAttribute('placeholder') || '';
+        el.setAttribute('placeholder', 'Gerando texto com IA...');
+        el.classList.add('ia-gerando');
+
+        const resultado = await window.gerarConteudoIa({ campo, instrucao: '', processoId });
+
+        el.classList.remove('ia-gerando');
+        el.setAttribute('placeholder', placeholderOriginal);
+        el.removeAttribute('data-ia-loading');
+
+        if (resultado && resultado.success && resultado.conteudo) {
+            // 'replace' = preenche como sugestão inicial; o campo permanece editável
+            // (apenas value + evento input, sem mexer em confirmed/disabled).
+            window.injetarConteudoNoCampo(campo, resultado.conteudo, 'replace');
+            el.setAttribute('data-ia-gerado', '1');
+        } else if (resultado && resultado.message) {
+            // Não marca como gerado → permite nova tentativa ao reabrir.
+            window.toastIa(resultado.message, 'error');
+        }
+    };
+
+    /**
+     * Ao expandir um acordeão: gera automaticamente todos os campos :ia="true"
+     * (data-ia-campo) dentro do painel que ainda não foram gerados. Sequencial
+     * para não estourar o rate-limit da IA.
+     *
+     * @param {HTMLElement} painel  o container do acordeão expandido
+     */
+    window.iaAutoGerarNoPainel = async function (painel) {
+        if (!painel) return;
+        const campos = painel.querySelectorAll('[data-ia-campo]');
+        for (const el of campos) {
+            await window.iaGerarCampo(el, false);
+        }
+    };
 })();
 </script>
 @endonce

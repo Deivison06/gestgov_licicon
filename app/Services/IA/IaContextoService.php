@@ -375,110 +375,58 @@ PROMPT;
 
         $contexto = $this->descreverProcesso($processo);
 
+        // No fluxo automático não há instrução do usuário. Quando houver, ela é
+        // tratada apenas como complemento — o contexto principal é o nome resumido.
+        $blocoInstrucao = $instrucaoUsuario !== ''
+            ? "INSTRUÇÃO ADICIONAL DO USUÁRIO (complemento — priorize em caso de conflito):\n\n{$instrucaoUsuario}\n\n"
+            : '';
+
         return <<<PROMPT
-INSTRUÇÃO DO USUÁRIO:
-
-{$instrucaoUsuario}
-
-==================================================
-CONTEXTO DO PROCESSO
+{$blocoInstrucao}==================================================
+CONTEXTO PRINCIPAL (base da geração)
 ==================================================
 
 {$contexto}
 
 ==================================================
-ORIENTAÇÃO FINAL
+COMO PROCEDER
 ==================================================
 
-Produza uma redação:
-- técnica;
-- aprofundada;
-- contextualizada;
-- não genérica;
-- aderente à Lei nº 14.133/2021;
-- compatível com documentos oficiais de contratação pública.
+1. Analise CUIDADOSAMENTE o contexto acima antes de escrever.
+2. Interprete a Identificação de Controle / Nome Resumido para compreender o objeto e a finalidade da contratação.
+3. Produza o texto do campo solicitado de forma técnica, objetiva, completa e coerente.
+4. Evite respostas genéricas ou superficiais, repetições e informações desnecessárias.
+5. Use linguagem clara e natural, adequada a um documento OFICIAL de planejamento.
+6. Não invente dados concretos (valores, prazos, quantidades, métricas) ausentes no contexto — use linguagem segura ("conforme estimativa da Administração", "nos prazos definidos em edital").
 
-Escreva agora.
+Escreva agora APENAS o conteúdo final do campo, em HTML conforme as regras.
 PROMPT;
     }
 
+    /**
+     * Contexto da geração. Por decisão de produto, usa EXCLUSIVAMENTE o campo
+     * "Identificação de Controle / Nome Resumido" (utilizado no quadro de
+     * planejamento) como base — não o objeto completo do processo.
+     */
     private function descreverProcesso(?Processo $processo): string
     {
         if (!$processo) {
             return '(Sem contexto de processo informado.)';
         }
 
-        $linhas = [];
+        $nomeResumido = html_entity_decode(
+            strip_tags((string) ($processo->nome_resumido ?? '')),
+            ENT_QUOTES | ENT_HTML5,
+            'UTF-8'
+        );
+        $nomeResumido = trim($nomeResumido);
 
-        if ($processo->objeto) {
-            $objeto = html_entity_decode(
-                strip_tags((string) $processo->objeto),
-                ENT_QUOTES | ENT_HTML5,
-                'UTF-8'
-            );
-
-            $linhas[] = '- Objeto: ' . mb_substr($objeto, 0, 800);
+        if ($nomeResumido === '') {
+            return '(Identificação de Controle / Nome Resumido não informada para este processo. '
+                . 'Gere um texto técnico e prudente para o campo solicitado, sem inventar dados concretos.)';
         }
 
-        if ($processo->modalidade) {
-            $modalidade = is_object($processo->modalidade)
-                ? ($processo->modalidade->getDisplayName()
-                    ?? $processo->modalidade->name)
-                : $processo->modalidade;
-
-            $linhas[] = '- Modalidade: ' . $modalidade;
-        }
-
-        if ($processo->tipo_contratacao) {
-            $tipo = is_object($processo->tipo_contratacao)
-                ? ($processo->tipo_contratacao->getDisplayName()
-                    ?? $processo->tipo_contratacao->name)
-                : $processo->tipo_contratacao;
-
-            $linhas[] = '- Tipo de contratação: ' . $tipo;
-        }
-
-        if ($processo->tipo_procedimento) {
-            $procedimento = is_object($processo->tipo_procedimento)
-                ? ($processo->tipo_procedimento->getDisplayName()
-                    ?? $processo->tipo_procedimento->name)
-                : $processo->tipo_procedimento;
-
-            $linhas[] = '- Tipo de procedimento: ' . $procedimento;
-        }
-
-        if ($processo->numero_processo) {
-            $linhas[] = '- Número do processo: ' . $processo->numero_processo;
-        }
-
-        if (!empty($processo->secretaria?->nome)) {
-            $linhas[] = '- Secretaria demandante: ' . $processo->secretaria->nome;
-        }
-
-        if (!empty($processo->finalidade_contratacao)) {
-            $linhas[] = '- Finalidade da contratação: '
-                . strip_tags($processo->finalidade_contratacao);
-        }
-
-        if (!empty($processo->impacto_nao_contratacao)) {
-            $linhas[] = '- Impacto da não contratação: '
-                . strip_tags($processo->impacto_nao_contratacao);
-        }
-
-        if (!empty($processo->justificativa)) {
-            $linhas[] = '- Justificativa existente: '
-                . mb_substr(strip_tags($processo->justificativa), 0, 500);
-        }
-
-        if (!empty($processo->observacoes)) {
-            $linhas[] = '- Observações relevantes: '
-                . mb_substr(strip_tags($processo->observacoes), 0, 500);
-        }
-
-        if (empty($linhas)) {
-            return '(Processo informado, porém sem dados relevantes.)';
-        }
-
-        return implode("\n", $linhas);
+        return 'Identificação de Controle / Nome Resumido (quadro de planejamento): '
+            . mb_substr($nomeResumido, 0, 500);
     }
 }

@@ -36,7 +36,14 @@
             </label>
             @if ($ia)
                 @include('partials.ia-helper-script')
-                <x-ia-popover :name="$name" :processoId="$iaProcessoId" />
+                {{-- A geração acontece automaticamente ao expandir o acordeão.
+                     Este botão apenas FORÇA regenerar o texto deste campo. --}}
+                <button type="button"
+                    onclick="window.iaGerarCampo(document.getElementById('{{ $name }}'), true)"
+                    class="flex items-center gap-1 text-xs font-medium text-[#009496] hover:text-[#007779] hover:underline"
+                    title="Regenerar este texto com IA">
+                    <span>✨</span><span>Regenerar</span>
+                </button>
             @endif
         </div>
 
@@ -98,6 +105,7 @@
                 :disabled="confirmed.{{ $name }}"
                 rows="{{ $rows }}"
                 placeholder="{{ $placeholder }}"
+                @if ($ia) data-ia-campo="{{ $name }}" data-ia-processo="{{ $iaProcessoId }}" @endif
                 {{ $attributes->merge(['class' => $fieldClasses]) }}
             ></textarea>
 

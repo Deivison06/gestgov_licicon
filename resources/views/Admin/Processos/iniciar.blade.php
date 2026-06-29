@@ -996,6 +996,12 @@
                     targetEl.classList.remove('hidden');
                     button.setAttribute('aria-expanded', 'true');
                     span.textContent = 'Ocultar Campos e Assinantes';
+
+                    // Geração automática de IA ao expandir: preenche os campos
+                    // :ia="true" deste acordeão que ainda não foram gerados.
+                    if (window.iaAutoGerarNoPainel) {
+                        window.iaAutoGerarNoPainel(targetEl);
+                    }
                 }
             });
         });
