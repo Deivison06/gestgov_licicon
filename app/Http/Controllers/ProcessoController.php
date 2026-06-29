@@ -1086,6 +1086,15 @@ class ProcessoController extends AbstractController
                 'status' => 'em_processo'
             ]);
 
+            // Pré-preencher dotacao_orcamentaria do processo com o valor do ETP,
+            // mas apenas se o campo ainda estiver vazio no processo.
+            if (!empty($etp->dotacao_orcamentaria)) {
+                $detalhe = $processo->detalhe ?? $processo->detalhe()->create([]);
+                if (empty($detalhe->dotacao_orcamentaria)) {
+                    $detalhe->update(['dotacao_orcamentaria' => $etp->dotacao_orcamentaria]);
+                }
+            }
+
             DB::commit();
 
             return response()->json([
