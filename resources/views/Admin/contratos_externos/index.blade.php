@@ -15,6 +15,33 @@
         </div>
     @endif
 
+    {{-- Alerta de Contratos Vencidos --}}
+    @if($vencidosCount > 0)
+        <div x-data="{ open: true }" x-show="open" class="flex items-center justify-between p-4 mb-6 text-red-800 border border-red-300 rounded-lg bg-red-50">
+            <div class="flex items-center gap-3">
+                <svg class="w-5 h-5 flex-shrink-0 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                </svg>
+                <span class="font-medium">
+                    Você tem <strong>{{ $vencidosCount }}</strong> {{ $vencidosCount === 1 ? 'contrato vencido' : 'contratos vencidos' }}.
+                </span>
+                <a href="{{ route('admin.contratos.index', ['tipo' => 'manual', 'situacao' => 'vencido']) }}"
+                   class="inline-flex items-center gap-1 text-sm font-semibold text-red-700 underline underline-offset-2 hover:text-red-900 transition-colors">
+                    Clique aqui para visualizá-los
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </a>
+            </div>
+            <button @click="open = false" class="text-red-400 hover:text-red-600 transition-colors" title="Fechar">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+    @endif
+
     {{-- Abas de Navegação --}}
     <div class="mb-6 bg-white border border-gray-100 shadow-sm rounded-2xl">
         <div class="border-b border-gray-200">
@@ -158,6 +185,21 @@
                                 </select>
                             </div>
                         @endif
+
+                        @if($abaAtiva === 'manual')
+                            {{-- Filtro por Situação (apenas contratos manuais têm vigência calculável) --}}
+                            <div>
+                                <label for="situacao" class="block mb-1 text-sm font-medium text-gray-700">
+                                    Situação
+                                </label>
+                                <select name="situacao" id="situacao" class="w-full px-4 py-2 transition-colors duration-200 border border-gray-300 rounded-lg focus:ring-cyan-500 focus:border-cyan-500">
+                                    <option value="">Todas as Situações</option>
+                                    <option value="vigente"  {{ request('situacao') === 'vigente'  ? 'selected' : '' }}>Vigente</option>
+                                    <option value="vencido"  {{ request('situacao') === 'vencido'  ? 'selected' : '' }}>Vencido</option>
+                                    <option value="pendente" {{ request('situacao') === 'pendente' ? 'selected' : '' }}>Pendente</option>
+                                </select>
+                            </div>
+                        @endif
                     </div>
 
                     {{-- Botões --}}
@@ -168,6 +210,13 @@
                         <a href="{{ route('admin.contratos.index', ['tipo' => $abaAtiva]) }}" class="px-4 py-2 text-center text-gray-700 transition-colors duration-200 bg-gray-100 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 whitespace-nowrap">
                             <i class="fas fa-times mr-1"></i> Limpar
                         </a>
+                        @if($abaAtiva === 'manual')
+                            <a href="{{ route('admin.contratos.relatorio-pdf', array_filter(request()->only(['search', 'prefeitura_id', 'modalidade', 'empresa_id', 'situacao']))) }}"
+                               target="_blank"
+                               class="inline-flex items-center gap-1.5 px-4 py-2 text-white transition-colors duration-200 rounded-lg bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 whitespace-nowrap">
+                                <i class="fas fa-file-pdf"></i> Gerar PDF
+                            </a>
+                        @endif
                     </div>
                 </form>
             </div>

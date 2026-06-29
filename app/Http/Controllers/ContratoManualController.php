@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use App\Enums\ModalidadeEnum;
 use App\Models\ContratoManual;
 use App\Models\EmpresaContrato;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -144,6 +145,16 @@ class ContratoManualController extends Controller
                 $query->where('empresa_id', $request->empresa_id);
             }
 
+            // Situação (VIGENTE / VENCIDO / PENDENTE)
+            if ($request->filled('situacao')) {
+                match (strtolower($request->situacao)) {
+                    'vigente'  => $query->where('data_finalizacao', '>=', now()->startOfDay()),
+                    'vencido'  => $query->where('data_finalizacao', '<', now()->startOfDay()),
+                    'pendente' => $query->whereNull('data_finalizacao'),
+                    default    => null,
+                };
+            }
+
             $contratos = $query->latest()->paginate(10);
             $tipoContratos = 'manual';
         }
@@ -173,6 +184,9 @@ class ContratoManualController extends Controller
             $vencedores = Vencedor::orderBy('razao_social')->get();
         }
 
+        // Contagem de contratos manuais vencidos para o alerta
+        $vencidosCount = ContratoManual::where('data_finalizacao', '<', now()->startOfDay())->count();
+
         return view(
             'Admin.contratos_externos.index',
             compact(
@@ -183,9 +197,117 @@ class ContratoManualController extends Controller
                 'vencedores',
                 'tipoContratos',
                 'abaAtiva',
-                'isPrefeituraUser'
+                'isPrefeituraUser',
+                'vencidosCount'
             )
         );
+    }
+
+    public function relatorioPdf(Request $request)
+    {
+        $user = auth()->user();
+        $userPrefeituraId = $user->prefeitura_id;
+        $isPrefeituraUser = $user->hasRole('prefeitura') && $userPrefeituraId;
+
+        $query = ContratoManual::with(['empresa', 'secretaria', 'prefeitura']);
+
+        if ($isPrefeituraUser) {
+            $query->where('prefeitura_id', $userPrefeituraId);
+        } elseif ($request->filled('prefeitura_id')) {
+            $query->where('prefeitura_id', $request->prefeitura_id);
+        }
+
+        if ($request->filled('search')) {
+            $searchTerm = $request->search;
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('numero_processo', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('numero_contrato', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('objeto', 'LIKE', "%{$searchTerm}%")
+                    ->orWhereHas('empresa', function ($q2) use ($searchTerm) {
+                        $q2->where('razao_social', 'LIKE', "%{$searchTerm}%")
+                            ->orWhere('cnpj', 'LIKE', "%{$searchTerm}%");
+                    })
+                    ->orWhereHas('prefeitura', function ($q2) use ($searchTerm) {
+                        $q2->where('nome', 'LIKE', "%{$searchTerm}%");
+                    });
+            });
+        }
+
+        if ($request->filled('modalidade')) {
+            try {
+                $modalidadeEnum = ModalidadeEnum::tryFrom((int) $request->modalidade);
+                if ($modalidadeEnum) {
+                    $query->where('modalidade', $modalidadeEnum->value);
+                }
+            } catch (\Exception $e) {
+            }
+        }
+
+        if ($request->filled('empresa_id')) {
+            $query->where('empresa_id', $request->empresa_id);
+        }
+
+        // Por padrão gera relatório de vigentes; respeita filtro de situação se passado
+        $situacaoLabel = 'Vigentes';
+        if ($request->filled('situacao')) {
+            $situacaoLabel = match (strtolower($request->situacao)) {
+                'vigente'  => 'Vigentes',
+                'vencido'  => 'Vencidos',
+                'pendente' => 'Pendentes',
+                'todos'    => 'Todos',
+                default    => 'Vigentes',
+            };
+            if (strtolower($request->situacao) !== 'todos') {
+                match (strtolower($request->situacao)) {
+                    'vigente'  => $query->where('data_finalizacao', '>=', now()->startOfDay()),
+                    'vencido'  => $query->where('data_finalizacao', '<', now()->startOfDay()),
+                    'pendente' => $query->whereNull('data_finalizacao'),
+                    default    => null,
+                };
+            }
+        } else {
+            // Padrão: apenas vigentes
+            $query->where('data_finalizacao', '>=', now()->startOfDay());
+        }
+
+        $contratos = $query->orderBy('data_finalizacao')->get();
+
+        $totalContratos = $contratos->count();
+        $valorGlobal    = $contratos->sum('valor_total');
+        $menorInicio    = $contratos->whereNotNull('data_inicio')->min('data_inicio');
+        $maiorTermino   = $contratos->max('data_finalizacao');
+
+        // Prefeitura para o cabeçalho do PDF
+        $prefeituraNome = null;
+        if ($isPrefeituraUser) {
+            $prefeituraNome = $user->prefeitura?->nome;
+        } elseif ($request->filled('prefeitura_id')) {
+            $prefeituraNome = Prefeitura::find($request->prefeitura_id)?->nome;
+        }
+
+        $filtros = [
+            'pesquisa_livre' => $request->search ?: null,
+            'prefeitura'     => $prefeituraNome,
+            'modalidade'     => $request->filled('modalidade')
+                ? ModalidadeEnum::tryFrom((int) $request->modalidade)?->getDisplayName()
+                : null,
+            'empresa'        => $request->filled('empresa_id')
+                ? EmpresaContrato::find($request->empresa_id)?->razao_social
+                : null,
+            'situacao'       => $situacaoLabel,
+        ];
+
+        $pdf = Pdf::loadView('Admin.contratos_externos.pdf.relatorio', compact(
+            'contratos',
+            'totalContratos',
+            'valorGlobal',
+            'menorInicio',
+            'maiorTermino',
+            'filtros',
+            'prefeituraNome'
+        ))->setPaper('a4', 'landscape');
+
+        return $pdf->download('relatorio-contratos-' . now()->format('Y-m-d') . '.pdf');
     }
 
     // Método para visualizar detalhes do contrato manual
