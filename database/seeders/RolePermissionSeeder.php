@@ -18,8 +18,9 @@ class RolePermissionSeeder extends Seeder
             'contratos',
             'etp inteligente',
             'fiscalizar contratos',
-            'atas e contratacoes', // 👈 nova permissão
+            'atas e contratacoes',
             'planejamento',
+            'pca',
         ];
 
         // Cria todas as permissões (sem duplicar)
@@ -42,8 +43,9 @@ class RolePermissionSeeder extends Seeder
                 'fiscalizar contratos',
                 'atas e contratacoes',
                 'planejamento',
+                'pca',
             ],
-            'colaborador_licicon' => ['dar seguimento processos', 'atas e contratacoes', 'planejamento'],
+            'colaborador_licicon' => ['dar seguimento processos', 'atas e contratacoes', 'planejamento', 'pca'],
             'prefeitura'          => ['assinar processos', 'contratos', 'etp inteligente', 'atas e contratacoes', 'planejamento'],
             'Prefeitura - Personalizado' => [], // Sem permissões padrão, o admin adiciona manualmente
         ];

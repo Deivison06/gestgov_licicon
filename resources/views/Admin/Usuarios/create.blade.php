@@ -51,12 +51,12 @@
                        placeholder="Digite o e-mail" required>
             </div>
 
-            <div>
+            <!-- <div>
                 <label for="cpf" class="block mb-2 text-sm font-medium text-gray-700">CPF (opcional)</label>
                 <input type="text" name="cpf" id="cpf" value="{{ old('cpf') }}"
                        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496] transition-colors"
                        placeholder="Digite o CPF">
-            </div>
+            </div> -->
 
             <!-- Novo campo: Prefeitura -->
             <div>

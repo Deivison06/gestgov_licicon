@@ -970,15 +970,13 @@
                     </a>
                     @endif
 
-                    @can('planejamento')
+                    @endif
+                    
                     <a href="{{ route('admin.planejamento.index') }}"
                         class="nav-item {{ request()->routeIs('admin.planejamento.*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-columns"></i>
                         <span>PLANEJAMENTO</span>
                     </a>
-                    @endcan
-                    @endif
-
                     @can('atas e contratacoes')
                     <a href="{{ route('admin.atas.index') }}"
                         class="nav-item {{ request()->routeIs('admin.atas.*') ? 'active' : '' }}">

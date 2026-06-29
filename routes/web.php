@@ -33,7 +33,7 @@ use App\Http\Controllers\PlanejamentoController;
 // ================================================
 Route::prefix('admin/planejamento')
     ->name('admin.planejamento.')
-    ->middleware(['auth', 'verified', 'can:planejamento'])
+    ->middleware(['auth', 'verified'])
     ->group(function () {
         Route::get('/', [PlanejamentoController::class, 'index'])->name('index');
         Route::get('/eventos-calendario', [PlanejamentoController::class, 'calendarioEventos'])->name('eventos');
@@ -68,7 +68,7 @@ Route::prefix('admin/fiscalizacoes')
 // ================================================
 // PCA - PLANO DE CONTRATAÇÃO ANUAL
 // ================================================
-Route::prefix('admin/pcas')->name('admin.pcas.')->middleware(['auth', 'verified', 'role:diretor_licicon|gerente_licicon|colaborador_licicon'])->group(function () {
+Route::prefix('admin/pcas')->name('admin.pcas.')->middleware(['auth', 'verified', 'can:pca'])->group(function () {
     Route::get('/', [PcaController::class, 'index'])->name('index');
     Route::get('/create', [PcaController::class, 'create'])->name('create');
     Route::post('/', [PcaController::class, 'store'])->name('store');
