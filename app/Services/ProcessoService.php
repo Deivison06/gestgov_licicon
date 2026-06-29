@@ -168,6 +168,8 @@ class ProcessoService extends AbstractService
         $itens = [];
         $linhasEmBranco = [];
         $linhasInvalidas = [];
+        $loteAtual = null;
+        $contadorItem = 0;
 
         foreach ($rows as $index => $row) {
 
@@ -192,16 +194,28 @@ class ProcessoService extends AbstractService
                 continue;
             }
 
+            $col0 = trim((string) ($row[0] ?? ''));
+
             /**
-             * 2️⃣ Normalizar campos
+             * 2️⃣ Detectar cabeçalho de lote
+             * Regra: col A começa com "Lote" (case-insensitive) e col D está vazia
              */
-            $numero     = trim((string) ($row[0] ?? ''));
+            if (stripos($col0, 'Lote') === 0 && empty(trim((string) ($row[3] ?? '')))) {
+                $loteAtual = $col0;
+                $contadorItem = 0;
+                continue;
+            }
+
+            /**
+             * 3️⃣ Normalizar campos
+             */
+            $numero     = $col0;
             $descricao  = trim((string) ($row[1] ?? ''));
             $unidade    = trim((string) ($row[2] ?? ''));
             $quantidade = trim((string) ($row[3] ?? ''));
 
             /**
-             * 3️⃣ Validar linha mínima
+             * 4️⃣ Validar linha mínima
              * Regra de negócio:
              * - descrição obrigatória
              * - quantidade numérica e > 0
@@ -216,23 +230,30 @@ class ProcessoService extends AbstractService
             }
 
             /**
-             * 4️⃣ Salvar item válido
+             * 5️⃣ Auto-numeração quando coluna A está vazia
+             */
+            $contadorItem++;
+            $numeroFinal = $numero !== '' ? $numero : (string) $contadorItem;
+
+            /**
+             * 6️⃣ Salvar item válido
              */
             $itens[] = [
-                'numero'     => $numero !== '' ? $numero : null,
+                'numero'     => $numeroFinal,
                 'descricao'  => $descricao,
                 'und'        => $unidade !== '' ? $unidade : null,
                 'quantidade' => (float) str_replace(',', '.', $quantidade),
+                'lote'       => $loteAtual,
             ];
         }
 
         /**
-         * 5️⃣ Persistir apenas linhas válidas
+         * 7️⃣ Persistir apenas linhas válidas
          */
         $detalhe->{$campo} = json_encode($itens, JSON_UNESCAPED_UNICODE);
 
         /**
-         * 6️⃣ Log estruturado (auditoria)
+         * 8️⃣ Log estruturado (auditoria)
          */
         if (!empty($linhasEmBranco) || !empty($linhasInvalidas)) {
             Log::warning('Processamento de itens com linhas ignoradas', [
