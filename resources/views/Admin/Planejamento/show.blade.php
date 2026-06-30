@@ -106,8 +106,8 @@
                             <p class="text-gray-900 font-semibold">{{ $processo->prefeitura->nome ?? '—' }}</p>
                         </div>
                         <div>
-                            <p class="text-xs text-gray-400 font-medium mb-1">Número</p>
-                            <p class="text-gray-900 font-mono font-semibold">{{ $processo->numero_processo ?? $processo->numero_procedimento ?? '—' }}</p>
+                            <p class="text-xs text-gray-400 font-medium mb-1">Número do Procedimento</p>
+                            <p class="text-gray-900 font-mono font-semibold">{{ $processo->numero_procedimento ?? '—' }}</p>
                         </div>
                         <div>
                             <p class="text-xs text-gray-400 font-medium mb-1">Modalidade</p>
@@ -133,6 +133,12 @@
                                     @endif
                                 </p>
                             </div>
+                        @endif
+                        @if($processo->detalhe?->data_hora_fase_edital && $processo->modalidade !== \App\Enums\ModalidadeEnum::DISPENSA)
+                        <div>
+                            <p class="text-xs text-gray-400 font-medium mb-1">Sessão Pública</p>
+                            <p class="text-gray-900 font-semibold">{{ \Carbon\Carbon::parse($processo->detalhe->data_hora_fase_edital)->format('d/m/Y H:i') }}</p>
+                        </div>
                         @endif
                         <div>
                             <p class="text-xs text-gray-400 font-medium mb-1">Criado em</p>

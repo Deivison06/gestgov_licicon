@@ -13,15 +13,15 @@ class AvancarStatusPlanejamento extends Command
 
     public function handle(): void
     {
-        // Backfill: processos com data_hora no detalhe mas sem planejamento_data_abertura
+        // Backfill: processos com data_hora_fase_edital no detalhe mas sem planejamento_data_abertura
         $semData = Processo::whereNull('planejamento_data_abertura')
-            ->whereHas('detalhe', fn($q) => $q->whereNotNull('data_hora'))
+            ->whereHas('detalhe', fn($q) => $q->whereNotNull('data_hora_fase_edital'))
             ->with('detalhe')
             ->get();
 
         $backfilled = 0;
         foreach ($semData as $processo) {
-            $updates = ['planejamento_data_abertura' => $processo->detalhe->data_hora];
+            $updates = ['planejamento_data_abertura' => $processo->detalhe->data_hora_fase_edital];
             if ($processo->planejamento_status === 'em_elaboracao') {
                 $updates['planejamento_status'] = 'aguardando_sessao';
             }
