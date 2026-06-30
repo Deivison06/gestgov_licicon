@@ -241,6 +241,7 @@
 
     <form id="formEmpresa" action="{{ route('admin.contratos.empresa.update', $contrato->id) }}" method="POST" class="px-6 py-6">
         @csrf
+        @method('PUT')
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
