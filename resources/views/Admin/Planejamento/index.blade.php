@@ -505,6 +505,7 @@
 </div>
 
 @push('scripts')
+    @if(auth()->user()->hasDirectPermission('planejamento'))
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.3/Sortable.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -542,6 +543,7 @@
             });
         });
     </script>
+    @endif
 @endpush
 
 <style>

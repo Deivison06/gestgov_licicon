@@ -188,6 +188,7 @@
                 </ol>
 
                 {{-- Ações contextuais ao status atual --}}
+                @if(auth()->user()->hasDirectPermission('planejamento'))
                 <div class="mt-5 pt-5 border-t border-gray-100 flex flex-wrap gap-3">
 
                     @if($processo->planejamento_status === 'em_elaboracao')
@@ -299,6 +300,7 @@
                     @endif
 
                 </div>
+                @endif {{-- hasDirectPermission('planejamento') --}}
             </div>
             @endif
 

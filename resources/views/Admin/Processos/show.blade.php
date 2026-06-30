@@ -123,7 +123,7 @@
                             <div>
                                 <label class="block mb-1 text-xs font-bold tracking-wide text-gray-400 uppercase">Valor Estimado</label>
                                 <p class="text-lg font-bold text-teal-700">
-                                    R$ {{ number_format((float) ($processo->detalhe->valor_estimado ?? 0), 2, ',', '.') }}
+                                    {{ $processo->detalhe->valor_estimado ?? '—' }}
                                 </p>
                             </div>
                             <div>

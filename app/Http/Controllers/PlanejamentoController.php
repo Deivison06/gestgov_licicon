@@ -208,6 +208,7 @@ class PlanejamentoController extends Controller
     public function updateStatus(Request $request, Processo $processo): RedirectResponse
     {
         $user = auth()->user();
+        abort_unless($user->hasDirectPermission('planejamento'), 403, 'Sem permissão para alterar o planejamento.');
         if ($user->prefeitura_id && $processo->prefeitura_id !== $user->prefeitura_id) {
             abort(403, 'Acesso negado.');
         }
@@ -260,6 +261,8 @@ class PlanejamentoController extends Controller
 
     public function reorder(Request $request): \Illuminate\Http\JsonResponse
     {
+        abort_unless(auth()->user()->hasDirectPermission('planejamento'), 403);
+
         $request->validate([
             'ids' => ['required', 'array'],
             'ids.*' => ['required', 'integer', 'exists:processos,id'],
@@ -327,6 +330,7 @@ class PlanejamentoController extends Controller
     public function finalizarPrazoRecurso(Processo $processo): RedirectResponse
     {
         $user = auth()->user();
+        abort_unless($user->hasDirectPermission('planejamento'), 403, 'Sem permissão para alterar o planejamento.');
         if ($user->prefeitura_id && $processo->prefeitura_id !== $user->prefeitura_id) {
             abort(403, 'Acesso negado.');
         }

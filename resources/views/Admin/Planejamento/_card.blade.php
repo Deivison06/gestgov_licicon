@@ -6,7 +6,11 @@
     $corPref            = $processo->prefeitura->cor ?? '#0f766e';
 @endphp
 
-<div data-id="{{ $processo->id }}" class="kanban-card cursor-grab active:cursor-grabbing bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-150 overflow-hidden flex flex-col">
+<div data-id="{{ $processo->id }}"
+    @class([
+        'bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-150 overflow-hidden flex flex-col',
+        'kanban-card cursor-grab active:cursor-grabbing' => auth()->user()->hasDirectPermission('planejamento'),
+    ])>
 
     <div class="h-1.5 "></div>
 
@@ -91,7 +95,7 @@
         @endif
 
         {{-- Data de abertura da sessão --}}
-        @unless($ocultarAcoes ?? false)
+        @unless(($ocultarAcoes ?? false) || ! auth()->user()->hasDirectPermission('planejamento'))
         @if($processo->planejamento_data_abertura && in_array($processo->planejamento_status, ['aguardando_sessao', 'em_andamento']))
             <div class="flex items-center gap-1.5 bg-blue-50 border border-blue-100 rounded-lg px-2.5 py-1.5">
                 <svg class="w-3.5 h-3.5 shrink-0 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -115,7 +119,7 @@
         @endif
 
         {{-- Botões de ação --}}
-        @unless($ocultarAcoes ?? false)
+        @unless(($ocultarAcoes ?? false) || ! auth()->user()->hasDirectPermission('planejamento'))
         <div class="flex flex-col gap-1.5 mt-auto pt-1"
             x-data="{ processoId: {{ $processo->id }} }">
 
