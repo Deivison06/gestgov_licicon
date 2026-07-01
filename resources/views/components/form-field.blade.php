@@ -36,14 +36,69 @@
             </label>
             @if ($ia)
                 @include('partials.ia-helper-script')
-                {{-- A geração acontece automaticamente ao expandir o acordeão.
-                     Este botão apenas FORÇA regenerar o texto deste campo. --}}
-                <button type="button"
-                    onclick="window.iaGerarCampo(document.getElementById('{{ $name }}'), true)"
-                    class="flex items-center gap-1 text-xs font-medium text-[#009496] hover:text-[#007779] hover:underline"
-                    title="Regenerar este texto com IA">
-                    <span>✨</span><span>Regenerar</span>
-                </button>
+                <div x-data="{ openIaModal: false, iaInstruction: '', iaReplace: true, iaLoading: false }" class="relative inline-block text-left">
+                    <button type="button"
+                        @click="openIaModal = !openIaModal; if(openIaModal) setTimeout(() => $refs.iaInput.focus(), 50)"
+                        class="flex items-center gap-1 px-2 py-1 text-xs font-medium text-white transition-colors rounded-md bg-[#009496] hover:bg-[#007779] shadow-sm"
+                        title="Gerar/Regenerar este texto com IA">
+                        <span>✨</span><span>IA</span>
+                    </button>
+                    
+                    <div x-show="openIaModal" 
+                         @click.away="openIaModal = false"
+                         x-transition:enter="transition ease-out duration-100"
+                         x-transition:enter-start="opacity-0 transform scale-95"
+                         x-transition:enter-end="opacity-100 transform scale-100"
+                         x-transition:leave="transition ease-in duration-75"
+                         x-transition:leave-start="opacity-100 transform scale-100"
+                         x-transition:leave-end="opacity-0 transform scale-95"
+                         style="display: none; min-width: 320px;"
+                         class="absolute right-0 z-50 p-4 mt-2 bg-white border border-gray-200 rounded-lg shadow-xl">
+                         
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="font-semibold text-gray-800 text-md">Gerar com IA</h4>
+                            <button @click="openIaModal = false" type="button" class="text-gray-400 transition-colors hover:text-gray-600">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            </button>
+                        </div>
+                        
+                        <p class="mb-1 text-sm text-gray-600">Descreva o que você precisa</p>
+                        <textarea 
+                            x-ref="iaInput"
+                            x-model="iaInstruction" 
+                            rows="3" 
+                            class="w-full p-2 mb-2 text-sm border border-gray-300 rounded-md shadow-sm focus:border-[#009496] focus:ring focus:ring-[#009496] focus:ring-opacity-50"
+                            placeholder="Ex: Compra de 200 cadeiras para 3 escolas municipais. Justifique a necessidade."
+                            @keydown.enter.prevent="if(!iaLoading) { iaLoading = true; window.iaGerarCampoComInstrucao(document.getElementById('{{ $name }}'), iaInstruction, iaReplace, true).then(() => { openIaModal = false; iaLoading = false; }) }"
+                        ></textarea>
+                        
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="text-xs text-gray-400" x-text="iaInstruction.length + ' / 500'"></div>
+                            <div class="text-xs text-gray-400">Pressione Enter para gerar</div>
+                        </div>
+
+                        <label class="flex items-center gap-2 mb-4 cursor-pointer">
+                            <input type="checkbox" x-model="iaReplace" class="text-[#009496] focus:ring-[#009496] border-gray-300 rounded">
+                            <span class="text-sm text-gray-600">Substituir conteúdo atual do campo</span>
+                        </label>
+                        
+                        <div class="flex justify-end gap-2">
+                            <button type="button" @click="openIaModal = false" class="px-4 py-1.5 text-sm font-medium text-gray-700 transition-colors bg-white border border-gray-300 rounded hover:bg-gray-50">
+                                Cancelar
+                            </button>
+                            <button type="button" 
+                                @click="iaLoading = true; window.iaGerarCampoComInstrucao(document.getElementById('{{ $name }}'), iaInstruction, iaReplace, true).then(() => { openIaModal = false; iaLoading = false; })"
+                                :disabled="iaLoading"
+                                class="px-4 py-1.5 text-sm font-medium text-white transition-colors bg-[#009496] rounded hover:bg-[#007779] disabled:opacity-50 flex items-center gap-1 shadow-sm">
+                                <span x-show="iaLoading" class="animate-spin">
+                                    <svg class="w-4 h-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                </span>
+                                <span x-show="!iaLoading">✨ Gerar</span>
+                                <span x-show="iaLoading">Gerando...</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
             @endif
         </div>
 

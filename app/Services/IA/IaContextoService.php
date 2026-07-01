@@ -209,7 +209,7 @@ class IaContextoService
 
         return [
             'system' => $this->montarSystemPrompt($config),
-            'user'   => $this->montarUserPrompt($instrucaoUsuario, $processo),
+            'user'   => $this->montarUserPrompt($campo, $instrucaoUsuario, $processo),
         ];
     }
 
@@ -366,6 +366,7 @@ PROMPT;
     }
 
     private function montarUserPrompt(
+        string $campo,
         string $instrucaoUsuario,
         ?Processo $processo
     ): string {

@@ -150,18 +150,14 @@
     };
 
     /**
-     * Gera (ou regenera) o texto de UM campo de IA.
+     * Gera (ou regenera) o texto de UM campo de IA, recebendo instrução do modal.
      *
-     * @param {HTMLElement} el    elemento com data-ia-campo (textarea)
-     * @param {boolean}     force quando true (botão "Regenerar"), ignora os guards
-     *                            de performance e o conteúdo existente.
-     *
-     * Guards de performance (force=false):
-     *  - se já foi gerado nesta sessão (data-ia-gerado=1) → não chama de novo;
-     *  - se o campo já tem conteúdo (salvo do banco ou digitado) → não sobrescreve;
-     *  - evita chamadas concorrentes para o mesmo campo (data-ia-loading).
+     * @param {HTMLElement} el            elemento com data-ia-campo (textarea)
+     * @param {string}      instrucao     instrução definida pelo usuário no modal
+     * @param {boolean}     substituir    se deve apagar o atual ou apenas adicionar
+     * @param {boolean}     force         ignora guards (como campo já preenchido)
      */
-    window.iaGerarCampo = async function (el, force = false) {
+    window.iaGerarCampoComInstrucao = async function (el, instrucao = '', substituir = true, force = true) {
         if (!el) return;
 
         const campo = el.getAttribute('data-ia-campo');
@@ -170,25 +166,13 @@
 
         if (!force && el.getAttribute('data-ia-gerado') === '1') return;
 
-        // O campo justificativa_solucao_escolhida depende do campo solucao_escolhida
-        // estar preenchido e salvo. Portanto, nunca o geramos automaticamente ao abrir
-        // o painel, apenas quando o usuário clicar explicitamente em Regenerar (force=true).
+        // Regra do justificativa_solucao_escolhida: não auto-gerar ao abrir painel
         if (!force && campo === 'justificativa_solucao_escolhida') return;
 
         const atual = (el.value || '').trim();
         if (!force && atual.length > 0) {
-            // Já existe texto (sugestão/edição/salvo): considera resolvido.
             el.setAttribute('data-ia-gerado', '1');
             return;
-        }
-
-        let instrucao = '';
-        if (force) {
-            instrucao = prompt("O que você gostaria de alterar no texto gerado?\nExemplo: deixar mais técnico, resumir, enfatizar a economicidade, etc.", "");
-            if (instrucao === null) {
-                // Usuário cancelou o prompt
-                return;
-            }
         }
 
         if (el.getAttribute('data-ia-loading') === '1') return;
@@ -205,15 +189,21 @@
         el.removeAttribute('data-ia-loading');
 
         if (resultado && resultado.success && resultado.conteudo) {
-            // 'replace' = preenche como sugestão inicial; o campo permanece editável
-            // (apenas value + evento input, sem mexer em confirmed/disabled).
-            window.injetarConteudoNoCampo(campo, resultado.conteudo, 'replace');
+            const modo = substituir ? 'replace' : 'append';
+            window.injetarConteudoNoCampo(campo, resultado.conteudo, modo);
             el.setAttribute('data-ia-gerado', '1');
         } else if (resultado && resultado.message) {
-            // Não marca como gerado → permite nova tentativa ao reabrir.
             window.toastIa(resultado.message, 'error');
         }
     };
+
+    /**
+     * Mantida por retrocompatibilidade (chamada ao expandir acordeão)
+     */
+    window.iaGerarCampo = async function (el, force = false) {
+        return window.iaGerarCampoComInstrucao(el, '', true, force);
+    };
+
 
     /**
      * Ao expandir um acordeão: gera automaticamente todos os campos :ia="true"
