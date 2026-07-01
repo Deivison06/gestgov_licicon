@@ -464,7 +464,10 @@
     </div>{{-- /space-y-5 --}}
 
     {{-- Modal: Agendar Sessão --}}
-    @php $dataSessaoDetectada = $processo->detalhe?->data_hora_fase_edital?->toDateString(); @endphp
+    @php
+        $dataSessaoDetectada = $processo->detalhe?->data_hora_fase_edital?->toDateString();
+        $horaSessaoDetectada = $processo->detalhe?->data_hora_fase_edital?->format('H:i');
+    @endphp
     <div x-show="modalAgendar"
         x-transition:enter="ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
         x-transition:leave="ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
@@ -479,7 +482,7 @@
                 <div class="flex items-start justify-between gap-4">
                     <div>
                         <h3 class="text-lg font-bold text-gray-900">Agendar Sessão</h3>
-                        <p class="text-sm text-gray-500 mt-1">O processo avançará para <strong>Em Andamento</strong> automaticamente na meia-noite da data escolhida.</p>
+                        <p class="text-sm text-gray-500 mt-1">O processo avançará para <strong>Em Andamento</strong> automaticamente quando a data da sessão chegar.</p>
                     </div>
                     <button @click="modalAgendar = false" class="shrink-0 text-gray-400 hover:text-gray-600 mt-0.5">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -495,17 +498,25 @@
                                     <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clip-rule="evenodd"/>
                                 </svg>
                                 <p class="text-xs text-amber-800">
-                                    Data detectada automaticamente dos dados do processo:
-                                    <strong>{{ $processo->detalhe->data_hora_fase_edital->format('d/m/Y') }}</strong>.
-                                    Você pode alterá-la se necessário.
+                                    Data e horário detectados automaticamente dos dados do processo:
+                                    <strong>{{ $processo->detalhe->data_hora_fase_edital->format('d/m/Y H:i') }}</strong>.
+                                    Você pode alterá-los se necessário.
                                 </p>
                             </div>
                         @endif
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Data de Abertura <span class="text-red-500">*</span></label>
-                            <input type="date" name="data_abertura" required
-                                value="{{ $dataSessaoDetectada ?? old('data_abertura') }}"
-                                class="w-full rounded-lg border-gray-300 shadow-sm text-sm focus:ring-amber-500 focus:border-amber-500">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1.5">Data da Sessão <span class="text-red-500">*</span></label>
+                                <input type="date" name="data_abertura" required
+                                    value="{{ $dataSessaoDetectada ?? old('data_abertura') }}"
+                                    class="w-full rounded-lg border-gray-300 shadow-sm text-sm focus:ring-amber-500 focus:border-amber-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1.5">Horário <span class="text-red-500">*</span></label>
+                                <input type="time" name="hora_abertura" required
+                                    value="{{ $horaSessaoDetectada ?? old('hora_abertura') }}"
+                                    class="w-full rounded-lg border-gray-300 shadow-sm text-sm focus:ring-amber-500 focus:border-amber-500">
+                            </div>
                         </div>
                         <div class="flex justify-end gap-3 pt-1">
                             <button type="button" @click="modalAgendar = false" class="text-sm font-semibold text-gray-500 hover:text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">Cancelar</button>

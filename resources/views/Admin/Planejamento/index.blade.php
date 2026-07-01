@@ -5,7 +5,7 @@
 @section('content')
 <div
     x-data="planejamentoPainel()"
-    @abrir-modal-agendar.window="modalAgendar = true; processoId = $event.detail.id; dataSessao = $event.detail.dataSessao || ''"
+    @abrir-modal-agendar.window="modalAgendar = true; processoId = $event.detail.id; dataSessao = $event.detail.dataSessao || ''; horaSessao = $event.detail.horaSessao || ''"
     class="py-6">
 
     <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 space-y-5">
@@ -454,7 +454,7 @@
                     <div>
                         <h3 class="text-lg font-bold text-gray-900">Agendar Sessão</h3>
                         <p class="text-sm text-gray-500 mt-1">
-                            O processo avançará para <strong class="text-gray-700">Em Andamento</strong> automaticamente na meia-noite da data escolhida.
+                            O processo avançará para <strong class="text-gray-700">Em Andamento</strong> automaticamente quando a data da sessão chegar.
                         </p>
                     </div>
                     <button @click="modalAgendar = false" class="shrink-0 text-gray-400 hover:text-gray-600 transition-colors mt-0.5">
@@ -478,13 +478,23 @@
                                 Você pode alterá-la se necessário.
                             </p>
                         </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-1.5">
-                                Data de Abertura <span class="text-red-500">*</span>
-                            </label>
-                            <input type="date" name="data_abertura" required
-                                :value="dataSessao"
-                                class="w-full rounded-lg border-gray-300 shadow-sm text-sm focus:ring-amber-500 focus:border-amber-500">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1.5">
+                                    Data da Sessão <span class="text-red-500">*</span>
+                                </label>
+                                <input type="date" name="data_abertura" required
+                                    :value="dataSessao"
+                                    class="w-full rounded-lg border-gray-300 shadow-sm text-sm focus:ring-amber-500 focus:border-amber-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1.5">
+                                    Horário <span class="text-red-500">*</span>
+                                </label>
+                                <input type="time" name="hora_abertura" required
+                                    :value="horaSessao"
+                                    class="w-full rounded-lg border-gray-300 shadow-sm text-sm focus:ring-amber-500 focus:border-amber-500">
+                            </div>
                         </div>
                         <div class="flex justify-end gap-3 pt-1">
                             <button type="button" @click="modalAgendar = false"
