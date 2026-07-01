@@ -88,16 +88,15 @@ class IaContextoService
         'solucoes_disponivel_mercado' => [
             'titulo' => 'Soluções Disponíveis no Mercado (ETP)',
 
-            'orientacao' => 'Discorra sobre as alternativas de mercado para atender à necessidade,
-                descrevendo padrões usuais de fornecimento, modelos contratuais
-                e vantagens/desvantagens comparativas. Não cite marcas específicas.',
+            'orientacao' => 'O texto DEVE apresentar NO MÍNIMO TRÊS (3) soluções disponíveis no mercado que atendam ao objeto da contratação (utilize o problema e necessidade do caso concreto). Para CADA UMA das soluções apresente: 1) Nome ou descrição da solução; 2) Breve explicação de como funciona; 3) Principais vantagens; 4) Principais desvantagens. Ao final, apresente uma comparação entre as alternativas facilitando a identificação da solução mais adequada. Não cite marcas específicas, foque nos modelos e tipologias de serviço/produto.',
 
-            'estrutura' => 'alternativas → comparação → vantagens/desvantagens',
+            'estrutura' => 'introdução → solução 1 (nome, como funciona, vantagens, desvantagens) → solução 2 (...) → solução 3 (...) → comparação final das alternativas',
 
             'pontos_criticos' => [
-                'não citar marcas',
-                'comparar soluções',
-                'demonstrar análise de mercado',
+                'apresentar no mínimo três soluções de mercado',
+                'detalhar funcionamento, vantagens e desvantagens de cada uma',
+                'fazer comparação final facilitando a decisão',
+                'não citar marcas específicas'
             ],
         ],
 
@@ -119,15 +118,14 @@ class IaContextoService
         'justificativa_solucao_escolhida' => [
             'titulo' => 'Justificativa da Solução Escolhida (ETP)',
 
-            'orientacao' => 'Explique tecnicamente por que a solução adotada é a mais adequada entre as alternativas,
-                considerando economicidade, eficiência, qualidade e aderência à necessidade.',
+            'orientacao' => 'A justificativa NÃO pode ser genérica. Ela DEVE se basear ESPECIFICAMENTE no conteúdo fornecido em "Solução Escolhida pelo Usuário" que estará no contexto principal. Justifique especificamente a solução selecionada pelo usuário, comparando-a com as demais alternativas (se houver no mercado) e demonstrando, de forma técnica, por que ela é a mais adequada, considerando aspectos como economicidade, eficiência, qualidade, viabilidade e aderência à necessidade da contratação.',
 
-            'estrutura' => 'alternativas → análise → escolha → benefício',
+            'estrutura' => 'contextualização da solução escolhida → comparação com as demais alternativas → justificativa técnica e econômica (eficiência/viabilidade) → conclusão da escolha',
 
             'pontos_criticos' => [
-                'demonstrar vantagem técnica',
-                'demonstrar economicidade',
-                'não usar justificativas superficiais',
+                'utilizar obrigatoriamente a "Solução Escolhida pelo Usuário" como base para a justificativa',
+                'demonstrar vantagem técnica e econômica da solução escolhida',
+                'não usar justificativas superficiais, genéricas ou vazias',
             ],
         ],
 
@@ -374,6 +372,24 @@ PROMPT;
         $instrucaoUsuario = trim($instrucaoUsuario);
 
         $contexto = $this->descreverProcesso($processo);
+
+        if ($processo?->detalhe) {
+            if ($campo === 'justificativa_solucao_escolhida' && !empty($processo->detalhe->solucao_escolhida)) {
+                $solucao = strip_tags((string) $processo->detalhe->solucao_escolhida);
+                if (trim($solucao) !== '') {
+                    $contexto .= "\n\nSolução Escolhida pelo Usuário (BASE OBRIGATÓRIA PARA A JUSTIFICATIVA):\n" . $solucao;
+                }
+            }
+
+            if ($campo === 'solucoes_disponivel_mercado') {
+                if (!empty($processo->detalhe->problema_resolvido)) {
+                    $contexto .= "\n\nProblema a ser resolvido pelo órgão:\n" . strip_tags((string) $processo->detalhe->problema_resolvido);
+                }
+                if (!empty($processo->detalhe->descricao_necessidade)) {
+                    $contexto .= "\n\nDescrição da necessidade do órgão:\n" . strip_tags((string) $processo->detalhe->descricao_necessidade);
+                }
+            }
+        }
 
         // No fluxo automático não há instrução do usuário. Quando houver, ela é
         // tratada apenas como complemento — o contexto principal é o nome resumido.

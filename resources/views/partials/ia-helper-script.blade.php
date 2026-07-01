@@ -170,11 +170,25 @@
 
         if (!force && el.getAttribute('data-ia-gerado') === '1') return;
 
+        // O campo justificativa_solucao_escolhida depende do campo solucao_escolhida
+        // estar preenchido e salvo. Portanto, nunca o geramos automaticamente ao abrir
+        // o painel, apenas quando o usuário clicar explicitamente em Regenerar (force=true).
+        if (!force && campo === 'justificativa_solucao_escolhida') return;
+
         const atual = (el.value || '').trim();
         if (!force && atual.length > 0) {
             // Já existe texto (sugestão/edição/salvo): considera resolvido.
             el.setAttribute('data-ia-gerado', '1');
             return;
+        }
+
+        let instrucao = '';
+        if (force) {
+            instrucao = prompt("O que você gostaria de alterar no texto gerado?\nExemplo: deixar mais técnico, resumir, enfatizar a economicidade, etc.", "");
+            if (instrucao === null) {
+                // Usuário cancelou o prompt
+                return;
+            }
         }
 
         if (el.getAttribute('data-ia-loading') === '1') return;
@@ -184,7 +198,7 @@
         el.setAttribute('placeholder', 'Gerando texto com IA...');
         el.classList.add('ia-gerando');
 
-        const resultado = await window.gerarConteudoIa({ campo, instrucao: '', processoId });
+        const resultado = await window.gerarConteudoIa({ campo, instrucao, processoId });
 
         el.classList.remove('ia-gerando');
         el.setAttribute('placeholder', placeholderOriginal);
