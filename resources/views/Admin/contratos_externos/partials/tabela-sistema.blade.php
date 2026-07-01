@@ -8,7 +8,7 @@
             <th class="px-6 py-4">Número do Processo</th>
             <th class="px-6 py-4">Modalidade</th>
             <th class="px-6 py-4">Contrato</th>
-            <th class="px-6 py-4 text-center">Prazo de Vigência</th>
+            <th class="px-6 py-4 text-center">Situação</th>
             <th class="px-6 py-4 text-center">Ações</th>
         </tr>
         </thead>
@@ -57,8 +57,26 @@
                     @endif
                 </td>
 
-                <td class="px-6 pt-5 pb-3 whitespace-nowrap text-center text-sm text-gray-500">
-                    {{ $processo->detalhe->prazo_vigencia_texto ?? '________________' }}
+                <td class="px-6 pt-5 pb-3 whitespace-nowrap text-center text-sm">
+                    @if($processo->contrato)
+                        @php
+                            $situacao = $processo->contrato->situacao;
+                            $cores = [
+                                'VIGENTE' => 'bg-green-100 text-green-800',
+                                'VENCIDO' => 'bg-red-100 text-red-800',
+                                'CONCLUÍDO' => 'bg-blue-100 text-blue-800',
+                                'PENDENTE' => 'bg-yellow-100 text-yellow-800'
+                            ];
+                            $cor = $cores[$situacao] ?? 'bg-gray-100 text-gray-800';
+                        @endphp
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $cor }}">
+                            {{ $situacao }}
+                        </span>
+                    @else
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                            N/A
+                        </span>
+                    @endif
                 </td>
 
                 <td class="px-6 pt-5 pb-3 whitespace-nowrap text-center text-sm font-medium">

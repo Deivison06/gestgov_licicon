@@ -23,7 +23,8 @@ class ContratoManual extends Model
         'data_inicio',
         'data_finalizacao',
         'arquivo_contrato',
-        'situacao_manual'
+        'situacao_manual',
+        'concluido'
     ];
 
     protected $casts = [
@@ -32,6 +33,7 @@ class ContratoManual extends Model
         'data_inicio' => 'date',
         'data_finalizacao' => 'date',
         'valor_total' => 'decimal:2',
+        'concluido' => 'boolean',
     ];
 
     public function empresa()
@@ -62,15 +64,19 @@ class ContratoManual extends Model
     // No modelo ContratoManual, adicione este método de acesso
     public function getSituacaoAttribute()
     {
+        if ($this->concluido) {
+            return 'CONCLUÍDO';
+        }
+
         // Lógica para determinar a situação com base na data de finalização
         if (!$this->data_finalizacao) {
             return 'PENDENTE';
         }
-        
-        $hoje = now();
-        $dataFinal = \Carbon\Carbon::parse($this->data_finalizacao);
-        
-        if ($dataFinal->greaterThan($hoje)) {
+
+        $hoje = now()->startOfDay();
+        $dataFinal = \Carbon\Carbon::parse($this->data_finalizacao)->startOfDay();
+
+        if ($dataFinal->greaterThanOrEqualTo($hoje)) {
             return 'VIGENTE';
         } else {
             return 'VENCIDO';

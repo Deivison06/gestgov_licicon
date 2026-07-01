@@ -24,6 +24,17 @@
                         <p class="mt-1 text-sm text-gray-600">Processo: {{ $processo->numero_processo }}</p>
                     </div>
                     <div class="flex items-center gap-3">
+                        {{-- Botão Concluir --}}
+                        @if($processo->contrato && $processo->contrato->situacao !== 'CONCLUÍDO')
+                            <form action="{{ route('admin.contratos.concluir.sistema', $processo->id) }}" method="POST" class="inline">
+                                @csrf
+                                @method('PUT')
+                                <button type="submit" class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700" onclick="return confirm('Deseja realmente concluir este contrato? Esta ação não poderá ser desfeita.')">
+                                    <i class="fas fa-check-circle mr-2"></i>
+                                    Concluir Contrato
+                                </button>
+                            </form>
+                        @endif
                         {{-- Botão Download --}}
                         @if($processo->contrato)
                             <a href="{{ route('admin.processos.contrato.download', ['processo' => $processo->id]) }}"
@@ -92,6 +103,25 @@
                                     {{ optional(optional($processo->contrato)->data_assinatura_contrato)->format('d/m/Y') ?? '-' }}
                                 </p>
                             </div>
+
+                            @if($processo->contrato)
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-500">Situação</label>
+                                    @php
+                                        $situacao = $processo->contrato->situacao;
+                                        $cores = [
+                                            'VIGENTE' => 'bg-green-100 text-green-800',
+                                            'VENCIDO' => 'bg-red-100 text-red-800',
+                                            'CONCLUÍDO' => 'bg-blue-100 text-blue-800',
+                                            'PENDENTE' => 'bg-yellow-100 text-yellow-800'
+                                        ];
+                                        $cor = $cores[$situacao] ?? 'bg-gray-100 text-gray-800';
+                                    @endphp
+                                    <span class="mt-1 inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold {{ $cor }}">
+                                        {{ $situacao }}
+                                    </span>
+                                </div>
+                            @endif
 
                             @php
                                 $vigencia = is_array($processo->detalhe->prazo_vigencia ?? null)

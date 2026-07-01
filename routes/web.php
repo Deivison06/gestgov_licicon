@@ -293,6 +293,8 @@ Route::prefix('admin')
             Route::get('/relatorio-pdf', [ContratoManualController::class, 'relatorioPdf'])->name('relatorio-pdf');
             Route::get('/manual/{id}', [ContratoManualController::class, 'showManual'])->name('show.manual');
             Route::get('/sistema/{id}', [ContratoManualController::class, 'showSistema'])->name('show.sistema');
+            Route::put('/manual/{id}/concluir', [ContratoManualController::class, 'concluirManual'])->name('concluir.manual');
+            Route::put('/sistema/{id}/concluir', [ContratoManualController::class, 'concluirSistema'])->name('concluir.sistema');
         });
 
         // Rota para atualizar dados da empresa via AJAX

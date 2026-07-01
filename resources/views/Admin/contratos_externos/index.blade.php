@@ -186,20 +186,19 @@
                             </div>
                         @endif
 
-                        @if($abaAtiva === 'manual')
-                            {{-- Filtro por Situação (apenas contratos manuais têm vigência calculável) --}}
-                            <div>
-                                <label for="situacao" class="block mb-1 text-sm font-medium text-gray-700">
-                                    Situação
-                                </label>
-                                <select name="situacao" id="situacao" class="w-full px-4 py-2 transition-colors duration-200 border border-gray-300 rounded-lg focus:ring-cyan-500 focus:border-cyan-500">
-                                    <option value="">Todas as Situações</option>
-                                    <option value="vigente"  {{ request('situacao') === 'vigente'  ? 'selected' : '' }}>Vigente</option>
-                                    <option value="vencido"  {{ request('situacao') === 'vencido'  ? 'selected' : '' }}>Vencido</option>
-                                    <option value="pendente" {{ request('situacao') === 'pendente' ? 'selected' : '' }}>Pendente</option>
-                                </select>
-                            </div>
-                        @endif
+                        {{-- Filtro por Situação --}}
+                        <div>
+                            <label for="situacao" class="block mb-1 text-sm font-medium text-gray-700">
+                                Situação
+                            </label>
+                            <select name="situacao" id="situacao" class="w-full px-4 py-2 transition-colors duration-200 border border-gray-300 rounded-lg focus:ring-cyan-500 focus:border-cyan-500">
+                                <option value="">Todas as Situações</option>
+                                <option value="vigente"  {{ request('situacao') === 'vigente'  ? 'selected' : '' }}>Vigente</option>
+                                <option value="vencido"  {{ request('situacao') === 'vencido'  ? 'selected' : '' }}>Vencido</option>
+                                <option value="concluido" {{ request('situacao') === 'concluido' ? 'selected' : '' }}>Concluído</option>
+                                <option value="pendente" {{ request('situacao') === 'pendente' ? 'selected' : '' }}>Pendente</option>
+                            </select>
+                        </div>
                     </div>
 
                     {{-- Botões --}}

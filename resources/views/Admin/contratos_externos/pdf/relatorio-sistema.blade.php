@@ -175,6 +175,20 @@
         .text-right { text-align: right; }
         .text-center { text-align: center; }
 
+        .badge {
+            display: inline-block;
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-size: 7.5px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .badge-vigente { background-color: #d1fae5; color: #065f46; }
+        .badge-vencido { background-color: #fee2e2; color: #991b1b; }
+        .badge-pendente { background-color: #fef9c3; color: #92400e; }
+        .badge-concluído { background-color: #dbeafe; color: #1e40af; }
+
         /* ── Rodapé ── */
         .footer {
             margin-top: 20px;
@@ -225,10 +239,13 @@
                     <span class="value">{{ $filtros['vencedor'] ?? 'Todos' }}</span>
                 </td>
                 <td>
+                    <span class="label">Situação</span>
+                    <span class="value">{{ $filtros['situacao'] ?? 'Todos' }}</span>
+                </td>
+                <td>
                     <span class="label">Data de referência</span>
                     <span class="value">{{ now()->format('d/m/Y') }}</span>
                 </td>
-                <td></td>
             </tr>
         </table>
     </div>
@@ -283,11 +300,12 @@
                     <tr>
                         <th style="width:4%">Nº</th>
                         <th style="width:12%">Processo</th>
-                        <th style="width:14%">Modalidade</th>
-                        <th style="width:14%">Contrato</th>
-                        <th style="width:24%">Contratada</th>
-                        <th style="width:12%" class="text-center">Vigência</th>
-                        <th style="width:12%" class="text-right">Valor Total</th>
+                        <th style="width:12%">Modalidade</th>
+                        <th style="width:12%">Contrato</th>
+                        <th style="width:22%">Contratada</th>
+                        <th style="width:10%" class="text-center">Vigência</th>
+                        <th style="width:10%" class="text-right">Valor Total</th>
+                        <th style="width:8%" class="text-center">Situação</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -331,9 +349,19 @@
                             <td class="text-right">
                                 R$ {{ number_format($valor, 2, ',', '.') }}
                             </td>
+                            <td class="text-center">
+                                @if($processo->contrato)
+                                    @php $sit = $processo->contrato->situacao; @endphp
+                                    <span class="badge badge-{{ strtolower($sit) }}">
+                                        {{ $sit }}
+                                    </span>
+                                @else
+                                    —
+                                @endif
+                            </td>
                         </tr>
                         <tr class="{{ $bgClass }} linha-objeto">
-                            <td colspan="7">
+                            <td colspan="8">
                                 <strong>Objeto:</strong> {{ trim(html_entity_decode(strip_tags($processo->objeto ?? ''))) }}
                             </td>
                         </tr>
@@ -341,8 +369,9 @@
                 </tbody>
                 <tfoot>
                     <tr>
-                        <td colspan="6" class="text-right">Total geral:</td>
+                        <td colspan="7" class="text-right">Total geral:</td>
                         <td class="text-right">R$ {{ number_format($valorGlobal, 2, ',', '.') }}</td>
+                        <td></td>
                     </tr>
                 </tfoot>
             </table>

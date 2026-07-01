@@ -88,6 +88,19 @@ class ContratoManualController extends Controller
                 });
             }
 
+            // Situação (VIGENTE / VENCIDO / PENDENTE / CONCLUIDO)
+            if ($request->filled('situacao')) {
+                $query->whereHas('contrato', function ($q) use ($request) {
+                    match (strtolower($request->situacao)) {
+                        'vigente'  => $q->where('concluido', false)->where('data_finalizacao', '>=', now()->startOfDay()),
+                        'vencido'  => $q->where('concluido', false)->where('data_finalizacao', '<', now()->startOfDay()),
+                        'concluido' => $q->where('concluido', true),
+                        'pendente' => $q->where('concluido', false)->whereNull('data_finalizacao'),
+                        default    => null,
+                    };
+                });
+            }
+
             $contratos = $query->paginate(10);
             $tipoContratos = 'sistema';
         } else {
@@ -148,9 +161,10 @@ class ContratoManualController extends Controller
             // Situação (VIGENTE / VENCIDO / PENDENTE)
             if ($request->filled('situacao')) {
                 match (strtolower($request->situacao)) {
-                    'vigente'  => $query->where('data_finalizacao', '>=', now()->startOfDay()),
-                    'vencido'  => $query->where('data_finalizacao', '<', now()->startOfDay()),
-                    'pendente' => $query->whereNull('data_finalizacao'),
+                    'vigente'  => $query->where('concluido', false)->where('data_finalizacao', '>=', now()->startOfDay()),
+                    'vencido'  => $query->where('concluido', false)->where('data_finalizacao', '<', now()->startOfDay()),
+                    'concluido' => $query->where('concluido', true),
+                    'pendente' => $query->where('concluido', false)->whereNull('data_finalizacao'),
                     default    => null,
                 };
             }
@@ -264,21 +278,23 @@ class ContratoManualController extends Controller
             $situacaoLabel = match (strtolower($request->situacao)) {
                 'vigente'  => 'Vigentes',
                 'vencido'  => 'Vencidos',
+                'concluido' => 'Concluídos',
                 'pendente' => 'Pendentes',
                 'todos'    => 'Todos',
                 default    => 'Vigentes',
             };
             if (strtolower($request->situacao) !== 'todos') {
                 match (strtolower($request->situacao)) {
-                    'vigente'  => $query->where('data_finalizacao', '>=', now()->startOfDay()),
-                    'vencido'  => $query->where('data_finalizacao', '<', now()->startOfDay()),
-                    'pendente' => $query->whereNull('data_finalizacao'),
+                    'vigente'  => $query->where('concluido', false)->where('data_finalizacao', '>=', now()->startOfDay()),
+                    'vencido'  => $query->where('concluido', false)->where('data_finalizacao', '<', now()->startOfDay()),
+                    'concluido' => $query->where('concluido', true),
+                    'pendente' => $query->where('concluido', false)->whereNull('data_finalizacao'),
                     default    => null,
                 };
             }
         } else {
             // Padrão: apenas vigentes
-            $query->where('data_finalizacao', '>=', now()->startOfDay());
+            $query->where('concluido', false)->where('data_finalizacao', '>=', now()->startOfDay());
         }
 
         $contratos = $query->orderBy('data_finalizacao')->get();
@@ -368,6 +384,29 @@ class ContratoManualController extends Controller
             });
         }
 
+        $situacaoLabel = 'Todos';
+        if ($request->filled('situacao')) {
+            $situacaoLabel = match (strtolower($request->situacao)) {
+                'vigente'  => 'Vigentes',
+                'vencido'  => 'Vencidos',
+                'concluido' => 'Concluídos',
+                'pendente' => 'Pendentes',
+                'todos'    => 'Todos',
+                default    => 'Todos',
+            };
+            if (strtolower($request->situacao) !== 'todos') {
+                $query->whereHas('contrato', function($q) use ($request) {
+                    match (strtolower($request->situacao)) {
+                        'vigente'  => $q->where('concluido', false)->where('data_finalizacao', '>=', now()->startOfDay()),
+                        'vencido'  => $q->where('concluido', false)->where('data_finalizacao', '<', now()->startOfDay()),
+                        'concluido' => $q->where('concluido', true),
+                        'pendente' => $q->where('concluido', false)->whereNull('data_finalizacao'),
+                        default    => null,
+                    };
+                });
+            }
+        }
+
         $processos = $query->orderBy('created_at', 'desc')->get();
 
         $totalContratos = $processos->count();
@@ -406,6 +445,7 @@ class ContratoManualController extends Controller
             'vencedor'       => $request->filled('vencedor_id')
                 ? Vencedor::find($request->vencedor_id)?->razao_social
                 : null,
+            'situacao'       => $situacaoLabel,
         ];
 
         $pdf = Pdf::loadView('Admin.contratos_externos.pdf.relatorio-sistema', compact(
@@ -997,5 +1037,33 @@ class ContratoManualController extends Controller
 
             abort(403, 'Acesso não autorizado.');
         }
+    }
+
+    public function concluirManual($id)
+    {
+        $contrato = ContratoManual::findOrFail($id);
+        $this->authorizeAccess($contrato);
+
+        $contrato->update(['concluido' => true]);
+
+        return redirect()->back()->with('success', 'Contrato manual concluído com sucesso!');
+    }
+
+    public function concluirSistema($id)
+    {
+        $processo = Processo::with('contrato')->findOrFail($id);
+
+        $user = auth()->user();
+        if ($user->hasRole('prefeitura') && $user->prefeitura_id) {
+            if ($processo->prefeitura_id != $user->prefeitura_id) {
+                abort(403, 'Acesso não autorizado.');
+            }
+        }
+
+        if ($processo->contrato) {
+            $processo->contrato->update(['concluido' => true]);
+        }
+
+        return redirect()->back()->with('success', 'Contrato do sistema concluído com sucesso!');
     }
 }

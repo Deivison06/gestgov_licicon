@@ -23,6 +23,8 @@ class Contrato extends Model
         'caminho',
         'data_documento',
         'gerado_em',
+        'concluido',
+        'data_finalizacao',
     ];
 
     protected $casts = [
@@ -30,6 +32,8 @@ class Contrato extends Model
         'data_documento' => 'date',
         'gerado_em' => 'datetime',
         'dados_contratante' => 'array',
+        'concluido' => 'boolean',
+        'data_finalizacao' => 'date',
     ];
 
     public function processo(): BelongsTo
@@ -45,5 +49,27 @@ class Contrato extends Model
     public function fiscalizacoes()
     {
         return $this->morphMany(Fiscalizacao::class, 'fiscalizavel');
+    }
+
+    public function getSituacaoAttribute()
+    {
+        if ($this->concluido) {
+            return 'CONCLUÍDO';
+        }
+
+        if (!$this->data_finalizacao) {
+            // Attempt to calculate based on details if not explicitly set?
+            // Since we just added the field, maybe some legacy logic? Or we just return PENDENTE
+            return 'PENDENTE';
+        }
+
+        $hoje = now()->startOfDay();
+        $dataFinal = \Carbon\Carbon::parse($this->data_finalizacao)->startOfDay();
+
+        if ($dataFinal->greaterThanOrEqualTo($hoje)) {
+            return 'VIGENTE';
+        } else {
+            return 'VENCIDO';
+        }
     }
 }

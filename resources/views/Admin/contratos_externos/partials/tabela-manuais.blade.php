@@ -10,6 +10,7 @@
             <th class="px-4 py-3">Contrato</th>
             <th class="px-4 py-3">Empresa</th>
             <th class="px-4 py-3">Valor Total</th>
+            <th class="px-4 py-3 text-center">Situação</th>
             <th class="px-4 py-3 text-center">Ações</th>
         </tr>
         </thead>
@@ -76,6 +77,22 @@
                     </div>
                 </td>
 
+                <td class="px-4 py-3 text-center">
+                    @php
+                        $situacao = $contrato->situacao;
+                        $cores = [
+                            'VIGENTE' => 'bg-green-100 text-green-800',
+                            'VENCIDO' => 'bg-red-100 text-red-800',
+                            'CONCLUÍDO' => 'bg-blue-100 text-blue-800',
+                            'PENDENTE' => 'bg-yellow-100 text-yellow-800'
+                        ];
+                        $cor = $cores[$situacao] ?? 'bg-gray-100 text-gray-800';
+                    @endphp
+                    <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $cor }}">
+                        {{ $situacao }}
+                    </span>
+                </td>
+
                 <td class="px-4 py-3">
                     <div class="flex flex-wrap gap-1 justify-center">
                         <a href="{{ route('admin.contratos.show.manual', $contrato->id) }}"
@@ -118,7 +135,7 @@
 
             <!-- Linha do objeto (expandida) -->
             <tr class="border-b border-gray-200">
-                <td colspan="{{ $isPrefeituraUser ? 7 : 8 }}"
+                <td colspan="{{ $isPrefeituraUser ? 8 : 9 }}"
                     class="bg-gray-50 px-4 py-3">
                     <div class="flex items-start">
                         <i class="fas fa-info-circle text-gray-400 mt-0.5 mr-2 flex-shrink-0"></i>
@@ -156,7 +173,7 @@
         @empty
             <tr>
                 @php
-                    $colspan = $isPrefeituraUser ? 7 : 8;
+                    $colspan = $isPrefeituraUser ? 8 : 9;
                 @endphp
                 <td colspan="{{ $colspan }}" class="px-6 py-12 text-center text-gray-500">
                     <div class="flex flex-col items-center justify-center">

@@ -187,6 +187,7 @@
         .badge-vigente { background-color: #d1fae5; color: #065f46; }
         .badge-vencido { background-color: #fee2e2; color: #991b1b; }
         .badge-pendente { background-color: #fef9c3; color: #92400e; }
+        .badge-concluído { background-color: #dbeafe; color: #1e40af; }
 
         /* ── Rodapé ── */
         .footer {
