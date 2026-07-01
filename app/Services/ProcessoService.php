@@ -422,6 +422,17 @@ class ProcessoService extends AbstractService
             $novoProcesso->user_id = $novosDados['user_id'] ?? auth()->id();
             $novoProcesso->created_at = now();
             $novoProcesso->updated_at = now();
+
+            // Reinicia o ciclo do Planejamento: o processo republicado deve
+            // percorrer o quadro do zero, e não herdar a coluna/etapa em que
+            // o processo original estava quando foi finalizado.
+            $novoProcesso->planejamento_status = 'em_elaboracao';
+            $novoProcesso->planejamento_data_abertura = null;
+            $novoProcesso->planejamento_fim_recurso = null;
+            $novoProcesso->planejamento_ordem = 0;
+            $novoProcesso->finalizacao_iniciada_por_id = null;
+            $novoProcesso->finalizacao_iniciada_em = null;
+
             $novoProcesso->save();
 
             // Duplicar detalhes
