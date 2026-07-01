@@ -272,8 +272,8 @@ class ContratoManualController extends Controller
             $query->where('empresa_id', $request->empresa_id);
         }
 
-        // Por padrão gera relatório de vigentes; respeita filtro de situação se passado
-        $situacaoLabel = 'Vigentes';
+        // Por padrão gera relatório de todas as situações; respeita filtro de situação se passado
+        $situacaoLabel = 'Todos';
         if ($request->filled('situacao')) {
             $situacaoLabel = match (strtolower($request->situacao)) {
                 'vigente'  => 'Vigentes',
@@ -281,7 +281,7 @@ class ContratoManualController extends Controller
                 'concluido' => 'Concluídos',
                 'pendente' => 'Pendentes',
                 'todos'    => 'Todos',
-                default    => 'Vigentes',
+                default    => 'Todos',
             };
             if (strtolower($request->situacao) !== 'todos') {
                 match (strtolower($request->situacao)) {
@@ -292,9 +292,6 @@ class ContratoManualController extends Controller
                     default    => null,
                 };
             }
-        } else {
-            // Padrão: apenas vigentes
-            $query->where('concluido', false)->where('data_finalizacao', '>=', now()->startOfDay());
         }
 
         $contratos = $query->orderBy('data_finalizacao')->get();
@@ -334,7 +331,7 @@ class ContratoManualController extends Controller
             'prefeituraNome'
         ))->setPaper('a4', 'landscape');
 
-        return $pdf->download('relatorio-contratos-' . now()->format('Y-m-d') . '.pdf');
+        return $pdf->stream('relatorio-contratos-' . now()->format('Y-m-d') . '.pdf');
     }
 
     private function relatorioPdfSistema(Request $request, bool $isPrefeituraUser, ?int $userPrefeituraId)
@@ -458,7 +455,7 @@ class ContratoManualController extends Controller
             'prefeituraNome'
         ))->setPaper('a4', 'landscape');
 
-        return $pdf->download('relatorio-contratos-sistema-' . now()->format('Y-m-d') . '.pdf');
+        return $pdf->stream('relatorio-contratos-sistema-' . now()->format('Y-m-d') . '.pdf');
     }
 
     // Método para visualizar detalhes do contrato manual
