@@ -48,6 +48,7 @@
 
         .signature-section { margin-top: 50px; text-align: center; }
         .signature-line { border-top: 1px solid #000; width: 300px; margin: 0 auto; padding-top: 5px; }
+        .foto-relatorio { max-width: 100%; max-height: 320px; border: 1px solid #ccc; border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -59,6 +60,15 @@
             $type = pathinfo($timbrePath, PATHINFO_EXTENSION);
             $data = file_get_contents($timbrePath);
             $base64Timbre = 'data:image/' . $type . ';base64,' . base64_encode($data);
+        }
+
+        $fotoRelatorio = $fiscalizacao->relatorio_fotografico ?? '';
+        $fotoPath = public_path($fotoRelatorio);
+        $base64Foto = '';
+        if ($fotoRelatorio && file_exists($fotoPath)) {
+            $type = pathinfo($fotoPath, PATHINFO_EXTENSION);
+            $data = file_get_contents($fotoPath);
+            $base64Foto = 'data:image/' . $type . ';base64,' . base64_encode($data);
         }
 
         $info = $fiscalizacao->contrato_info;
@@ -170,6 +180,15 @@
             <span class="resumo-label">Conclusão do Fiscal:</span>
             <p class="bold" style="color: #062F43;">{{ $fiscalizacao->conclusao_texto }}</p>
         </div>
+
+        @if($base64Foto)
+            <div class="resumo-item" style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px;">
+                <span class="resumo-label">Registro Fotográfico:</span>
+                <div class="text-center" style="margin-top: 10px;">
+                    <img class="foto-relatorio" src="{{ $base64Foto }}" alt="Relatório Fotográfico">
+                </div>
+            </div>
+        @endif
 
         {{-- <div class="signature-section">
             <div class="signature-line"></div>

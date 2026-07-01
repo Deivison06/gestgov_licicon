@@ -185,6 +185,15 @@ class FiscalizacaoController extends Controller
             $dados['prefeitura_id'] = $prefeituraId;
             $dados['user_id'] = $user->id;
 
+            if ($request->hasFile('relatorio_fotografico')) {
+                $dados['relatorio_fotografico'] = $this->uploadRelatorioFotografico(
+                    $request->file('relatorio_fotografico'),
+                    $dados['numero_fiscalizacao']
+                );
+            } else {
+                unset($dados['relatorio_fotografico']);
+            }
+
             $fiscalizacao = Fiscalizacao::create($dados);
 
             Log::info('✅ Fiscalização criada com sucesso', [
@@ -277,6 +286,19 @@ class FiscalizacaoController extends Controller
         try {
             $dados = $request->validated();
 
+            if ($request->hasFile('relatorio_fotografico')) {
+                if ($fiscalizacao->relatorio_fotografico && file_exists(public_path($fiscalizacao->relatorio_fotografico))) {
+                    unlink(public_path($fiscalizacao->relatorio_fotografico));
+                }
+
+                $dados['relatorio_fotografico'] = $this->uploadRelatorioFotografico(
+                    $request->file('relatorio_fotografico'),
+                    $fiscalizacao->numero_fiscalizacao
+                );
+            } else {
+                unset($dados['relatorio_fotografico']);
+            }
+
             $fiscalizacao->update($dados);
 
             Log::info('✅ Fiscalização atualizada com sucesso', [
@@ -341,6 +363,24 @@ class FiscalizacaoController extends Controller
 
             return back()->with('error', 'Erro ao excluir: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Faz o upload da imagem do relatório fotográfico e retorna o caminho relativo.
+     */
+    private function uploadRelatorioFotografico($arquivo, string $numeroFiscalizacao): string
+    {
+        $numeroLimpo = preg_replace('/[^A-Za-z0-9\-]/', '_', $numeroFiscalizacao);
+        $nomeArquivo = 'Fiscalizacao_' . time() . '_' . $numeroLimpo . '.' . $arquivo->getClientOriginalExtension();
+        $caminho = 'uploads/fiscalizacoes/' . $nomeArquivo;
+
+        if (!file_exists(public_path('uploads/fiscalizacoes'))) {
+            mkdir(public_path('uploads/fiscalizacoes'), 0755, true);
+        }
+
+        $arquivo->move(public_path('uploads/fiscalizacoes'), $nomeArquivo);
+
+        return $caminho;
     }
 
     /**

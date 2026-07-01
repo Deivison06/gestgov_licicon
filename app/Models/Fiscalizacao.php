@@ -29,6 +29,7 @@ class Fiscalizacao extends Model
         'qualidade_entregas',
         'observacoes_servidor',
         'metodologia_fiscalizacao',
+        'relatorio_fotografico',
         'user_id',
     ];
 

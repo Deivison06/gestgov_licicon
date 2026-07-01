@@ -43,7 +43,7 @@
         </div>
     @endif
 
-    <form class="px-6 py-6" action="{{ route('admin.fiscalizacoes.update', $fiscalizacao->id) }}" method="POST" id="formFiscalizacao">
+    <form class="px-6 py-6" action="{{ route('admin.fiscalizacoes.update', $fiscalizacao->id) }}" method="POST" id="formFiscalizacao" enctype="multipart/form-data">
         @csrf
         @method('PUT')
 
@@ -132,6 +132,33 @@
                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496] transition-colors"
                            value="{{ old('numero_fiscalizacao', $fiscalizacao->numero_fiscalizacao) }}">
                 </div>
+            </div>
+
+            {{-- Relatório Fotográfico --}}
+            <div class="mt-6">
+                <label class="block mb-2 text-sm font-medium text-gray-700">
+                    <i class="mr-1 fas fa-camera text-[#009496]"></i>
+                    {{ $fiscalizacao->relatorio_fotografico ? 'Substituir Relatório Fotográfico' : 'Anexar Relatório Fotográfico' }}
+                </label>
+
+                @if($fiscalizacao->relatorio_fotografico)
+                    <div class="mb-3">
+                        <a href="{{ asset($fiscalizacao->relatorio_fotografico) }}" target="_blank">
+                            <img src="{{ asset($fiscalizacao->relatorio_fotografico) }}" alt="Relatório Fotográfico"
+                                 class="h-32 rounded-lg border border-gray-200 object-cover hover:opacity-90 transition-opacity">
+                        </a>
+                    </div>
+                @endif
+
+                <input type="file" name="relatorio_fotografico" id="relatorio_fotografico" accept="image/*"
+                       class="block w-full px-3 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#009496] file:text-white hover:file:bg-[#244853] transition-colors cursor-pointer focus:ring-2 focus:ring-[#009496] focus:border-[#009496]">
+                <p class="mt-2 text-xs text-gray-500">
+                    <i class="mr-1 fas fa-info-circle"></i> Formatos aceitos: JPEG, PNG ou WEBP, tamanho máximo: 5MB.
+                    @if($fiscalizacao->relatorio_fotografico) Deixe em branco para manter a imagem atual. @endif
+                </p>
+                @error('relatorio_fotografico')
+                    <p class="mt-1 text-sm text-red-600"><i class="mr-1 fas fa-exclamation-circle"></i>{{ $message }}</p>
+                @enderror
             </div>
         </div>
 

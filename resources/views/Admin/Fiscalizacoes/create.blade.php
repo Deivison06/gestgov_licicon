@@ -265,7 +265,7 @@
         </div>
     @endif
 
-    <form class="px-6 py-6" action="{{ route('admin.fiscalizacoes.store') }}" method="POST" id="formFiscalizacao">
+    <form class="px-6 py-6" action="{{ route('admin.fiscalizacoes.store') }}" method="POST" id="formFiscalizacao" enctype="multipart/form-data">
         @csrf
 
         {{-- ============================================================ --}}
@@ -432,6 +432,21 @@
                         <p class="mt-1 text-sm text-red-600"><i class="mr-1 fas fa-exclamation-circle"></i>{{ $message }}</p>
                     @enderror
                 </div>
+            </div>
+
+            {{-- Relatório Fotográfico --}}
+            <div class="mt-6">
+                <label class="block mb-2 text-sm font-medium text-gray-700">
+                    <i class="mr-1 fas fa-camera text-[#009496]"></i> Anexar Relatório Fotográfico
+                </label>
+                <input type="file" name="relatorio_fotografico" id="relatorio_fotografico" accept="image/*"
+                       class="block w-full px-3 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#009496] file:text-white hover:file:bg-[#244853] transition-colors cursor-pointer focus:ring-2 focus:ring-[#009496] focus:border-[#009496]">
+                <p class="mt-2 text-xs text-gray-500">
+                    <i class="mr-1 fas fa-info-circle"></i> Opcional. Formatos aceitos: JPEG, PNG ou WEBP, tamanho máximo: 5MB.
+                </p>
+                @error('relatorio_fotografico')
+                    <p class="mt-1 text-sm text-red-600"><i class="mr-1 fas fa-exclamation-circle"></i>{{ $message }}</p>
+                @enderror
             </div>
         </div>
 

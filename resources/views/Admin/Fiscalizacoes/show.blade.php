@@ -111,6 +111,20 @@
                     </dl>
                 </div>
             </div>
+
+            @if($fiscalizacao->relatorio_fotografico)
+                <div class="bg-white border border-gray-100 shadow-sm rounded-2xl overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
+                        <h3 class="text-lg font-semibold text-gray-800">Relatório Fotográfico</h3>
+                    </div>
+                    <div class="p-6">
+                        <a href="{{ asset($fiscalizacao->relatorio_fotografico) }}" target="_blank">
+                            <img src="{{ asset($fiscalizacao->relatorio_fotografico) }}" alt="Relatório Fotográfico"
+                                 class="w-full rounded-xl border border-gray-200 hover:opacity-90 transition-opacity">
+                        </a>
+                    </div>
+                </div>
+            @endif
         </div>
 
         <div class="lg:col-span-2">

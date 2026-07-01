@@ -30,6 +30,7 @@ class FiscalizacaoRequest extends FormRequest
             'qualidade_entregas'           => 'nullable|string',
             'observacoes_servidor'         => 'nullable|string',
             'metodologia_fiscalizacao'     => 'nullable|string',
+            'relatorio_fotografico'        => 'nullable|image|mimes:jpeg,jpg,png,webp|max:10240',
         ];
     }
 
@@ -46,6 +47,9 @@ class FiscalizacaoRequest extends FormRequest
             'numero_fiscalizacao.required' => 'O número da fiscalização é obrigatório.',
             'conclusao_fiscal.required'    => 'A conclusão do fiscal é obrigatória.',
             'conclusao_fiscal.in'          => 'A conclusão do fiscal deve ser uma das opções disponíveis.',
+            'relatorio_fotografico.image'  => 'O relatório fotográfico deve ser uma imagem.',
+            'relatorio_fotografico.mimes'  => 'A imagem deve estar nos formatos: JPEG, JPG, PNG ou WEBP.',
+            'relatorio_fotografico.max'    => 'A imagem não pode ultrapassar 5MB.',
         ];
     }
 }
