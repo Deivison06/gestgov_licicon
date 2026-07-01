@@ -180,88 +180,111 @@
                     <h3 class="text-xl font-bold text-gray-800 mb-2">Detalhamento do Plano</h3>
                     <p class="text-sm text-gray-500 mb-6">Adicione os itens de contratação estimados para o exercício.</p>
 
-                    <div class="overflow-x-auto bg-gray-50 rounded-lg border border-gray-200 shadow-sm">
-                        <table class="w-full divide-y divide-gray-200">
-                            <thead class="bg-[#052323] text-white">
-                                <tr>
-                                    <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider w-10 text-center">#</th>
-                                    <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider w-64">Unidade <span class="text-red-400">*</span></th>
-                                    <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider w-36">Modalidade</th>
-                                    <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider min-w-[200px]">Objeto <span class="text-red-400">*</span></th>
-                                    <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider w-32">Valor Est. <span class="text-red-400">*</span></th>
-                                    <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider w-32">Prioridade <span class="text-red-400">*</span></th>
-                                    <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider w-36">Datas (Início/Fim)</th>
-                                    <th class="px-3 py-3 text-center text-xs font-semibold uppercase tracking-wider w-20">Prorrog?</th>
-                                    <th class="px-3 py-3 text-center text-xs font-semibold uppercase tracking-wider w-12 text-center"></th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                <template x-for="(item, index) in itens" :key="item.ui_id">
-                                    <tr class="hover:bg-blue-50/30 transition-colors">
-                                        <td class="px-2 py-3 text-center font-bold text-gray-700 text-sm" x-text="index + 1"></td>
-                                        <td class="px-2 py-3">
-                                            <select :name="'itens['+index+'][unidade_requisitante_id]'" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-[#0596A2] focus:border-[#0596A2] outline-none" x-model="item.unidade_requisitante_id" required>
-                                                <option value="">Selecione...</option>
-                                                <template x-for="sec in secretariasList" :key="sec.id">
-                                                    <option :value="sec.id" x-text="sec.nome"></option>
-                                                </template>
-                                            </select>
-                                        </td>
-                                        <td class="px-2 py-3">
-                                            <select :name="'itens['+index+'][modalidade]'" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-[#0596A2] focus:border-[#0596A2] outline-none" x-model="item.modalidade">
-                                                <option value="">Selecione...</option>
-                                                @foreach($modalidades as $mod)
-                                                    <option value="{{ $mod }}">{{ $mod }}</option>
-                                                @endforeach
-                                            </select>
-                                        </td>
-                                        <td class="px-2 py-3 relative">
-                                            <textarea rows="2" :name="'itens['+index+'][descricao_classe_grupo]'" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-[#0596A2] focus:border-[#0596A2] outline-none resize-y min-h-[44px]" x-model="item.descricao_classe_grupo" required placeholder="Descreva o objeto..."></textarea>
-                                        </td>
-                                        <td class="px-2 py-3">
-                                            <input type="number" step="0.01" min="0" :name="'itens['+index+'][valor_estimado]'" class="w-full px-2 py-1.5 text-xs text-right border border-gray-300 rounded focus:ring-[#0596A2] focus:border-[#0596A2] outline-none font-medium text-green-700" x-model="item.valor_estimado" required placeholder="1000.00">
-                                        </td>
-                                        <td class="px-2 py-3">
-                                            <select :name="'itens['+index+'][grau_prioridade]'" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-[#0596A2] focus:border-[#0596A2] outline-none" x-model="item.grau_prioridade" required>
-                                                <option value="alto">Alto</option>
-                                                <option value="medio">Médio</option>
-                                                <option value="baixo">Baixo</option>
-                                            </select>
-                                        </td>
-                                        <td class="px-2 py-3 space-y-1">
-                                            <input type="date" :name="'itens['+index+'][data_inicio_providencias]'" class="w-full px-1 py-1 text-[11px] border border-gray-300 rounded focus:ring-[#0596A2] focus:border-[#0596A2] outline-none" x-model="item.data_inicio_providencias" title="Data Início Providências">
-                                            <input type="date" :name="'itens['+index+'][data_desejada_conclusao]'" class="w-full px-1 py-1 text-[11px] border border-gray-300 rounded focus:ring-[#0596A2] focus:border-[#0596A2] outline-none" x-model="item.data_desejada_conclusao" title="Data Desejada Conclusão">
-                                        </td>
-                                        <td class="px-2 py-3 text-center">
-                                            <div class="flex justify-center items-center h-full">
-                                                <select :name="'itens['+index+'][prorrogacao_contrato]'" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-[#0596A2] focus:border-[#0596A2] outline-none" x-model="item.prorrogacao_contrato">
-                                                    <option value="0">Não</option>
-                                                    <option value="1">Sim</option>
-                                                </select>
-                                            </div>
-                                        </td>
-                                        <td class="px-2 py-3 text-center">
-                                            <button type="button" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-1.5 rounded-md transition-colors w-8 h-8 flex items-center justify-center" @click="removeItem(index)" title="Remover Item">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                </template>
-                            </tbody>
-                            <tfoot class="bg-gray-50 border-t border-gray-200">
-                                <tr>
-                                    <td colspan="4" class="px-4 py-4 text-right font-bold text-gray-700 text-sm">TOTAL ESTIMADO GERAL:</td>
-                                    <td class="px-2 py-4 text-right font-black text-green-700 text-base tracking-tight whitespace-nowrap">
-                                        R$ <span x-text="formatCurrency(totalValue)"></span>
-                                    </td>
-                                    <td colspan="4"></td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                        <div class="px-4 py-3 bg-white border-t border-gray-100">
-                            <button type="button" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-emerald-600 bg-white border border-emerald-500 rounded-lg hover:bg-emerald-50 transition-colors shadow-sm" @click="addItem()">
+                    <!-- Card list container -->
+                    <div class="space-y-6 mb-6">
+                        <template x-for="(item, index) in itens" :key="item.ui_id">
+                            <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all relative">
+                                
+                                <!-- Header of the Card -->
+                                <div class="flex items-center justify-between border-b border-gray-100 pb-4 mb-5">
+                                    <div class="flex items-center gap-2.5">
+                                        <span class="flex items-center justify-center w-7 h-7 bg-[#0596A2] text-white rounded-full text-xs font-bold shadow-sm" x-text="index + 1"></span>
+                                        <h4 class="font-bold text-gray-850 text-base">Item de Contratação</h4>
+                                    </div>
+                                    <button type="button" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100/70 px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors flex items-center gap-2" @click="removeItem(index)" title="Remover Item">
+                                        <i class="fas fa-trash-alt text-xs"></i> Remover
+                                    </button>
+                                </div>
+
+                                <!-- Grid of inputs -->
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-5 mb-5">
+                                    <!-- Unidade -->
+                                    <div class="md:col-span-2">
+                                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Unidade Requisitante <span class="text-red-500">*</span></label>
+                                        <select :name="'itens['+index+'][unidade_requisitante_id]'" class="w-full px-3.5 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0596A2] focus:border-[#0596A2] outline-none transition-all" x-model="item.unidade_requisitante_id" required>
+                                            <option value="">Selecione...</option>
+                                            <template x-for="sec in secretariasList" :key="sec.id">
+                                                <option :value="sec.id" x-text="sec.nome"></option>
+                                            </template>
+                                        </select>
+                                    </div>
+
+                                    <!-- Modalidade -->
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Modalidade</label>
+                                        <select :name="'itens['+index+'][modalidade]'" class="w-full px-3.5 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0596A2] focus:border-[#0596A2] outline-none transition-all" x-model="item.modalidade">
+                                            <option value="">Selecione...</option>
+                                            @foreach($modalidades as $mod)
+                                                <option value="{{ $mod }}">{{ $mod }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+
+                                    <!-- Valor Estimado -->
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Valor Estimado <span class="text-red-500">*</span></label>
+                                        <div class="relative">
+                                            <span class="absolute left-3.5 top-2.5 text-sm text-gray-400 font-semibold">R$</span>
+                                            <input type="number" step="0.01" min="0" :name="'itens['+index+'][valor_estimado]'" class="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0596A2] focus:border-[#0596A2] outline-none font-semibold text-green-700 transition-all" x-model="item.valor_estimado" required placeholder="0,00">
+                                        </div>
+                                    </div>
+
+                                    <!-- Prioridade -->
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Grau de Prioridade <span class="text-red-500">*</span></label>
+                                        <select :name="'itens['+index+'][grau_prioridade]'" class="w-full px-3.5 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0596A2] focus:border-[#0596A2] outline-none transition-all" x-model="item.grau_prioridade" required>
+                                            <option value="alto">Alto</option>
+                                            <option value="medio">Médio</option>
+                                            <option value="baixo">Baixo</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Data Início -->
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Início Providências</label>
+                                        <input type="date" :name="'itens['+index+'][data_inicio_providencias]'" class="w-full px-3.5 py-2 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0596A2] focus:border-[#0596A2] outline-none transition-all" x-model="item.data_inicio_providencias">
+                                    </div>
+
+                                    <!-- Data Conclusão -->
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Conclusão Desejada</label>
+                                        <input type="date" :name="'itens['+index+'][data_desejada_conclusao]'" class="w-full px-3.5 py-2 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0596A2] focus:border-[#0596A2] outline-none transition-all" x-model="item.data_desejada_conclusao">
+                                    </div>
+
+                                    <!-- Prorrogação -->
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Prorrogável?</label>
+                                        <select :name="'itens['+index+'][prorrogacao_contrato]'" class="w-full px-3.5 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0596A2] focus:border-[#0596A2] outline-none transition-all" x-model="item.prorrogacao_contrato">
+                                            <option value="0">Não</option>
+                                            <option value="1">Sim</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Objeto (Full width bottom row) -->
+                                <div class="border-t border-gray-100 pt-5">
+                                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Descrição do Objeto<span class="text-red-500">*</span></label>
+                                    <textarea rows="3" :name="'itens['+index+'][descricao_classe_grupo]'" class="w-full px-4 py-3 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0596A2] focus:border-[#0596A2] outline-none resize-y min-h-[90px] transition-all" x-model="item.descricao_classe_grupo" required placeholder="Descreva o objeto de contratação detalhadamente..."></textarea>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Total Estimado Geral Summary Card & Add Item Button -->
+                    <div class="flex flex-col md:flex-row justify-between items-center bg-gray-50 border border-gray-250/70 rounded-2xl p-5 md:p-6 mb-8 gap-4 shadow-sm">
+                        <div class="flex flex-wrap items-center gap-3">
+                            <button type="button" class="inline-flex items-center gap-2 px-5 py-3 text-sm font-semibold text-white bg-emerald-600 border border-emerald-600 rounded-xl hover:bg-emerald-700 transition-colors shadow-sm active:scale-95" @click="addItem()">
                                 <i class="fas fa-plus"></i> Adicionar Item
                             </button>
+                            <div class="text-xs text-gray-500 font-bold bg-white border border-gray-200 px-3 py-2 rounded-xl">
+                                Total de itens: <span class="text-[#0596A2]" x-text="itens.length"></span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-0.5">Total Estimado Geral</span>
+                            <span class="text-2xl md:text-3xl font-black text-green-700 tracking-tight">
+                                R$ <span x-text="formatCurrency(totalValue)"></span>
+                            </span>
                         </div>
                     </div>
 
