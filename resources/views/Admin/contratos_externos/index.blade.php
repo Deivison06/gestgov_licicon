@@ -210,13 +210,11 @@
                         <a href="{{ route('admin.contratos.index', ['tipo' => $abaAtiva]) }}" class="px-4 py-2 text-center text-gray-700 transition-colors duration-200 bg-gray-100 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 whitespace-nowrap">
                             <i class="fas fa-times mr-1"></i> Limpar
                         </a>
-                        @if($abaAtiva === 'manual')
-                            <a href="{{ route('admin.contratos.relatorio-pdf', array_filter(request()->only(['search', 'prefeitura_id', 'modalidade', 'empresa_id', 'situacao']))) }}"
-                               target="_blank"
-                               class="inline-flex items-center gap-1.5 px-4 py-2 text-white transition-colors duration-200 rounded-lg bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 whitespace-nowrap">
-                                <i class="fas fa-file-pdf"></i> Gerar PDF
-                            </a>
-                        @endif
+                        <a href="{{ route('admin.contratos.relatorio-pdf', array_filter(array_merge(['tipo' => $abaAtiva], request()->only(['search', 'prefeitura_id', 'modalidade', 'empresa_id', 'situacao', 'vencedor_id'])))) }}"
+                           target="_blank"
+                           class="inline-flex items-center gap-1.5 px-4 py-2 text-white transition-colors duration-200 rounded-lg bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 whitespace-nowrap">
+                            <i class="fas fa-file-pdf"></i> Gerar PDF
+                        </a>
                     </div>
                 </form>
             </div>

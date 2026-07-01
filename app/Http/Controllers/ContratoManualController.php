@@ -209,6 +209,17 @@ class ContratoManualController extends Controller
         $userPrefeituraId = $user->prefeitura_id;
         $isPrefeituraUser = $user->hasRole('prefeitura') && $userPrefeituraId;
 
+        if ($request->get('tipo', 'manual') === 'sistema') {
+            return $this->relatorioPdfSistema($request, $isPrefeituraUser, $userPrefeituraId);
+        }
+
+        return $this->relatorioPdfManual($request, $isPrefeituraUser, $userPrefeituraId);
+    }
+
+    private function relatorioPdfManual(Request $request, bool $isPrefeituraUser, ?int $userPrefeituraId)
+    {
+        $user = auth()->user();
+
         $query = ContratoManual::with(['empresa', 'secretaria', 'prefeitura']);
 
         if ($isPrefeituraUser) {
@@ -308,6 +319,106 @@ class ContratoManualController extends Controller
         ))->setPaper('a4', 'landscape');
 
         return $pdf->download('relatorio-contratos-' . now()->format('Y-m-d') . '.pdf');
+    }
+
+    private function relatorioPdfSistema(Request $request, bool $isPrefeituraUser, ?int $userPrefeituraId)
+    {
+        $query = Processo::with([
+            'prefeitura',
+            'contrato.homologacao',
+            'vencedores.lotes',
+            'detalhe',
+        ])->has('contrato');
+
+        if ($isPrefeituraUser) {
+            $query->where('prefeitura_id', $userPrefeituraId);
+        } elseif ($request->filled('prefeitura_id')) {
+            $query->where('prefeitura_id', $request->prefeitura_id);
+        }
+
+        if ($request->filled('search')) {
+            $searchTerm = $request->search;
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('numero_processo', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('objeto', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('numero_procedimento', 'LIKE', "%{$searchTerm}%")
+                    ->orWhereHas('contrato', function ($q2) use ($searchTerm) {
+                        $q2->where('numero_contrato', 'LIKE', "%{$searchTerm}%");
+                    })
+                    ->orWhereHas('vencedores', function ($q2) use ($searchTerm) {
+                        $q2->where('razao_social', 'LIKE', "%{$searchTerm}%")
+                            ->orWhere('cnpj', 'LIKE', "%{$searchTerm}%");
+                    })
+                    ->orWhereHas('prefeitura', function ($q2) use ($searchTerm) {
+                        $q2->where('nome', 'LIKE', "%{$searchTerm}%");
+                    });
+            });
+        }
+
+        if ($request->filled('modalidade')) {
+            $modalidadeEnum = ModalidadeEnum::tryFrom($request->modalidade);
+            if ($modalidadeEnum) {
+                $query->where('modalidade', $modalidadeEnum->value);
+            }
+        }
+
+        if ($request->filled('vencedor_id')) {
+            $query->whereHas('vencedores', function ($q) use ($request) {
+                $q->where('id', $request->vencedor_id);
+            });
+        }
+
+        $processos = $query->orderBy('created_at', 'desc')->get();
+
+        $totalContratos = $processos->count();
+        $valorGlobal = 0;
+        $dataAssinaturaMin = null;
+        $dataAssinaturaMax = null;
+
+        foreach ($processos as $processo) {
+            $valorGlobal += $processo->contrato->homologacao?->valor_total
+                ?? $processo->vencedores->sum('valor_total');
+
+            $dataAssinatura = $processo->contrato->data_assinatura_contrato;
+            if ($dataAssinatura) {
+                if (! $dataAssinaturaMin || $dataAssinatura->lt($dataAssinaturaMin)) {
+                    $dataAssinaturaMin = $dataAssinatura;
+                }
+                if (! $dataAssinaturaMax || $dataAssinatura->gt($dataAssinaturaMax)) {
+                    $dataAssinaturaMax = $dataAssinatura;
+                }
+            }
+        }
+
+        $prefeituraNome = null;
+        if ($isPrefeituraUser) {
+            $prefeituraNome = auth()->user()->prefeitura?->nome;
+        } elseif ($request->filled('prefeitura_id')) {
+            $prefeituraNome = Prefeitura::find($request->prefeitura_id)?->nome;
+        }
+
+        $filtros = [
+            'pesquisa_livre' => $request->search ?: null,
+            'prefeitura'     => $prefeituraNome,
+            'modalidade'     => $request->filled('modalidade')
+                ? ModalidadeEnum::tryFrom($request->modalidade)?->getDisplayName()
+                : null,
+            'vencedor'       => $request->filled('vencedor_id')
+                ? Vencedor::find($request->vencedor_id)?->razao_social
+                : null,
+        ];
+
+        $pdf = Pdf::loadView('Admin.contratos_externos.pdf.relatorio-sistema', compact(
+            'processos',
+            'totalContratos',
+            'valorGlobal',
+            'dataAssinaturaMin',
+            'dataAssinaturaMax',
+            'filtros',
+            'prefeituraNome'
+        ))->setPaper('a4', 'landscape');
+
+        return $pdf->download('relatorio-contratos-sistema-' . now()->format('Y-m-d') . '.pdf');
     }
 
     // Método para visualizar detalhes do contrato manual

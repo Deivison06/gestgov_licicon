@@ -58,27 +58,7 @@
                 </td>
 
                 <td class="px-6 pt-5 pb-3 whitespace-nowrap text-center text-sm text-gray-500">
-                    @php
-                        $vigencia = is_array($processo->detalhe->prazo_vigencia ?? null)
-                            ? $processo->detalhe->prazo_vigencia
-                            : ['12_meses'];
-
-                        $outro_vigencia = $processo->detalhe->prazo_vigencia_outro ?? '________________.';
-
-                        $objeto_continuado = strtolower($processo->detalhe->objeto_continuado ?? 'nao');
-
-                        // Texto para preencher automaticamente
-                        if (in_array('exercicio_financeiro', $vigencia)) {
-                            $textoVigencia = "até 31/12 do exercício financeiro da contratação";
-                        } elseif (in_array('12_meses', $vigencia)) {
-                            $textoVigencia = "12 meses";
-                        } elseif (in_array('outro', $vigencia)) {
-                            $textoVigencia = $outro_vigencia;
-                        } else {
-                            $textoVigencia = "________________";
-                        }
-                    @endphp
-                    {{ $textoVigencia }}
+                    {{ $processo->detalhe->prazo_vigencia_texto ?? '________________' }}
                 </td>
 
                 <td class="px-6 pt-5 pb-3 whitespace-nowrap text-center text-sm font-medium">

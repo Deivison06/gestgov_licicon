@@ -141,6 +141,28 @@ class ProcessoDetalhe extends Model
     }
 
     /**
+     * Texto amigável do prazo de vigência (12 meses / exercício financeiro / outro).
+     */
+    public function getPrazoVigenciaTextoAttribute(): string
+    {
+        $vigencia = is_array($this->prazo_vigencia) ? $this->prazo_vigencia : ['12_meses'];
+
+        if (in_array('exercicio_financeiro', $vigencia)) {
+            return 'até 31/12 do exercício financeiro da contratação';
+        }
+
+        if (in_array('12_meses', $vigencia)) {
+            return '12 meses';
+        }
+
+        if (in_array('outro', $vigencia)) {
+            return $this->prazo_vigencia_outro ?? '________________.';
+        }
+
+        return '________________';
+    }
+
+    /**
      * Serializa datas sem converter para UTC (mantém horário local de Brasília).
      * Resolve o problema de +3h que ocorria ao passar dados via JSON para o frontend.
      */

@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Relatório de Contratos</title>
+    <title>Relatório de Contratos do Sistema</title>
     <style>
         @page {
             margin: 1.5cm 1.5cm 2cm 1.5cm;
@@ -175,19 +175,6 @@
         .text-right { text-align: right; }
         .text-center { text-align: center; }
 
-        .badge {
-            display: inline-block;
-            padding: 1px 5px;
-            border-radius: 3px;
-            font-size: 7.5px;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-
-        .badge-vigente { background-color: #d1fae5; color: #065f46; }
-        .badge-vencido { background-color: #fee2e2; color: #991b1b; }
-        .badge-pendente { background-color: #fef9c3; color: #92400e; }
-
         /* ── Rodapé ── */
         .footer {
             margin-top: 20px;
@@ -205,7 +192,7 @@
     {{-- CABEÇALHO --}}
     {{-- ════════════════════════════════════════ --}}
     <div class="header">
-        <h1>Relatório de Contratos</h1>
+        <h1>Relatório de Contratos do Sistema</h1>
         @if($prefeituraNome)
             <h2>{{ $prefeituraNome }}</h2>
         @endif
@@ -234,17 +221,14 @@
             </tr>
             <tr>
                 <td>
-                    <span class="label">Empresa contratada</span>
-                    <span class="value">{{ $filtros['empresa'] ?? 'Todas' }}</span>
-                </td>
-                <td>
-                    <span class="label">Situação</span>
-                    <span class="value">{{ $filtros['situacao'] ?? 'Vigentes' }}</span>
+                    <span class="label">Vencedor</span>
+                    <span class="value">{{ $filtros['vencedor'] ?? 'Todos' }}</span>
                 </td>
                 <td>
                     <span class="label">Data de referência</span>
                     <span class="value">{{ now()->format('d/m/Y') }}</span>
                 </td>
+                <td></td>
             </tr>
         </table>
     </div>
@@ -264,20 +248,20 @@
                 <td>
                     <span class="label">Valor global dos contratos</span>
                     <span class="value">R$ {{ number_format($valorGlobal, 2, ',', '.') }}</span>
-                    <span class="sub">somatório dos valores totais</span>
+                    <span class="sub">somatório dos valores homologados</span>
                 </td>
                 <td>
-                    <span class="label">Prazo de vigência abrangido</span>
-                    @if($menorInicio || $maiorTermino)
+                    <span class="label">Período de assinatura</span>
+                    @if($dataAssinaturaMin || $dataAssinaturaMax)
                         <span class="value" style="font-size:11px;">
-                            {{ $menorInicio ? \Carbon\Carbon::parse($menorInicio)->format('d/m/Y') : '—' }}
+                            {{ $dataAssinaturaMin ? $dataAssinaturaMin->format('d/m/Y') : '—' }}
                             até
-                            {{ $maiorTermino ? \Carbon\Carbon::parse($maiorTermino)->format('d/m/Y') : '—' }}
+                            {{ $dataAssinaturaMax ? $dataAssinaturaMax->format('d/m/Y') : '—' }}
                         </span>
                     @else
                         <span class="value" style="font-size:11px;">—</span>
                     @endif
-                    <span class="sub">menor início e maior término</span>
+                    <span class="sub">menor e maior data de assinatura</span>
                 </td>
             </tr>
         </table>
@@ -289,7 +273,7 @@
     <div class="section">
         <div class="section-title">3. Relação dos Contratos</div>
 
-        @if($contratos->isEmpty())
+        @if($processos->isEmpty())
             <p style="color:#888; font-style:italic; text-align:center; padding:20px 0;">
                 Nenhum contrato encontrado com os filtros aplicados.
             </p>
@@ -298,49 +282,59 @@
                 <thead>
                     <tr>
                         <th style="width:4%">Nº</th>
-                        <th style="width:12%">Contrato</th>
                         <th style="width:12%">Processo</th>
-                        <th style="width:16%">Modalidade</th>
-                        <th style="width:25%">Contratada</th>
-                        <th style="width:13%">Vigência</th>
-                        <th style="width:11%" class="text-right">Valor Total</th>
-                        <th style="width:7%" class="text-center">Situação</th>
+                        <th style="width:14%">Modalidade</th>
+                        <th style="width:14%">Contrato</th>
+                        <th style="width:24%">Contratada</th>
+                        <th style="width:12%" class="text-center">Vigência</th>
+                        <th style="width:12%" class="text-right">Valor Total</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($contratos as $i => $contrato)
-                        @php $bgClass = $i % 2 === 0 ? 'bg-odd' : 'bg-even'; @endphp
-                        
+                    @foreach($processos as $i => $processo)
+                        @php
+                            $bgClass = $i % 2 === 0 ? 'bg-odd' : 'bg-even';
+
+                            $contratada = $processo->contrato->homologacao?->razao_social
+                                ?? $processo->vencedores->first()?->razao_social;
+                            $contratadaCnpj = $processo->contrato->homologacao?->cnpj_empresa_vencedora
+                                ?? $processo->vencedores->first()?->cnpj_formatado;
+
+                            $valor = $processo->contrato->homologacao?->valor_total
+                                ?? $processo->vencedores->sum('valor_total');
+                        @endphp
+
                         <tr class="{{ $bgClass }} border-no-bottom">
                             <td class="text-center">{{ $i + 1 }}</td>
-                            <td>{{ $contrato->numero_contrato ?? '—' }}</td>
-                            <td>{{ $contrato->numero_processo }}</td>
-                            <td>{{ $contrato->modalidade?->getDisplayName() ?? '—' }}</td>
                             <td>
-                                {{ $contrato->empresa?->razao_social ?? '—' }}<br>
-                                @if($contrato->empresa?->cnpj)
-                                    <span style="font-size:7.5px;color:#888;">{{ $contrato->empresa->cnpj_formatado }}</span>
+                                {{ $processo->numero_processo }}
+                                @if($processo->numero_procedimento)
+                                    <br><span style="font-size:7.5px;color:#888;">Proc: {{ $processo->numero_procedimento }}</span>
+                                @endif
+                            </td>
+                            <td>{{ $processo->modalidade?->getDisplayName() ?? '—' }}</td>
+                            <td>
+                                {{ $processo->contrato->numero_contrato ?? '—' }}
+                                @if($processo->contrato->data_assinatura_contrato)
+                                    <br><span style="font-size:7.5px;color:#888;">Assinatura: {{ $processo->contrato->data_assinatura_contrato->format('d/m/Y') }}</span>
+                                @endif
+                            </td>
+                            <td>
+                                {{ $contratada ?? '—' }}
+                                @if($contratadaCnpj)
+                                    <br><span style="font-size:7.5px;color:#888;">{{ $contratadaCnpj }}</span>
                                 @endif
                             </td>
                             <td class="text-center">
-                                {{ $contrato->data_inicio ? $contrato->data_inicio->format('d/m/Y') : '—' }}
-                                @if($contrato->data_finalizacao)
-                                    <br>até {{ $contrato->data_finalizacao->format('d/m/Y') }}
-                                @endif
+                                {{ $processo->detalhe->prazo_vigencia_texto ?? '—' }}
                             </td>
                             <td class="text-right">
-                                R$ {{ number_format($contrato->valor_total, 2, ',', '.') }}
-                            </td>
-                            <td class="text-center">
-                                @php $sit = $contrato->situacao; @endphp
-                                <span class="badge badge-{{ strtolower($sit) }}">
-                                    {{ $sit }}
-                                </span>
+                                R$ {{ number_format($valor, 2, ',', '.') }}
                             </td>
                         </tr>
                         <tr class="{{ $bgClass }} linha-objeto">
-                            <td colspan="8">
-                                <strong>Objeto:</strong> {{ $contrato->objeto }}
+                            <td colspan="7">
+                                <strong>Objeto:</strong> {{ $processo->objeto }}
                             </td>
                         </tr>
                     @endforeach
@@ -349,7 +343,6 @@
                     <tr>
                         <td colspan="6" class="text-right">Total geral:</td>
                         <td class="text-right">R$ {{ number_format($valorGlobal, 2, ',', '.') }}</td>
-                        <td></td>
                     </tr>
                 </tfoot>
             </table>
