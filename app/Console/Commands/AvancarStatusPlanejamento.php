@@ -13,30 +13,10 @@ class AvancarStatusPlanejamento extends Command
 
     public function handle(): void
     {
-        // Backfill: processos com data_hora_fase_edital no detalhe mas sem planejamento_data_abertura
-        $semData = Processo::whereNull('planejamento_data_abertura')
-            ->whereHas('detalhe', fn($q) => $q->whereNotNull('data_hora_fase_edital'))
-            ->with('detalhe')
-            ->get();
-
-        $backfilled = 0;
-        foreach ($semData as $processo) {
-            $updates = ['planejamento_data_abertura' => $processo->detalhe->data_hora_fase_edital];
-            if ($processo->planejamento_status === 'em_elaboracao') {
-                $updates['planejamento_status'] = 'aguardando_sessao';
-            }
-            $processo->update($updates);
-            $backfilled++;
-        }
-
-        if ($backfilled > 0) {
-            $this->info("$backfilled processo(s) com data_hora sincronizados.");
-        }
-
-        // Avança aguardando_sessao → em_andamento quando a data de abertura chegou
+        // Avança aguardando_sessao → em_andamento quando a data da sessão pública chegou
         $quantidade = Processo::where('planejamento_status', 'aguardando_sessao')
-            ->whereNotNull('planejamento_data_abertura')
-            ->whereDate('planejamento_data_abertura', '<=', Carbon::today())
+            ->whereHas('detalhe', fn($q) => $q->whereNotNull('data_hora_fase_edital')
+                ->whereDate('data_hora_fase_edital', '<=', Carbon::today()))
             ->update(['planejamento_status' => 'em_andamento']);
 
         $this->info("$quantidade processo(s) avançado(s) para Em Andamento.");

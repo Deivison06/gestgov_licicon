@@ -117,12 +117,6 @@
                             <p class="text-xs text-gray-400 font-medium mb-1">Tipo de Contratação</p>
                             <p class="text-gray-800">{{ $processo->tipo_contratacao_nome }}</p>
                         </div>
-                        @if($processo->planejamento_data_abertura)
-                            <div>
-                                <p class="text-xs text-gray-400 font-medium mb-1">Data de Abertura</p>
-                                <p class="text-gray-900 font-semibold">{{ $processo->planejamento_data_abertura->format('d/m/Y') }}</p>
-                            </div>
-                        @endif
                         @if($processo->planejamento_fim_recurso)
                             <div>
                                 <p class="text-xs text-gray-400 font-medium mb-1">Prazo do Recurso</p>
@@ -470,7 +464,7 @@
     </div>{{-- /space-y-5 --}}
 
     {{-- Modal: Agendar Sessão --}}
-    @php $dataSessaoDetectada = $processo->detalhe?->data_hora?->toDateString(); @endphp
+    @php $dataSessaoDetectada = $processo->detalhe?->data_hora_fase_edital?->toDateString(); @endphp
     <div x-show="modalAgendar"
         x-transition:enter="ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
         x-transition:leave="ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
@@ -502,7 +496,7 @@
                                 </svg>
                                 <p class="text-xs text-amber-800">
                                     Data detectada automaticamente dos dados do processo:
-                                    <strong>{{ $processo->detalhe->data_hora->format('d/m/Y') }}</strong>.
+                                    <strong>{{ $processo->detalhe->data_hora_fase_edital->format('d/m/Y') }}</strong>.
                                     Você pode alterá-la se necessário.
                                 </p>
                             </div>

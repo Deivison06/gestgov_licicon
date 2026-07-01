@@ -41,7 +41,7 @@ class Processo extends Model
         'justificativa_adiamento', // Adicionado
         'processo_original_id', // Adicionado para republicação
         'planejamento_status',
-        'planejamento_data_abertura',
+        'planejamento_data_abertura', // TODO: remover coluna (obsoleta desde 2026-07-01, substituída por detalhe.data_hora_fase_edital)
         'planejamento_fim_recurso',
         'planejamento_ordem',
         'finalizacao_iniciada_por_id',
@@ -55,7 +55,7 @@ class Processo extends Model
         'status' => ProcessoStatusEnum::class,
         'data_cancelamento' => 'date',
         'data_adiamento' => 'date',
-        'planejamento_data_abertura' => 'datetime',
+        'planejamento_data_abertura' => 'datetime', // TODO: remover (obsoleta, ver fillable)
         'planejamento_fim_recurso' => 'datetime',
         'finalizacao_iniciada_em' => 'datetime',
     ];

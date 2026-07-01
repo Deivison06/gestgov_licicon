@@ -7,6 +7,7 @@ return new class extends Migration {
     public function up(): void {
         Schema::table('processos', function (Blueprint $table) {
             $table->string('planejamento_status', 50)->default('em_elaboracao')->after('status');
+            // TODO: remover coluna (obsoleta desde 2026-07-01, substituída por processo_detalhes.data_hora_fase_edital)
             $table->dateTime('planejamento_data_abertura')->nullable()->after('planejamento_status');
             $table->dateTime('planejamento_fim_recurso')->nullable()->after('planejamento_data_abertura');
         });

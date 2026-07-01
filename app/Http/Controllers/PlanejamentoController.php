@@ -71,12 +71,12 @@ class PlanejamentoController extends Controller
         $statusConfig = self::statusConfig();
         $visao        = $request->input('visao', 'padrao');
 
-        $query = Processo::with('prefeitura', 'notas')->withCount('documentos')
+        $query = Processo::with('prefeitura', 'notas', 'detalhe', 'documentos')
             ->whereNotIn('status', ['FINALIZADO', 'CANCELADO'])
             ->when($request->filled('prefeitura_id'), fn($q) => $q->where('prefeitura_id', $request->prefeitura_id))
             ->when($request->filled('status'), fn($q) => $q->where('planejamento_status', $request->status))
-            ->when($request->filled('data_de'), fn($q) => $q->where('planejamento_data_abertura', '>=', $request->data_de))
-            ->when($request->filled('data_ate'), fn($q) => $q->where('planejamento_data_abertura', '<=', $request->data_ate));
+            ->when($request->filled('data_de'), fn($q) => $q->whereHas('detalhe', fn($d) => $d->where('data_hora_fase_edital', '>=', $request->data_de)))
+            ->when($request->filled('data_ate'), fn($q) => $q->whereHas('detalhe', fn($d) => $d->where('data_hora_fase_edital', '<=', $request->data_ate)));
 
         $modalidadesEspeciais = [ModalidadeEnum::DISPENSA->value, ModalidadeEnum::INEXIGIBILIDADE->value];
 
@@ -94,6 +94,15 @@ class PlanejamentoController extends Controller
         }
 
         $processos = $query->orderBy('planejamento_ordem', 'asc')->orderBy('updated_at', 'desc')->get();
+
+        $documentoService = app(ProcessoDocumentoService::class);
+        foreach ($processos as $processo) {
+            $tiposRequeridos = collect($documentoService->getDocumentosPorModalidade($processo))
+                ->reject(fn($cfg) => isset($cfg['documento_id'])) // entradas dinâmicas (republicações) já geradas
+                ->keys();
+            $tiposGerados = $processo->documentos->pluck('tipo_documento');
+            $processo->documentos_pendentes = $tiposRequeridos->diff($tiposGerados)->isNotEmpty();
+        }
 
         $colunas = [];
         foreach (array_keys($statusConfig) as $status) {
@@ -123,7 +132,7 @@ class PlanejamentoController extends Controller
 
         $modalidade = $request->input('modalidade');
 
-        $query = Processo::with('prefeitura')
+        $query = Processo::with('prefeitura', 'detalhe')
             ->where('planejamento_status', '!=', 'concluida')
             ->when($status !== 'todos', fn($q) => $q->where('planejamento_status', $status))
             ->when($modalidade, fn($q) => $q->where('modalidade', $modalidade))
@@ -133,7 +142,7 @@ class PlanejamentoController extends Controller
                 if ($status === 'em_recurso' || $tipo === 'recurso') {
                     $q->whereNotNull('planejamento_fim_recurso');
                 } else {
-                    $q->whereNotNull('planejamento_data_abertura');
+                    $q->whereHas('detalhe', fn($d) => $d->whereNotNull('data_hora_fase_edital'));
                 }
             });
 
@@ -148,7 +157,7 @@ class PlanejamentoController extends Controller
         $eventos = $processos->map(function ($p) use ($tipo, $status, $statusConfig) {
             // Se o status filtrado for recurso, usamos a data de recurso, senão a de abertura
             $usarDataRecurso = ($status === 'em_recurso' || ($status === 'todos' && $tipo === 'recurso'));
-            $data = $usarDataRecurso ? $p->planejamento_fim_recurso : $p->planejamento_data_abertura;
+            $data = $usarDataRecurso ? $p->planejamento_fim_recurso : $p->detalhe?->data_hora_fase_edital;
             
             // Definição da cor vibrante
             $cor = $p->prefeitura->cor ?? match($p->planejamento_status) {
@@ -296,10 +305,11 @@ class PlanejamentoController extends Controller
             'data_abertura.required' => 'A data de abertura é obrigatória.',
         ]);
 
-        $processo->update([
-            'planejamento_status'        => 'aguardando_sessao',
-            'planejamento_data_abertura' => Carbon::parse($request->data_abertura),
-        ]);
+        $detalhe = $processo->detalhe ?? $processo->detalhe()->make();
+        $detalhe->data_hora_fase_edital = Carbon::parse($request->data_abertura);
+        $detalhe->save();
+
+        $processo->update(['planejamento_status' => 'aguardando_sessao']);
     }
 
     private function concluir(Processo $processo): void

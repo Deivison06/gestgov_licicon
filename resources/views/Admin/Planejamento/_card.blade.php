@@ -96,20 +96,20 @@
 
         {{-- Data de abertura da sessão --}}
         @unless(($ocultarAcoes ?? false) || ! auth()->user()->hasDirectPermission('planejamento'))
-        @if($processo->planejamento_data_abertura && in_array($processo->planejamento_status, ['aguardando_sessao', 'em_andamento']))
+        @if($processo->detalhe?->data_hora_fase_edital && in_array($processo->planejamento_status, ['aguardando_sessao', 'em_andamento']))
             <div class="flex items-center gap-1.5 bg-blue-50 border border-blue-100 rounded-lg px-2.5 py-1.5">
                 <svg class="w-3.5 h-3.5 shrink-0 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                 </svg>
                 <span class="text-xs font-semibold text-blue-700">
-                    Sessão: {{ $processo->planejamento_data_abertura->format('d/m/Y') }}
+                    Sessão: {{ $processo->detalhe->data_hora_fase_edital->format('d/m/Y') }}
                 </span>
             </div>
         @endif
         @endunless
 
-        {{-- Aviso: sem documentos gerados --}}
-        @if($processo->documentos_count === 0)
+        {{-- Aviso: ainda faltam documentos obrigatórios --}}
+        @if($processo->documentos_pendentes)
             <div class="flex items-center gap-1.5 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5">
                 <svg class="w-3.5 h-3.5 shrink-0 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
@@ -124,7 +124,7 @@
             x-data="{ processoId: {{ $processo->id }} }">
 
             @if($processo->planejamento_status === 'em_elaboracao')
-                <button @click="$dispatch('abrir-modal-agendar', { id: {{ $processo->id }}, dataSessao: '{{ $processo->detalhe?->data_hora?->toDateString() ?? '' }}' })"
+                <button @click="$dispatch('abrir-modal-agendar', { id: {{ $processo->id }}, dataSessao: '{{ $processo->detalhe?->data_hora_fase_edital?->toDateString() ?? '' }}' })"
                     class="w-full inline-flex items-center justify-center gap-1.5 text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white rounded-lg px-3 py-2 transition-colors shadow-sm">
                     <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
