@@ -334,7 +334,7 @@
                         </tr>
                         <tr class="{{ $bgClass }} linha-objeto">
                             <td colspan="7">
-                                <strong>Objeto:</strong> {{ $processo->objeto }}
+                                <strong>Objeto:</strong> {{ trim(html_entity_decode(strip_tags($processo->objeto ?? ''))) }}
                             </td>
                         </tr>
                     @endforeach
