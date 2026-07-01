@@ -301,12 +301,14 @@ class PlanejamentoController extends Controller
 
         $request->validate([
             'data_abertura' => ['required', 'date'],
+            'hora_abertura' => ['required', 'date_format:H:i'],
         ], [
-            'data_abertura.required' => 'A data de abertura é obrigatória.',
+            'data_abertura.required' => 'A data da sessão é obrigatória.',
+            'hora_abertura.required' => 'O horário da sessão é obrigatório.',
         ]);
 
         $detalhe = $processo->detalhe ?? $processo->detalhe()->make();
-        $detalhe->data_hora_fase_edital = Carbon::parse($request->data_abertura);
+        $detalhe->data_hora_fase_edital = Carbon::parse("{$request->data_abertura} {$request->hora_abertura}");
         $detalhe->save();
 
         $processo->update(['planejamento_status' => 'aguardando_sessao']);
