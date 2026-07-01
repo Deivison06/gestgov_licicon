@@ -157,10 +157,14 @@
                                     class="w-full px-3 py-2.5 border border-gray-300 rounded-lg
                                            focus:ring-2 focus:ring-[#009496] focus:border-transparent text-sm
                                            transition-all duration-200">
-                                <option value="">Todos os Status</option>
+                                @php
+                                    $filtersSubmitted = request()->hasAny(['search_objeto','search_numero','modalidade','status','data_inicio','data_fim','responsavel']);
+                                    $defaultStatus = $filtersSubmitted ? request('status') : 'EM_ANDAMENTO';
+                                @endphp
+                                <option value="" {{ $defaultStatus === '' ? 'selected' : '' }}>Todos os Status</option>
                                 @foreach(\App\Enums\ProcessoStatusEnum::cases() as $status)
                                     <option value="{{ $status->value }}"
-                                        {{ request('status') == $status->value ? 'selected' : '' }}>
+                                        {{ $defaultStatus == $status->value ? 'selected' : '' }}>
                                         {{ $status->label() }}
                                     </option>
                                 @endforeach
@@ -551,7 +555,13 @@
                                                 @php
                                                     $objeto = strip_tags($processo->objeto);
                                                     $termo = request('search_objeto');
-                                                    $highlighted = preg_replace("/($termo)/i", '<span class="bg-yellow-200 px-1 rounded">$1</span>', htmlspecialchars($objeto));
+                                                    $termoEscapado = preg_quote($termo, '/');
+                                                    $objetoSeguro = htmlspecialchars($objeto);
+                                                    $highlighted = preg_replace(
+                                                        "/({$termoEscapado})/iu",
+                                                        '<span class="bg-yellow-200 px-1 rounded">$1</span>',
+                                                        $objetoSeguro
+                                                    );
                                                 @endphp
                                                 <span>{!! $highlighted !!}</span>
                                             @else

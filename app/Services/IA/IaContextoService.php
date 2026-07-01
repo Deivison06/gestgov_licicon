@@ -39,16 +39,17 @@ class IaContextoService
         ],
 
         'descricao_necessidade_autorizacao' => [
-            'titulo' => 'Descrição da Necessidade para Autorização (DFD)',
+            'titulo' => 'Descrição da Necessidade de Autorização para Elaboração do ETP (DFD)',
 
-            'orientacao' => 'Descreva objetivamente a necessidade administrativa que justifica a abertura do processo,
-                demonstrando que o atendimento da demanda é indispensável ao funcionamento regular do órgão.',
+            'orientacao' => 'Elabore um texto formal e institucional em que a autoridade competente (ex.: Prefeito Municipal) justifica a necessidade da futura contratação e autoriza formalmente a elaboração do Estudo Técnico Preliminar (ETP). O texto deve: (1) descrever brevemente a necessidade administrativa que motiva a contratação; (2) deixar claro que esta é apenas uma autorização para elaborar o ETP, não para contratar ou licitar; (3) manter tom formal, objetivo e institucional, adequado a um documento de autorização administrativa. Não trate como autorização da licitação ou da contratação em si.',
 
-            'estrutura' => 'contextualização → necessidade → impacto da ausência da contratação',
+            'estrutura' => 'contexto da necessidade → justificativa para elaboração do ETP → autorização formal para elaborar o ETP',
 
             'pontos_criticos' => [
-                'demonstrar indispensabilidade',
-                'evidenciar continuidade do serviço público',
+                'deixar explícito que a autorização é apenas para elaboração do ETP',
+                'não tratar como autorização de contratação ou licitação',
+                'manter linguagem formal e institucional',
+                'justificar a necessidade da futura contratação',
             ],
         ],
 
@@ -88,15 +89,16 @@ class IaContextoService
         'solucoes_disponivel_mercado' => [
             'titulo' => 'Soluções Disponíveis no Mercado (ETP)',
 
-            'orientacao' => 'O texto DEVE apresentar NO MÍNIMO TRÊS (3) soluções disponíveis no mercado que atendam ao objeto da contratação (utilize o problema e necessidade do caso concreto). Para CADA UMA das soluções apresente: 1) Nome ou descrição da solução; 2) Breve explicação de como funciona; 3) Principais vantagens; 4) Principais desvantagens. Ao final, apresente uma comparação entre as alternativas facilitando a identificação da solução mais adequada. Não cite marcas específicas, foque nos modelos e tipologias de serviço/produto.',
+            'orientacao' => 'Apresente NO MÍNIMO TRÊS (3) soluções disponíveis no mercado que possam atender ao objeto da contratação. Para CADA solução apresentada: 1) descreva o nome ou tipologia da solução; 2) explique brevemente como ela funciona; 3) liste as principais vantagens; 4) liste as principais desvantagens. Ao final, faça uma comparação objetiva entre as soluões apresentadas, sem recomendar, indicar ou sugerir qual deve ser escolhida. A IA deve ser estritamente neutra: não emita opiniões, não direcione a decisão, não use expressões como "a melhor opção" ou "recomendamos". O objetivo é fornecer informações para que o gestor faça a escolha. Não cite marcas específicas; foque em modelos e tipologias de serviço/produto.',
 
-            'estrutura' => 'introdução → solução 1 (nome, como funciona, vantagens, desvantagens) → solução 2 (...) → solução 3 (...) → comparação final das alternativas',
+            'estrutura' => 'introdução → solução 1 (nome, como funciona, vantagens, desvantagens) → solução 2 (...) → solução 3 (...) → comparação objetiva entre as alternativas (sem recomendação)',
 
             'pontos_criticos' => [
                 'apresentar no mínimo três soluções de mercado',
                 'detalhar funcionamento, vantagens e desvantagens de cada uma',
-                'fazer comparação final facilitando a decisão',
-                'não citar marcas específicas'
+                'fazer comparação objetiva ao final, sem recomendar nenhuma solução',
+                'não usar expressões como "melhor opção", "recomendamos" ou similares',
+                'não citar marcas específicas',
             ],
         ],
 

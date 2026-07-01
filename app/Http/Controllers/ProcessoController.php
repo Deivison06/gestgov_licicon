@@ -37,35 +37,41 @@ class ProcessoController extends AbstractController
         $prefeituras = Prefeitura::withCount('processos')->get();
         $query = Processo::with(['prefeitura', 'detalhe', 'user']);
 
-        // Filtro por prefeitura (obrigatório para mostrar a tabela)
+        // Filtro por prefeitura
         $prefeituraId = $request->prefeitura_id;
         if ($prefeituraId) {
             $query->where('prefeitura_id', $prefeituraId);
         }
 
-        // Filtro avançado por pesquisa
-        if ($request->filled('search')) {
-            $search = $this->prepararTermoBusca($request->search);
+        // Pesquisa por objeto
+        if ($request->filled('search_objeto')) {
+            $searchObjeto = $this->prepararTermoBusca($request->search_objeto);
+            $query->where('objeto', 'like', "%{$searchObjeto}%");
+        }
 
-            $query->where(function($q) use ($search) {
-                // Busca no objeto (com destaque para correspondências)
-                $q->where('objeto', 'like', "%{$search}%")
-
-                    // Busca em números (processo e procedimento)
-                    ->orWhere('numero_processo', 'like', "%{$search}%")
-                    ->orWhere('numero_procedimento', 'like', "%{$search}%")
-
-                    // Busca na prefeitura (nome e cidade)
-                    ->orWhereHas('prefeitura', function($q2) use ($search) {
-                        $q2->where('nome', 'like', "%{$search}%")
-                            ->orWhere('cidade', 'like', "%{$search}%");
-                    })
-
-                    // Busca no responsável
-                    ->orWhereHas('user', function($q3) use ($search) {
-                        $q3->where('name', 'like', "%{$search}%");
-                    });
+        // Pesquisa por número
+        if ($request->filled('search_numero')) {
+            $searchNumero = $this->prepararTermoBusca($request->search_numero);
+            $query->where(function ($q) use ($searchNumero) {
+                $q->where('numero_processo', 'like', "%{$searchNumero}%")
+                  ->orWhere('numero_procedimento', 'like', "%{$searchNumero}%");
             });
+        }
+
+        // Filtro por responsável
+        if ($request->filled('responsavel')) {
+            $responsavel = $this->prepararTermoBusca($request->responsavel);
+            $query->whereHas('user', function ($q) use ($responsavel) {
+                $q->where('name', 'like', "%{$responsavel}%");
+            });
+        }
+
+        // Filtro por data de criação
+        if ($request->filled('data_inicio')) {
+            $query->whereDate('created_at', '>=', $request->data_inicio);
+        }
+        if ($request->filled('data_fim')) {
+            $query->whereDate('created_at', '<=', $request->data_fim);
         }
 
         // Filtro por modalidade
@@ -74,20 +80,23 @@ class ProcessoController extends AbstractController
         }
 
         // Filtro por status
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        } else {
-            // Por padrão, mostrar apenas processos ativos
-            // MAS se houver pesquisa ativa, mostrar tudo para facilitar a busca
-            $hasActiveFilters = $request->filled('search') || $request->filled('modalidade');
+        // Se o usuário enviou o formulário (qualquer parâmetro de filtro presente),
+        // respeitar a escolha dele (inclusive vazio = todos).
+        // Se nenhum filtro foi enviado (acesso direto à página), mostrar apenas Em Andamento.
+        $filtersSubmitted = $request->hasAny([
+            'search_objeto', 'search_numero', 'modalidade', 'status',
+            'data_inicio', 'data_fim', 'responsavel'
+        ]);
 
-            if (!$hasActiveFilters) {
-                $query->whereNotIn('status', [
-                    ProcessoStatusEnum::FINALIZADO->value,
-                    ProcessoStatusEnum::CANCELADO->value,
-                    ProcessoStatusEnum::ADIADO->value
-                ]);
+        if ($filtersSubmitted) {
+            // usuário escolheu um status específico
+            if ($request->filled('status')) {
+                $query->where('status', $request->status);
             }
+            // se status vazio ("Todos os Status"), não aplicar nenhum filtro de status
+        } else {
+            // acesso direto sem filtros — mostrar somente Em Andamento
+            $query->where('status', ProcessoStatusEnum::EM_ANDAMENTO->value);
         }
 
         // Ordenação

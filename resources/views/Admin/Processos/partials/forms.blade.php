@@ -46,7 +46,7 @@
     <x-form-field name="descricao_necessidade" label="DESCRIÇÃO DA NECESSIDADE" type="textarea" rows="5" :ia="true" :iaProcessoId="$processo->id" />
 
     @elseif($campo === 'descricao_necessidade_autorizacao')
-    <x-form-field name="descricao_necessidade_autorizacao" label="DESCRIÇÃO DA NECESSIDADE DE AUTORIZAÇÃO" type="textarea" rows="5" :ia="true" :iaProcessoId="$processo->id" />
+    <x-form-field name="descricao_necessidade_autorizacao" label="DESCRIÇÃO DA NECESSIDADE DE AUTORIZAÇÃO PARA ELABORAÇÃO DO ETP" type="textarea" rows="5" :ia="true" :iaProcessoId="$processo->id" />
 
     @elseif($campo === 'incluir_requisito_cada_caso_concreto')
     <x-form-field name="incluir_requisito_cada_caso_concreto" label="REQUISITOS REFERENTES A CADA CASO CONCRETO" type="textarea" rows="5" :ia="true" :iaProcessoId="$processo->id" />
