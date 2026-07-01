@@ -60,15 +60,22 @@ class IaContextoService
         'problema_resolvido' => [
             'titulo' => 'Problema a ser Resolvido (ETP)',
 
-            'orientacao' => 'Descreva em texto resumido o problema identificado pela Administração que motiva a contratação.
-                Aponte consequências da não contratação. Evite listas; use parágrafos corridos.',
+            'orientacao' => 'Este texto será usado na CAPA do documento, portanto deve ser CURTO.
+                Escreva NO MÁXIMO 1 (um) parágrafo, com aproximadamente 3 a 6 linhas.
+                Apresente apenas um resumo objetivo e direto do problema identificado pela Administração.
+                NÃO use listas. NÃO faça fundamentações, contextualizações longas nem histórico.
+                NÃO sugira nem antecipe soluções. Para este campo, priorize a brevidade acima de
+                tudo e ignore qualquer orientação de tamanho maior.',
 
             'estrutura' => 'problema → impacto → consequência administrativa',
 
             'pontos_criticos' => [
-                'explicar problema real',
-                'demonstrar prejuízo operacional',
-                'não antecipar solução',
+                'no máximo 1 parágrafo, entre 3 e 6 linhas',
+                'texto objetivo e direto — apenas o resumo do problema',
+                'não usar listas',
+                'não fazer fundamentações, contextualizações longas nem histórico',
+                'não antecipar nem sugerir solução',
+                'manter o texto curto mesmo que o limite geral de palavras seja maior',
             ],
         ],
 
@@ -89,15 +96,16 @@ class IaContextoService
         'solucoes_disponivel_mercado' => [
             'titulo' => 'Soluções Disponíveis no Mercado (ETP)',
 
-            'orientacao' => 'Apresente NO MÍNIMO TRÊS (3) soluções disponíveis no mercado que possam atender ao objeto da contratação. Para CADA solução apresentada: 1) descreva o nome ou tipologia da solução; 2) explique brevemente como ela funciona; 3) liste as principais vantagens; 4) liste as principais desvantagens. Ao final, faça uma comparação objetiva entre as soluões apresentadas, sem recomendar, indicar ou sugerir qual deve ser escolhida. A IA deve ser estritamente neutra: não emita opiniões, não direcione a decisão, não use expressões como "a melhor opção" ou "recomendamos". O objetivo é fornecer informações para que o gestor faça a escolha. Não cite marcas específicas; foque em modelos e tipologias de serviço/produto.',
+            'orientacao' => 'Apresente NO MÍNIMO TRÊS (3) soluções disponíveis no mercado que possam atender ao objeto da contratação. Para CADA solução apresentada: 1) descreva o nome ou tipologia da solução; 2) explique brevemente como ela funciona; 3) informe as principais vantagens; 4) informe as principais desvantagens. Limite-se a APRESENTAR as soluções com seus respectivos prós e contras. NÃO compare as soluções entre si. NÃO recomende, indique nem sugira qual deve ser escolhida. NÃO emita opiniões nem conclua qual é a melhor. Não use expressões como "a melhor opção" ou "recomendamos". Não cite marcas específicas; foque em modelos e tipologias de serviço/produto.',
 
-            'estrutura' => 'introdução → solução 1 (nome, como funciona, vantagens, desvantagens) → solução 2 (...) → solução 3 (...) → comparação objetiva entre as alternativas (sem recomendação)',
+            'estrutura' => 'para cada solução: nome/tipologia → como funciona → vantagens → desvantagens (sem comparar, recomendar ou concluir)',
 
             'pontos_criticos' => [
                 'apresentar no mínimo três soluções de mercado',
-                'detalhar funcionamento, vantagens e desvantagens de cada uma',
-                'fazer comparação objetiva ao final, sem recomendar nenhuma solução',
-                'não usar expressões como "melhor opção", "recomendamos" ou similares',
+                'para cada solução: explicar brevemente o funcionamento, as vantagens e as desvantagens',
+                'não comparar as soluções entre si',
+                'não recomendar, sugerir ou concluir qual é a melhor',
+                'não emitir opiniões nem usar expressões como "melhor opção" ou "recomendamos"',
                 'não citar marcas específicas',
             ],
         ],
