@@ -631,7 +631,10 @@
                 <i class="fas fa-balance-scale mr-1"></i> Inserir preços TCE
             </a>
             @php
-                $countTceLink = count($processo->detalhe?->painel_preco_tce ?? []);
+                $painelPrecoTce = $processo->detalhe?->painel_preco_tce;
+                // Legado: alguns registros ficaram com JSON codificado em dobro; decodifica de novo se ainda vier como string.
+                $painelPrecoTce = is_string($painelPrecoTce) ? (json_decode($painelPrecoTce, true) ?? []) : ($painelPrecoTce ?? []);
+                $countTceLink = count($painelPrecoTce);
             @endphp
 
             @if($countTceLink)
@@ -764,7 +767,12 @@
                     <i class="fas fa-search mr-1.5"></i> Pesquisar no PNCP
                 </a>
             </div>
-            @php $countTce = !empty($processo->detalhe?->painel_preco_tce) ? count($processo->detalhe->painel_preco_tce) : 0; @endphp
+            @php
+                $painelPrecoTceCard = $processo->detalhe?->painel_preco_tce;
+                // Legado: alguns registros ficaram com JSON codificado em dobro; decodifica de novo se ainda vier como string.
+                $painelPrecoTceCard = is_string($painelPrecoTceCard) ? (json_decode($painelPrecoTceCard, true) ?? []) : ($painelPrecoTceCard ?? []);
+                $countTce = count($painelPrecoTceCard);
+            @endphp
             @if($countTce > 0)
             <div class="text-xs font-medium text-blue-700 flex items-center gap-1.5">
                 <i class="fas fa-check-circle"></i>
