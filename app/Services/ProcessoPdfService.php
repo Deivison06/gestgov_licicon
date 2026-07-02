@@ -1235,7 +1235,10 @@ class ProcessoPdfService extends AbstractService
         $precoMapId = [];
 
         if ($tipoRelatorio === 'tce') {
-            foreach ($detalhe->painel_preco_tce ?? [] as $p) {
+            $painelPrecoTce = $detalhe->painel_preco_tce;
+            // Legado: alguns registros ficaram com JSON codificado em dobro; decodifica de novo se ainda vier como string.
+            $painelPrecoTce = is_string($painelPrecoTce) ? (json_decode($painelPrecoTce, true) ?? []) : ($painelPrecoTce ?? []);
+            foreach ($painelPrecoTce as $p) {
                 if (!empty($p['etp_item_id']) && ($p['media'] ?? '') !== '') {
                     $media = (float) str_replace(',', '.', str_replace('.', '', $p['media']));
                     if ($media > 0) {
