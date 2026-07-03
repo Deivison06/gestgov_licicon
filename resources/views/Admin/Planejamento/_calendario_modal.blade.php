@@ -36,6 +36,24 @@ document.addEventListener('alpine:init', () => {
             return this.eventos.filter(e => e.start === str);
         },
 
+        horasDia() {
+            const eventosDoDia = this.eventosParaDia(this.currentDate);
+            return Array.from({ length: 24 }, (_, h) => ({
+                hora: String(h).padStart(2, '0') + ':00',
+                eventos: eventosDoDia.filter(e => parseInt((e.extendedProps.hora || '00:00').split(':')[0], 10) === h),
+            }));
+        },
+
+        scrollTimelineDia() {
+            this.$nextTick(() => {
+                const el = this.$refs.timelineDia;
+                if (!el) return;
+                const eventos = this.eventosParaDia(this.currentDate);
+                const primeiraHora = eventos.length ? parseInt((eventos[0].extendedProps.hora || '07:00').split(':')[0], 10) : 7;
+                el.scrollTop = Math.max(0, primeiraHora - 1) * 48;
+            });
+        },
+
         // ── Geração das grades ────────────────────────────────────
 
         diasMes() {
@@ -91,27 +109,39 @@ document.addEventListener('alpine:init', () => {
 
         prevPeriodo() {
             const d = new Date(this.currentDate);
-            this.viewMode === 'month'
-                ? d.setMonth(d.getMonth() - 1)
-                : d.setDate(d.getDate() - 7);
+            if (this.viewMode === 'month') d.setMonth(d.getMonth() - 1);
+            else if (this.viewMode === 'week') d.setDate(d.getDate() - 7);
+            else d.setDate(d.getDate() - 1);
             this.currentDate = d;
+            if (this.viewMode === 'day') this.scrollTimelineDia();
         },
 
         nextPeriodo() {
             const d = new Date(this.currentDate);
-            this.viewMode === 'month'
-                ? d.setMonth(d.getMonth() + 1)
-                : d.setDate(d.getDate() + 7);
+            if (this.viewMode === 'month') d.setMonth(d.getMonth() + 1);
+            else if (this.viewMode === 'week') d.setDate(d.getDate() + 7);
+            else d.setDate(d.getDate() + 1);
             this.currentDate = d;
+            if (this.viewMode === 'day') this.scrollTimelineDia();
         },
 
         irParaHoje() {
             this.currentDate = new Date();
+            if (this.viewMode === 'day') this.scrollTimelineDia();
+        },
+
+        irParaDia(date) {
+            this.currentDate = date;
+            this.viewMode = 'day';
+            this.scrollTimelineDia();
         },
 
         periodoLabel() {
             if (this.viewMode === 'month') {
                 return this.currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+            }
+            if (this.viewMode === 'day') {
+                return this.currentDate.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
             }
             const dias  = this.diasSemana();
             const first = dias[0].date;
@@ -162,6 +192,9 @@ document.addEventListener('alpine:init', () => {
                 title:         evento.title,
                 objeto:        evento.extendedProps.objeto,
                 status:        evento.extendedProps.status,
+                hora:          evento.extendedProps.hora,
+                nomeResumido:  evento.extendedProps.nomeResumido,
+                cidade:        evento.extendedProps.cidade,
                 cor:           evento.backgroundColor,
                 url:           evento.url,
                 dataFormatted: date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }),
@@ -282,6 +315,11 @@ document.addEventListener('alpine:init', () => {
                             class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all duration-200">
                             Semana
                         </button>
+                        <button @click="viewMode = 'day'; scrollTimelineDia()"
+                            :class="viewMode === 'day' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-700'"
+                            class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all duration-200">
+                            Dia
+                        </button>
                     </div>
                 </div>
             </div>
@@ -305,10 +343,11 @@ document.addEventListener('alpine:init', () => {
                         <template x-for="(dia, idx) in diasMes()" :key="idx">
                             <div class="bg-white min-h-[88px] p-1.5 flex flex-col"
                                 :class="{ 'opacity-40': !dia.currentMonth }">
-                                <span class="text-xs font-bold self-start mb-1 w-6 h-6 flex items-center justify-center rounded-full leading-none shrink-0"
-                                    :class="dia.isToday ? 'bg-teal-600 text-white' : 'text-gray-500'">
+                                <button @click="irParaDia(dia.date)"
+                                    class="text-xs font-bold self-start mb-1 w-6 h-6 flex items-center justify-center rounded-full leading-none shrink-0 transition-colors"
+                                    :class="dia.isToday ? 'bg-teal-600 text-white hover:bg-teal-700' : 'text-gray-500 hover:bg-gray-100'">
                                     <span x-text="dia.date.getDate()"></span>
-                                </span>
+                                </button>
                                 <div class="flex flex-col gap-0.5 overflow-hidden">
                                     <template x-for="evento in eventosParaDia(dia.date)" :key="evento.id">
                                         <button @click="abrirDetalhes(evento)"
@@ -330,7 +369,9 @@ document.addEventListener('alpine:init', () => {
                             <div class="bg-white flex flex-col"
                                 :class="dia.isToday ? 'bg-teal-50/60' : ''">
                                 {{-- Cabeçalho do dia --}}
-                                <div class="px-2 py-3 text-center border-b"
+                                <button @click="irParaDia(dia.date)"
+                                    type="button"
+                                    class="px-2 py-3 text-center border-b transition-colors hover:bg-gray-50"
                                     :class="dia.isToday ? 'border-teal-100' : 'border-gray-100'">
                                     <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider" x-text="dia.nomeDia"></div>
                                     <div class="w-8 h-8 mx-auto mt-1 flex items-center justify-center rounded-full text-sm font-extrabold"
@@ -338,20 +379,54 @@ document.addEventListener('alpine:init', () => {
                                         x-text="dia.date.getDate()">
                                     </div>
                                     <div class="text-[9px] text-gray-400 mt-0.5" x-text="dia.mesAbrev"></div>
-                                </div>
+                                </button>
                                 {{-- Eventos --}}
                                 <div class="p-1.5 min-h-[140px] flex flex-col gap-1">
                                     <template x-for="evento in eventosParaDia(dia.date)" :key="evento.id">
                                         <button @click="abrirDetalhes(evento)"
                                             class="w-full text-left rounded-lg px-2 py-1.5 leading-tight text-white transition-all hover:brightness-110 active:scale-95"
-                                            :style="`background-color: ${evento.backgroundColor}`">
-                                            <div class="text-[10px] font-bold truncate" x-text="evento.title"></div>
-                                            <div class="text-[9px] font-medium opacity-80 truncate mt-0.5" x-text="evento.extendedProps.status"></div>
+                                            :style="`background-color: ${evento.backgroundColor}`"
+                                            :title="evento.extendedProps.nomeResumido">
+                                            <div class="flex items-center gap-1">
+                                                <span class="text-[9px] font-bold bg-white/25 rounded px-1 py-0.5 shrink-0" x-text="evento.extendedProps.hora"></span>
+                                                <div class="text-[10px] font-bold truncate" x-text="evento.title"></div>
+                                            </div>
+                                            <div class="text-[9px] font-medium opacity-80 truncate mt-0.5" x-text="evento.extendedProps.nomeResumido"></div>
                                         </button>
                                     </template>
                                 </div>
                             </div>
                         </template>
+                    </div>
+                </div>
+
+                {{-- Vista: Dia --}}
+                <div x-show="!loadingEventos && viewMode === 'day'">
+                    <div class="border border-gray-100 rounded-xl overflow-hidden">
+                        <div class="px-4 py-3 text-center border-b border-gray-100 bg-gray-50/50"
+                            :class="dateToStr(currentDate) === dateToStr(new Date()) ? 'bg-teal-50/60' : ''">
+                            <span class="text-sm font-extrabold text-gray-900 capitalize" x-text="currentDate.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })"></span>
+                        </div>
+                        <div x-ref="timelineDia" class="max-h-[480px] overflow-y-auto divide-y divide-gray-100">
+                            <template x-for="bloco in horasDia()" :key="bloco.hora">
+                                <div class="flex min-h-[48px]">
+                                    <div class="w-16 shrink-0 px-2 py-2 text-right text-[11px] font-semibold text-gray-400 border-r border-gray-100" x-text="bloco.hora"></div>
+                                    <div class="flex-1 p-1.5 flex flex-col gap-1">
+                                        <template x-for="evento in bloco.eventos" :key="evento.id">
+                                            <button @click="abrirDetalhes(evento)"
+                                                class="w-full text-left rounded-lg px-3 py-2 text-white transition-all hover:brightness-110 active:scale-95 flex items-start gap-2"
+                                                :style="`background-color: ${evento.backgroundColor}`">
+                                                <span class="text-[10px] font-bold bg-white/25 rounded px-1.5 py-0.5 shrink-0 mt-0.5" x-text="evento.extendedProps.hora"></span>
+                                                <div class="min-w-0 flex-1">
+                                                    <div class="text-xs font-bold truncate" x-text="evento.title"></div>
+                                                    <div class="text-[10px] font-medium opacity-80 truncate" x-text="evento.extendedProps.nomeResumido"></div>
+                                                </div>
+                                            </button>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -377,8 +452,9 @@ document.addEventListener('alpine:init', () => {
             <div class="p-6 space-y-6">
                 <div class="flex items-start justify-between gap-4">
                     <div class="space-y-1">
-                        <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Sessão Pública</span>
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400" x-text="eventoSelecionado?.cidade"></span>
                         <h4 class="text-xl font-bold text-gray-900 leading-tight" x-text="eventoSelecionado?.title"></h4>
+                        <p class="text-sm text-gray-600 font-medium" x-text="eventoSelecionado?.nomeResumido"></p>
                     </div>
                     <button @click="modalDetalhes = false" class="text-gray-400 hover:text-gray-600 transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -397,7 +473,7 @@ document.addEventListener('alpine:init', () => {
                     </div>
                     <div class="bg-gray-50 rounded-xl p-3 border border-gray-100">
                         <span class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Data Agendada</span>
-                        <span class="text-sm font-bold text-gray-700" x-text="eventoSelecionado?.dataFormatted"></span>
+                        <span class="text-sm font-bold text-gray-700" x-text="eventoSelecionado?.dataFormatted + (eventoSelecionado?.hora ? ' às ' + eventoSelecionado.hora : '')"></span>
                     </div>
                 </div>
 

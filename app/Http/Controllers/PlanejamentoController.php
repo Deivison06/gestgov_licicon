@@ -168,9 +168,16 @@ class PlanejamentoController extends Controller
                 default             => '#4b5563', // gray-600
             };
 
+            // Número + modalidade no mesmo formato usado no card do Kanban (ex.: "PE 001/2026")
+            $numero = ($p->modalidade && ($p->numero_processo ?? $p->numero_procedimento))
+                ? $p->modalidade->sigla() . ' ' . ($p->numero_procedimento ?? '-')
+                : '#' . ($p->numero_procedimento ?? $p->id);
+
+            $nomeResumido = $p->nome_resumido ?: ($p->objeto ? html_entity_decode(strip_tags($p->objeto)) : null);
+
             return [
                 'id'              => $p->id,
-                'title'           => "({$p->numero_processo}) " . ($p->prefeitura->cidade ?? $p->prefeitura->nome ?? 'S/C'),
+                'title'           => $numero,
                 'start'           => $data ? $data->toDateString() : null,
                 'allDay'          => true,
                 'backgroundColor' => $cor,
@@ -178,11 +185,17 @@ class PlanejamentoController extends Controller
                 'textColor'       => '#ffffff',
                 'url'             => route('admin.planejamento.show', $p->id),
                 'extendedProps'   => [
-                    'objeto' => $p->objeto ? html_entity_decode(strip_tags($p->objeto)) : null,
-                    'status' => $statusConfig[$p->planejamento_status]['label'] ?? 'N/A',
+                    'objeto'       => $p->objeto ? html_entity_decode(strip_tags($p->objeto)) : null,
+                    'status'       => $statusConfig[$p->planejamento_status]['label'] ?? 'N/A',
+                    'hora'         => $data ? $data->format('H:i') : null,
+                    'numero'       => $numero,
+                    'nomeResumido' => $nomeResumido,
+                    'cidade'       => $p->prefeitura->cidade ?? $p->prefeitura->nome ?? 'S/C',
                 ]
             ];
-        })->filter(fn($e) => !is_null($e['start']))->values();
+        })->filter(fn($e) => !is_null($e['start']))
+            ->sortBy(fn($e) => $e['start'] . ' ' . ($e['extendedProps']['hora'] ?? '00:00'))
+            ->values();
 
         return response()->json($eventos);
     }
