@@ -387,10 +387,7 @@ document.addEventListener('alpine:init', () => {
                                             class="w-full text-left rounded-lg px-2 py-1.5 leading-tight text-white transition-all hover:brightness-110 active:scale-95"
                                             :style="`background-color: ${evento.backgroundColor}`"
                                             :title="evento.extendedProps.nomeResumido">
-                                            <div class="flex items-center gap-1">
-                                                <span class="text-[9px] font-bold bg-white/25 rounded px-1 py-0.5 shrink-0" x-text="evento.extendedProps.hora"></span>
-                                                <div class="text-[10px] font-bold truncate" x-text="evento.title"></div>
-                                            </div>
+                                            <div class="text-[10px] font-bold truncate" x-text="evento.title"></div>
                                             <div class="text-[9px] font-medium opacity-80 truncate mt-0.5" x-text="evento.extendedProps.nomeResumido"></div>
                                         </button>
                                     </template>
@@ -414,13 +411,10 @@ document.addEventListener('alpine:init', () => {
                                     <div class="flex-1 p-1.5 flex flex-col gap-1">
                                         <template x-for="evento in bloco.eventos" :key="evento.id">
                                             <button @click="abrirDetalhes(evento)"
-                                                class="w-full text-left rounded-lg px-3 py-2 text-white transition-all hover:brightness-110 active:scale-95 flex items-start gap-2"
+                                                class="w-full text-left rounded-lg px-3 py-2 text-white transition-all hover:brightness-110 active:scale-95"
                                                 :style="`background-color: ${evento.backgroundColor}`">
-                                                <span class="text-[10px] font-bold bg-white/25 rounded px-1.5 py-0.5 shrink-0 mt-0.5" x-text="evento.extendedProps.hora"></span>
-                                                <div class="min-w-0 flex-1">
-                                                    <div class="text-xs font-bold truncate" x-text="evento.title"></div>
-                                                    <div class="text-[10px] font-medium opacity-80 truncate" x-text="evento.extendedProps.nomeResumido"></div>
-                                                </div>
+                                                <div class="text-xs font-bold truncate" x-text="evento.title"></div>
+                                                <div class="text-[10px] font-medium opacity-80 truncate" x-text="evento.extendedProps.nomeResumido"></div>
                                             </button>
                                         </template>
                                     </div>
