@@ -287,9 +287,11 @@
                  class="mb-6 overflow-hidden bg-white border border-gray-200 border-l-4 {{ $borderClass }} shadow-sm rounded-2xl">
 
                 {{-- Header sempre visível (compacto) --}}
-                <button type="button"
-                        @click="aberto = !aberto"
-                        class="w-full text-left px-5 py-4 hover:bg-gray-50 transition-colors focus:outline-none">
+                <div role="button" tabindex="0"
+                     @click="aberto = !aberto"
+                     @keydown.enter="aberto = !aberto"
+                     @keydown.space.prevent="aberto = !aberto"
+                     class="block w-full text-left px-5 py-4 hover:bg-gray-50 transition-colors focus:outline-none cursor-pointer">
                     <div class="flex items-start justify-between gap-4">
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-2 flex-wrap">
@@ -301,7 +303,7 @@
                                 </span>
                                 <button type="button" 
                                         @click.stop="deletarHomologacao('{{ $processo->id }}', '{{ $homologacao->id }}')" 
-                                        class="ml-2 p-1 text-red-500 transition-colors rounded hover:bg-red-50 hover:text-red-700 focus:outline-none" 
+                                        class="ml-2 p-1 text-red-500 transition-colors rounded hover:bg-red-50 hover:text-red-700 focus:outline-none cursor-pointer" 
                                         title="Excluir Homologação">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                 </button>
@@ -336,7 +338,7 @@
                             </svg>
                         </div>
                     </div>
-                </button>
+                </div>
 
                 {{-- Conteúdo expansível --}}
                 <div x-show="aberto" x-cloak x-transition.duration.200ms class="border-t border-gray-200">
