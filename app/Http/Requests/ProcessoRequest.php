@@ -36,6 +36,7 @@ class ProcessoRequest extends FormRequest
             'responsavel_numeracao' => 'nullable|string|max:255',
             'portaria_numeracao' => 'nullable|string|max:50',
             'unidade_numeracao' => 'nullable|string|max:255',
+            'etp_id' => 'nullable|integer|exists:etps,id',
         ];
     }
 

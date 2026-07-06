@@ -125,15 +125,24 @@ class ProcessoController extends AbstractController
         return $term;
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $prefeituras = Prefeitura::with('unidades')->get();
-        return view('Admin.Processos.create', compact('prefeituras'));
+
+        $etp = null;
+        if ($request->filled('etp_id')) {
+            $etp = \App\Models\Etp::where('status', 'aprovado')
+                ->whereNull('processo_id')
+                ->find($request->integer('etp_id'));
+        }
+
+        return view('Admin.Processos.create', compact('prefeituras', 'etp'));
     }
 
     public function store(ProcessoRequest $request)
     {
         $dados = $request->validated();
+        unset($dados['etp_id']);
         $dados['user_id'] = auth()->id();
         $dados['status'] = ProcessoStatusEnum::EM_ANDAMENTO;
 
@@ -142,11 +151,45 @@ class ProcessoController extends AbstractController
             $dados['numero_processo'] = $this->processoService->gerarProximoNumeroProcesso((int)$dados['prefeitura_id']);
         }
 
-        $processo = $this->processoService->create($dados);
+        $etp = null;
+        if ($request->filled('etp_id')) {
+            $etp = \App\Models\Etp::where('status', 'aprovado')
+                ->whereNull('processo_id')
+                ->where('prefeitura_id', $dados['prefeitura_id'])
+                ->find($request->integer('etp_id'));
+        }
+
+        DB::beginTransaction();
+        try {
+            $processo = $this->processoService->create($dados);
+
+            if ($etp) {
+                $etp->update([
+                    'processo_id' => $processo->id,
+                    'status' => 'em_processo',
+                ]);
+
+                if (!empty($etp->dotacao_orcamentaria)) {
+                    $detalhe = $processo->detalhe ?? $processo->detalhe()->create([]);
+                    if (empty($detalhe->dotacao_orcamentaria)) {
+                        $detalhe->update(['dotacao_orcamentaria' => $etp->dotacao_orcamentaria]);
+                    }
+                }
+            }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Erro ao criar processo a partir de ETP', [
+                'etp_id' => $request->input('etp_id'),
+                'erro' => $e->getMessage(),
+            ]);
+            return redirect()->back()->withInput()->with('error', 'Erro ao criar processo: ' . $e->getMessage());
+        }
 
         return redirect()
             ->route('admin.processos.iniciar', $processo->id)
-            ->with('success', 'Processo criado com sucesso.');
+            ->with('success', $etp ? 'Processo criado e vinculado ao ETP com sucesso.' : 'Processo criado com sucesso.');
     }
 
     public function show(Processo $processo)

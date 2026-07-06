@@ -271,7 +271,7 @@
                             {{ $etp->modalidade }}
                         </td>
 
-                        <td class="px-4 py-3 text-center">
+                        <td class="px-4 py-3 text-center space-y-1">
 
                             <a href="{{ route('admin.etps_recebidos.show', $etp->id) }}"
                                 class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-[#062F43] rounded-md hover:bg-[#065f8b]">
@@ -280,6 +280,28 @@
                                 <i class="fas fa-arrow-right ml-1"></i>
 
                             </a>
+
+                            @if($etp->status === 'aprovado' && is_null($etp->processo_id))
+
+                            <a href="{{ route('admin.processos.create', ['etp_id' => $etp->id]) }}"
+                                class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-orange-500 rounded-md hover:bg-orange-600">
+
+                                <i class="mr-1 fas fa-plus"></i>
+                                Criar Processo
+
+                            </a>
+
+                            @elseif(!is_null($etp->processo_id))
+
+                            <a href="{{ route('admin.processos.show', $etp->processo_id) }}"
+                                class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-[#009496] rounded-md hover:bg-[#007a7a]">
+
+                                <i class="mr-1 fas fa-eye"></i>
+                                Ver Processo
+
+                            </a>
+
+                            @endif
 
                         </td>
 

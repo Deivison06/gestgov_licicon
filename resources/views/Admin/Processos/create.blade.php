@@ -12,21 +12,42 @@
             </div>
 
             <div class="p-6">
+
+                @if ($etp)
+                <div class="flex items-center p-4 mb-6 border border-teal-200 rounded-lg bg-teal-50">
+                    <i class="mr-3 fas fa-link text-[#009496]"></i>
+                    <p class="text-sm font-medium text-teal-800">
+                        Este processo será criado já vinculado ao
+                        ETP-{{ str_pad($etp->id, 4, '0', STR_PAD_LEFT) }}/{{ $etp->created_at->format('y') }}.
+                    </p>
+                </div>
+                @endif
+
                 <form action="{{ route('admin.processos.store') }}" method="POST">
                     @csrf
+
+                    @if ($etp)
+                    <input type="hidden" name="etp_id" value="{{ $etp->id }}">
+                    @endif
 
                     <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                         {{-- PREFEITURA --}}
                         <div>
                             <label for="prefeitura_id" class="block text-sm font-medium text-gray-700">Prefeitura</label>
-                            <select name="prefeitura_id" id="prefeitura_id" class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">
+                            <select name="prefeitura_id" id="prefeitura_id"
+                                {{ $etp ? 'disabled' : '' }}
+                                class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496] {{ $etp ? 'bg-gray-100' : '' }}">
                                 <option value="">Selecione a prefeitura</option>
                                 @foreach ($prefeituras as $prefeitura)
-                                <option value="{{ $prefeitura->id }}" {{ old('prefeitura_id') == $prefeitura->id ? 'selected' : '' }}>
+                                <option value="{{ $prefeitura->id }}"
+                                    {{ ($etp ? $etp->prefeitura_id : old('prefeitura_id')) == $prefeitura->id ? 'selected' : '' }}>
                                     {{ $prefeitura->nome }}
                                 </option>
                                 @endforeach
                             </select>
+                            @if ($etp)
+                            <input type="hidden" name="prefeitura_id" value="{{ $etp->prefeitura_id }}">
+                            @endif
                             @error('prefeitura_id')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -156,7 +177,7 @@
                         {{-- OBJETO --}}
                         <div class="md:col-span-2">
                             <label for="objeto" class="block text-sm font-medium text-gray-700">Objeto</label>
-                            <textarea name="objeto" id="objeto" rows="4" class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">{{ old('objeto') }}</textarea>
+                            <textarea name="objeto" id="objeto" rows="4" class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">{{ old('objeto', $etp->objeto_licitacao ?? '') }}</textarea>
                             @error('objeto')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
