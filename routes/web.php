@@ -451,6 +451,10 @@ Route::prefix('admin')
             // Homologação parcial — criar nova homologação para os lotes pendentes
             Route::post('/homologacoes', [FinalizacaoProcessoController::class, 'gerarNovaHomologacao'])
                 ->name('homologacoes.store');
+                
+            // Homologação parcial — deletar uma homologação específica
+            Route::delete('/homologacoes/{homologacao}', [FinalizacaoProcessoController::class, 'deletarHomologacao'])
+                ->name('homologacoes.destroy');
 
             // Gerar PDF da finalização
             Route::get('/pdf', [FinalizacaoProcessoController::class, 'gerarPdf'])

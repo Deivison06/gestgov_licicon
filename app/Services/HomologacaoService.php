@@ -229,4 +229,27 @@ class HomologacaoService
             return $homologacao->refresh();
         });
     }
+
+    /**
+     * Deleta uma homologação e desvincula os lotes, permitindo
+     * que sejam incluídos em uma nova homologação.
+     */
+    public function deletarHomologacao(Homologacao $homologacao): void
+    {
+        DB::transaction(function () use ($homologacao) {
+            // Desvincular os lotes
+            Lote::where('homologacao_id', $homologacao->id)
+                ->update(['homologacao_id' => null]);
+
+            // Deletar documentos e atas gerados para evitar lixo
+            $homologacao->documentos()->delete();
+            $homologacao->atasRegistroPreco()->delete();
+
+            if ($homologacao->contrato()->exists()) {
+                $homologacao->contrato()->delete();
+            }
+
+            $homologacao->delete();
+        });
+    }
 }

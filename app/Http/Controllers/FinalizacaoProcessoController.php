@@ -139,6 +139,28 @@ class FinalizacaoProcessoController extends AbstractController
         }
     }
 
+    public function deletarHomologacao(Processo $processo, \App\Models\Homologacao $homologacao)
+    {
+        try {
+            if ($homologacao->processo_id !== $processo->id) {
+                return $this->jsonFail('Homologação não pertence a este processo.', 403);
+            }
+
+            $this->homologacaoService->deletarHomologacao($homologacao);
+
+            return $this->jsonOk([
+                'message' => "Homologação #{$homologacao->numero_sequencial} excluída com sucesso."
+            ]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Erro ao excluir homologação', [
+                'homologacao_id' => $homologacao->id,
+                'erro' => $e->getMessage(),
+            ]);
+
+            return $this->jsonFail('Erro ao excluir homologação: ' . $e->getMessage(), 500);
+        }
+    }
+
     public function storeFinalizacao(Request $request, Processo $processo)
     {
         return $this->tryJson(
