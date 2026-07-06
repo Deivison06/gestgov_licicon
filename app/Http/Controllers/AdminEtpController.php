@@ -20,8 +20,9 @@ class AdminEtpController extends Controller
         $filters = $request->only(['prefeitura_id', 'secretaria_id', 'status', 'data_inicio', 'data_fim']);
         $etps = $this->etpService->getAllWithFilters($filters);
         $prefeituras = Prefeitura::orderBy('nome', 'asc')->get();
+        $pendentesLancamento = $this->etpService->countPendentesLancamento();
 
-        return view('Admin.EtpsRecebidos.index', compact('etps', 'prefeituras', 'filters'));
+        return view('Admin.EtpsRecebidos.index', compact('etps', 'prefeituras', 'filters', 'pendentesLancamento'));
     }
 
     public function show($id)

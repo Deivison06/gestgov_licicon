@@ -27,6 +27,21 @@
     </div>
     @endif
 
+    @if ($pendentesLancamento > 0)
+    <a href="{{ route('admin.etps_recebidos.index', ['status' => 'pendente_lancamento']) }}"
+        class="block p-4 mb-8 border border-orange-200 shadow-sm rounded-2xl bg-gradient-to-r from-orange-50 to-amber-50 hover:from-orange-100 hover:to-amber-100 transition">
+        <div class="flex items-center">
+            <svg class="w-5 h-5 mr-3 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+            </svg>
+            <p class="text-sm font-medium text-orange-800">
+                {{ $pendentesLancamento }} {{ $pendentesLancamento === 1 ? 'ETP aprovado está' : 'ETPs aprovados estão' }}
+                pendente(s) de lançamento (aprovados, mas ainda não vinculados a um processo). Clique para ver.
+            </p>
+        </div>
+    </a>
+    @endif
+
     <!-- Filtros -->
     <div class="mb-6 bg-white border border-gray-200 rounded-2xl shadow-sm">
         <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center cursor-pointer"
@@ -61,6 +76,7 @@
                         <option value="pendente" {{ request('status') == 'pendente' ? 'selected' : '' }}>Pendente</option>
                         <option value="em_analise" {{ request('status') == 'em_analise' ? 'selected' : '' }}>Em Análise</option>
                         <option value="aprovado" {{ request('status') == 'aprovado' ? 'selected' : '' }}>Aprovado</option>
+                        <option value="pendente_lancamento" {{ request('status') == 'pendente_lancamento' ? 'selected' : '' }}>Pendente de Lançamento</option>
                         <option value="recusado" {{ request('status') == 'recusado' ? 'selected' : '' }}>Recusado</option>
                         <option value="em_processo" {{ request('status') == 'em_processo' ? 'selected' : '' }}>Em Processo</option>
 
@@ -242,6 +258,12 @@
                                 {{ ucfirst(str_replace('_', ' ', $etp->status)) }}
 
                             </span>
+
+                            @if($etp->status === 'aprovado' && is_null($etp->processo_id))
+                            <span class="ml-1 px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800">
+                                Pendente de Lançamento
+                            </span>
+                            @endif
 
                         </td>
 

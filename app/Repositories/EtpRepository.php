@@ -37,8 +37,13 @@ class EtpRepository
             $query->where('secretaria_id', $filters['secretaria_id']);
          }
 
-        // Se NÃO vier filtro de status, excluir pendente
-        if (!isset($filters['status']) || !$filters['status']) {
+        if (isset($filters['status']) && $filters['status'] === 'pendente_lancamento') {
+            // ETPs aprovados que ainda não foram vinculados a um processo
+            $query->where('status', 'aprovado')->whereNull('processo_id');
+        } elseif (isset($filters['status']) && $filters['status']) {
+            $query->where('status', $filters['status']);
+        } else {
+            // Se NÃO vier filtro de status, excluir pendente
             $query->where('status', '!=', 'pendente');
         }
 
@@ -52,6 +57,11 @@ class EtpRepository
          }
 
         return $query->orderBy('created_at', 'desc')->paginate($perPage);
+    }
+
+    public function countPendentesLancamento()
+    {
+        return $this->model->where('status', 'aprovado')->whereNull('processo_id')->count();
     }
 
     public function findById($id)

@@ -27,6 +27,11 @@ class EtpService
         return $this->repository->getAllWithFilters($filters, $perPage);
     }
 
+    public function countPendentesLancamento()
+    {
+        return $this->repository->countPendentesLancamento();
+    }
+
     public function store(array $data, ?UploadedFile $cotacaoFile = null)
     {
         try {
