@@ -660,7 +660,13 @@ class ContratoProcessoController extends Controller
             $query->whereIn('lote_id', $homologacao->lotes->pluck('id'));
         }
 
-        $query->update(['contrato_id' => $contrato->id]);
+        $primeiroVencedorId = (clone $query)->value('vencedor_id');
+
+        if ($primeiroVencedorId) {
+            $query->where('vencedor_id', $primeiroVencedorId)->update(['contrato_id' => $contrato->id]);
+        } else {
+            $query->update(['contrato_id' => $contrato->id]);
+        }
     }
 
     /**
@@ -1194,42 +1200,7 @@ class ContratoProcessoController extends Controller
     // ==============================================
     private function prepararDadosContratado(Processo $processo, $contratacoes, ?Homologacao $homologacao = null): array
     {
-        // Para contratos por homologação, os dados da empresa vencedora vêm da própria
-        // Homologacao (que já herdou da Finalizacao quando foi criada).
-        if ($homologacao && $homologacao->cnpj_empresa_vencedora) {
-            return [
-                'razao_social' => $homologacao->razao_social ?? 'XXXXXXXXXXXXX',
-                'cnpj' => $homologacao->cnpj_empresa_vencedora,
-                'cnpj_formatado' => $this->formatarCNPJ($homologacao->cnpj_empresa_vencedora),
-                'endereco' => $homologacao->endereco_empresa_vencedora
-                    ?? $homologacao->endereco
-                    ?? 'Endereço não informado',
-                'representante' => $homologacao->representante_legal_empresa ?? 'Representante não informado',
-                'cpf_representante' => $homologacao->cpf_representante ?? null,
-                'cpf_representante_formatado' => $homologacao->cpf_representante
-                    ? $this->formatarCPF($homologacao->cpf_representante)
-                    : null,
-                'fonte_dados' => 'homologacao',
-            ];
-        }
-
-        // Se houver dados na finalização, usa eles
-        if ($processo->finalizacao && $processo->finalizacao->cnpj_empresa_vencedora) {
-            return [
-                'razao_social' => $processo->finalizacao->razao_social ?? 'XXXXXXXXXXXXX',
-                'cnpj' => $processo->finalizacao->cnpj_empresa_vencedora,
-                'cnpj_formatado' => $this->formatarCNPJ($processo->finalizacao->cnpj_empresa_vencedora),
-                'endereco' => $processo->finalizacao->endereco ?? 'Endereço não informado',
-                'representante' => $processo->finalizacao->representante_legal_empresa ?? 'Representante não informado',
-                'cpf_representante' => $processo->finalizacao->cpf_representante ?? null,
-                'cpf_representante_formatado' => $processo->finalizacao->cpf_representante
-                    ? $this->formatarCPF($processo->finalizacao->cpf_representante)
-                    : null,
-                'fonte_dados' => 'finalizacao',
-            ];
-        }
-        
-        // Se não, tenta pegar do primeiro vencedor com contratações
+        // Prioridade 1: Dados do vencedor associado às contratações do contrato atual
         if ($contratacoes->count() > 0) {
             $primeiroVencedor = $contratacoes->first()->vencedor;
             
@@ -1247,6 +1218,40 @@ class ContratoProcessoController extends Controller
                     'fonte_dados' => 'vencedor',
                 ];
             }
+        }
+
+        // Prioridade 2: Homologação (fallback para processos sem contratações vinculadas)
+        if ($homologacao && $homologacao->cnpj_empresa_vencedora) {
+            return [
+                'razao_social' => $homologacao->razao_social ?? 'XXXXXXXXXXXXX',
+                'cnpj' => $homologacao->cnpj_empresa_vencedora,
+                'cnpj_formatado' => $this->formatarCNPJ($homologacao->cnpj_empresa_vencedora),
+                'endereco' => $homologacao->endereco_empresa_vencedora
+                    ?? $homologacao->endereco
+                    ?? 'Endereço não informado',
+                'representante' => $homologacao->representante_legal_empresa ?? 'Representante não informado',
+                'cpf_representante' => $homologacao->cpf_representante ?? null,
+                'cpf_representante_formatado' => $homologacao->cpf_representante
+                    ? $this->formatarCPF($homologacao->cpf_representante)
+                    : null,
+                'fonte_dados' => 'homologacao',
+            ];
+        }
+
+        // Prioridade 3: Finalização (fallback legado)
+        if ($processo->finalizacao && $processo->finalizacao->cnpj_empresa_vencedora) {
+            return [
+                'razao_social' => $processo->finalizacao->razao_social ?? 'XXXXXXXXXXXXX',
+                'cnpj' => $processo->finalizacao->cnpj_empresa_vencedora,
+                'cnpj_formatado' => $this->formatarCNPJ($processo->finalizacao->cnpj_empresa_vencedora),
+                'endereco' => $processo->finalizacao->endereco ?? 'Endereço não informado',
+                'representante' => $processo->finalizacao->representante_legal_empresa ?? 'Representante não informado',
+                'cpf_representante' => $processo->finalizacao->cpf_representante ?? null,
+                'cpf_representante_formatado' => $processo->finalizacao->cpf_representante
+                    ? $this->formatarCPF($processo->finalizacao->cpf_representante)
+                    : null,
+                'fonte_dados' => 'finalizacao',
+            ];
         }
         
         // Fallback
