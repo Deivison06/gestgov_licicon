@@ -76,7 +76,10 @@ class AtaDocumentoService extends AbstractService
             $valor = \Carbon\Carbon::parse($valor)->format('Y-m-d');
         }
 
-        $contrato->update([$campo => $valor]);
+        $camposUnicos = ['numero_contrato', 'numero_extrato', 'data_assinatura_contrato'];
+        if (!in_array($campo, $camposUnicos) || $contrato->wasRecentlyCreated) {
+            $contrato->update([$campo => $valor]);
+        }
 
         Log::info('Campo da ata salvo com sucesso', [
             'processo_id' => $processo->id,
@@ -96,9 +99,7 @@ class AtaDocumentoService extends AbstractService
         }
 
         return [
-            'numero_contrato' => $contrato->numero_contrato,
-            'data_assinatura_contrato' => $contrato->data_assinatura_contrato,
-            'numero_extrato' => $contrato->numero_extrato,
+            // Campos únicos não são pré-preenchidos para permitir gerar novas atas/contratos sem repetir o número
             'comarca' => $contrato->comarca,
             'fonte_recurso' => $contrato->fonte_recurso,
             'subcontratacao' => $contrato->subcontratacao,

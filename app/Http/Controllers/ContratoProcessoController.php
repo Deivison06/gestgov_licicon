@@ -203,8 +203,12 @@ class ContratoProcessoController extends Controller
                 $valor = \Carbon\Carbon::parse($valor)->format('Y-m-d');
             }
 
-            // Atualizar o campo
-            $contrato->update([$campo => $valor]);
+            // Não atualizar campos únicos em contratos já existentes (evita sobrescrever o número do Contrato 1 ao tentar gerar o Contrato 2)
+            $camposUnicos = ['numero_contrato', 'numero_extrato', 'data_assinatura_contrato'];
+            if (!in_array($campo, $camposUnicos) || $contrato->wasRecentlyCreated) {
+                // Atualizar o campo
+                $contrato->update([$campo => $valor]);
+            }
 
             Log::info('Campo do contrato salvo com sucesso', [
                 'processo_id' => $processo->id,
@@ -255,9 +259,7 @@ class ContratoProcessoController extends Controller
             return response()->json([
                 'success' => true,
                 'dados' => [
-                    'numero_contrato' => $contrato->numero_contrato,
-                    'data_assinatura_contrato' => $contrato->data_assinatura_contrato,
-                    'numero_extrato' => $contrato->numero_extrato,
+                    // Campos únicos removidos para não pré-preencher o novo contrato com os dados do anterior
                     'comarca' => $contrato->comarca,
                     'fonte_recurso' => $contrato->fonte_recurso,
                     'subcontratacao' => $contrato->subcontratacao,

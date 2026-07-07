@@ -512,7 +512,7 @@
                         <input type="text" id="numero_contrato" name="numero_contrato"
                                value="{{ $camposAta['numero_contrato'] ?? '' }}" placeholder="Ex: 001/2024"
                                class="campo-ata w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                               onblur="salvarCampo('numero_contrato', this.value)">
+                               >
                     </div>
 
                     <!-- Data de Assinatura -->
@@ -523,7 +523,7 @@
                         <input type="date" id="data_assinatura_contrato" name="data_assinatura_contrato"
                                value="{{ $camposAta['data_assinatura_contrato'] ?? now()->format('Y-m-d') }}"
                                class="campo-ata w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                               onblur="salvarCampo('data_assinatura_contrato', this.value)">
+                               >
                     </div>
 
                     <!-- Número do Extrato -->
@@ -534,7 +534,7 @@
                         <input type="text" id="numero_extrato" name="numero_extrato"
                                value="{{ $camposAta['numero_extrato'] ?? '' }}" placeholder="Ex: EXT/001/2024"
                                class="campo-ata w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                               onblur="salvarCampo('numero_extrato', this.value)">
+                               >
                     </div>
 
                     <!-- Comarca -->
@@ -545,7 +545,7 @@
                         <input type="text" id="comarca" name="comarca" value="{{ $camposAta['comarca'] ?? '' }}"
                                placeholder="Ex: Comarca de São Paulo"
                                class="campo-ata w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                               onblur="salvarCampo('comarca', this.value)">
+                               >
                     </div>
 
                     <!-- Fonte de Recurso -->
@@ -555,7 +555,7 @@
                         </label>
                         <textarea id="fonte_recurso" name="fonte_recurso" rows="3"
                                   class="campo-ata w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                  onblur="salvarCampo('fonte_recurso', this.value)" placeholder="Descreva a fonte de recurso...">{{ $camposAta['fonte_recurso'] ?? '' }}</textarea>
+                                   placeholder="Descreva a fonte de recurso...">{{ $camposAta['fonte_recurso'] ?? '' }}</textarea>
                     </div>
 
                     <!-- Subcontratação -->
