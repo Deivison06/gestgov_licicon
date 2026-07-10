@@ -833,7 +833,7 @@
                     CONTRATANTE:
                 </td>
                 <td style="padding:6px;">
-                    <span>{{ $processo->prefeitura->nome }}</span>
+                    <span>{{ $finalizacao->orgao_responsavel }}</span>
                 </td>
             </tr>
 

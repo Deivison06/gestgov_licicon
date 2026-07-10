@@ -34,6 +34,9 @@ class Contrato extends Model
         'dados_contratante' => 'array',
         'concluido' => 'boolean',
         'data_finalizacao' => 'date',
+        // Sim/Não (1/0). Sem cast, "0" (string) quebrava a comparação estrita
+        // `=== 0` da cláusula de subcontratação. null permanece null (=> "permitida").
+        'subcontratacao' => 'integer',
     ];
 
     public function processo(): BelongsTo
