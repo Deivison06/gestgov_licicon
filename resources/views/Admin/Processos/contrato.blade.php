@@ -312,6 +312,7 @@
                                                         <table class="w-full">
                                                             <thead>
                                                                 <tr class="text-xs font-medium text-gray-500 uppercase border-b border-gray-200">
+                                                                    <th class="px-4 py-3 text-center">Incluir</th>
                                                                     <th class="px-4 py-3 text-left">Item/Lote</th>
                                                                     <th class="px-4 py-3 text-left">Quantidade</th>
                                                                     <th class="px-4 py-3 text-left">Valor Unit.</th>
@@ -323,6 +324,16 @@
                                                             <tbody class="divide-y divide-gray-200">
                                                                 @foreach($vencedorContratacoes as $contratacao)
                                                                 <tr class="contratacao-row hover:bg-gray-50" data-contratacao-id="{{ $contratacao->id }}">
+                                                                    <td class="px-4 py-3 text-center align-top">
+                                                                        @if($contratacao->contrato_id)
+                                                                            <span class="text-[10px] text-gray-400" title="Já incluído em um contrato">em contrato</span>
+                                                                        @else
+                                                                            <input type="checkbox"
+                                                                                   class="contratacao-check w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                                                                                   value="{{ $contratacao->id }}"
+                                                                                   data-status="{{ $contratacao->status }}">
+                                                                        @endif
+                                                                    </td>
                                                                     <td class="px-4 py-3">
                                                                         <div class="flex items-start">
                                                                             <div class="flex-shrink-0 w-2 h-2 mt-2 mr-2 bg-blue-500 rounded-full"></div>
@@ -416,7 +427,7 @@
                                                             <!-- Rodapé do Vencedor -->
                                                             <tfoot class="bg-gray-50">
                                                                 <tr>
-                                                                    <td colspan="3" class="px-4 py-3 text-sm font-semibold text-right text-gray-700">
+                                                                    <td colspan="4" class="px-4 py-3 text-sm font-semibold text-right text-gray-700">
                                                                         Total do Vencedor:
                                                                     </td>
                                                                     <td class="px-4 py-3 text-sm font-semibold text-green-700">
@@ -1018,6 +1029,8 @@
 
                         <!-- Passo 2: Lista de Itens -->
                         <div id="step-2" class="hidden">
+                            <!-- Aviso itens pendentes (preenchido dinamicamente pelo JS) -->
+                            <div id="aviso-itens-pendentes" class="hidden"></div>
                             <div class="mb-4">
                                 <div class="flex items-center justify-between mb-3">
                                     <h4 class="text-sm font-semibold text-gray-700">Itens Disponíveis para Contratação</h4>
@@ -1237,10 +1250,6 @@
             // Verificar se é pregão
             const modalidadePregão = @json($processo->modalidade === \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO);
 
-            // if (!modalidadePregão || ) {
-            //     alert('Esta funcionalidade está disponível apenas para Pregão Eletrônico');
-            //     return;
-            // }
             document.getElementById('contratacaoModalTitle').textContent = 'Contratar Itens';
             document.getElementById('contratacaoId').value = '';
 
@@ -1250,6 +1259,13 @@
             // Resetar estados
             itensDisponiveis = [];
             itensSelecionados.clear();
+
+            // Resetar aviso de itens pendentes
+            const aviso = document.getElementById('aviso-itens-pendentes');
+            if (aviso) {
+                aviso.innerHTML = '';
+                aviso.classList.add('hidden');
+            }
 
             // Mostrar apenas o passo 1
             document.getElementById('step-1').classList.remove('hidden');
@@ -1294,10 +1310,37 @@
                         showMessageContratacao('Nenhum item disponível para este vencedor', 'warning');
                     } else {
                         let html = '';
+                        const totalComPendente = itensDisponiveis.filter(l => l.tem_pendente).length;
+
+                        // Aviso geral quando houver itens já pendentes
+                        if (totalComPendente > 0) {
+                            const avisoContainer = document.getElementById('aviso-itens-pendentes');
+                            if (avisoContainer) {
+                                avisoContainer.innerHTML = `
+                                    <div class="flex items-start gap-2 p-3 mb-3 text-sm border border-orange-300 rounded-lg bg-orange-50">
+                                        <svg class="flex-shrink-0 w-4 h-4 mt-0.5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                        <span class="text-orange-800">
+                                            <strong>${totalComPendente} item(ns)</strong> já possuem contratação pendente não vinculada a um contrato.
+                                            Esses itens estão marcados com <span class="inline-block px-1.5 py-0.5 text-xs font-semibold bg-orange-100 text-orange-700 rounded">Já Pendente</span>.
+                                            Você pode contratar novamente (consumirá o saldo restante) ou ir à aba <strong>Contratos Gerados</strong> para processar os pendentes.
+                                        </span>
+                                    </div>
+                                `;
+                                avisoContainer.classList.remove('hidden');
+                            }
+                        }
 
                         itensDisponiveis.forEach((lote, index) => {
+                            const badgePendente = lote.tem_pendente
+                                ? `<span class="ml-1.5 inline-block px-1.5 py-0.5 text-xs font-semibold bg-orange-100 text-orange-700 rounded border border-orange-200" title="Já existe uma contratação PENDENTE de ${parseFloat(lote.quantidade_pendente||0).toLocaleString('pt-BR',{minimumFractionDigits:2})} para este item">
+                                      ⚠ Já Pendente
+                                   </span>`
+                                : '';
+
                             html += `
-                                <tr class="item-row hover:bg-gray-50" data-lote-id="${lote.id}">
+                                <tr class="item-row hover:bg-gray-50 ${lote.tem_pendente ? 'bg-orange-50' : ''}" data-lote-id="${lote.id}">
                                     <td class="px-4 py-3">
                                         <input type="checkbox"
                                             class="w-4 h-4 text-purple-600 border-gray-300 rounded item-checkbox focus:ring-purple-500"
@@ -1308,6 +1351,7 @@
                                         <div class="text-sm font-medium text-gray-900">
                                             ${lote.item}
                                             ${lote.lote ? `<span class="text-xs text-gray-500">(Lote: ${lote.lote})</span>` : ''}
+                                            ${badgePendente}
                                         </div>
                                     </td>
                                     <td class="px-4 py-3">
@@ -1949,6 +1993,13 @@
             // contratante já vem pré-preenchido do servidor para a homologação inicial.
             inicializarEventosCampos();
             toggleListaContratos(window.currentHomologacaoId);
+
+            // Pré-selecionar apenas os checkboxes "Incluir" de itens PENDENTE
+            // (ainda não vinculados a um contrato).
+            // Itens CONTRATADO ficam desmarcados por padrão.
+            document.querySelectorAll('.contratacao-check[data-status="PENDENTE"]').forEach(cb => {
+                cb.checked = true;
+            });
         });
 
         async function carregarDadosContratoSalvos() {
@@ -2367,6 +2418,16 @@
                 return;
             }
 
+            // Contratações (itens) escolhidas para ESTE contrato (coluna "Incluir").
+            const contratacoesSelecionadas = Array.from(document.querySelectorAll('.contratacao-check:checked'))
+                .map(cb => parseInt(cb.value))
+                .filter(id => id > 0);
+
+            if (contratacoesSelecionadas.length === 0) {
+                showMessage('Selecione ao menos uma contratação (coluna "Incluir") para gerar o contrato.', 'error');
+                return;
+            }
+
             const camposContrato = getCamposContrato();
             const contratante = getContratante();
             const assinantesJson = JSON.stringify(assinantes);
@@ -2390,6 +2451,7 @@
             }
 
             url += `&contratante=${contratanteEncoded}`;
+            url += `&contratacoes=${encodeURIComponent(JSON.stringify(contratacoesSelecionadas))}`;
 
             const button = event.currentTarget;
             const originalText = button.textContent;

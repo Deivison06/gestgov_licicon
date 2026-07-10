@@ -454,15 +454,23 @@ class ContratacaoController extends Controller
     public function lotesDisponiveis(Processo $processo, Vencedor $vencedor)
     {
         try {
+            // Carregar os IDs dos lotes que já possuem contratação PENDENTE
+            // sem vínculo a nenhum contrato (para alertar o usuário no modal).
+            $loteIdsComPendente = LoteContratado::where('processo_id', $processo->id)
+                ->where('status', 'PENDENTE')
+                ->whereNull('contrato_id')
+                ->pluck('quantidade_contratada', 'lote_id');
+
             $lotes = $vencedor->lotes()
                 ->with(['estoque' => function($query) use ($processo) {
                     $query->where('processo_id', $processo->id);
                 }])
                 ->get()
-                ->map(function ($lote) use ($processo) {
+                ->map(function ($lote) use ($processo, $loteIdsComPendente) {
                     $estoque = $lote->estoque->first();
                     $quantidadeDisponivel = $estoque ? (float) $estoque->quantidade_disponivel : (float) $lote->quantidade;
                     $quantidadeUtilizada = $estoque ? (float) $estoque->quantidade_utilizada : 0;
+                    $temPendente = $loteIdsComPendente->has($lote->id);
 
                     return [
                         'id' => $lote->id,
@@ -478,6 +486,10 @@ class ContratacaoController extends Controller
                         'vl_unit' => (float) $lote->vl_unit,
                         'vl_total' => (float) $lote->vl_total,
                         'estoque_id' => $estoque ? $estoque->id : null,
+                        // Indica se já existe uma contratação PENDENTE (ainda não em contrato)
+                        // para este lote — usado no frontend para exibir aviso visual.
+                        'tem_pendente' => $temPendente,
+                        'quantidade_pendente' => $temPendente ? (float) $loteIdsComPendente->get($lote->id) : 0,
                     ];
                 })
                 ->filter(function ($lote) {

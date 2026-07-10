@@ -369,9 +369,10 @@ class ContratoProcessoController extends Controller
             $contratoNovo = $contrato->wasRecentlyCreated;
             $this->persistirDadosContrato($contrato, $processo, $homologacao, $validatedData['campos'], $validatedData['contratante']);
 
-            // Vincula a este contrato as contratações (itens) que ainda não pertencem a
-            // nenhum contrato — isolando o escopo de itens por contrato.
-            $this->vincularContratacoesAoContrato($processo, $homologacao, $contrato, $contratoNovo);
+            // Vincula a este contrato APENAS as contratações escolhidas na tela (quando
+            // enviadas) — isolando o escopo de itens por contrato. Sem seleção, mantém o
+            // comportamento legado (contratações do primeiro vencedor da homologação).
+            $this->vincularContratacoesAoContrato($processo, $homologacao, $contrato, $contratoNovo, $validatedData['contratacoes'] ?? []);
 
             $validatedData['contrato'] = $contrato;
 
@@ -648,12 +649,25 @@ class ContratoProcessoController extends Controller
         Processo $processo,
         ?Homologacao $homologacao,
         Contrato $contrato,
-        bool $contratoNovo
+        bool $contratoNovo,
+        array $contratacaoIds = []
     ): void {
         if (!$contratoNovo) {
             return;
         }
 
+        // Novo comportamento: quando a tela envia as contratações selecionadas, vincula
+        // APENAS essas (e só as que ainda não pertencem a nenhum contrato). Assim cada
+        // contrato contém exatamente as contratações escolhidas.
+        if (!empty($contratacaoIds)) {
+            LoteContratado::where('processo_id', $processo->id)
+                ->whereIn('id', $contratacaoIds)
+                ->whereNull('contrato_id')
+                ->update(['contrato_id' => $contrato->id]);
+            return;
+        }
+
+        // Compatibilidade (sem seleção): comportamento legado.
         $query = LoteContratado::where('processo_id', $processo->id)
             ->whereNull('contrato_id');
 
@@ -889,13 +903,40 @@ class ContratoProcessoController extends Controller
         // Dados do contratante editados no modal (snapshot deste contrato).
         $contratante = $this->processarContratante($request);
 
+        // Contratações (itens) escolhidas na tela para entrar NESTE contrato.
+        $contratacoes = $this->processarContratacoesSelecionadas($request);
+
         return [
             'documento' => 'contrato',
             'dataSelecionada' => $dataSelecionada,
             'assinantes' => $assinantes,
             'campos' => $campos,
             'contratante' => $contratante,
+            'contratacoes' => $contratacoes,
         ];
+    }
+
+    /**
+     * IDs das contratações (LoteContratado) selecionadas na tela para entrar neste
+     * contrato. Enviadas como JSON no parâmetro `contratacoes`.
+     *
+     * @return array<int,int>
+     */
+    private function processarContratacoesSelecionadas(Request $request): array
+    {
+        $json = $request->input('contratacoes') ?: $request->query('contratacoes');
+
+        if (!$json) {
+            return [];
+        }
+
+        $decoded = json_decode(urldecode($json), true);
+
+        if (!is_array($decoded)) {
+            return [];
+        }
+
+        return array_values(array_filter(array_map('intval', $decoded), fn ($id) => $id > 0));
     }
 
     /**
