@@ -26,10 +26,13 @@ class AtaPdfService extends AbstractService
         $campos = $data['campos'] ?? [];
         $dataSelecionada = $data['data'] ?? now()->format('Y-m-d');
         $assinantes = $data['assinantes'] ?? [];
+        // Dados do Contratante editados na tela (snapshot deste contrato). Espelha o
+        // fluxo da aba Contratos: valores em branco caem para os dados do processo.
+        $contratante = $data['contratante'] ?? [];
 
         $this->validarDadosContrato($processo, $contratacoesIds, $campos, $assinantes);
 
-        $dados = $this->prepararDadosParaPdf($processo, $contratacoesIds, $campos, $assinantes);
+        $dados = $this->prepararDadosParaPdf($processo, $contratacoesIds, $campos, $assinantes, $contratante);
         $viewAta = $this->determinarViewContrato($processo);
 
         $pdf = Pdf::loadView($viewAta, $dados)
@@ -43,7 +46,7 @@ class AtaPdfService extends AbstractService
         }
 
         $caminhoFinal = $this->moverParaDestinoFinal($caminhoCarimbado, $processo);
-        $this->salvarDocumento($processo, $caminhoFinal, $contratacoesIds, $dataSelecionada, $campos, $assinantes);
+        $this->salvarDocumento($processo, $caminhoFinal, $contratacoesIds, $dataSelecionada, $campos, $assinantes, $contratante);
 
         $this->marcarContratacoesComoContratado($processo, $contratacoesIds);
 
@@ -229,7 +232,7 @@ class AtaPdfService extends AbstractService
         }
     }
 
-    private function prepararDadosParaPdf(Processo $processo, array $contratacoesIds, array $campos, array $assinantes): array
+    private function prepararDadosParaPdf(Processo $processo, array $contratacoesIds, array $campos, array $assinantes, array $contratante = []): array
     {
         $processo->load([
             'prefeitura',
@@ -283,7 +286,7 @@ class AtaPdfService extends AbstractService
             'valorTotalContrato' => $valorTotalContrato,
             'quantidadeTotalContrato' => $quantidadeTotalContrato,
             'valorTotalPorExtenso' => $this->escreverValorPorExtenso($valorTotalContrato),
-            'dadosContratante' => $this->prepararDadosContratante($processo),
+            'dadosContratante' => $this->prepararDadosContratante($processo, $contratante),
             'dadosContratado' => $this->prepararDadosContratado($processo, $contratacoes),
             'contratoSalvo' => $contratoSalvo,
             'dataAssinaturaFormatada' => $contratoSalvo && $contratoSalvo->data_assinatura_contrato
@@ -631,7 +634,7 @@ class AtaPdfService extends AbstractService
         return $dados;
     }
 
-    private function salvarDocumento(Processo $processo, array $caminho, array $contratacoesIds, string $dataSelecionada, array $campos, array $assinantes): void
+    private function salvarDocumento(Processo $processo, array $caminho, array $contratacoesIds, string $dataSelecionada, array $campos, array $assinantes, array $contratante = []): void
     {
         $valorTotalContrato = LoteContratado::whereIn('id', $contratacoesIds)
             ->where('processo_id', $processo->id)
@@ -642,6 +645,9 @@ class AtaPdfService extends AbstractService
         if (!empty($campos) && isset($campos['numero_contrato'])) {
             $contrato = \App\Models\Contrato::where('processo_id', $processo->id)->first();
 
+            // Snapshot do contratante deste contrato (mesmo mecanismo da aba Contratos).
+            $snapshotContratante = $this->montarSnapshotContratante($processo, $contratante);
+
             if (!$contrato) {
                 $contrato = \App\Models\Contrato::create([
                     'processo_id' => $processo->id,
@@ -651,6 +657,7 @@ class AtaPdfService extends AbstractService
                     'comarca' => $campos['comarca'] ?? null,
                     'fonte_recurso' => $campos['fonte_recurso'] ?? null,
                     'subcontratacao' => $campos['subcontratacao'] ?? null,
+                    'dados_contratante' => $snapshotContratante,
                 ]);
 
                 Log::info('Contrato criado', [
@@ -665,6 +672,7 @@ class AtaPdfService extends AbstractService
                     'comarca' => $campos['comarca'] ?? $contrato->comarca,
                     'fonte_recurso' => $campos['fonte_recurso'] ?? $contrato->fonte_recurso,
                     'subcontratacao' => $campos['subcontratacao'] ?? $contrato->subcontratacao,
+                    'dados_contratante' => $snapshotContratante,
                 ]);
             }
         }
@@ -776,17 +784,25 @@ class AtaPdfService extends AbstractService
         return $itens;
     }
 
-    private function prepararDadosContratante(Processo $processo): array
+    private function prepararDadosContratante(Processo $processo, array $contratante = []): array
     {
+        $padrao = $this->contratantePadrao($processo);
+
+        // Valor efetivo: o que veio da tela (não vazio) sobrescreve o padrão do processo.
+        $val = fn (string $campo) => (isset($contratante[$campo]) && $contratante[$campo] !== '')
+            ? $contratante[$campo]
+            : ($padrao[$campo] ?? null);
+
         $dados = [
-            'orgao' => $processo->finalizacao->orgao_responsavel ?? $processo->prefeitura->cidade,
+            'orgao' => $val('orgao_responsavel'),
             'cidade' => $processo->prefeitura->cidade,
             'uf' => $processo->prefeitura->uf,
-            'endereco' => $processo->prefeitura->endereco,
-            'cnpj' => $processo->finalizacao->cnpj ?? $processo->prefeitura->cnpj,
-            'responsavel' => $processo->finalizacao->responsavel ?? $processo->prefeitura->autoridade_competente,
-            'cargo_responsavel' => $processo->finalizacao->cargo_responsavel ?? 'Prefeito Municipal',
-            'cpf_responsavel' => $processo->finalizacao->cpf_responsavel ?? null,
+            'endereco' => $val('endereco'),
+            'cnpj' => $val('cnpj'),
+            'responsavel' => $val('responsavel'),
+            'cargo_responsavel' => $val('cargo_responsavel'),
+            'cpf_responsavel' => $val('cpf_responsavel'),
+            'razao_social' => $val('razao_social'),
         ];
 
         $dados['cnpj_formatado'] = $this->formatarCNPJ($dados['cnpj']);
@@ -795,6 +811,42 @@ class AtaPdfService extends AbstractService
             : null;
 
         return $dados;
+    }
+
+    /**
+     * Dados padrão do contratante (7 campos) a partir da Finalização com fallback
+     * para a Prefeitura. Base do snapshot e do pré-preenchimento.
+     */
+    private function contratantePadrao(Processo $processo): array
+    {
+        return [
+            'orgao_responsavel' => $processo->finalizacao?->orgao_responsavel ?? $processo->prefeitura->cidade,
+            'cargo_responsavel' => $processo->finalizacao?->cargo_responsavel ?? 'Prefeito Municipal',
+            'cnpj' => $processo->finalizacao?->cnpj ?? $processo->prefeitura->cnpj,
+            'endereco' => $processo->prefeitura->endereco,
+            'responsavel' => $processo->finalizacao?->responsavel ?? $processo->prefeitura->autoridade_competente,
+            'cpf_responsavel' => $processo->finalizacao?->cpf_responsavel ?? null,
+            'razao_social' => $processo->finalizacao?->razao_social ?? null,
+        ];
+    }
+
+    /**
+     * Monta o snapshot do contratante (7 campos) a ser persistido no contrato:
+     * usa o valor da tela quando preenchido, senão o padrão do processo.
+     */
+    private function montarSnapshotContratante(Processo $processo, array $contratante): array
+    {
+        $padrao = $this->contratantePadrao($processo);
+        $snapshot = [];
+
+        foreach (['orgao_responsavel', 'cargo_responsavel', 'cnpj', 'endereco', 'responsavel', 'cpf_responsavel', 'razao_social'] as $campo) {
+            $valor = $contratante[$campo] ?? null;
+            $snapshot[$campo] = ($valor !== null && $valor !== '')
+                ? $valor
+                : ($padrao[$campo] ?? null);
+        }
+
+        return $snapshot;
     }
 
     private function prepararDadosContratado(Processo $processo, $contratacoes): array

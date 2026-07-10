@@ -17,7 +17,19 @@
                 ]
                 : [];
 
-            $assinantesAta = $dadosAta 
+            // Dados do Contratante (snapshot deste contrato) com fallback aos dados do processo.
+            $snapshotContratante = ($contrato && is_array($contrato->dados_contratante)) ? $contrato->dados_contratante : [];
+            $contratanteAta = [
+                'orgao_responsavel' => $snapshotContratante['orgao_responsavel'] ?? ($processo->finalizacao?->orgao_responsavel ?? $processo->prefeitura->cidade),
+                'cargo_responsavel' => $snapshotContratante['cargo_responsavel'] ?? ($processo->finalizacao?->cargo_responsavel ?? 'Prefeito Municipal'),
+                'cnpj' => $snapshotContratante['cnpj'] ?? ($processo->finalizacao?->cnpj ?? $processo->prefeitura->cnpj),
+                'endereco' => $snapshotContratante['endereco'] ?? $processo->prefeitura->endereco,
+                'responsavel' => $snapshotContratante['responsavel'] ?? ($processo->finalizacao?->responsavel ?? $processo->prefeitura->autoridade_competente),
+                'cpf_responsavel' => $snapshotContratante['cpf_responsavel'] ?? ($processo->finalizacao?->cpf_responsavel ?? ''),
+                'razao_social' => $snapshotContratante['razao_social'] ?? ($processo->finalizacao?->razao_social ?? ''),
+            ];
+
+            $assinantesAta = $dadosAta
                 ? (is_array($dadosAta->assinantes) ? $dadosAta->assinantes : json_decode($dadosAta->assinantes ?? '[]', true)) 
                 : [];
             
@@ -570,6 +582,60 @@
                             <option value="1" @if (($camposAta['subcontratacao'] ?? '') == '1') selected @endif>Sim</option>
                             <option value="0" @if (($camposAta['subcontratacao'] ?? '') == '0') selected @endif>Não</option>
                         </select>
+                    </div>
+                </div>
+
+                {{-- ============ DADOS DO CONTRATANTE (snapshot por contrato) ============ --}}
+                <div class="border-t pt-8 mb-8">
+                    <div class="p-4 rounded-lg bg-gray-50">
+                        <h5 class="mb-1 text-sm font-semibold text-gray-700">Dados do Contratante</h5>
+                        <p class="mb-3 text-xs text-gray-500">
+                            Pré-preenchidos com os dados do processo. Edite para gerar um contrato com contratante diferente (ex.: outra secretaria) — os dados são salvos apenas neste contrato.
+                        </p>
+                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <div class="sm:col-span-2">
+                                <label for="contratante_orgao_responsavel" class="block mb-1 text-xs font-medium text-gray-600">Órgão Responsável pela Assinatura do Contrato</label>
+                                <input type="text" id="contratante_orgao_responsavel" name="contratante_orgao_responsavel"
+                                       value="{{ $contratanteAta['orgao_responsavel'] ?? '' }}"
+                                       class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="contratante_cargo_responsavel" class="block mb-1 text-xs font-medium text-gray-600">Cargo do Responsável</label>
+                                <input type="text" id="contratante_cargo_responsavel" name="contratante_cargo_responsavel"
+                                       value="{{ $contratanteAta['cargo_responsavel'] ?? '' }}"
+                                       class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="contratante_responsavel" class="block mb-1 text-xs font-medium text-gray-600">Responsável</label>
+                                <input type="text" id="contratante_responsavel" name="contratante_responsavel"
+                                       value="{{ $contratanteAta['responsavel'] ?? '' }}"
+                                       class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="contratante_cpf_responsavel" class="block mb-1 text-xs font-medium text-gray-600">CPF</label>
+                                <input type="text" id="contratante_cpf_responsavel" name="contratante_cpf_responsavel"
+                                       value="{{ $contratanteAta['cpf_responsavel'] ?? '' }}"
+                                       class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="contratante_cnpj" class="block mb-1 text-xs font-medium text-gray-600">CNPJ</label>
+                                <input type="text" id="contratante_cnpj" name="contratante_cnpj"
+                                       value="{{ $contratanteAta['cnpj'] ?? '' }}"
+                                       class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="contratante_razao_social" class="block mb-1 text-xs font-medium text-gray-600">Razão Social</label>
+                                <input type="text" id="contratante_razao_social" name="contratante_razao_social"
+                                       value="{{ $contratanteAta['razao_social'] ?? '' }}"
+                                       class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div class="sm:col-span-2">
+                                <label for="contratante_endereco" class="block mb-1 text-xs font-medium text-gray-600">Endereço</label>
+                                <input type="text" id="contratante_endereco" name="contratante_endereco"
+                                       value="{{ $contratanteAta['endereco'] ?? '' }}"
+                                       class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -2436,6 +2502,17 @@
             return selecionadas;
         }
 
+        // Coleta os Dados do Contratante da tela (snapshot deste contrato).
+        function getContratanteAta() {
+            const campos = ['orgao_responsavel', 'cargo_responsavel', 'cnpj', 'endereco', 'responsavel', 'cpf_responsavel', 'razao_social'];
+            const dados = {};
+            campos.forEach(campo => {
+                const el = document.getElementById('contratante_' + campo);
+                dados[campo] = el ? el.value : '';
+            });
+            return dados;
+        }
+
         async function gerarAtaFinal() {
             if (!validarCamposObrigatorios()) {
                 mostrarMensagem('Preencha todos os campos obrigatórios', 'error');
@@ -2476,6 +2553,7 @@
                     campos: campos,
                     assinantes: assinantes,
                     contratacoes_selecionadas: contratacoesSelecionadas,
+                    contratante: getContratanteAta(),
                     data: document.getElementById('data_assinatura_contrato').value
                 };
 
