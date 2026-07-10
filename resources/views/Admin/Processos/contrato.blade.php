@@ -327,6 +327,8 @@
                                                                     <td class="px-4 py-3 text-center align-top">
                                                                         @if($contratacao->contrato_id)
                                                                             <span class="text-[10px] text-gray-400" title="Já incluído em um contrato">em contrato</span>
+                                                                        @elseif($contratacao->status === 'CONTRATADO')
+                                                                            <span class="text-[10px] text-gray-400" title="Item já contratado">contratado</span>
                                                                         @else
                                                                             <input type="checkbox"
                                                                                    class="contratacao-check w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
