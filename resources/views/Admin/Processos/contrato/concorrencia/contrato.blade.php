@@ -771,7 +771,6 @@
             <div class="signature-block" style="display: inline-block; margin: 0 40px;">
                 ___________________________________<br>
                 <p style="line-height: 1.2;">
-                    Prefeitura do Município de {{ $processo->prefeitura->cidade }} <br>
                     {{ $primeiroAssinante['responsavel'] }} <br>
                     <span>{{ $primeiroAssinante['unidade_nome'] }}</span>
                 </p>
