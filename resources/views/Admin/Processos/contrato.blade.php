@@ -2421,11 +2421,15 @@
             }
 
             // Contratações (itens) escolhidas para ESTE contrato (coluna "Incluir").
-            const contratacoesSelecionadas = Array.from(document.querySelectorAll('.contratacao-check:checked'))
+            // Só existem em Pregão Eletrônico / Dispensa. Concorrência e Inexigibilidade
+            // não têm contratações — geram o contrato direto, sem seleção.
+            const contratacaoCheckboxes = document.querySelectorAll('.contratacao-check');
+            const contratacoesSelecionadas = Array.from(contratacaoCheckboxes)
+                .filter(cb => cb.checked)
                 .map(cb => parseInt(cb.value))
                 .filter(id => id > 0);
 
-            if (contratacoesSelecionadas.length === 0) {
+            if (contratacaoCheckboxes.length > 0 && contratacoesSelecionadas.length === 0) {
                 showMessage('Selecione ao menos uma contratação (coluna "Incluir") para gerar o contrato.', 'error');
                 return;
             }
@@ -2453,7 +2457,9 @@
             }
 
             url += `&contratante=${contratanteEncoded}`;
-            url += `&contratacoes=${encodeURIComponent(JSON.stringify(contratacoesSelecionadas))}`;
+            if (contratacoesSelecionadas.length > 0) {
+                url += `&contratacoes=${encodeURIComponent(JSON.stringify(contratacoesSelecionadas))}`;
+            }
 
             const button = event.currentTarget;
             const originalText = button.textContent;
