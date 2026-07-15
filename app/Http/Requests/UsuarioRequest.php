@@ -22,15 +22,8 @@ class UsuarioRequest extends FormRequest
         // Lógica limpa para determinar a obrigatoriedade dinâmica
         $roleId = $this->input('role');
         $role = $roleId ? Role::find($roleId) : null;
-        $permissions = $this->input('permissions', []);
 
         $isPrefeituraRequired = $role && str_contains(strtolower($role->name), 'prefeitura');
-
-        $fiscalizarPerm = Permission::where('name', 'fiscalizar contratos')->first();
-        $isFiscal = $fiscalizarPerm && in_array($fiscalizarPerm->id, $permissions);
-        $isAdmin = $role && in_array($role->name, ['diretor_licicon', 'gerente_licicon']);
-
-        $isUnidadeRequired = $isFiscal && !$isAdmin;
 
         return [
             'name' => 'required|string|max:255',
@@ -57,7 +50,7 @@ class UsuarioRequest extends FormRequest
             'permissions' => 'nullable|array',
             'permissions.*' => 'exists:permissions,id',
             'unidade_id' => [
-                $isUnidadeRequired ? 'required' : 'nullable',
+                'nullable',
                 'exists:unidades,id',
             ],
         ];
@@ -78,7 +71,6 @@ class UsuarioRequest extends FormRequest
             'role.exists' => 'A função selecionada é inválida',
             'prefeitura_id.required' => 'O campo prefeitura é obrigatório para usuários do tipo Prefeitura.',
             'prefeitura_id.exists' => 'A prefeitura selecionada é inválida',
-            'unidade_id.required' => 'A Secretaria/Unidade é obrigatória para usuários com permissão de Fiscalização.',
             'unidade_id.exists' => 'A unidade selecionada é inválida',
             'permissions.*.exists' => 'A permissão selecionada é inválida'
         ];

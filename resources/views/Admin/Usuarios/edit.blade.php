@@ -82,7 +82,7 @@
                 <label for="unidade_id" class="block mb-2 text-sm font-medium text-gray-700">Secretaria/Unidade Responsável</label>
                 <select name="unidade_id" id="unidade_id"
                         class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496] transition-colors">
-                    <option value="">Selecione uma unidade</option>
+                    <option value="">Todas as Secretarias (Fiscal Geral)</option>
                     @foreach($unidades as $unidade)
                         <option value="{{ $unidade->id }}" data-prefeitura="{{ $unidade->prefeitura_id }}"
                             {{ old('unidade_id', $usuario->unidade_id) == $unidade->id ? 'selected' : '' }}>
@@ -90,6 +90,7 @@
                         </option>
                     @endforeach
                 </select>
+                <p class="mt-1 text-sm text-gray-500">Deixe em "Todas as Secretarias" para que o fiscal acompanhe contratos de todas as unidades da prefeitura</p>
             </div>
 
             <div>
@@ -220,11 +221,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (fiscalCheck && fiscalCheck.checked) {
             divUnidade.style.display = 'block';
-            unidadeSelect.setAttribute('required', 'required');
             filterUnidades();
         } else {
             divUnidade.style.display = 'none';
-            unidadeSelect.removeAttribute('required');
 
             if (!isFirstLoad) {
                 unidadeSelect.value = '';
@@ -237,9 +236,9 @@ document.addEventListener('DOMContentLoaded', function() {
     function filterUnidades() {
         const prefeituraId = prefeituraSelect.value;
         const currentUnidade = unidadeSelect.value;
-        unidadeSelect.innerHTML = '<option value="">Selecione uma unidade</option>';
+        unidadeSelect.innerHTML = '<option value="">Todas as Secretarias (Fiscal Geral)</option>';
         unidadeOptions.forEach(opt => {
-            if (opt.dataset.prefeitura === prefeituraId || opt.value === "") {
+            if (opt.value !== "" && opt.dataset.prefeitura === prefeituraId) {
                 unidadeSelect.appendChild(opt);
             }
         });
