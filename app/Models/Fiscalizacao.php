@@ -30,6 +30,7 @@ class Fiscalizacao extends Model
         'observacoes_servidor',
         'metodologia_fiscalizacao',
         'relatorio_fotografico',
+        'assinantes',
         'user_id',
     ];
 
@@ -37,6 +38,7 @@ class Fiscalizacao extends Model
         'data_fiscalizacao' => 'date',
         'tipo_contrato' => TipoFiscalizacaoEnum::class,
         'conclusao_fiscal' => ConclusaoFiscalEnum::class,
+        'assinantes' => 'array',
     ];
 
     protected static function booted()
@@ -64,6 +66,11 @@ class Fiscalizacao extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function fotos()
+    {
+        return $this->hasMany(FiscalizacaoFoto::class)->orderBy('ordem')->orderBy('id');
     }
 
     // =========================================

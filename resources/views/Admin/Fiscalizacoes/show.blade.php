@@ -178,5 +178,215 @@
             </div>
         </div>
     </div>
+
+    {{-- ============================================================== --}}
+    {{-- ASSINANTES DO RELATÓRIO (assinatura física — sem assinatura eletrônica) --}}
+    {{-- ============================================================== --}}
+    @php
+        $unidadesAssinantes = $fiscalizacao->prefeitura?->unidades->map(fn($u) => [
+            'id' => $u->id,
+            'nome' => $u->nome,
+            'servidor_responsavel' => $u->servidor_responsavel,
+        ])->values() ?? collect();
+    @endphp
+    <div class="mt-6 bg-white border border-gray-100 shadow-sm rounded-2xl overflow-hidden"
+         x-data="assinantesFiscalizacao({
+            unidades: {{ $unidadesAssinantes->toJson() }},
+            iniciais: {{ json_encode($fiscalizacao->assinantes ?? []) }},
+            saveUrl: '{{ route('admin.fiscalizacoes.assinantes', $fiscalizacao->id) }}'
+         })">
+        <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-gray-800">
+                <i class="fas fa-file-signature text-[#0596A2] mr-2"></i>Assinantes do Relatório
+            </h3>
+            <span class="text-xs font-medium text-gray-500" x-show="assinantes.length > 0">
+                <span x-text="assinantes.length"></span> assinante(s)
+            </span>
+        </div>
+
+        <div class="p-6 space-y-5">
+            <p class="text-sm text-gray-500">
+                Selecione os servidores responsáveis que assinarão fisicamente o relatório. Os assinantes aparecem no rodapé do relatório impresso, sem assinatura eletrônica.
+            </p>
+
+            {{-- Formulário de adição --}}
+            <div class="flex flex-col gap-3 p-4 bg-gray-50 border border-gray-200 rounded-lg sm:flex-row sm:items-end">
+                <div class="flex-1 min-w-[180px]">
+                    <label class="block mb-1 text-xs font-medium text-gray-600">Unidade / Secretaria</label>
+                    <select x-model="selUnidadeId" @change="aoSelecionarUnidade()"
+                            class="block w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#009496] focus:border-[#009496]">
+                        <option value="">Selecione (ou preencha manualmente)</option>
+                        <template x-for="u in unidades" :key="u.id">
+                            <option :value="u.id" x-text="u.nome"></option>
+                        </template>
+                    </select>
+                </div>
+                <div class="flex-1 min-w-[160px]">
+                    <label class="block mb-1 text-xs font-medium text-gray-600">Nome do Servidor <span class="text-red-500">*</span></label>
+                    <input type="text" x-model="formNome" placeholder="Nome completo"
+                           class="block w-full px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-[#009496]">
+                </div>
+                <div class="flex-1 min-w-[140px]">
+                    <label class="block mb-1 text-xs font-medium text-gray-600">Cargo / Função</label>
+                    <input type="text" x-model="formCargo" placeholder="Ex: Fiscal de Contrato"
+                           class="block w-full px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-[#009496]">
+                </div>
+                <div>
+                    <button type="button" @click="adicionar()" :disabled="!formNome.trim()"
+                            class="flex items-center justify-center w-full px-4 py-2 text-sm font-semibold text-white transition-colors bg-[#009496] rounded-md shadow disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#007779]">
+                        + Adicionar
+                    </button>
+                </div>
+            </div>
+
+            {{-- Lista de selecionados --}}
+            <div class="border border-emerald-200 rounded-lg overflow-hidden bg-white">
+                <div class="px-4 py-2.5 bg-emerald-50 border-b border-emerald-200">
+                    <span class="text-xs font-semibold text-emerald-800 uppercase tracking-wide">Assinantes Selecionados</span>
+                </div>
+                <template x-if="assinantes.length === 0">
+                    <div class="p-6 text-sm text-center text-gray-500">Nenhum assinante adicionado.</div>
+                </template>
+                <ul class="divide-y divide-emerald-100">
+                    <template x-for="(a, idx) in assinantes" :key="idx">
+                        <li class="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors">
+                            <div class="min-w-0">
+                                <p class="text-sm font-semibold text-gray-900 truncate" x-text="a.nome"></p>
+                                <p class="text-xs text-gray-500 truncate"
+                                   x-text="[a.cargo, a.unidade].filter(Boolean).join(' — ')"></p>
+                            </div>
+                            <button type="button" @click="remover(idx)"
+                                    class="px-2.5 py-1.5 text-xs font-medium text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md transition-colors">
+                                Remover
+                            </button>
+                        </li>
+                    </template>
+                </ul>
+            </div>
+
+            {{-- Form de salvamento (hidden inputs gerados a partir do estado) --}}
+            <form method="POST" :action="saveUrl" @submit="salvando = true">
+                @csrf
+                <template x-for="(a, idx) in assinantes" :key="'h'+idx">
+                    <span>
+                        <input type="hidden" :name="`assinantes[${idx}][nome]`" :value="a.nome">
+                        <input type="hidden" :name="`assinantes[${idx}][cargo]`" :value="a.cargo">
+                        <input type="hidden" :name="`assinantes[${idx}][unidade]`" :value="a.unidade">
+                    </span>
+                </template>
+                <div class="flex justify-end">
+                    <button type="submit" :disabled="salvando"
+                            class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-[#062F43] rounded-lg hover:bg-[#0596A2] transition-colors disabled:opacity-60 shadow-sm">
+                        <i class="fas fa-save"></i> Salvar Assinantes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- ============================================================== --}}
+    {{-- RELATÓRIO FOTOGRÁFICO (múltiplas imagens) --}}
+    {{-- ============================================================== --}}
+    <div class="mt-6 bg-white border border-gray-100 shadow-sm rounded-2xl overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-gray-800">
+                <i class="fas fa-camera text-[#0596A2] mr-2"></i>Relatório Fotográfico
+            </h3>
+            <span class="text-xs font-medium text-gray-500">{{ $fiscalizacao->fotos->count() }} imagem(ns)</span>
+        </div>
+
+        <div class="p-6 space-y-6">
+            <p class="text-sm text-gray-500">
+                Adicione imagens da fiscalização. Todas serão anexadas automaticamente ao final do relatório impresso, na seção “Relatório Fotográfico”.
+            </p>
+
+            {{-- Upload --}}
+            <form method="POST" action="{{ route('admin.fiscalizacoes.fotos.upload', $fiscalizacao->id) }}"
+                  enctype="multipart/form-data"
+                  class="flex flex-col gap-3 p-4 bg-gray-50 border border-gray-200 rounded-lg sm:flex-row sm:items-center">
+                @csrf
+                <input type="file" name="fotos[]" multiple accept="image/jpeg,image/png,image/webp" required
+                       class="flex-1 text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#009496] file:text-white hover:file:bg-[#007779] cursor-pointer">
+                <button type="submit"
+                        class="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-[#009496] rounded-lg hover:bg-[#007779] transition-colors shadow-sm">
+                    <i class="fas fa-upload"></i> Enviar Fotos
+                </button>
+            </form>
+
+            {{-- Galeria --}}
+            @if($fiscalizacao->fotos->isNotEmpty())
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    @foreach($fiscalizacao->fotos as $foto)
+                        <div class="relative group border border-gray-200 rounded-xl overflow-hidden">
+                            <a href="{{ asset($foto->caminho) }}" target="_blank">
+                                <img src="{{ asset($foto->caminho) }}" alt="{{ $foto->legenda ?? 'Foto da fiscalização' }}"
+                                     class="w-full h-32 object-cover group-hover:opacity-90 transition-opacity">
+                            </a>
+                            <form method="POST" action="{{ route('admin.fiscalizacoes.fotos.delete', [$fiscalizacao->id, $foto->id]) }}"
+                                  onsubmit="return confirm('Remover esta foto?');"
+                                  class="absolute top-1.5 right-1.5">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit"
+                                        class="w-7 h-7 flex items-center justify-center rounded-full bg-red-600 text-white text-xs shadow hover:bg-red-800 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        title="Remover foto">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </form>
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <div class="p-6 text-sm text-center text-gray-500 border border-dashed border-gray-300 rounded-xl">
+                    Nenhuma foto adicionada ainda.
+                </div>
+            @endif
+        </div>
+    </div>
 </div>
+
+@once
+<script>
+    function assinantesFiscalizacao({ unidades, iniciais, saveUrl }) {
+        return {
+            unidades: unidades || [],
+            assinantes: (iniciais || []).map(a => ({
+                nome: a.nome ?? '',
+                cargo: a.cargo ?? '',
+                unidade: a.unidade ?? '',
+            })),
+            saveUrl,
+            salvando: false,
+            selUnidadeId: '',
+            formNome: '',
+            formCargo: '',
+
+            aoSelecionarUnidade() {
+                if (!this.selUnidadeId) return;
+                const u = this.unidades.find(x => x.id == this.selUnidadeId);
+                if (u) {
+                    this.formNome = u.servidor_responsavel || this.formNome;
+                }
+            },
+
+            adicionar() {
+                if (!this.formNome.trim()) return;
+                const u = this.unidades.find(x => x.id == this.selUnidadeId);
+                this.assinantes.push({
+                    nome: this.formNome.trim(),
+                    cargo: this.formCargo.trim(),
+                    unidade: u ? u.nome : '',
+                });
+                this.formNome = '';
+                this.formCargo = '';
+                this.selUnidadeId = '';
+            },
+
+            remover(idx) {
+                this.assinantes.splice(idx, 1);
+            },
+        };
+    }
+</script>
+@endonce
 @endsection

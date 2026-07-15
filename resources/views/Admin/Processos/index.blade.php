@@ -93,40 +93,25 @@
                     <input type="hidden" name="prefeitura_id" value="{{ request('prefeitura_id') }}">
 
                     <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-                        <!-- Campo de pesquisa principal POR OBJETO -->
-                        <div>
-                            <label for="search_objeto" class="block mb-2 text-sm font-medium text-gray-700">
-                                <i class="fas fa-search mr-1"></i> Pesquisar por Objeto
+                        <!-- Busca unificada: nº do processo/procedimento ou objeto -->
+                        <div class="md:col-span-2">
+                            <label for="search" class="block mb-2 text-sm font-medium text-gray-700">
+                                <i class="fas fa-search mr-1"></i> Buscar
                             </label>
                             <div class="relative">
                                 <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                    <i class="text-gray-400 fas fa-file-alt"></i>
+                                    <i class="text-gray-400 fas fa-search"></i>
                                 </div>
                                 <input type="text"
-                                       name="search_objeto"
-                                       id="search_objeto"
-                                       value="{{ request('search_objeto') }}"
-                                       placeholder="Digite parte do objeto do processo..."
+                                       name="search"
+                                       id="search"
+                                       value="{{ request('search') }}"
+                                       placeholder="Nº do processo, nº do procedimento ou objeto..."
                                        class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg
                                               focus:ring-2 focus:ring-[#009496] focus:border-transparent
                                               placeholder-gray-500 text-sm transition-all duration-200">
                             </div>
-                            <p class="mt-1 text-xs text-gray-500">Busca por palavras no objeto do processo</p>
-                        </div>
-
-                        <!-- Campo de pesquisa por Número -->
-                        <div>
-                            <label for="search_numero" class="block mb-2 text-sm font-medium text-gray-700">
-                                <i class="fas fa-hashtag mr-1"></i> Número do Processo
-                            </label>
-                            <input type="text"
-                                   name="search_numero"
-                                   id="search_numero"
-                                   value="{{ request('search_numero') }}"
-                                   placeholder="Ex: 001/2024"
-                                   class="block w-full px-3 py-2.5 border border-gray-300 rounded-lg
-                                          focus:ring-2 focus:ring-[#009496] focus:border-transparent
-                                          placeholder-gray-500 text-sm">
+                            <p class="mt-1 text-xs text-gray-500">Procura no número do processo/procedimento e no objeto</p>
                         </div>
 
                         <!-- Filtro por modalidade -->
@@ -158,7 +143,7 @@
                                            focus:ring-2 focus:ring-[#009496] focus:border-transparent text-sm
                                            transition-all duration-200">
                                 @php
-                                    $filtersSubmitted = request()->hasAny(['search_objeto','search_numero','modalidade','status','data_inicio','data_fim','responsavel']);
+                                    $filtersSubmitted = request()->hasAny(['search','modalidade','status','data_inicio','data_fim','responsavel']);
                                     $defaultStatus = $filtersSubmitted ? request('status') : 'EM_ANDAMENTO';
                                 @endphp
                                 <option value="" {{ $defaultStatus === '' ? 'selected' : '' }}>Todos os Status</option>
@@ -222,7 +207,7 @@
                                 Aplicar Filtros
                             </button>
 
-                            @if(request()->hasAny(['search_objeto', 'search_numero', 'modalidade', 'status', 'data_inicio', 'data_fim', 'responsavel']))
+                            @if(request()->hasAny(['search','modalidade', 'status', 'data_inicio', 'data_fim', 'responsavel']))
                                 <a href="{{ route('admin.processos.index', ['prefeitura_id' => request('prefeitura_id')]) }}"
                                    class="px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg
                                           hover:bg-gray-200 transition-all duration-200
@@ -236,22 +221,15 @@
                     </div>
 
                     <!-- Mostrar filtros ativos -->
-                    @if(request()->hasAny(['search_objeto', 'search_numero', 'modalidade', 'status', 'data_inicio', 'data_fim', 'responsavel']))
+                    @if(request()->hasAny(['search','modalidade', 'status', 'data_inicio', 'data_fim', 'responsavel']))
                         <div class="mt-4 pt-4 border-t border-gray-200">
                             <div class="flex flex-wrap items-center gap-2">
                                 <span class="text-sm font-medium text-gray-700">Filtros ativos:</span>
 
-                                @if(request('search_objeto'))
+                                @if(request('search'))
                                     <span class="px-3 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full flex items-center">
-                                        <i class="mr-1 fas fa-file-alt"></i>
-                                        Objeto: "{{ request('search_objeto') }}"
-                                    </span>
-                                @endif
-
-                                @if(request('search_numero'))
-                                    <span class="px-3 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full flex items-center">
-                                        <i class="mr-1 fas fa-hashtag"></i>
-                                        Nº: {{ request('search_numero') }}
+                                        <i class="mr-1 fas fa-search"></i>
+                                        Busca: "{{ request('search') }}"
                                     </span>
                                 @endif
 
@@ -336,12 +314,12 @@
                 </div>
 
                 <!-- Mensagem de busca por objeto -->
-                @if(request('search_objeto') && $processos->total() > 0)
+                @if(request('search') && $processos->total() > 0)
                     <div class="px-6 py-3 bg-blue-50 border-b border-blue-100">
                         <div class="flex items-center">
                             <i class="mr-2 text-blue-500 fas fa-info-circle"></i>
                             <p class="text-sm text-blue-700">
-                                Buscando processos com objeto contendo: "<span class="font-semibold">{{ request('search_objeto') }}</span>"
+                                Resultados para: "<span class="font-semibold">{{ request('search') }}</span>"
                             </p>
                         </div>
                     </div>
@@ -349,25 +327,22 @@
 
                 <div class="overflow-x-auto">
                     <table class="w-full overflow-hidden divide-y divide-gray-200 rounded-lg shadow-sm">
-                        <thead class="bg-gray-50">
+                        <thead class="sticky top-0 z-10 bg-gray-50">
                         <tr>
+                            <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">
+                                <i class="mr-1 fas fa-file-alt"></i> Processo / Objeto
+                            </th>
                             <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">
                                 <i class="mr-1 fas fa-tasks"></i> Status
                             </th>
                             <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">
-                                <i class="mr-1 fas fa-hashtag"></i> Nº Processo
-                            </th>
-                            <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">
-                                <i class="mr-1 fas fa-list-ol"></i> Nº Procedimento
-                            </th>
-                            <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">
-                                <i class="mr-1 fas fa-file-contract"></i> Tipo Contratação
-                            </th>
-                            <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">
-                                <i class="mr-1 fas fa-cogs"></i> Tipo Procedimento
-                            </th>
-                            <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">
                                 <i class="mr-1 fas fa-filter"></i> Modalidade
+                            </th>
+                            <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">
+                                <i class="mr-1 fas fa-info-circle"></i> Detalhes
+                            </th>
+                            <th class="px-4 py-3 text-xs font-semibold tracking-wider text-center text-gray-600 uppercase">
+                                <i class="mr-1 fas fa-stream"></i> Etapa
                             </th>
                             <th class="px-4 py-3 text-xs font-semibold tracking-wider text-center text-gray-600 uppercase">
                                 <i class="mr-1 fas fa-cog"></i> Ações
@@ -377,14 +352,89 @@
                         <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($processos as $processo)
                             <tr class="transition-colors duration-200 hover:bg-gray-50/80">
-                                <!-- Status -->
-                                <td class="px-4 py-3 whitespace-nowrap">
-                                    @php
-                                        $status = $processo->status instanceof \App\Enums\ProcessoStatusEnum
-                                            ? $processo->status
-                                            : \App\Enums\ProcessoStatusEnum::tryFrom($processo->status) ?? \App\Enums\ProcessoStatusEnum::EM_ANDAMENTO;
-                                    @endphp
+                                @php
+                                    $status = $processo->status instanceof \App\Enums\ProcessoStatusEnum
+                                        ? $processo->status
+                                        : \App\Enums\ProcessoStatusEnum::tryFrom($processo->status) ?? \App\Enums\ProcessoStatusEnum::EM_ANDAMENTO;
 
+                                    $modalidade = $processo->modalidade instanceof \App\Enums\ModalidadeEnum
+                                        ? $processo->modalidade
+                                        : \App\Enums\ModalidadeEnum::tryFrom($processo->modalidade);
+                                    $modalidadeValue = $modalidade instanceof \App\Enums\ModalidadeEnum
+                                        ? $modalidade->value
+                                        : $processo->modalidade;
+
+                                    // Etapa atual — derivada de dados já existentes (não altera regra de negócio):
+                                    // Inicialização → Finalização → Contrato. Mesma visibilidade dos antigos botões.
+                                    $ehInexigibilidade = $modalidadeValue == \App\Enums\ModalidadeEnum::INEXIGIBILIDADE->value;
+                                    $temContrato = $processo->contrato !== null;
+                                    $temFinalizacao = $processo->finalizacao !== null || $status->value === 'FINALIZADO';
+                                    $mostraContrato = !$ehInexigibilidade
+                                        && !($processo->modalidade == 4 && optional($processo->detalhe)->tipo_srp === 'nao');
+
+                                    $etapas = [[
+                                        'label' => 'Inicialização', 'icon' => 'fa-play',
+                                        'rota' => route('admin.processos.iniciar', $processo->id),
+                                        'estado' => ($temFinalizacao || $temContrato) ? 'concluida' : 'atual',
+                                    ]];
+                                    if (!$ehInexigibilidade) {
+                                        $etapas[] = [
+                                            'label' => 'Finalização', 'icon' => 'fa-check',
+                                            'rota' => route('admin.processos.finalizacao.finalizar', $processo->id),
+                                            'estado' => $temContrato ? 'concluida' : ($temFinalizacao ? 'atual' : 'pendente'),
+                                        ];
+                                    }
+                                    if ($mostraContrato) {
+                                        $etapas[] = [
+                                            'label' => 'Contrato', 'icon' => 'fa-file-contract',
+                                            'rota' => route('admin.processos.contrato.index', $processo->id),
+                                            'estado' => $temContrato ? 'atual' : 'pendente',
+                                        ];
+                                    }
+                                @endphp
+
+                                {{-- Processo / Objeto --}}
+                                <td class="px-4 py-3 align-top">
+                                    <div class="font-mono text-sm font-semibold text-gray-900 whitespace-nowrap">
+                                        {{ $processo->numero_processo }}
+                                    </div>
+                                    <div class="mt-0.5 text-sm text-gray-700 max-w-md line-clamp-2" title="{{ strip_tags($processo->objeto) }}">
+                                        @if(request('search') && $processo->objeto)
+                                            @php
+                                                $objeto = strip_tags($processo->objeto);
+                                                $termoEscapado = preg_quote(request('search'), '/');
+                                                $objetoSeguro = htmlspecialchars($objeto);
+                                                $highlighted = preg_replace("/({$termoEscapado})/iu", '<span class="bg-yellow-200 px-1 rounded">$1</span>', $objetoSeguro);
+                                            @endphp
+                                            {!! $highlighted !!}
+                                        @else
+                                            {!! strip_tags($processo->objeto) ?: '<span class="italic text-gray-400">Sem objeto</span>' !!}
+                                        @endif
+                                    </div>
+                                    <div class="mt-1 text-xs text-gray-400">
+                                        <i class="mr-1 fas fa-user"></i>{{ $processo->user->name ?? 'N/A' }}
+                                        <span class="mx-1">·</span>
+                                        <i class="mr-1 far fa-calendar"></i>{{ $processo->created_at->format('d/m/Y') }}
+                                    </div>
+                                    @if($status->value === 'CANCELADO')
+                                        <div class="mt-1 text-xs text-red-600">
+                                            <i class="mr-1 fas fa-times-circle"></i>Cancelado em {{ $processo->data_cancelamento ? \Carbon\Carbon::parse($processo->data_cancelamento)->format('d/m/Y') : 'N/A' }}@if($processo->motivo_cancelamento) — {{ $processo->motivo_cancelamento }}@endif
+                                        </div>
+                                    @elseif($status->value === 'ADIADO')
+                                        <div class="mt-1 text-xs text-orange-600">
+                                            <i class="mr-1 fas fa-clock"></i>Adiado para {{ $processo->data_adiamento ? \Carbon\Carbon::parse($processo->data_adiamento)->format('d/m/Y') : 'N/A' }}@if($processo->justificativa_adiamento) — {{ $processo->justificativa_adiamento }}@endif
+                                        </div>
+                                    @elseif($status->value === 'REPUBLICADO')
+                                        <div class="mt-1 text-xs text-purple-600">
+                                            <i class="mr-1 fas fa-redo"></i>Republicado @if($processo->processo_original_id) — Original: {{ $processo->processoOriginal->numero_processo ?? 'N/A' }}@endif
+                                        </div>
+                                    @endif
+                                </td>
+
+                                
+
+                                {{-- Status --}}
+                                <td class="px-4 py-3 align-top whitespace-nowrap">
                                     <button type="button"
                                             onclick="abrirModalStatusProcesso({{ $processo->id }}, '{{ $processo->numero_processo }}', '{{ $status->value }}')"
                                             class="inline-flex items-center px-2.5 py-0.5 text-xs font-semibold rounded-full cursor-pointer transition-all duration-200 hover:opacity-90 hover:scale-105
@@ -406,32 +456,8 @@
                                     </button>
                                 </td>
 
-                                <td class="px-4 py-3 font-mono text-sm text-gray-900 whitespace-nowrap">
-                                    <span class="font-semibold">{{ $processo->numero_processo }}</span>
-                                </td>
-
-                                <td class="px-4 py-3 font-mono text-sm text-gray-900 whitespace-nowrap">
-                                    {{ $processo->numero_procedimento }}
-                                </td>
-
-                                <td class="px-4 py-3 text-sm text-gray-900">
-                                    {{ $processo->tipo_contratacao_nome }}
-                                </td>
-
-                                <td class="px-4 py-3 text-sm text-gray-900">
-                                    {{ $processo->tipo_procedimento_nome }}
-                                </td>
-
-                                <td class="px-4 py-3">
-                                    @php
-                                        $modalidade = $processo->modalidade instanceof \App\Enums\ModalidadeEnum
-                                            ? $processo->modalidade
-                                            : \App\Enums\ModalidadeEnum::tryFrom($processo->modalidade);
-                                        $modalidadeValue = $modalidade instanceof \App\Enums\ModalidadeEnum
-                                            ? $modalidade->value
-                                            : $processo->modalidade;
-                                    @endphp
-
+                                {{-- Modalidade --}}
+                                <td class="px-4 py-3 align-top">
                                     <span class="inline-flex items-center px-2.5 py-0.5 text-xs font-semibold rounded-full
                                         @if($modalidadeValue == \App\Enums\ModalidadeEnum::DISPENSA->value)
                                             bg-purple-100 text-purple-800 border border-purple-200
@@ -454,176 +480,91 @@
                                     </span>
                                 </td>
 
-                                <td class="px-4 py-3">
-                                    <div class="flex flex-wrap justify-center gap-1.5">
-                                        <!-- Botão Iniciar -->
-                                        <a href="{{ route('admin.processos.iniciar', $processo->id) }}"
-                                           class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white transition-colors duration-200 bg-[#062F43] rounded-md hover:bg-[#065f8b] focus:outline-none focus:ring-2 focus:ring-[#062F43] focus:ring-offset-1"
-                                           title="Iniciar processo">
-                                            <i class="mr-1 fas fa-play-circle"></i>
-                                            Iniciar
-                                        </a>
-                                        @if ($modalidadeValue != \App\Enums\ModalidadeEnum::INEXIGIBILIDADE->value)
-
-                                            <!-- Botão Finalizar -->
-                                            <a href="{{ route('admin.processos.finalizacao.finalizar', $processo->id) }}"
-                                            class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white transition-colors duration-200 bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-1"
-                                            title="Finalizar processo">
-                                                <i class="mr-1 fas fa-check-circle"></i>
-                                                Finalizar
+                                {{-- Detalhes (compactos) --}}
+                                <td class="px-4 py-3 align-top text-xs text-gray-500 whitespace-nowrap">
+                                    <div><span class="text-gray-400">Procedimento:</span> <span class="font-mono text-gray-700">{{ $processo->numero_procedimento ?: '—' }}</span></div>
+                                    <div class="mt-0.5">{{ $processo->tipo_contratacao_nome }}</div>
+                                    <div class="mt-0.5">{{ $processo->tipo_procedimento_nome }}</div>
+                                </td>
+                                {{-- Etapa (stepper clicável — navega e mostra a etapa) --}}
+                                <td class="px-4 py-3 align-top">
+                                    <div class="flex items-center justify-center">
+                                        @foreach($etapas as $i => $etapa)
+                                            @if($i > 0)
+                                                <div class="w-4 h-px {{ $etapa['estado'] === 'pendente' ? 'bg-gray-200' : 'bg-green-300' }}"></div>
+                                            @endif
+                                            <a href="{{ $etapa['rota'] }}" title="{{ $etapa['label'] }}" class="inline-flex flex-col items-center group">
+                                                <span class="flex items-center justify-center rounded-full w-7 h-7 text-xs transition
+                                                    @if($etapa['estado'] === 'concluida') bg-green-100 text-green-700
+                                                    @elseif($etapa['estado'] === 'atual') bg-[#062F43] text-white ring-2 ring-[#062F43]/20
+                                                    @else bg-gray-100 text-gray-400 group-hover:bg-gray-200 @endif">
+                                                    <i class="fas {{ $etapa['icon'] }}"></i>
+                                                </span>
+                                                <span class="mt-1 text-[10px] font-medium leading-tight
+                                                    @if($etapa['estado'] === 'atual') text-[#062F43]
+                                                    @elseif($etapa['estado'] === 'concluida') text-green-700
+                                                    @else text-gray-400 @endif">{{ $etapa['label'] }}</span>
                                             </a>
-
-                                            <!-- Botão Contrato -->
-                                            @if (!($processo->modalidade == 4 && optional($processo->detalhe)->tipo_srp === 'nao'))
-                                                <a href="{{ route('admin.processos.contrato.index', $processo->id) }}"
-                                                class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-1"
-                                                title="Emitir Contrato">
-                                                    <i class="mr-1 fas fa-file-contract"></i>
-                                                    Contrato
-                                                </a>
-                                            @endif
-
-                                        @endif
-                                        <!-- Ações especiais para processos ativos -->
-                                        @if($status->isAtivo())
-                                            <!-- Republicar -->
-                                            <button type="button"
-                                                    onclick="abrirModalRepublicarProcesso({{ $processo->id }})"
-                                                    class="inline-flex items-center justify-center w-8 h-8 text-white bg-purple-600 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-1"
-                                                    title="Republicar Processo">
-                                                <i class="fas fa-redo"></i>
-                                            </button>
-
-                                            <!-- Cancelar -->
-                                            <button type="button"
-                                                    onclick="abrirModalCancelarLicitacao({{ $processo->id }})"
-                                                    class="inline-flex items-center justify-center w-8 h-8 text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1"
-                                                    title="Cancelar Licitação">
-                                                <i class="fas fa-times-circle"></i>
-                                            </button>
-
-                                            <!-- Adiar -->
-                                            <button type="button"
-                                                    onclick="abrirModalAdiarLicitacao({{ $processo->id }})"
-                                                    class="inline-flex items-center justify-center w-8 h-8 text-white bg-yellow-600 rounded-md hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-1"
-                                                    title="Adiar Licitação">
-                                                <i class="fas fa-clock"></i>
-                                            </button>
-                                        @endif
-
-                                        <!-- Reverter Cancelamento -->
-                                        @if($status->value === 'CANCELADO')
-                                            <button type="button"
-                                                    onclick="reverterCancelamento({{ $processo->id }}, '{{ $processo->numero_processo }}')"
-                                                    class="inline-flex items-center justify-center w-8 h-8 text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1"
-                                                    title="Reverter Cancelamento">
-                                                <i class="fas fa-undo"></i>
-                                            </button>
-                                        @endif
-
-                                        <!-- Editar -->
-                                        <a href="{{ route('admin.processos.edit', $processo->id) }}"
-                                           class="inline-flex items-center justify-center w-8 h-8 text-gray-600 transition-colors duration-200 rounded-md hover:bg-gray-100 hover:text-[#009496] focus:outline-none focus:ring-2 focus:ring-[#009496] focus:ring-offset-1"
-                                           title="Editar processo">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-
-                                        <!-- Excluir -->
-                                        <form action="{{ route('admin.processos.destroy', $processo->id) }}" method="POST"
-                                              class="inline" id="delete-form-{{ $processo->id }}">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="button"
-                                                    onclick="confirmDelete({{ $processo->id }}, '{{ $processo->numero_processo }}')"
-                                                    class="inline-flex items-center justify-center w-8 h-8 text-gray-600 transition-colors duration-200 rounded-md hover:bg-red-100 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-1"
-                                                    title="Excluir processo">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </form>
+                                        @endforeach
                                     </div>
                                 </td>
-                            </tr>
 
-                            <!-- Linha expandida com detalhes -->
-                            <tr class="bg-gray-50/50">
-                                <td colspan="7" class="px-4 py-3 text-sm text-gray-700">
-                                    <div class="space-y-2">
-                                        <!-- Objeto com destaque da busca -->
-                                        <div>
-                                            <strong class="text-gray-900"><i class="mr-1 fas fa-file-alt"></i> Objeto:</strong>
-                                            @if(request('search_objeto') && $processo->objeto)
-                                                @php
-                                                    $objeto = strip_tags($processo->objeto);
-                                                    $termo = request('search_objeto');
-                                                    $termoEscapado = preg_quote($termo, '/');
-                                                    $objetoSeguro = htmlspecialchars($objeto);
-                                                    $highlighted = preg_replace(
-                                                        "/({$termoEscapado})/iu",
-                                                        '<span class="bg-yellow-200 px-1 rounded">$1</span>',
-                                                        $objetoSeguro
-                                                    );
-                                                @endphp
-                                                <span>{!! $highlighted !!}</span>
-                                            @else
-                                                <span>{!! strip_tags($processo->objeto) !!}</span>
+                                <td class="px-4 py-3 align-top text-center">
+                                    <div class="relative inline-block text-left" x-data="{ open: false }" @click.outside="open = false">
+                                        <button type="button" @click="open = !open"
+                                                class="inline-flex items-center justify-center w-8 h-8 text-gray-500 transition-colors rounded-md hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                                title="Mais ações">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                        <div x-show="open" x-cloak x-transition
+                                             class="absolute right-0 z-20 w-52 py-1 mt-1 origin-top-right bg-white border border-gray-200 rounded-lg shadow-lg">
+                                            <a href="{{ route('admin.processos.edit', $processo->id) }}"
+                                               class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                                <i class="w-4 mr-2 text-gray-400 fas fa-edit"></i> Editar processo
+                                            </a>
+                                            @if($status->isAtivo())
+                                                <button type="button" @click="open = false; abrirModalRepublicarProcesso({{ $processo->id }})"
+                                                        class="flex items-center w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50">
+                                                    <i class="w-4 mr-2 text-purple-500 fas fa-redo"></i> Republicar
+                                                </button>
+                                                <button type="button" @click="open = false; abrirModalAdiarLicitacao({{ $processo->id }})"
+                                                        class="flex items-center w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50">
+                                                    <i class="w-4 mr-2 text-yellow-500 fas fa-clock"></i> Adiar licitação
+                                                </button>
+                                                <button type="button" @click="open = false; abrirModalCancelarLicitacao({{ $processo->id }})"
+                                                        class="flex items-center w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50">
+                                                    <i class="w-4 mr-2 text-red-500 fas fa-times-circle"></i> Cancelar licitação
+                                                </button>
                                             @endif
-                                        </div>
-
-                                        <div class="grid grid-cols-1 gap-2 text-xs md:grid-cols-3">
-                                            <!-- Responsável -->
-                                            <div class="text-gray-500">
-                                                <i class="mr-1 fas fa-user"></i>
-                                                <strong>Criado por:</strong> {{ $processo->user->name ?? 'N/A' }}
-                                            </div>
-
-                                            <!-- Data de criação -->
-                                            <div class="text-gray-500">
-                                                <i class="mr-1 far fa-calendar"></i>
-                                                <strong>Criado em:</strong> {{ $processo->created_at->format('d/m/Y H:i') }}
-                                            </div>
-
-                                            <!-- Informações específicas do status -->
                                             @if($status->value === 'CANCELADO')
-                                                <div class="text-red-600">
-                                                    <i class="mr-1 fas fa-times-circle"></i>
-                                                    <strong>Cancelado em:</strong> {{ $processo->data_cancelamento ? \Carbon\Carbon::parse($processo->data_cancelamento)->format('d/m/Y') : 'N/A' }}
-                                                    @if($processo->motivo_cancelamento)
-                                                        - {{ $processo->motivo_cancelamento }}
-                                                    @endif
-                                                </div>
+                                                <button type="button" @click="open = false; reverterCancelamento({{ $processo->id }}, '{{ $processo->numero_processo }}')"
+                                                        class="flex items-center w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50">
+                                                    <i class="w-4 mr-2 text-green-500 fas fa-undo"></i> Reverter cancelamento
+                                                </button>
                                             @endif
-
-                                            @if($status->value === 'ADIADO')
-                                                <div class="text-orange-600">
-                                                    <i class="mr-1 fas fa-clock"></i>
-                                                    <strong>Adiado para:</strong> {{ $processo->data_adiamento ? \Carbon\Carbon::parse($processo->data_adiamento)->format('d/m/Y') : 'N/A' }}
-                                                    @if($processo->justificativa_adiamento)
-                                                        - {{ $processo->justificativa_adiamento }}
-                                                    @endif
-                                                </div>
-                                            @endif
-
-                                            @if($status->value === 'REPUBLICADO')
-                                                <div class="text-purple-600">
-                                                    <i class="mr-1 fas fa-redo"></i>
-                                                    <strong>Republicado</strong>
-                                                    @if($processo->processo_original_id)
-                                                        - Original: {{ $processo->processoOriginal->numero_processo ?? 'N/A' }}
-                                                    @endif
-                                                </div>
-                                            @endif
+                                            <div class="my-1 border-t border-gray-100"></div>
+                                            <button type="button" @click="open = false; confirmDelete({{ $processo->id }}, '{{ $processo->numero_processo }}')"
+                                                    class="flex items-center w-full px-4 py-2 text-sm text-left text-red-600 hover:bg-red-50">
+                                                <i class="w-4 mr-2 fas fa-trash"></i> Excluir processo
+                                            </button>
                                         </div>
                                     </div>
+                                    {{-- Form usado pelo confirmDelete() para submeter a exclusão --}}
+                                    <form action="{{ route('admin.processos.destroy', $processo->id) }}" method="POST" class="hidden" id="delete-form-{{ $processo->id }}">
+                                        @csrf
+                                        @method('DELETE')
+                                    </form>
                                 </td>
                             </tr>
+
                         @empty
                             <tr>
-                                <td colspan="7" class="px-6 py-16 text-center text-gray-500">
+                                <td colspan="6" class="px-6 py-16 text-center text-gray-500">
                                     <div class="flex flex-col items-center justify-center space-y-3">
                                         <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
                                             <i class="text-gray-400 text-2xl fas fa-clipboard-list"></i>
                                         </div>
-                                        @if(request()->hasAny(['search_objeto', 'search_numero', 'modalidade', 'status']))
+                                        @if(request()->hasAny(['search','modalidade', 'status']))
                                             <div>
                                                 <p class="text-sm font-medium text-gray-700">Nenhum processo encontrado com os filtros aplicados.</p>
                                                 <p class="mt-1 text-sm text-gray-500">Tente ajustar os critérios de busca.</p>
@@ -1543,7 +1484,7 @@
         }
 
         /* Destaque para o campo de pesquisa por objeto */
-        #search_objeto:focus {
+        #search:focus {
             box-shadow: 0 0 0 3px rgba(0, 148, 150, 0.1);
             border-color: #009496;
         }

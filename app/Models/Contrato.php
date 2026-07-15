@@ -64,9 +64,9 @@ class Contrato extends Model
         }
 
         if (!$this->data_finalizacao) {
-            // Attempt to calculate based on details if not explicitly set?
-            // Since we just added the field, maybe some legacy logic? Or we just return PENDENTE
-            return 'PENDENTE';
+            // Contrato do sistema sem data de finalização é considerado VIGENTE
+            // (nomenclatura de exibição — não altera nenhuma query/fluxo de negócio).
+            return 'VIGENTE';
         }
 
         $hoje = now()->startOfDay();

@@ -63,6 +63,10 @@ Route::prefix('admin/fiscalizacoes')
         Route::get('/{id}/pdf', [FiscalizacaoController::class, 'gerarRelatorio'])->name('pdf');
         Route::get('/{id}/relatorio-tecnico', [FiscalizacaoController::class, 'imprimirRelatorioTecnico'])->name('relatorio-tecnico');
         Route::get('/{id}/notificacoes', [FiscalizacaoController::class, 'imprimirNotificacoes'])->name('notificacoes');
+        // Assinantes do relatório + Relatório Fotográfico (múltiplas imagens)
+        Route::post('/{id}/assinantes', [FiscalizacaoController::class, 'salvarAssinantes'])->name('assinantes');
+        Route::post('/{id}/fotos', [FiscalizacaoController::class, 'uploadFotos'])->name('fotos.upload');
+        Route::delete('/{id}/fotos/{fotoId}', [FiscalizacaoController::class, 'deleteFoto'])->name('fotos.delete');
     });
 
 // ================================================

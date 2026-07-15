@@ -226,13 +226,87 @@ class FiscalizacaoController extends Controller
     // =========================================================
     public function show($id)
     {
-        $fiscalizacao = Fiscalizacao::with(['fiscalizavel', 'prefeitura', 'user'])->findOrFail($id);
+        $fiscalizacao = Fiscalizacao::with(['fiscalizavel', 'prefeitura.unidades', 'user', 'fotos'])->findOrFail($id);
 
         $this->authorizeAccess($fiscalizacao);
 
         $fiscalizacao->contrato_info = $this->extrairInfoContrato($fiscalizacao);
 
         return view('Admin.Fiscalizacoes.show', compact('fiscalizacao'));
+    }
+
+    /**
+     * Salva os assinantes (servidores da prefeitura) do relatório de fiscalização.
+     * Impressos para assinatura física — sem assinatura eletrônica.
+     */
+    public function salvarAssinantes(Request $request, $id)
+    {
+        $fiscalizacao = Fiscalizacao::findOrFail($id);
+        $this->authorizeAccess($fiscalizacao);
+
+        $data = $request->validate([
+            'assinantes'           => ['nullable', 'array'],
+            'assinantes.*.nome'    => ['required', 'string', 'max:255'],
+            'assinantes.*.cargo'   => ['nullable', 'string', 'max:255'],
+            'assinantes.*.unidade' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $fiscalizacao->update([
+            'assinantes' => array_values($data['assinantes'] ?? []),
+        ]);
+
+        return back()->with('success', 'Assinantes do relatório atualizados com sucesso.');
+    }
+
+    /**
+     * Upload de múltiplas imagens do Relatório Fotográfico da fiscalização.
+     */
+    public function uploadFotos(Request $request, $id)
+    {
+        $fiscalizacao = Fiscalizacao::findOrFail($id);
+        $this->authorizeAccess($fiscalizacao);
+
+        $request->validate([
+            'fotos'   => ['required', 'array'],
+            'fotos.*' => ['image', 'mimes:jpeg,jpg,png,webp', 'max:8192'],
+        ]);
+
+        $destino = public_path('uploads/fiscalizacoes/fotos');
+        if (!file_exists($destino)) {
+            mkdir($destino, 0755, true);
+        }
+
+        $ordem = (int) $fiscalizacao->fotos()->max('ordem');
+
+        foreach ($request->file('fotos') as $arquivo) {
+            $nome = 'Fisc_' . $fiscalizacao->id . '_' . time() . '_' . Str::random(6) . '.' . $arquivo->getClientOriginalExtension();
+            $arquivo->move($destino, $nome);
+
+            $fiscalizacao->fotos()->create([
+                'caminho' => 'uploads/fiscalizacoes/fotos/' . $nome,
+                'ordem'   => ++$ordem,
+            ]);
+        }
+
+        return back()->with('success', 'Fotos adicionadas ao relatório fotográfico.');
+    }
+
+    /**
+     * Remove uma imagem do Relatório Fotográfico.
+     */
+    public function deleteFoto($id, $fotoId)
+    {
+        $fiscalizacao = Fiscalizacao::findOrFail($id);
+        $this->authorizeAccess($fiscalizacao);
+
+        $foto = $fiscalizacao->fotos()->findOrFail($fotoId);
+
+        if ($foto->caminho && file_exists(public_path($foto->caminho))) {
+            @unlink(public_path($foto->caminho));
+        }
+        $foto->delete();
+
+        return back()->with('success', 'Foto removida do relatório fotográfico.');
     }
 
     // =========================================================

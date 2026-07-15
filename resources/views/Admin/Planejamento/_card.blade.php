@@ -47,6 +47,41 @@
             @endisset
         </div>
 
+        {{-- Status do Processo — alteração rápida (reutiliza a rota processos.status.update) --}}
+        @php
+            $procStatus = $processo->status instanceof \App\Enums\ProcessoStatusEnum
+                ? $processo->status
+                : (\App\Enums\ProcessoStatusEnum::tryFrom($processo->status) ?? \App\Enums\ProcessoStatusEnum::EM_ANDAMENTO);
+            $procStatusCores = [
+                'EM_ANDAMENTO' => 'bg-blue-100 text-blue-800',
+                'FINALIZADO'   => 'bg-green-100 text-green-800',
+                'CANCELADO'    => 'bg-red-100 text-red-800',
+                'REPUBLICADO'  => 'bg-purple-100 text-purple-800',
+                'ADIADO'       => 'bg-orange-100 text-orange-800',
+            ];
+        @endphp
+        <div class="relative" x-data="{ open: false }" @click.outside="open = false">
+            <button type="button" @click="open = !open"
+                    data-proc-status-btn
+                    class="inline-flex items-center gap-1 px-2.5 py-0.5 text-[11px] font-semibold rounded-full transition hover:opacity-90 {{ $procStatusCores[$procStatus->value] ?? 'bg-gray-100 text-gray-800' }}"
+                    title="Alterar status do processo">
+                <span data-proc-status-label>{{ $procStatus->label() }}</span>
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </button>
+            <div x-show="open" x-cloak x-transition
+                 class="absolute left-0 z-30 py-1 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg w-44">
+                @foreach(\App\Enums\ProcessoStatusEnum::cases() as $st)
+                    <button type="button"
+                            @click="open = false; alterarStatusProcesso('{{ route('admin.processos.status.update', $processo) }}', '{{ $st->value }}', {{ $processo->id }})"
+                            class="flex items-center w-full px-3 py-1.5 text-xs text-left text-gray-700 hover:bg-gray-50 {{ $procStatus->value === $st->value ? 'font-semibold text-gray-900' : '' }}">
+                        {{ $st->label() }}
+                    </button>
+                @endforeach
+            </div>
+        </div>
+
         {{-- Nome Resumido / Objeto --}}
         @if($processo->nome_resumido)
             <a href="{{ route('admin.planejamento.show', $processo) }}"
@@ -231,3 +266,49 @@
     </div>
 
 </div>
+
+@once
+<script>
+    // Alteração rápida do status do Processo pelo cartão do Planejamento.
+    // Reutiliza a rota existente (processos.status.update) — não duplica regra de negócio.
+    window.alterarStatusProcesso = async function (url, status, processoId) {
+        const cores = {
+            EM_ANDAMENTO: 'bg-blue-100 text-blue-800',
+            FINALIZADO:   'bg-green-100 text-green-800',
+            CANCELADO:    'bg-red-100 text-red-800',
+            REPUBLICADO:  'bg-purple-100 text-purple-800',
+            ADIADO:       'bg-orange-100 text-orange-800',
+        };
+        const todasCores = ('bg-blue-100 text-blue-800 bg-green-100 text-green-800 bg-red-100 text-red-800 '
+            + 'bg-purple-100 text-purple-800 bg-orange-100 text-orange-800 bg-gray-100 text-gray-800').split(' ');
+        try {
+            const resp = await fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+                body: JSON.stringify({ status }),
+            });
+            const data = await resp.json().catch(() => ({}));
+            if (resp.ok && data.success) {
+                const card = document.querySelector('[data-id="' + processoId + '"]');
+                if (card) {
+                    const label = card.querySelector('[data-proc-status-label]');
+                    if (label) label.textContent = data.data.status_label;
+                    const btn = card.querySelector('[data-proc-status-btn]');
+                    if (btn) {
+                        todasCores.forEach(c => btn.classList.remove(c));
+                        (cores[status] || 'bg-gray-100 text-gray-800').split(' ').forEach(c => btn.classList.add(c));
+                    }
+                }
+            } else {
+                alert(data.message || 'Erro ao atualizar status do processo.');
+            }
+        } catch (e) {
+            alert('Falha de rede ao atualizar status.');
+        }
+    };
+</script>
+@endonce

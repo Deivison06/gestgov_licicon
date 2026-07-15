@@ -48,6 +48,19 @@
         .signature-section { margin-top: 50px; text-align: center; }
         .signature-line { border-top: 1px solid #000; width: 300px; margin: 0 auto; padding-top: 5px; }
         .foto-relatorio { max-width: 100%; max-height: 320px; border: 1px solid #ccc; border-radius: 4px; }
+
+        /* Múltiplos assinantes (assinatura física) */
+        .assinatura-bloco { margin-top: 55px; text-align: center; }
+        .assinatura-bloco .signature-line { border-top: 1px solid #000; width: 300px; margin: 0 auto; padding-top: 5px; }
+        .assinatura-nome { font-weight: bold; text-transform: uppercase; margin: 0; }
+        .assinatura-cargo { margin: 0; font-size: 11px; }
+
+        /* Seção Relatório Fotográfico */
+        .fotos-section { page-break-before: always; margin-top: 20px; }
+        .fotos-titulo { text-align: center; font-weight: bold; text-transform: uppercase; margin-bottom: 20px; font-size: 14px; }
+        .foto-item { text-align: center; margin-bottom: 25px; page-break-inside: avoid; }
+        .foto-item img { max-width: 100%; max-height: 340px; border: 1px solid #ccc; border-radius: 4px; }
+        .foto-legenda { font-size: 11px; color: #555; margin-top: 4px; }
     </style>
 </head>
 <body>
@@ -183,6 +196,45 @@
             <p class="bold uppercase" style="margin:0;">{{ $fiscalizacao->user->name }}</p>
             <p style="margin:0;">Fiscal do Contrato</p>
         </div>
+
+        {{-- Assinantes adicionais selecionados (assinatura física) --}}
+        @if(!empty($fiscalizacao->assinantes))
+            @foreach($fiscalizacao->assinantes as $assinante)
+                <div class="assinatura-bloco">
+                    <div class="signature-line"></div>
+                    <p class="assinatura-nome">{{ $assinante['nome'] ?? '' }}</p>
+                    @php
+                        $detalhe = array_filter([$assinante['cargo'] ?? null, $assinante['unidade'] ?? null]);
+                    @endphp
+                    @if(!empty($detalhe))
+                        <p class="assinatura-cargo">{{ implode(' — ', $detalhe) }}</p>
+                    @endif
+                </div>
+            @endforeach
+        @endif
     </div>
+
+    {{-- ===================== RELATÓRIO FOTOGRÁFICO ===================== --}}
+    @if($fiscalizacao->fotos->isNotEmpty())
+        <div class="content-body fotos-section">
+            <div class="fotos-titulo">Relatório Fotográfico</div>
+            @foreach($fiscalizacao->fotos as $foto)
+                @php
+                    $fotoAbs = public_path($foto->caminho);
+                    $fotoB64 = '';
+                    if ($foto->caminho && file_exists($fotoAbs)) {
+                        $ext = pathinfo($fotoAbs, PATHINFO_EXTENSION);
+                        $fotoB64 = 'data:image/' . $ext . ';base64,' . base64_encode(file_get_contents($fotoAbs));
+                    }
+                @endphp
+                @if($fotoB64)
+                    <div class="foto-item">
+                        <img src="{{ $fotoB64 }}" alt="Foto {{ $loop->iteration }}">
+                        {{-- <div class="foto-legenda">{{ $foto->legenda ?? ('Imagem ' . $loop->iteration) }}</div> --}}
+                    </div>
+                @endif
+            @endforeach
+        </div>
+    @endif
 </body>
 </html>

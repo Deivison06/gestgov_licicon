@@ -35,7 +35,9 @@ class ProcessoController extends AbstractController
     public function index(Request $request)
     {
         $prefeituras = Prefeitura::withCount('processos')->get();
-        $query = Processo::with(['prefeitura', 'detalhe', 'user']);
+        // finalizacao/contrato são carregados só para exibir a ETAPA atual na listagem
+        // (indicador visual) — não altera nenhuma regra de negócio.
+        $query = Processo::with(['prefeitura', 'detalhe', 'user', 'finalizacao', 'contrato']);
 
         // Filtro por prefeitura
         $prefeituraId = $request->prefeitura_id;
@@ -43,18 +45,13 @@ class ProcessoController extends AbstractController
             $query->where('prefeitura_id', $prefeituraId);
         }
 
-        // Pesquisa por objeto
-        if ($request->filled('search_objeto')) {
-            $searchObjeto = $this->prepararTermoBusca($request->search_objeto);
-            $query->where('objeto', 'like', "%{$searchObjeto}%");
-        }
-
-        // Pesquisa por número
-        if ($request->filled('search_numero')) {
-            $searchNumero = $this->prepararTermoBusca($request->search_numero);
-            $query->where(function ($q) use ($searchNumero) {
-                $q->where('numero_processo', 'like', "%{$searchNumero}%")
-                  ->orWhere('numero_procedimento', 'like', "%{$searchNumero}%");
+        // Pesquisa unificada: nº do processo, nº do procedimento ou objeto.
+        if ($request->filled('search')) {
+            $termo = $this->prepararTermoBusca($request->search);
+            $query->where(function ($q) use ($termo) {
+                $q->where('objeto', 'like', "%{$termo}%")
+                  ->orWhere('numero_processo', 'like', "%{$termo}%")
+                  ->orWhere('numero_procedimento', 'like', "%{$termo}%");
             });
         }
 
@@ -84,7 +81,7 @@ class ProcessoController extends AbstractController
         // respeitar a escolha dele (inclusive vazio = todos).
         // Se nenhum filtro foi enviado (acesso direto à página), mostrar apenas Em Andamento.
         $filtersSubmitted = $request->hasAny([
-            'search_objeto', 'search_numero', 'modalidade', 'status',
+            'search', 'modalidade', 'status',
             'data_inicio', 'data_fim', 'responsavel'
         ]);
 
