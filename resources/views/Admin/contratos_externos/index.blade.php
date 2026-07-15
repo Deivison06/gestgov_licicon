@@ -199,6 +199,20 @@
                                 <option value="pendente" {{ request('situacao') === 'pendente' ? 'selected' : '' }}>Pendente</option>
                             </select>
                         </div>
+
+                        {{-- Filtro por Vencimento --}}
+                        <div>
+                            <label for="vencimento" class="block mb-1 text-sm font-medium text-gray-700">
+                                Vencimento
+                            </label>
+                            <select name="vencimento" id="vencimento" class="w-full px-4 py-2 transition-colors duration-200 border border-gray-300 rounded-lg focus:ring-cyan-500 focus:border-cyan-500">
+                                <option value="">Todos os Contratos</option>
+                                <option value="vencidos" {{ request('vencimento') === 'vencidos' ? 'selected' : '' }}>Vencidos</option>
+                                <option value="30" {{ request('vencimento') === '30' ? 'selected' : '' }}>Vencem em 30 dias</option>
+                                <option value="60" {{ request('vencimento') === '60' ? 'selected' : '' }}>Vencem em 60 dias</option>
+                                <option value="90" {{ request('vencimento') === '90' ? 'selected' : '' }}>Vencem em 90 dias</option>
+                            </select>
+                        </div>
                     </div>
 
                     {{-- Botões --}}
@@ -209,7 +223,7 @@
                         <a href="{{ route('admin.contratos.index', ['tipo' => $abaAtiva]) }}" class="px-4 py-2 text-center text-gray-700 transition-colors duration-200 bg-gray-100 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 whitespace-nowrap">
                             <i class="fas fa-times mr-1"></i> Limpar
                         </a>
-                        <a href="{{ route('admin.contratos.relatorio-pdf', array_filter(array_merge(['tipo' => $abaAtiva], request()->only(['search', 'prefeitura_id', 'modalidade', 'empresa_id', 'situacao', 'vencedor_id'])))) }}"
+                        <a href="{{ route('admin.contratos.relatorio-pdf', array_filter(array_merge(['tipo' => $abaAtiva], request()->only(['search', 'prefeitura_id', 'modalidade', 'empresa_id', 'situacao', 'vencedor_id', 'vencimento'])))) }}"
                            target="_blank"
                            class="inline-flex items-center gap-1.5 px-4 py-2 text-white transition-colors duration-200 rounded-lg bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 whitespace-nowrap">
                             <i class="fas fa-file-pdf"></i> Gerar PDF

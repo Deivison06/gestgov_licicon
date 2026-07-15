@@ -3,11 +3,14 @@
 namespace App\Models;
 
 use App\Enums\ModalidadeEnum;
+use App\Models\Concerns\FiltravelPorVencimento;
 use App\Scopes\PrefeituraScope;
 use Illuminate\Database\Eloquent\Model;
 
 class ContratoManual extends Model
 {
+    use FiltravelPorVencimento;
+
     protected $table = "contratos_manuais";
     protected $fillable = [
         'empresa_id',       // Vínculo com a empresa (Novo)

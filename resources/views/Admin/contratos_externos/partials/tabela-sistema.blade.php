@@ -8,6 +8,8 @@
             <th class="px-6 py-4">Número do Processo</th>
             <th class="px-6 py-4">Modalidade</th>
             <th class="px-6 py-4">Contrato</th>
+            <th class="px-6 py-4">Empresa</th>
+            <th class="px-6 py-4">Valor Total</th>
             <th class="px-6 py-4 text-center">Situação</th>
             <th class="px-6 py-4 text-center">Ações</th>
         </tr>
@@ -57,6 +59,37 @@
                     @endif
                 </td>
 
+                {{-- Empresa (vencedor) --}}
+                <td class="px-6 pt-5 pb-3 whitespace-nowrap text-sm text-gray-900">
+                    @php $vencedor = $processo->vencedores->first(); @endphp
+                    @if($vencedor)
+                        <div class="font-medium text-gray-900 max-w-[180px] truncate" title="{{ $vencedor->razao_social }}">
+                            {{ $vencedor->razao_social ?? '-' }}
+                        </div>
+                        @if($vencedor->cnpj)
+                            <div class="text-xs text-gray-500">
+                                {{ preg_replace('/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/', '$1.$2.$3/$4-$5', $vencedor->cnpj) }}
+                            </div>
+                        @endif
+                        @if($processo->vencedores->count() > 1)
+                            <div class="text-[10px] text-gray-400">+{{ $processo->vencedores->count() - 1 }} vencedor(es)</div>
+                        @endif
+                    @else
+                        <span class="text-xs text-gray-500 italic">-</span>
+                    @endif
+                </td>
+
+                {{-- Valor Total (homologação do contrato ou soma dos vencedores) --}}
+                <td class="px-6 pt-5 pb-3 whitespace-nowrap text-sm text-gray-900">
+                    @php
+                        $valorContrato = $processo->contrato?->homologacao?->valor_total
+                            ?? $processo->vencedores->sum('valor_total');
+                    @endphp
+                    <span class="font-semibold text-gray-800">
+                        R$ {{ number_format($valorContrato ?? 0, 2, ',', '.') }}
+                    </span>
+                </td>
+
                 <td class="px-6 pt-5 pb-3 whitespace-nowrap text-center text-sm">
                     @if($processo->contrato)
                         @php
@@ -103,7 +136,7 @@
                 </td>
             </tr>
             <tr class="border-b border-gray-200">
-                <td colspan="{{ $isPrefeituraUser ? 5 : 6 }}"
+                <td colspan="{{ $isPrefeituraUser ? 7 : 8 }}"
                     class="bg-[#F8FAFC] px-6 py-3 text-sm text-gray-600 leading-relaxed whitespace-normal">
                     <div class="flex items-start gap-2">
                         <i class="fas fa-info-circle text-gray-400 mt-0.5 flex-shrink-0"></i>
@@ -122,7 +155,7 @@
         @empty
             <tr>
                 @php
-                    $colspan = $isPrefeituraUser ? 5 : 6;
+                    $colspan = $isPrefeituraUser ? 7 : 8;
                 @endphp
                 <td colspan="{{ $colspan }}" class="px-6 py-10 text-center text-gray-500">
                     <div class="flex flex-col items-center justify-center">

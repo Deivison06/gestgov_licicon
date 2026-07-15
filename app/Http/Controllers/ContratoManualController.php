@@ -32,6 +32,7 @@ class ContratoManualController extends Controller
             $query = Processo::with([
                 'prefeitura',
                 'contrato',
+                'contrato.homologacao',
                 'vencedores',
                 'detalhe'
             ])
@@ -101,6 +102,13 @@ class ContratoManualController extends Controller
                 });
             }
 
+            // Vencimento (vencidos / próximos 30-60-90 dias) — pela data_finalizacao do contrato.
+            if ($request->filled('vencimento')) {
+                $query->whereHas('contrato', function ($q) use ($request) {
+                    $q->vencimento($request->vencimento);
+                });
+            }
+
             $contratos = $query->paginate(10);
             $tipoContratos = 'sistema';
         } else {
@@ -167,6 +175,11 @@ class ContratoManualController extends Controller
                     'pendente' => $query->where('concluido', false)->whereNull('data_finalizacao'),
                     default    => null,
                 };
+            }
+
+            // Vencimento (vencidos / próximos 30-60-90 dias).
+            if ($request->filled('vencimento')) {
+                $query->vencimento($request->vencimento);
             }
 
             $contratos = $query->latest()->paginate(10);
@@ -294,6 +307,11 @@ class ContratoManualController extends Controller
             }
         }
 
+        // Vencimento (vencidos / próximos 30-60-90 dias).
+        if ($request->filled('vencimento')) {
+            $query->vencimento($request->vencimento);
+        }
+
         $contratos = $query->orderBy('data_finalizacao')->get();
 
         $totalContratos = $contratos->count();
@@ -402,6 +420,13 @@ class ContratoManualController extends Controller
                     };
                 });
             }
+        }
+
+        // Vencimento (vencidos / próximos 30-60-90 dias) — pela data_finalizacao do contrato.
+        if ($request->filled('vencimento')) {
+            $query->whereHas('contrato', function ($q) use ($request) {
+                $q->vencimento($request->vencimento);
+            });
         }
 
         $processos = $query->orderBy('created_at', 'desc')->get();
