@@ -11,13 +11,14 @@ class IntegracaoAlmoxarifadoController extends Controller
     public function listarContratos(Request $request)
     {
         $processos = Processo::whereHas('lotesContratados', function($q) {
-            $q->where('status', 'CONTRATADO');
+            $q->where('status', 'CONTRATADO')->orWhereNotNull('contrato_id');
         })
         ->with([
             'prefeitura',
             'detalhe',
             'lotesContratados' => function($q) {
-                $q->where('status', 'CONTRATADO')->with(['lote', 'vencedor']);
+                $q->where('status', 'CONTRATADO')->orWhereNotNull('contrato_id');
+                $q->with(['lote', 'vencedor']);
             },
         ])
         ->latest()

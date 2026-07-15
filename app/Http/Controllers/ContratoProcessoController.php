@@ -663,7 +663,7 @@ class ContratoProcessoController extends Controller
             LoteContratado::where('processo_id', $processo->id)
                 ->whereIn('id', $contratacaoIds)
                 ->whereNull('contrato_id')
-                ->update(['contrato_id' => $contrato->id]);
+                ->update(['contrato_id' => $contrato->id, 'status' => 'CONTRATADO']);
             return;
         }
 
@@ -679,9 +679,9 @@ class ContratoProcessoController extends Controller
         $primeiroVencedorId = (clone $query)->value('vencedor_id');
 
         if ($primeiroVencedorId) {
-            $query->where('vencedor_id', $primeiroVencedorId)->update(['contrato_id' => $contrato->id]);
+            $query->where('vencedor_id', $primeiroVencedorId)->update(['contrato_id' => $contrato->id, 'status' => 'CONTRATADO']);
         } else {
-            $query->update(['contrato_id' => $contrato->id]);
+            $query->update(['contrato_id' => $contrato->id, 'status' => 'CONTRATADO']);
         }
     }
 
