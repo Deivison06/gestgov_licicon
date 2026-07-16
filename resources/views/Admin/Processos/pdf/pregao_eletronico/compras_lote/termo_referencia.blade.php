@@ -163,6 +163,40 @@
             padding-left: 10px;
         }
 
+        /* ---------------------------------- */
+        /* TABELA DE ITENS / LOTES            */
+        /* ---------------------------------- */
+        /* O DomPDF só quebra a tabela ENTRE linhas, nunca dentro de um <tr>.
+           Por isso a coluna de especificação recebe a maior largura possível:
+           quanto mais estreita ela for, mais alta a linha fica e maior o risco
+           de o <tr> não caber na página e invadir o rodapé. */
+        table.tabela-itens {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            font-size: 8pt;
+            text-align: center;
+        }
+
+        /* Repete o cabeçalho quando a tabela quebra de página (evita thead órfão) */
+        table.tabela-itens thead {
+            display: table-header-group;
+        }
+
+        table.tabela-itens th,
+        table.tabela-itens td {
+            border: 1px solid #000;
+            padding: 4px;
+            vertical-align: top;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        table.tabela-itens td.especificacao {
+            text-align: left;
+            line-height: 1.15;
+        }
+
     </style>
 </head>
 
@@ -375,15 +409,15 @@
             1.4 Para a cotação de preços a ser realizada neste certame, esta administração coloca à disposição dos licitantes, as
             informações e preços unitários a seguir:
         </p>
-        <table border="1" cellspacing="0" cellpadding="4" style="border-collapse: collapse; width: 100%; text-align: center; font-size: 8pt;">
+        <table cellspacing="0" cellpadding="4" class="tabela-itens">
             <thead>
                 <tr>
-                    <th style="width: 6%;">ITEM</th>
-                    <th style="width: 30%;">ESPECIFICAÇÃO</th>
+                    <th style="width: 5%;">ITEM</th>
+                    <th style="width: 49%;">ESPECIFICAÇÃO</th>
                     <th style="width: 8%;">UNIDADE</th>
-                    <th style="width: 20%;">QUANTIDADE ESTIMADA</th>
-                    <th style="width: 18%;">VALOR UNITÁRIO</th>
-                    <th style="width: 18%;">VALOR TOTAL</th>
+                    <th style="width: 12%;">QUANTIDADE ESTIMADA</th>
+                    <th style="width: 13%;">VALOR UNITÁRIO</th>
+                    <th style="width: 13%;">VALOR TOTAL</th>
                 </tr>
             </thead>
             <tbody>
@@ -416,7 +450,7 @@
                             @endphp
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
-                                <td style="text-align: left;">{{ $item['especificacoes'] ?? '' }}</td>
+                                <td class="especificacao">{{ $item['especificacoes'] ?? '' }}</td>
                                 <td>{{ $item['unidade'] ?? '' }}</td>
                                 <td>{{ number_format($qtd, 2, ',', '.') }}</td>
                                 <td>{{ $fmtBr($vUnit) }}</td>
