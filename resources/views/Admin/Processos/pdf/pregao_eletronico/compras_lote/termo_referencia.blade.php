@@ -188,15 +188,13 @@
             border: 1px solid #000;
             padding: 4px;
             vertical-align: top;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
 
-        /* A quebra dentro da palavra vale só para a especificação (termos longos
-           como "ANTIUMECTANTE"); nos demais rótulos ela partiria "ITEM"/"UNIDADE". */
         table.tabela-itens td.especificacao {
             text-align: left;
             line-height: 1.15;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
         }
 
     </style>
@@ -411,15 +409,15 @@
             1.4 Para a cotação de preços a ser realizada neste certame, esta administração coloca à disposição dos licitantes, as
             informações e preços unitários a seguir:
         </p>
-        <table cellspacing="0" cellpadding="4" class="tabela-itens">
+        <table cellspacing="0" cellpadding="4" class="tabela-itens" font-size="8pt">
             <thead>
                 <tr>
-                    <th style="width: 7%;">ITEM</th>
-                    <th style="width: 46%;">ESPECIFICAÇÃO</th>
-                    <th style="width: 10%;">UNIDADE</th>
+                    <th style="width: 5%;">ITEM</th>
+                    <th style="width: 49%;">ESPECIFICAÇÃO</th>
+                    <th style="width: 8%;">UNIDADE</th>
                     <th style="width: 12%;">QUANTIDADE ESTIMADA</th>
-                    <th style="width: 12.5%;">VALOR UNITÁRIO</th>
-                    <th style="width: 12.5%;">VALOR TOTAL</th>
+                    <th style="width: 13%;">VALOR UNITÁRIO</th>
+                    <th style="width: 13%;">VALOR TOTAL</th>
                 </tr>
             </thead>
             <tbody>
