@@ -212,7 +212,6 @@
 
     // Render do widget (badge + botão) ---------------------------
     const ESTADOS = {
-        sem_pdf:               { badge: ['bg-gray-100 text-gray-700', 'Sem PDF'],        botao: 'Gerar PDF antes' },
         pronto_para_solicitar: { badge: null,                                            botao: 'Solicitar Assinatura' },
         aguardando:            { badge: ['bg-amber-100 text-amber-800', 'Aguardando'],   botao: null },
         parcialmente_assinado: { badge: ['bg-blue-100 text-blue-800', 'Em andamento'],   botao: null },

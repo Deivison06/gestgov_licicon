@@ -65,147 +65,41 @@
         const unidadesAssinantes = @json($unidadesData);
     </script>
 
-    <div class="mb-8">
-        <div class="overflow-hidden bg-white border border-gray-100 shadow-sm rounded-2xl">
-            <!-- Header -->
-            <div class="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
-                <div class="flex flex-col items-start justify-between gap-3 lg:flex-row lg:items-center">
-                    <div>
-                        <h3 class="text-xl font-semibold text-gray-800">Processos Licitatórios</h3>
-                        <!-- Nova linha para mostrar o responsável -->
-                        @if($processo->user)
-                            <div class="flex items-center gap-2 mt-1">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                </svg>
-                                <span class="text-sm text-gray-600">
-                            Responsável pela elaboração: <strong>{{ $processo->user->name }}</strong>
-                        </span>
-                            </div>
-                        @endif
-                    </div>
-
-                    <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
-                        {{-- BOTÃO DE CANCELAMENTO - AGORA SEMPRE VISÍVEL SE EXISTIR DOCUMENTO --}}
-                        @if ($temCancelamentoGerado)
-                            <a href="{{ route('admin.processo.documento.dowload', ['processo' => $processo->id, 'tipo' => 'minuta_cancelamento']) }}"
-                               download
-                               class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-                               title="Baixar Minuta de Cancelamento">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                                <span>Baixar Minuta de Cancelamento</span>
-                            </a>
-                        @endif
-
-                        <button type="button"
-                                onclick="abrirModalRepublicarEdital({{ $processo->id }})"
-                                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-purple-600 rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
-                                title="Republicação de Edital">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
-                            <span>Republicação de Edital</span>
-                        </button>
-
-                        {{-- BOTÃO PARA GERAR CANCELAMENTO (se o processo não estiver cancelado e não tiver minuta gerada) --}}
-                        @if (!$isCancelado && !$temCancelamentoGerado)
-                            <button type="button"
-                                    onclick="gerarMinutaCancelamento({{ $processo->id }})"
-                                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-orange-600 rounded-lg hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
-                                    title="Gerar Minuta de Cancelamento">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                                </svg>
-                                <span>Gerar Minuta de Cancelamento</span>
-                            </button>
-                        @endif
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tabela de Informações -->
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                            Prefeitura
-                        </th>
-                        <th class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                            Modalidade
-                        </th>
-                        <th class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                            Nº Processo
-                        </th>
-                        <th class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                            Nº Procedimento
-                        </th>
-                        <th class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                            Tipo Contratação
-                        </th>
-                        <th class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                            Tipo Procedimento
-                        </th>
-                    </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                    <tr class="transition-colors duration-200 hover:bg-gray-50">
-                        <td class="px-6 py-4">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0 w-8 h-8 rounded-full bg-[#009496]/10 flex items-center justify-center">
-                                    <svg class="w-4 h-4 text-[#009496]" fill="none" stroke="currentColor"
-                                         viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                              d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-6 0H5m2 0h4M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
-                                        </path>
-                                    </svg>
-                                </div>
-                                <div class="ml-4">
-                                    <div class="text-sm font-medium text-gray-900">
-                                        {{ $processo->prefeitura->nome }}
-                                    </div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4">
-                        <span class="inline-flex px-2.5 py-0.5 text-xs font-medium rounded-full {{ $modalidadeBadgeClass }}">
-                            {{ $processo->modalidade->getDisplayName() }}
-                        </span>
-                        </td>
-                        <td class="px-6 py-4 font-mono text-sm text-gray-900">
-                            {{ $processo->numero_processo }}
-                        </td>
-                        <td class="px-6 py-4 font-mono text-sm text-gray-900">
-                            {{ $processo->numero_procedimento }}
-                        </td>
-                        <td class="px-6 py-4 font-mono text-sm text-gray-900">
-                            {{ $processo->tipo_contratacao_nome }}
-                        </td>
-                        <td class="px-6 py-4 font-mono text-sm text-gray-900">
-                            {{ $processo->tipo_procedimento_nome }}
-                        </td>
-                    </tr>
-                    <tr class="bg-gray-50">
-                        <td colspan="6" class="px-6 py-4 text-sm text-gray-700">
-                            <strong>Objeto:</strong> {!! strip_tags($processo->objeto) !!}
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+    @include('Admin.Processos.partials.processo-header', ['etapaAtual' => 'iniciar'])
 
     <!-- Seção de Documentos -->
+    @php
+        // Progresso de geração de documentos (respeita as mesmas regras de exibição da tabela abaixo).
+        $docsTotal = 0;
+        $docsGerados = 0;
+        foreach ($documentos as $tipoProg => $docProg) {
+            if ($isConcorrencia && in_array($tipoProg, ['termo_referencia', 'analise_mercado'], true)) continue;
+            if ($isPregaoEletronico && $tipoProg === 'projeto_basico') continue;
+            if ($tipoProg === 'minuta_cancelamento') continue;
+            $docsTotal++;
+            if ($getDocumentoGerado($tipoProg)) $docsGerados++;
+        }
+        $docsPercent = $docsTotal > 0 ? (int) round(($docsGerados / $docsTotal) * 100) : 0;
+    @endphp
     <div class="mb-8">
         <div class="px-6 py-5">
-            <div class="flex flex-col items-start justify-between lg:flex-row lg:items-center">
-                <h3 class="text-xl font-semibold text-gray-800">Gerar Documentos</h3>
-                <span class="mt-2 text-sm text-gray-500 lg:mt-0">
-                    {{ $processo->modalidade->getDisplayName() }}
-                </span>
+            <div class="flex flex-col items-start justify-between gap-3 lg:flex-row lg:items-center">
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-800">Gerar Documentos</h3>
+                    <span class="text-sm text-gray-500">{{ $processo->modalidade->getDisplayName() }}</span>
+                </div>
+                <div class="w-full lg:w-72">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-xs font-medium text-gray-600">Documentos gerados</span>
+                        <span class="text-xs font-semibold {{ $docsPercent === 100 ? 'text-green-700' : 'text-gray-700' }}">
+                            {{ $docsGerados }}/{{ $docsTotal }}
+                        </span>
+                    </div>
+                    <div class="w-full h-2 overflow-hidden bg-gray-200 rounded-full">
+                        <div class="h-2 rounded-full transition-all duration-300 {{ $docsPercent === 100 ? 'bg-green-500' : 'bg-[#009496]' }}"
+                             style="width: {{ $docsPercent }}%"></div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -268,9 +162,9 @@
                                     {{ $doc['titulo'] }}
 
                                     @if ($documentoGerado)
-                                        <span class="ml-2 text-xs font-normal text-green-600">
-                                            ✓ Gerado em
-                                            {{ \Carbon\Carbon::parse($documentoGerado->gerado_em)->format('d/m/Y H:i') }}
+                                        <span class="inline-flex items-center gap-1 ml-2 px-2 py-0.5 text-xs font-medium text-green-700 bg-green-100 rounded-full align-middle">
+                                            <i class="fas fa-check-circle"></i>
+                                            Gerado em {{ \Carbon\Carbon::parse($documentoGerado->gerado_em)->format('d/m/Y H:i') }}
                                         </span>
                                     @endif
                                 </div>
@@ -279,22 +173,30 @@
                             {{-- Botão para expandir/colapsar o acordeão --}}
                             @if ($temCampos)
                                 <button type="button"
-                                        class="mt-2 text-xs font-medium text-red-600 hover:text-red-800"
+                                        class="inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 text-xs font-medium text-[#009496] bg-[#009496]/10 rounded-md hover:bg-[#009496]/20 transition-colors"
                                         data-collapse-toggle="{{ $accordionId }}"
                                         aria-expanded="false"
                                         aria-controls="{{ $accordionId }}">
+                                    <i class="fas fa-sliders-h text-[10px]"></i>
                                     <span class="collapse-text">Definir Campos e Assinantes</span>
                                 </button>
                             @endif
                         </td>
 
-                        <td class="flex gap-2 px-6 py-4 text-center">
-                            <input type="date"
-                                   class="w-40 px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                                   id="{{ $dataId }}"
-                                   x-model="data_doc_{{ $tipo }}"
-                                   @blur="saveField('data_doc_{{ $tipo }}')"
-                                   value="{{ $dataSelecionada }}">
+                        <td class="flex items-center gap-2 px-6 py-4 text-center">
+                            <div class="relative">
+                                <input type="date"
+                                       class="w-40 px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#009496] focus:border-[#009496]"
+                                       id="{{ $dataId }}"
+                                       x-model="data_doc_{{ $tipo }}"
+                                       @blur="saveField('data_doc_{{ $tipo }}')"
+                                       value="{{ $dataSelecionada }}">
+                                <span x-show="confirmed['data_doc_{{ $tipo }}']" x-cloak
+                                      class="absolute -right-1.5 -top-1.5 flex items-center justify-center w-4 h-4 text-white bg-green-500 rounded-full shadow"
+                                      title="Data salva">
+                                    <i class="fas fa-check text-[8px]"></i>
+                                </span>
+                            </div>
 
                             @if ($tipo === 'parecer_juridico' && $isPregaoEletronico)
                                 <!-- Dropdown de Parecer -->
@@ -319,8 +221,8 @@
                                 @endphp
                                 <button type="button"
                                         onclick="gerarPdf('{{ $processo->id }}', '{{ $tipo }}', document.getElementById('{{ $dataId }}').value, event, {{ $documentoIdParam }})"
-                                        class="px-4 py-2 text-xs font-medium text-white transition-colors duration-200 bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
-                                    Gerar PDF
+                                        class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white transition-colors duration-200 bg-[#009496] rounded-md hover:bg-[#007b85] focus:outline-none focus:ring-2 focus:ring-[#009496] focus:ring-offset-2">
+                                    <i class="fas fa-file-pdf"></i> Gerar PDF
                                 </button>
 
                                 @if ($tipo !== 'capa' && $tipo !== 'publicacoes_avisos_licitacao')
@@ -1348,9 +1250,11 @@
             });
 
             // Incluir todos os campos de data de documento dinamicamente
+            const docDatesConfirmed = {};
             Object.keys(existing || {}).forEach(key => {
                 if (key.startsWith('data_doc_')) {
                     initialData[key] = existing[key];
+                    docDatesConfirmed[key] = !!existing[key];
                 }
             });
 
@@ -1461,6 +1365,7 @@
                 valor_mensal: existing?.valor_mensal ?? '',
 
                 confirmed: {
+                    ...docDatesConfirmed,
                     secretaria: !!existing?.secretaria,
                     unidade_setor: !!existing?.unidade_setor,
                     servidor_responsavel: !!existing?.servidor_responsavel,
@@ -1660,11 +1565,11 @@
                                     showMessage('Arquivo ' + fileInput.files[0].name + ' salvo com sucesso!', 'success');
                                 }
                             } else {
-                                showMessage('Campo ' + field + ' salvo com sucesso!', 'success');
+                                showMessage('Alterações salvas', 'success');
                             }
                         } else {
                             this.confirmed[field] = false;
-                            showMessage('Erro ao salvar ' + field, 'error');
+                            showMessage('Não foi possível salvar. Tente novamente.', 'error');
                             console.error('Erro ao salvar campo:', field, responseData);
                         }
                     } catch (error) {
@@ -1916,4 +1821,5 @@
     </script>
 
     @include('Admin.Processos.partials.assinante-bridge-script')
+    @include('Admin.Processos.partials.flash-toast')
 @endsection

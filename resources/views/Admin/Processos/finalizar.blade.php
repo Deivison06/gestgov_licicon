@@ -27,90 +27,7 @@
     {{-- Fim JSON --}}
 
     <div class="py-8">
-        <!-- Seção de Informações do Processo -->
-        <div class="mb-8">
-            <div class="overflow-hidden bg-white border border-gray-100 shadow-sm rounded-2xl">
-                <!-- Header -->
-                <div class="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
-                    <div class="flex flex-col items-start justify-between lg:flex-row lg:items-center">
-                        <h3 class="text-xl font-semibold text-gray-800">Processos Licitatórios</h3>
-                    </div>
-                </div>
-
-                <!-- Tabela de Informações -->
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                                    Prefeitura
-                                </th>
-                                <th class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                                    Modalidade
-                                </th>
-                                <th class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                                    Nº Processo
-                                </th>
-                                <th class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                                    Nº Procedimento
-                                </th>
-                                <th class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                                    Tipo Contratação
-                                </th>
-                                <th class="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                                    Tipo Procedimento
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            <tr class="transition-colors duration-200 hover:bg-gray-50">
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center">
-                                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-[#009496]/10 flex items-center justify-center">
-                                            <svg class="w-4 h-4 text-[#009496]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-6 0H5m2 0h4M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                                            </svg>
-                                        </div>
-                                        <div class="ml-4">
-                                            <div class="text-sm font-medium text-gray-900">
-                                                {{ $processo->prefeitura->nome }}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <span class="inline-flex px-2.5 py-0.5 text-xs font-medium rounded-full
-                                        @if ($processo->modalidade->value === 'dispensa') bg-purple-100 text-purple-800
-                                        @elseif($processo->modalidade->value === 'inexigibilidade') bg-pink-100 text-pink-800
-                                        @elseif($processo->modalidade->value === 'pregão') bg-blue-100 text-blue-800
-                                        @elseif($processo->modalidade->value === 'concorrência') bg-green-100 text-green-800
-                                        @else bg-gray-100 text-gray-800 @endif">
-                                        {{ $processo->modalidade->getDisplayName() }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 font-mono text-sm text-gray-900">
-                                    {{ $processo->numero_processo }}
-                                </td>
-                                <td class="px-6 py-4 font-mono text-sm text-gray-900">
-                                    {{ $processo->numero_procedimento }}
-                                </td>
-                                <td class="px-6 py-4 font-mono text-sm text-gray-900">
-                                    {{ $processo->tipo_contratacao_nome }}
-                                </td>
-                                <td class="px-6 py-4 font-mono text-sm text-gray-900">
-                                    {{ $processo->tipo_procedimento_nome }}
-                                </td>
-                            </tr>
-                            <tr class="bg-gray-50">
-                                <td colspan="6" class="px-6 py-4 text-sm text-gray-700">
-                                    <strong>Objeto:</strong> {!! strip_tags($processo->objeto) !!}
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+        @include('Admin.Processos.partials.processo-header', ['etapaAtual' => 'finalizar'])
 
         <!-- Área de Mensagens -->
         <div id="message-container" class="p-4"></div>
@@ -2587,9 +2504,11 @@
         // Alpine.js Component
         function formField(existing = {}) {
             const initialData = {};
+            const docDatesConfirmed = {};
             Object.keys(existing || {}).forEach(key => {
                 if (key.startsWith('data_doc_')) {
                     initialData[key] = existing[key];
+                    docDatesConfirmed[key] = !!existing[key];
                 }
             });
 
@@ -2624,6 +2543,7 @@
 
                 // Controle de confirmação
                 confirmed: {
+                    ...docDatesConfirmed,
                     anexo_atos_sessao: !!existing?.anexo_atos_sessao,
                     anexo_proposta: !!existing?.anexo_proposta,
                     anexo_proposta_readequada: !!existing?.anexo_proposta_readequada,
@@ -2780,7 +2700,7 @@
                                     showMessage('Campo ' + field + ' limpo com sucesso!', 'success');
                                 }
                             } else {
-                                showMessage('Campo ' + field + ' salvo com sucesso!', 'success');
+                                showMessage('Alterações salvas', 'success');
                             }
                         } else {
                             this.confirmed[field] = false;
@@ -3041,11 +2961,5 @@
         }
     </script>
 
-    @if (session('error'))
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                showMessage(@json(session('error')), 'error');
-            });
-        </script>
-    @endif
+    @include('Admin.Processos.partials.flash-toast')
 @endsection
