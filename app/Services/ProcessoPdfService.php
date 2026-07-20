@@ -689,7 +689,7 @@ class ProcessoPdfService extends AbstractService
     private function obterAnexos(Processo $processo, string $documento): array
     {
         $anexos = [];
-        $mapeamentoAnexos = $this->documentoService->getMapeamentoAnexos();
+        $mapeamentoAnexos = $this->documentoService->getMapeamentoAnexos($processo);
         $camposAnexo = $mapeamentoAnexos[$documento] ?? null;
 
         if (!$camposAnexo) {

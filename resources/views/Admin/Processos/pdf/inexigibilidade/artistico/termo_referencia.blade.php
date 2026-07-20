@@ -607,8 +607,7 @@
         {!! $processo->detalhe->obrigacoes_contratado_extras !!}
 
         <p style="display: flex; align-items: center; font-weight: bold; ">
-            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 17. OBRIGAÇÕES DA CONTRATANTE (ADICIONAR CAIXA DE TEXTO PARA QUE POSSA
-            SER INSERIDO OUTRAS OBRIGAÇÕES EXTRAS)
+            <img src="{{ public_path('icons/grafico.png') }}" width="20" style="margin-right: 10px;"> 17. OBRIGAÇÕES DA CONTRATANTE
         </p>
         <p style="text-align: justify;">
             17.1. A CONTRATANTE obriga-se a:<br>

@@ -202,12 +202,12 @@
             Senhor(a) Agente de Contratação / Pregoeiro
         </p>
         <p style="text-indent: 30px">
-            Trata-se de demanda da {{ $detalhe->unidade_setor }}, para contratação de
+            Trata-se de demanda da {{ $detalhe->unidade_setor }}, para 
             {!! strip_tags($processo->objeto) !!}.
         </p>
         <p style="text-indent: 30px">
             O valor estimado para pretendida contratação é de R$ {{ $detalhe->valor_estimado }},
-            conforme Projeto Básico.
+            CONFORME RELATÓRIO DE PESQUISA DE PREÇOS
         </p>
 
         <p style="text-indent: 30px">

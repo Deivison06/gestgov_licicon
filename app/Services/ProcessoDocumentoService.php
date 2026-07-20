@@ -348,6 +348,13 @@ class ProcessoDocumentoService extends AbstractService
                 if ($tipo === 'parecer_juridico') {
                     $documentosOrdenados[$tipo]['campos'][] = 'encaminhamento_controle_interno';
                 }
+
+                // INEXIGIBILIDADE não possui documento de EDITAL — que é onde o anexo
+                // da Minuta do Contrato normalmente fica. Disponibiliza o campo aqui,
+                // na MINUTA, para que o PDF possa ser anexado ao documento gerado.
+                if ($tipo === 'minutas') {
+                    $documentosOrdenados[$tipo]['campos'][] = 'anexo_pdf_minuta_contrato';
+                }
             }
 
             if ($tipo === 'formalizacao') {
@@ -403,9 +410,25 @@ class ProcessoDocumentoService extends AbstractService
         return $this->getOrdemDocumentosParaView($processo);
     }
 
-    public function getMapeamentoAnexos(): array
+    /**
+     * Mapa documento => campo(s) de anexo que devem ser mesclados no PDF gerado.
+     *
+     * O $processo é opcional para manter compatibilidade com chamadas existentes,
+     * mas é necessário para as regras que dependem da modalidade.
+     */
+    public function getMapeamentoAnexos(?Processo $processo = null): array
     {
-        return $this->mapeamentoAnexos;
+        $mapeamento = $this->mapeamentoAnexos;
+
+        // INEXIGIBILIDADE não gera EDITAL: o anexo da Minuta do Contrato é enviado
+        // no documento MINUTAS, então é lá que ele precisa ser mesclado.
+        // Mantido condicional para não duplicar o anexo (Edital + Minuta) nas
+        // demais modalidades, onde o campo continua vivendo no Edital.
+        if ($processo && $processo->modalidade === ModalidadeEnum::INEXIGIBILIDADE) {
+            $mapeamento['minutas'] = ['anexo_pdf_minuta_contrato'];
+        }
+
+        return $mapeamento;
     }
 
     public function getDocumentoConfig(string $tipo): ?array

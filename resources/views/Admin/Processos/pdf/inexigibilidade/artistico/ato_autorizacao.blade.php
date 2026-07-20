@@ -261,7 +261,7 @@
                 FUNDAMENTO LEGAL
             </td>
             <td style="border:1px solid #000; padding:6px;">
-                    Artigo 72 c/c 74, inc. III, alínea “c”, da Lei 14.133/21 – Serviços Técnicos Especializados
+                    Artigo 72 c/c 74, inciso II da Lei 14.133/21
             </td>
 
         </tr>
