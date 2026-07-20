@@ -79,6 +79,7 @@
                         <option value="pendente_lancamento" {{ request('status') == 'pendente_lancamento' ? 'selected' : '' }}>Pendente de Lançamento</option>
                         <option value="recusado" {{ request('status') == 'recusado' ? 'selected' : '' }}>Recusado</option>
                         <option value="em_processo" {{ request('status') == 'em_processo' ? 'selected' : '' }}>Em Processo</option>
+                        <option value="concluido" {{ request('status') == 'concluido' ? 'selected' : '' }}>Concluído</option>
 
                     </select>
                 </div>
@@ -252,6 +253,7 @@
                                 @elseif($etp->status === 'em_analise') bg-blue-100 text-blue-800
                                 @elseif($etp->status === 'aprovado') bg-green-100 text-green-800
                                 @elseif($etp->status === 'em_processo') bg-purple-100 text-purple-800
+                                @elseif($etp->status === 'concluido') bg-teal-100 text-teal-800
                                 @elseif($etp->status === 'recusado') bg-red-100 text-red-800
                                 @endif">
 
@@ -290,6 +292,18 @@
                                 Criar Processo
 
                             </a>
+
+                            <form action="{{ route('admin.etps_recebidos.status', $etp->id) }}" method="POST" class="inline"
+                                onsubmit="return confirm('Confirmar conclusão manual deste ETP? Ele será encerrado sem ser vinculado a um processo.');">
+                                @csrf
+                                @method('PUT')
+                                <input type="hidden" name="status" value="concluido">
+                                <button type="submit"
+                                    class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-teal-600 rounded-md hover:bg-teal-700">
+                                    <i class="mr-1 fas fa-flag-checkered"></i>
+                                    Concluir
+                                </button>
+                            </form>
 
                             @elseif(!is_null($etp->processo_id))
 

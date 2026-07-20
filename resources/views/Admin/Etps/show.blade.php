@@ -35,9 +35,10 @@
                 @elseif($etp->status === 'em_analise') bg-blue-100 text-blue-800 border-blue-200
                 @elseif($etp->status === 'aprovado') bg-green-100 text-green-800 border-green-200
                 @elseif($etp->status === 'em_processo') bg-purple-100 text-purple-800 border-purple-200
+                @elseif($etp->status === 'concluido') bg-teal-100 text-teal-800 border-teal-200
                 @elseif($etp->status === 'recusado') bg-red-100 text-red-800 border-red-200 @endif">
                 <i
-                    class="fas @if ($etp->status === 'aprovado' || $etp->status === 'em_processo') fa-check-circle @elseif($etp->status === 'recusado') fa-times-circle @else fa-clock @endif mr-2"></i>
+                    class="fas @if ($etp->status === 'aprovado' || $etp->status === 'em_processo' || $etp->status === 'concluido') fa-check-circle @elseif($etp->status === 'recusado') fa-times-circle @else fa-clock @endif mr-2"></i>
                 Status Atual: {{ ucfirst(str_replace('_', ' ', $etp->status)) }}
             </div>
         </div>
@@ -348,6 +349,19 @@
                                 <p class="text-sm text-purple-800">Este ETP foi aprovado e agora faz parte do Processo Nº
                                     <span class="font-bold">{{ $etp->processo->numero_processo ?? $etp->processo_id }}</span>
                                 </p>
+                            </div>
+                        </div>
+                    </div>
+                @elseif($etp->status === 'concluido')
+                    <div class="mt-8 bg-teal-50 p-6 rounded-xl border border-teal-200">
+                        <div class="flex items-center">
+                            <div
+                                class="w-12 h-12 rounded-full bg-teal-200 text-teal-700 flex items-center justify-center mr-4">
+                                <i class="fas fa-flag-checkered text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-bold text-teal-900">ETP Concluído</h4>
+                                <p class="text-sm text-teal-800">Este ETP foi analisado e encerrado pela equipe responsável.</p>
                             </div>
                         </div>
                     </div>

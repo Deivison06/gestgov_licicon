@@ -34,7 +34,7 @@ class AdminEtpController extends Controller
     public function alterarStatus(Request $request, $id)
     {
         $request->validate([
-            'status' => 'required|in:em_analise,aprovado,recusado',
+            'status' => 'required|in:em_analise,aprovado,recusado,concluido',
             'motivo_recusa' => 'required_if:status,recusado|nullable|string'
         ]);
 

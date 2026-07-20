@@ -66,6 +66,7 @@
                                 @elseif($etp->status === 'em_analise') bg-blue-100 text-blue-800
                                 @elseif($etp->status === 'aprovado') bg-green-100 text-green-800
                                 @elseif($etp->status === 'em_processo') bg-purple-100 text-purple-800
+                                @elseif($etp->status === 'concluido') bg-teal-100 text-teal-800
                                 @elseif($etp->status === 'recusado') bg-red-100 text-red-800
                                 @endif">
                                 {{ ucfirst(str_replace('_', ' ', $etp->status)) }}

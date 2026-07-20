@@ -35,9 +35,10 @@
                 @elseif($etp->status === 'em_analise') bg-blue-100 text-blue-800 border-blue-200
                 @elseif($etp->status === 'aprovado') bg-green-100 text-green-800 border-green-200
                 @elseif($etp->status === 'em_processo') bg-purple-100 text-purple-800 border-purple-200
+                @elseif($etp->status === 'concluido') bg-teal-100 text-teal-800 border-teal-200
                 @elseif($etp->status === 'recusado') bg-red-100 text-red-800 border-red-200 @endif">
                 <i
-                    class="fas @if ($etp->status === 'aprovado' || $etp->status === 'em_processo') fa-check-circle @elseif($etp->status === 'recusado') fa-times-circle @else fa-clock @endif mr-2"></i>
+                    class="fas @if ($etp->status === 'aprovado' || $etp->status === 'em_processo' || $etp->status === 'concluido') fa-check-circle @elseif($etp->status === 'recusado') fa-times-circle @else fa-clock @endif mr-2"></i>
                 Status Atual: {{ ucfirst(str_replace('_', ' ', $etp->status)) }}
             </div>
         </div>
@@ -93,6 +94,19 @@
                             class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-all flex items-center shadow-sm">
                             <i class="fas fa-times mr-2"></i> Recusar
                         </button>
+                    @endif
+
+                    @if ($etp->status === 'aprovado' && is_null($etp->processo_id))
+                        <form action="{{ route('admin.etps_recebidos.status', $etp->id) }}" method="POST" class="inline"
+                            onsubmit="return confirm('Confirmar conclusão manual deste ETP? Ele será encerrado sem ser vinculado a um processo.');">
+                            @csrf
+                            @method('PUT')
+                            <input type="hidden" name="status" value="concluido">
+                            <button type="submit"
+                                class="px-4 py-2 text-sm font-medium text-white bg-teal-600 rounded-lg hover:bg-teal-700 transition-all flex items-center shadow-sm">
+                                <i class="fas fa-flag-checkered mr-2"></i> Marcar como Concluído
+                            </button>
+                        </form>
                     @endif
                 </div>
             </div>

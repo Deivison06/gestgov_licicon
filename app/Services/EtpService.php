@@ -222,10 +222,17 @@ class EtpService
 
     public function updateStatus($id, $status, $motivo_recusa = null)
     {
-        $validStatuses = ['pendente', 'em_analise', 'aprovado', 'recusado', 'em_processo'];
-        
+        $validStatuses = ['pendente', 'em_analise', 'aprovado', 'recusado', 'em_processo', 'concluido'];
+
         if (!in_array($status, $validStatuses)) {
             throw new Exception("Status inválido.");
+        }
+
+        if ($status === 'concluido') {
+            $etp = $this->findById($id);
+            if ($etp->status !== 'aprovado' || $etp->processo_id) {
+                throw new Exception("Somente ETPs aprovados e ainda não vinculados a um processo podem ser marcados como concluídos manualmente.");
+            }
         }
 
         $updateData = ['status' => $status];
