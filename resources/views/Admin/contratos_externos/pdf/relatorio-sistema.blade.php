@@ -301,10 +301,10 @@
                         <th style="width:4%">Nº</th>
                         <th style="width:12%">Processo</th>
                         <th style="width:12%">Modalidade</th>
-                        <th style="width:12%">Contrato</th>
-                        <th style="width:22%">Contratada</th>
-                        <th style="width:10%" class="text-center">Vigência</th>
-                        <th style="width:10%" class="text-right">Valor Total</th>
+                        <th style="width:16%">Contrato</th>
+                        <th style="width:25%">Contratada</th>
+                        <th style="width:13%" class="text-center">Vigência</th>
+                        <th style="width:11%" class="text-right">Valor Total</th>
                         <th style="width:8%" class="text-center">Situação</th>
                     </tr>
                 </thead>
