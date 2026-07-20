@@ -71,6 +71,22 @@
                 <div id="step-1" class="step-content block">
                     <h4 class="text-lg font-semibold text-gray-800 mb-6 border-b pb-2">Passo 1: Selecione a Secretaria e
                         Responsável</h4>
+                    @if($isSuperAdmin)
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Prefeitura *</label>
+                        <select name="prefeitura_id" id="prefeitura_id"
+                            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent"
+                            required>
+                            <option value="">Selecione a prefeitura...</option>
+                            @foreach ($prefeituras as $pref)
+                                <option value="{{ $pref->id }}" {{ old('prefeitura_id') == $pref->id ? 'selected' : '' }}>
+                                    {{ $pref->nome }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <p class="mt-1 text-xs text-gray-500">Selecione a prefeitura para carregar as secretarias correspondentes.</p>
+                    </div>
+                    @endif
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Secretaria da Prefeitura *</label>
@@ -78,11 +94,13 @@
                                 class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent"
                                 required>
                                 <option value="">Selecione...</option>
-                                @foreach ($secretarias as $sec)
-                                    <option value="{{ $sec->id }}" data-servidor="{{ $sec->servidor_responsavel }}">
-                                        {{ $sec->nome }}
-                                    </option>
-                                @endforeach
+                                @if(!$isSuperAdmin)
+                                    @foreach ($secretarias as $sec)
+                                        <option value="{{ $sec->id }}" data-servidor="{{ $sec->servidor_responsavel }}">
+                                            {{ $sec->nome }}
+                                        </option>
+                                    @endforeach
+                                @endif
                             </select>
                         </div>
                         <div>
@@ -403,6 +421,20 @@
         </div>
     </div>
 
+    @php
+        $unidadesPorPrefeituraJson = $prefeituras->mapWithKeys(function ($pref) {
+            return [
+                $pref->id => $pref->unidades->map(function ($unidade) {
+                    return [
+                        'id' => $unidade->id,
+                        'nome' => $unidade->nome,
+                        'servidor' => $unidade->servidor_responsavel,
+                    ];
+                }),
+            ];
+        });
+    @endphp
+
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.3/Sortable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
     <script>
@@ -434,11 +466,40 @@
             let loteCounter = {{ old('lotes') ? count(old('lotes')) : 0 }};
 
             const secretariaSelect = document.getElementById('secretaria_id');
+            const prefeituraSelect = document.getElementById('prefeitura_id');
             const servidorInput = document.getElementById('servidor_responsavel');
             const modalidadeSelect = document.getElementById('modalidade');
             const cotacaoInput = document.getElementById('cotacao_path');
             const camposItens = document.getElementById('campos-itens-contratacao');
             const labelPdf = document.getElementById('label_pdf_anexo');
+
+            /* ── PREFEITURA → SECRETARIA (apenas para admins, sem prefeitura própria) ── */
+            if (prefeituraSelect) {
+                const unidadesPorPrefeitura = @json($unidadesPorPrefeituraJson ?? []);
+
+                function carregarSecretarias(prefeituraId, secretariaIdSelecionada) {
+                    secretariaSelect.innerHTML = '<option value="">Selecione...</option>';
+
+                    (unidadesPorPrefeitura[prefeituraId] || []).forEach(unidade => {
+                        const option = document.createElement('option');
+                        option.value = unidade.id;
+                        option.textContent = unidade.nome;
+                        option.setAttribute('data-servidor', unidade.servidor ?? '');
+                        if (secretariaIdSelecionada && String(unidade.id) === String(secretariaIdSelecionada)) {
+                            option.selected = true;
+                        }
+                        secretariaSelect.appendChild(option);
+                    });
+                }
+
+                prefeituraSelect.addEventListener('change', function() {
+                    carregarSecretarias(this.value);
+                });
+
+                if (prefeituraSelect.value) {
+                    carregarSecretarias(prefeituraSelect.value, "{{ old('secretaria_id') }}");
+                }
+            }
 
             /* ── SECRETARIA → SERVIDOR AUTO ── */
             function preencherServidor() {
@@ -937,6 +998,10 @@
             /* ── STEPS ── */
             window.nextStep = function(step) {
                 if (step === 2) {
+                    if (prefeituraSelect && !prefeituraSelect.value) {
+                        alert('Selecione uma prefeitura primeiro.');
+                        return;
+                    }
                     if (!secretariaSelect.value) {
                         alert('Selecione uma secretaria primeiro.');
                         return;
@@ -998,7 +1063,10 @@
             function validarFormularioEtp() {
                 const erros = [];
                 const modalidade = document.getElementById('modalidade').value;
+                const prefeituraEl = document.getElementById('prefeitura_id');
 
+                if (prefeituraEl && !prefeituraEl.value)
+                    erros.push('Selecione a prefeitura (Passo 1).');
                 if (!document.getElementById('secretaria_id').value)
                     erros.push('Selecione a secretaria (Passo 1).');
                 if (!document.getElementById('servidor_responsavel').value.trim())

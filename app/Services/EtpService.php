@@ -27,6 +27,11 @@ class EtpService
         return $this->repository->getAllWithFilters($filters, $perPage);
     }
 
+    public function getAllForAdmin($filters = [], $perPage = 15)
+    {
+        return $this->repository->getAllWithOptionalPrefeitura($filters, $perPage);
+    }
+
     public function countPendentesLancamento()
     {
         return $this->repository->countPendentesLancamento();

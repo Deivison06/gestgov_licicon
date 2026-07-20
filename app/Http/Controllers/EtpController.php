@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\EtpItem;
+use App\Models\Prefeitura;
 use App\Models\Unidade;
 use App\Models\User;
 use App\Enums\UnidadeMedidaEnum;
@@ -32,34 +33,56 @@ class EtpController extends Controller
 
     public function index(Request $request)
     {
+        $user = auth()->user();
+        $isSuperAdmin = $user->hasAnyRole(['diretor_licicon', 'gerente_licicon', 'colaborador_licicon']);
+
         Log::info('Acessando listagem de ETPs', [
             'user_id' => auth()->id(),
-            'prefeitura_id' => auth()->user()->prefeitura_id,
-            'filters' => $request->only(['status'])
+            'prefeitura_id' => $user->prefeitura_id,
+            'is_super_admin' => $isSuperAdmin,
+            'filters' => $request->only(['status', 'prefeitura_id', 'data_inicio', 'data_fim'])
         ]);
 
-        $prefeituraId = auth()->user()->prefeitura_id;
-        $filters = $request->only(['status']);
-        $etps = $this->etpService->getByPrefeituraId($prefeituraId, $filters);
+        $prefeituras = collect();
+
+        if ($isSuperAdmin) {
+            $filters = $request->only(['status', 'prefeitura_id', 'data_inicio', 'data_fim']);
+            $etps = $this->etpService->getAllForAdmin($filters);
+            $prefeituras = Prefeitura::orderBy('nome', 'asc')->get();
+        } else {
+            $filters = $request->only(['status', 'data_inicio', 'data_fim']);
+            $etps = $this->etpService->getByPrefeituraId($user->prefeitura_id, $filters);
+        }
 
         Log::info('ETPs listados com sucesso', [
             'user_id' => auth()->id(),
             'total_etps' => $etps->count()
         ]);
 
-        return view('Admin.Etps.index', compact('etps', 'filters'));
+        return view('Admin.Etps.index', compact('etps', 'filters', 'isSuperAdmin', 'prefeituras'));
     }
 
     public function create()
     {
+        $user = auth()->user();
+        $isSuperAdmin = $user->hasAnyRole(['diretor_licicon', 'gerente_licicon', 'colaborador_licicon']);
+
         Log::info('Acessando formulário de criação de ETP', [
             'user_id' => auth()->id(),
-            'prefeitura_id' => auth()->user()->prefeitura_id
+            'prefeitura_id' => $user->prefeitura_id,
+            'is_super_admin' => $isSuperAdmin
         ]);
 
-        $prefeituraId = auth()->user()->prefeitura_id;
+        $prefeituras = collect();
+        $secretarias = collect();
 
-        $secretarias = Unidade::where('prefeitura_id', $prefeituraId)->orderBy('nome', 'asc')->get();
+        if ($isSuperAdmin) {
+            // Admins não estão vinculados a uma prefeitura: precisam escolher uma
+            // para então listar as secretarias correspondentes (cascata via JS).
+            $prefeituras = Prefeitura::with('unidades')->orderBy('nome', 'asc')->get();
+        } else {
+            $secretarias = Unidade::where('prefeitura_id', $user->prefeitura_id)->orderBy('nome', 'asc')->get();
+        }
 
         $itens = $this->etpItemService->getAllForSelect();
         $unidadesMedida = UnidadeMedidaEnum::casesWithLabels();
@@ -70,7 +93,7 @@ class EtpController extends Controller
             'total_itens' => $itens->count()
         ]);
 
-        return view('Admin.Etps.create', compact('secretarias', 'itens', 'unidadesMedida'));
+        return view('Admin.Etps.create', compact('secretarias', 'itens', 'unidadesMedida', 'isSuperAdmin', 'prefeituras'));
     }
 
     public function store(Request $request)
@@ -84,10 +107,16 @@ class EtpController extends Controller
             'is_ajax' => $request->ajax() || $request->wantsJson() || $request->input('should_redirect') == '0'
         ]);
 
+        $user = auth()->user();
+        $isSuperAdmin = $user->hasAnyRole(['diretor_licicon', 'gerente_licicon', 'colaborador_licicon']);
+
         // Validação base - relaxada para rascunho
         $isDraft = $request->input('action_type') === 'salvar';
 
         $rules = [
+            // A coluna prefeitura_id não é anulável: para admins (sem prefeitura própria)
+            // é sempre obrigatória, inclusive em rascunho.
+            'prefeitura_id'       => $isSuperAdmin ? 'required|exists:prefeituras,id' : 'nullable',
             'secretaria_id'       => $isDraft ? 'nullable|exists:unidades,id' : 'required|exists:unidades,id',
             'servidor_responsavel' => $isDraft ? 'nullable|string|max:255' : 'required|string|max:255',
             'objeto_licitacao'    => $isDraft ? 'nullable|string' : 'required|string',
@@ -127,7 +156,7 @@ class EtpController extends Controller
         }
 
         $data = $request->all();
-        $data['prefeitura_id'] = auth()->user()->prefeitura_id;
+        $data['prefeitura_id'] = $isSuperAdmin ? $request->input('prefeitura_id') : $user->prefeitura_id;
 
         // Define status conforme o botão clicado:
         //   "Salvar"   → pendente  (rascunho, não enviado para análise)
@@ -880,6 +909,8 @@ class EtpController extends Controller
     private function etpValidationMessages(): array
     {
         return [
+            'prefeitura_id.required'                     => 'Selecione a prefeitura.',
+            'prefeitura_id.exists'                        => 'A prefeitura selecionada é inválida.',
             'secretaria_id.required'                     => 'Selecione a secretaria.',
             'secretaria_id.exists'                       => 'A secretaria selecionada é inválida.',
             'servidor_responsavel.required'              => 'Informe o nome do servidor responsável.',

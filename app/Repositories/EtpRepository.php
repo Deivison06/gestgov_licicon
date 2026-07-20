@@ -22,7 +22,42 @@ class EtpRepository
              $query->where('status', $filters['status']);
          }
 
+         if (!empty($filters['data_inicio'])) {
+             $query->whereDate('created_at', '>=', $filters['data_inicio']);
+         }
+
+         if (!empty($filters['data_fim'])) {
+             $query->whereDate('created_at', '<=', $filters['data_fim']);
+         }
+
          return $query->orderBy('created_at', 'desc')->paginate($perPage);
+    }
+
+    /**
+     * Lista ETPs de todas as prefeituras, para uso pelos admins da LiciCon
+     * (que não estão vinculados a uma única prefeitura).
+     */
+    public function getAllWithOptionalPrefeitura($filters = [], $perPage = 15)
+    {
+        $query = $this->model->with(['prefeitura', 'secretaria']);
+
+        if (!empty($filters['prefeitura_id'])) {
+            $query->where('prefeitura_id', $filters['prefeitura_id']);
+        }
+
+        if (!empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        if (!empty($filters['data_inicio'])) {
+            $query->whereDate('created_at', '>=', $filters['data_inicio']);
+        }
+
+        if (!empty($filters['data_fim'])) {
+            $query->whereDate('created_at', '<=', $filters['data_fim']);
+        }
+
+        return $query->orderBy('created_at', 'desc')->paginate($perPage);
     }
 
     public function getAllWithFilters($filters = [], $perPage = 15)

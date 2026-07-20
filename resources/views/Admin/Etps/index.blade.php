@@ -1,6 +1,6 @@
 @extends('layouts.app')
-@section('page-title', 'Meus ETPs')
-@section('page-subtitle', 'Solicitações de Estudo Técnico Preliminar da sua Secretaria')
+@section('page-title', $isSuperAdmin ? 'ETPs' : 'Meus ETPs')
+@section('page-subtitle', $isSuperAdmin ? 'Estudos Técnicos Preliminares de todas as Prefeituras' : 'Solicitações de Estudo Técnico Preliminar da sua Secretaria')
 
 @section('content')
 <div class="py-8">
@@ -34,6 +34,104 @@
     </div>
     @endif
 
+    <!-- Filtros -->
+    <div class="mb-6 bg-white border border-gray-200 rounded-2xl shadow-sm">
+        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center cursor-pointer"
+            onclick="document.getElementById('filtrosBody').classList.toggle('hidden')">
+
+            <div>
+                <h4 class="text-lg font-semibold text-gray-800">
+                    <i class="fas fa-filter mr-2 text-[#009496]"></i>
+                    Filtros de Busca
+                </h4>
+                <p class="text-sm text-gray-500">Clique para expandir ou recolher os filtros</p>
+            </div>
+
+            <i class="fas fa-chevron-down text-gray-400"></i>
+        </div>
+
+        <form action="{{ route('admin.etps.index') }}" method="GET"
+            id="filtrosBody"
+            class="p-6 {{ count(array_filter($filters)) > 0 ? '' : 'hidden' }}">
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+                <!-- Status -->
+                <div>
+                    <label class="block mb-2 text-sm font-medium text-gray-700">Status</label>
+
+                    <select name="status"
+                        class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] text-sm">
+
+                        <option value="">Todos os Status</option>
+                        <option value="pendente" {{ request('status') == 'pendente' ? 'selected' : '' }}>Pendente</option>
+                        <option value="em_analise" {{ request('status') == 'em_analise' ? 'selected' : '' }}>Em Análise</option>
+                        <option value="aprovado" {{ request('status') == 'aprovado' ? 'selected' : '' }}>Aprovado</option>
+                        <option value="recusado" {{ request('status') == 'recusado' ? 'selected' : '' }}>Recusado</option>
+                        <option value="em_processo" {{ request('status') == 'em_processo' ? 'selected' : '' }}>Em Processo</option>
+                        <option value="concluido" {{ request('status') == 'concluido' ? 'selected' : '' }}>Concluído</option>
+                    </select>
+                </div>
+
+                @if($isSuperAdmin)
+                <!-- Prefeitura -->
+                <div>
+                    <label class="block mb-2 text-sm font-medium text-gray-700">Prefeitura</label>
+
+                    <select name="prefeitura_id"
+                        class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] text-sm">
+
+                        <option value="">Todas as Prefeituras</option>
+                        @foreach($prefeituras as $pref)
+                        <option value="{{ $pref->id }}"
+                            {{ request('prefeitura_id') == $pref->id ? 'selected' : '' }}>
+                            {{ $pref->nome }}
+                        </option>
+                        @endforeach
+                    </select>
+                </div>
+                @endif
+
+                <!-- Período -->
+                <div class="{{ $isSuperAdmin ? 'lg:col-span-2' : 'lg:col-span-3' }}">
+                    <label class="block mb-2 text-sm font-medium text-gray-700">
+                        Período de Solicitação
+                    </label>
+
+                    <div class="flex space-x-2">
+                        <input type="date"
+                            name="data_inicio"
+                            value="{{ request('data_inicio') }}"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] text-sm">
+
+                        <span class="flex items-center text-gray-400">a</span>
+
+                        <input type="date"
+                            name="data_fim"
+                            value="{{ request('data_fim') }}"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] text-sm">
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="mt-6 flex justify-end space-x-3">
+                @if(count(array_filter($filters)) > 0)
+                <a href="{{ route('admin.etps.index') }}"
+                    class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
+                    Limpar Filtros
+                </a>
+                @endif
+
+                <button type="submit"
+                    class="px-6 py-2.5 text-sm font-medium text-white bg-[#009496] rounded-lg hover:bg-[#007a7a]">
+                    <i class="mr-2 fas fa-search"></i>
+                    Filtrar Resultados
+                </button>
+            </div>
+        </form>
+    </div>
+
     <div class="overflow-hidden transition-all duration-300 bg-white border border-gray-100 shadow-sm rounded-2xl">
         <div class="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
             <h3 class="text-xl font-semibold text-gray-800">
@@ -46,6 +144,9 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">Nº</th>
+                        @if($isSuperAdmin)
+                        <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">Prefeitura</th>
+                        @endif
                         <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">Secretaria</th>
                         <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">Responsável</th>
                         <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">Modalidade</th>
@@ -57,6 +158,9 @@
                     @forelse($etps as $etp)
                     <tr class="transition-colors duration-200 hover:bg-gray-50/80">
                         <td class="px-4 py-3 font-mono text-sm text-gray-900 whitespace-nowrap align-top">ETP-{{ str_pad($etp->id, 4, '0', STR_PAD_LEFT) }}/{{ $etp->created_at->format('Y') }}</td>
+                        @if($isSuperAdmin)
+                        <td class="px-4 py-3 text-sm text-gray-900 align-top">{{ $etp->prefeitura->nome ?? 'N/A' }}</td>
+                        @endif
                         <td class="px-4 py-3 text-sm text-gray-900 align-top">{{ $etp->secretaria->nome ?? 'N/A' }}</td>
                         <td class="px-4 py-3 text-sm text-gray-900 align-top">{{ $etp->servidor_responsavel ?? 'N/A' }}</td>
                         <td class="px-4 py-3 text-sm text-gray-900 uppercase align-top">{{ $etp->modalidade }}</td>
@@ -112,7 +216,7 @@
                     </tr>
                     <!-- Linha do Objeto -->
                     <tr class="border-t-0 bg-gray-50/30">
-                        <td colspan="7" class="px-4 py-2 text-sm text-gray-600">
+                        <td colspan="{{ $isSuperAdmin ? 7 : 6 }}" class="px-4 py-2 text-sm text-gray-600">
                             <div class="flex items-start gap-2">
                                 <span class="font-semibold text-gray-700 whitespace-nowrap">Objeto:</span>
                                 <span class="text-gray-600" title="{{ $etp->objeto_licitacao }}">{{ $etp->objeto_licitacao }}</span>
@@ -121,7 +225,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="px-6 py-16 text-center text-gray-500">
+                        <td colspan="{{ $isSuperAdmin ? 7 : 6 }}" class="px-6 py-16 text-center text-gray-500">
                             <p class="text-sm font-medium text-gray-700">Nenhum ETP encontrado.</p>
                         </td>
                     </tr>
