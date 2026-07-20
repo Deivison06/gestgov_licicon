@@ -207,18 +207,22 @@
     $painel = is_array($detalhe->painel_preco_tce)
         ? $detalhe->painel_preco_tce
         : json_decode($detalhe->painel_preco_tce ?? '[]', true);
+    $temFornecedorLocalTce = collect($painel ?? [])->contains(fn($p) => !empty($p['fornecedor_local_preco'] ?? null));
 @endphp
 <table>
     <thead>
         <tr>
-            <th rowspan="2" class="left" style="width:35%;">ITEM</th>
+            <th rowspan="2" class="left" style="width:{{ $temFornecedorLocalTce ? '28%' : '35%' }};">ITEM</th>
             <th colspan="3">VALOR TCE</th>
+            @if($temFornecedorLocalTce)
+            <th rowspan="2" style="width:15%;">FORNECEDOR<br>LOCAL</th>
+            @endif
             <th rowspan="2" style="width:15%;">MÉDIA<br>GERAL</th>
         </tr>
         <tr>
-            <th style="width:15%;">VALOR TCE</th>
-            <th style="width:15%;">VALOR TCE</th>
-            <th style="width:15%;">VALOR TCE</th>
+            <th style="width:{{ $temFornecedorLocalTce ? '12%' : '15%' }};">VALOR TCE</th>
+            <th style="width:{{ $temFornecedorLocalTce ? '12%' : '15%' }};">VALOR TCE</th>
+            <th style="width:{{ $temFornecedorLocalTce ? '13%' : '15%' }};">VALOR TCE</th>
         </tr>
     </thead>
     <tbody>
@@ -228,10 +232,13 @@
             <td>{{ $item['valor_tce_1'] ?? '' }}</td>
             <td>{{ $item['valor_tce_2'] ?? '' }}</td>
             <td>{{ $item['valor_tce_3'] ?? '' }}</td>
+            @if($temFornecedorLocalTce)
+            <td>{{ $item['fornecedor_local_preco'] ?? '' }}</td>
+            @endif
             <td><strong>{{ $item['media'] ?? '' }}</strong></td>
         </tr>
         @empty
-        <tr><td colspan="5" style="text-align:center;">Nenhum dado disponível</td></tr>
+        <tr><td colspan="{{ $temFornecedorLocalTce ? 6 : 5 }}" style="text-align:center;">Nenhum dado disponível</td></tr>
         @endforelse
     </tbody>
 </table>

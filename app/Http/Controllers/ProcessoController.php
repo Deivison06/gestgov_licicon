@@ -1369,8 +1369,10 @@ class ProcessoController extends AbstractController
             $v1 = $item['valor_tce_1'] !== '' && $item['valor_tce_1'] !== null ? (float) $item['valor_tce_1'] : null;
             $v2 = $item['valor_tce_2'] !== '' && $item['valor_tce_2'] !== null ? (float) $item['valor_tce_2'] : null;
             $v3 = $item['valor_tce_3'] !== '' && $item['valor_tce_3'] !== null ? (float) $item['valor_tce_3'] : null;
+            $vLocalRaw = $item['fornecedor_local_preco'] ?? '';
+            $vLocal = $vLocalRaw !== '' && $vLocalRaw !== null ? (float) $vLocalRaw : null;
 
-            $vals  = array_filter([$v1, $v2, $v3], fn($v) => $v !== null);
+            $vals  = array_filter([$v1, $v2, $v3, $vLocal], fn($v) => $v !== null);
             $media = count($vals) > 0 ? array_sum($vals) / count($vals) : null;
 
             return [
@@ -1379,6 +1381,7 @@ class ProcessoController extends AbstractController
                 'valor_tce_1' => $v1 !== null ? number_format($v1, 2, ',', '.') : '',
                 'valor_tce_2' => $v2 !== null ? number_format($v2, 2, ',', '.') : '',
                 'valor_tce_3' => $v3 !== null ? number_format($v3, 2, ',', '.') : '',
+                'fornecedor_local_preco' => $vLocal !== null ? number_format($vLocal, 2, ',', '.') : '',
                 'media'       => $media !== null ? number_format($media, 2, ',', '.') : '',
             ];
         })->values()->all();

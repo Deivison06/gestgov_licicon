@@ -223,18 +223,22 @@
     );
     // Converte string BR "1.234,56" → float para somar totais de lote
     $parseBrStr = fn($v) => (float) str_replace(',', '.', str_replace('.', '', $v ?? ''));
+    $temFornecedorLocalTce = collect($painel ?? [])->contains(fn($p) => !empty($p['fornecedor_local_preco'] ?? null));
 @endphp
 <table>
     <thead>
         <tr>
-            <th rowspan="2" class="left" style="width:35%;">ITEM</th>
+            <th rowspan="2" class="left" style="width:{{ $temFornecedorLocalTce ? '28%' : '35%' }};">ITEM</th>
             <th colspan="3">VALOR TCE</th>
+            @if($temFornecedorLocalTce)
+            <th rowspan="2" style="width:15%;">FORNECEDOR<br>LOCAL</th>
+            @endif
             <th rowspan="2" style="width:15%;">MÉDIA<br>GERAL</th>
         </tr>
         <tr>
-            <th style="width:15%;">VALOR TCE</th>
-            <th style="width:15%;">VALOR TCE</th>
-            <th style="width:15%;">VALOR TCE</th>
+            <th style="width:{{ $temFornecedorLocalTce ? '12%' : '15%' }};">VALOR TCE</th>
+            <th style="width:{{ $temFornecedorLocalTce ? '12%' : '15%' }};">VALOR TCE</th>
+            <th style="width:{{ $temFornecedorLocalTce ? '13%' : '15%' }};">VALOR TCE</th>
         </tr>
     </thead>
     <tbody>
@@ -242,7 +246,7 @@
             @foreach($painelPorLote as $loteNome => $itensLote)
                 @if($hasLotes)
                 <tr style="background-color: #c8d3da; border-top: 2px solid #607d8b;">
-                    <td colspan="5" style="text-align:left; font-weight:bold; padding: 5px 10px; font-size:8.5pt; border-left: 4px solid #607d8b;">{{ $loteNome }}</td>
+                    <td colspan="{{ $temFornecedorLocalTce ? 6 : 5 }}" style="text-align:left; font-weight:bold; padding: 5px 10px; font-size:8.5pt; border-left: 4px solid #607d8b;">{{ $loteNome }}</td>
                 </tr>
                 @endif
                 @foreach($itensLote as $item)
@@ -251,6 +255,9 @@
                     <td>{{ $item['valor_tce_1'] ?? '' }}</td>
                     <td>{{ $item['valor_tce_2'] ?? '' }}</td>
                     <td>{{ $item['valor_tce_3'] ?? '' }}</td>
+                    @if($temFornecedorLocalTce)
+                    <td>{{ $item['fornecedor_local_preco'] ?? '' }}</td>
+                    @endif
                     <td><strong>{{ $item['media'] ?? '' }}</strong></td>
                 </tr>
                 @endforeach
@@ -259,13 +266,13 @@
                     $totalLoteTce = $itensLote->sum(fn($i) => $parseBrStr($i['media'] ?? ''));
                 @endphp
                 <tr style="background-color: #f0f0f0; border-top: 2px solid #607d8b;">
-                    <td colspan="4" style="text-align:right; font-weight:bold; padding-right:8px;">TOTAL DO LOTE</td>
+                    <td colspan="{{ $temFornecedorLocalTce ? 5 : 4 }}" style="text-align:right; font-weight:bold; padding-right:8px;">TOTAL DO LOTE</td>
                     <td style="font-weight:bold;">R$ {{ number_format($totalLoteTce, 2, ',', '.') }}</td>
                 </tr>
                 @endif
             @endforeach
         @else
-        <tr><td colspan="5" style="text-align:center;">Nenhum dado disponível</td></tr>
+        <tr><td colspan="{{ $temFornecedorLocalTce ? 6 : 5 }}" style="text-align:center;">Nenhum dado disponível</td></tr>
         @endif
     </tbody>
 </table>

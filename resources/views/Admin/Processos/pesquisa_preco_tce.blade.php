@@ -65,7 +65,23 @@
     @else
 
     {{-- FORMULÁRIO --}}
-    <div id="app-tce" x-data="tceApp()">
+    @php
+        $temFornecedorLocalInicial = collect($precosSalvos)->contains(fn($p) => !empty($p['fornecedor_local_preco'] ?? null));
+    @endphp
+    <div id="app-tce" x-data="tceApp({{ $temFornecedorLocalInicial ? 'true' : 'false' }})">
+
+        {{-- TOGGLE FORNECEDOR LOCAL --}}
+        <div class="mb-4 flex items-center justify-between p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <div class="text-xs text-amber-800">
+                <i class="fas fa-store mr-1"></i>
+                Incluir preço de um <strong>Fornecedor Local</strong> junto ao Painel TCE (entra na média e aparece no relatório).
+            </div>
+            <label class="inline-flex items-center cursor-pointer flex-shrink-0 ml-3">
+                <input type="checkbox" x-model="incluirFornecedorLocal" class="sr-only peer">
+                <div class="relative w-9 h-5 bg-gray-300 peer-checked:bg-amber-500 rounded-full transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-4"></div>
+            </label>
+        </div>
+
         <form @submit.prevent="salvar" x-ref="formTce" class="space-y-4">
 
             @foreach($itens as $idx => $item)
@@ -88,7 +104,7 @@
 
                 {{-- Campos dos valores TCE --}}
                 <div class="p-5">
-                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                    <div class="grid grid-cols-1 gap-4" :class="incluirFornecedorLocal ? 'sm:grid-cols-4' : 'sm:grid-cols-3'">
                         @foreach([1, 2, 3] as $n)
                         <div>
                             <label class="block text-[10px] font-semibold text-gray-500 uppercase mb-1">
@@ -102,6 +118,18 @@
                                    class="w-full border border-gray-200 rounded-lg text-xs px-3 py-2 focus:ring-1 focus:ring-blue-400 focus:border-blue-400">
                         </div>
                         @endforeach
+
+                        <div x-show="incluirFornecedorLocal" x-cloak>
+                            <label class="block text-[10px] font-semibold text-amber-600 uppercase mb-1">
+                                <i class="fas fa-store text-[9px] mr-1"></i>
+                                Fornecedor Local (R$)
+                            </label>
+                            <input type="number" step="0.0001" min="0"
+                                   name="itens[{{ $idx }}][fornecedor_local_preco]"
+                                   value="{{ $salvo && !empty($salvo['fornecedor_local_preco'] ?? null) ? str_replace(',', '.', str_replace('.', '', $salvo['fornecedor_local_preco'])) : '' }}"
+                                   placeholder="0,00"
+                                   class="w-full border border-amber-200 rounded-lg text-xs px-3 py-2 focus:ring-1 focus:ring-amber-400 focus:border-amber-400">
+                        </div>
                     </div>
 
                     <input type="hidden" name="itens[{{ $idx }}][etp_item_id]" value="{{ $item['id'] ?? '' }}">
@@ -152,11 +180,11 @@ function tceNormalizar(str) {
 }
 
 function tceBaixarModelo() {
-    const cabecalho = ['Descrição do Item', 'Valor TCE 1 (R$)', 'Valor TCE 2 (R$)', 'Valor TCE 3 (R$)'];
-    const linhas = _tceItens.map(item => [item.descricao ?? '', '', '', '']);
+    const cabecalho = ['Descrição do Item', 'Valor TCE 1 (R$)', 'Valor TCE 2 (R$)', 'Valor TCE 3 (R$)', 'Fornecedor Local (R$)'];
+    const linhas = _tceItens.map(item => [item.descricao ?? '', '', '', '', '']);
 
     const ws = XLSX.utils.aoa_to_sheet([cabecalho, ...linhas]);
-    ws['!cols'] = [{ wch: 50 }, { wch: 18 }, { wch: 18 }, { wch: 18 }];
+    ws['!cols'] = [{ wch: 50 }, { wch: 18 }, { wch: 18 }, { wch: 18 }, { wch: 20 }];
 
     const range = XLSX.utils.decode_range(ws['!ref']);
     for (let C = range.s.c; C <= range.e.c; C++) {
@@ -197,6 +225,7 @@ function tceImportar(input) {
 
             let importados = 0;
             let naoEncontrados = 0;
+            let temFornecedorLocal = false;
 
             dataRows.forEach((row, posicao) => {
                 const descricaoPlanilha = tceNormalizar(row[0]);
@@ -218,6 +247,10 @@ function tceImportar(input) {
                 setValor('valor_tce_1', row[1]);
                 setValor('valor_tce_2', row[2]);
                 setValor('valor_tce_3', row[3]);
+                setValor('fornecedor_local_preco', row[4]);
+                if (String(row[4] ?? '').trim() !== '') {
+                    temFornecedorLocal = true;
+                }
 
                 importados++;
             });
@@ -228,6 +261,7 @@ function tceImportar(input) {
 
             try {
                 const comp = Alpine.$data(document.querySelector('#app-tce'));
+                if (temFornecedorLocal) comp.incluirFornecedorLocal = true;
                 comp.sucesso  = naoEncontrados === 0;
                 comp.mensagem = msg;
                 setTimeout(() => comp.mensagem = '', 6000);
@@ -243,11 +277,12 @@ function tceImportar(input) {
     reader.readAsArrayBuffer(file);
 }
 
-function tceApp() {
+function tceApp(incluirFornecedorLocalInicial = false) {
     return {
         salvando: false,
         mensagem: '',
         sucesso: true,
+        incluirFornecedorLocal: incluirFornecedorLocalInicial,
 
         async salvar() {
             this.salvando = true;

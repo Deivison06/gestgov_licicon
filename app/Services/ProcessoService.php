@@ -337,17 +337,36 @@ class ProcessoService extends AbstractService
         $painelPrecos = [];
         foreach ($rows as $index => $row) {
             if ($index === 0) continue;
+
+            $v1     = $this->normalizarValor($row[1] ?? null);
+            $v2     = $this->normalizarValor($row[2] ?? null);
+            $v3     = $this->normalizarValor($row[3] ?? null);
+            $vLocal = $this->normalizarValor($row[4] ?? null);
+
             $painelPrecos[] = [
                 'item' => $row[0] ?? null,
-                'valor_tce_1' => $row[1] ?? null,
-                'valor_tce_2' => $this->normalizarValor($row[2] ?? null),
-                'valor_tce_3' => $this->normalizarValor($row[3] ?? null),
-                'fornecedor_local' => $this->normalizarValor($row[4] ?? null),
-                'media' => $this->normalizarValor($row[5] ?? null),
+                'valor_tce_1' => $v1,
+                'valor_tce_2' => $v2,
+                'valor_tce_3' => $v3,
+                'fornecedor_local_preco' => $vLocal,
+                'media' => $this->calcularMediaBr([$v1, $v2, $v3, $vLocal]),
             ];
         }
 
         $detalhe->{$campo} = json_encode($painelPrecos, JSON_UNESCAPED_UNICODE);
+    }
+
+    private function calcularMediaBr(array $valoresBr): string
+    {
+        $numeros = [];
+        foreach ($valoresBr as $v) {
+            if ($v === null || $v === '') continue;
+            $numeros[] = (float) str_replace(',', '.', str_replace('.', '', $v));
+        }
+
+        if (empty($numeros)) return '';
+
+        return number_format(array_sum($numeros) / count($numeros), 2, ',', '.');
     }
 
     private function normalizarValor($valor)
