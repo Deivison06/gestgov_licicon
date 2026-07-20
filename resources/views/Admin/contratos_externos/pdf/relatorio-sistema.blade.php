@@ -313,13 +313,28 @@
                         @php
                             $bgClass = $i % 2 === 0 ? 'bg-odd' : 'bg-even';
 
+                            // A contratada é gravada em locais diferentes conforme a modalidade:
+                            //  - Pregão            -> homologação / vencedores
+                            //  - Concorrência e
+                            //    Dispensa          -> finalização do processo
+                            //  - Inexigibilidade   -> detalhe do processo (contratação direta)
                             $contratada = $processo->contrato->homologacao?->razao_social
-                                ?? $processo->vencedores->first()?->razao_social;
+                                ?: $processo->vencedores->first()?->razao_social
+                                ?: $processo->finalizacao?->razao_social
+                                ?: $processo->detalhe?->razao_social;
+
                             $contratadaCnpj = $processo->contrato->homologacao?->cnpj_empresa_vencedora
-                                ?? $processo->vencedores->first()?->cnpj_formatado;
+                                ?: $processo->vencedores->first()?->cnpj_formatado
+                                ?: $processo->finalizacao?->cnpj_empresa_vencedora
+                                ?: $processo->detalhe?->cnpj_empresa_vencedora;
 
                             $valor = $processo->contrato->homologacao?->valor_total
                                 ?? $processo->vencedores->sum('valor_total');
+
+                            // Vigência: prazo contratado + período calculado a partir da assinatura.
+                            $vigenciaTexto = $processo->detalhe?->prazo_vigencia_texto;
+                            $vigenciaInicio = $processo->contrato->data_assinatura_contrato;
+                            $vigenciaFim = $processo->detalhe?->calcularFimVigencia($vigenciaInicio);
                         @endphp
 
                         <tr class="{{ $bgClass }} border-no-bottom">
@@ -344,7 +359,12 @@
                                 @endif
                             </td>
                             <td class="text-center">
-                                {{ $processo->detalhe->prazo_vigencia_texto ?? '—' }}
+                                {{ $vigenciaTexto ?: '—' }}
+                                @if($vigenciaInicio && $vigenciaFim)
+                                    <br><span style="font-size:7.5px;color:#888;">
+                                        {{ $vigenciaInicio->format('d/m/Y') }} a {{ $vigenciaFim->format('d/m/Y') }}
+                                    </span>
+                                @endif
                             </td>
                             <td class="text-right">
                                 R$ {{ number_format($valor, 2, ',', '.') }}

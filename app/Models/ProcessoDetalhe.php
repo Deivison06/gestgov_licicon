@@ -141,7 +141,7 @@ class ProcessoDetalhe extends Model
     }
 
     /**
-     * Texto amigável do prazo de vigência (12 meses / exercício financeiro / outro).
+     * Texto amigável do prazo de vigência (12/24/36 meses, exercício financeiro ou outro).
      */
     public function getPrazoVigenciaTextoAttribute(): string
     {
@@ -151,8 +151,8 @@ class ProcessoDetalhe extends Model
             return 'até 31/12 do exercício financeiro da contratação';
         }
 
-        if (in_array('12_meses', $vigencia)) {
-            return '12 meses';
+        if ($meses = $this->prazo_vigencia_meses) {
+            return "{$meses} meses";
         }
 
         if (in_array('outro', $vigencia)) {
@@ -160,6 +160,53 @@ class ProcessoDetalhe extends Model
         }
 
         return '________________';
+    }
+
+    /**
+     * Quantidade de meses do prazo de vigência.
+     * Retorna null quando o prazo não é expresso em meses (exercício financeiro / outro).
+     */
+    public function getPrazoVigenciaMesesAttribute(): ?int
+    {
+        $vigencia = is_array($this->prazo_vigencia) ? $this->prazo_vigencia : ['12_meses'];
+
+        foreach ([12, 24, 36] as $meses) {
+            if (in_array("{$meses}_meses", $vigencia, true)) {
+                return $meses;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Calcula o término da vigência a partir da data de assinatura do contrato.
+     * Ex.: assinatura em 22/06/2026 com prazo de 12 meses => 22/06/2027.
+     *
+     * Retorna null quando não há data de início ou quando o prazo é livre ("outro"),
+     * casos em que não há como derivar a data com segurança.
+     */
+    public function calcularFimVigencia($dataInicio): ?\Carbon\Carbon
+    {
+        if (! $dataInicio) {
+            return null;
+        }
+
+        $inicio = $dataInicio instanceof \Carbon\Carbon
+            ? $dataInicio->copy()
+            : \Carbon\Carbon::parse($dataInicio);
+
+        $vigencia = is_array($this->prazo_vigencia) ? $this->prazo_vigencia : ['12_meses'];
+
+        // Exercício financeiro: encerra em 31/12 do ano da assinatura.
+        if (in_array('exercicio_financeiro', $vigencia, true)) {
+            return $inicio->copy()->endOfYear()->startOfDay();
+        }
+
+        $meses = $this->prazo_vigencia_meses;
+
+        // addMonthsNoOverflow evita que 31/01 + 1 mês vire 03/03 em fevereiro.
+        return $meses ? $inicio->copy()->addMonthsNoOverflow($meses) : null;
     }
 
     /**

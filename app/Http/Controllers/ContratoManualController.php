@@ -359,6 +359,8 @@ class ContratoManualController extends Controller
             'contrato.homologacao',
             'vencedores.lotes',
             'detalhe',
+            // Concorrência e Dispensa gravam a empresa contratada na finalização.
+            'finalizacao',
         ])->has('contrato');
 
         if ($isPrefeituraUser) {
