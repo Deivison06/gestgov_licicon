@@ -158,8 +158,16 @@
     {{-- Objeto em destaque + metadados --}}
     <div class="px-6 py-4">
         <p class="text-xs font-medium tracking-wide text-gray-400 uppercase">Objeto</p>
+        @php
+            $objeto = html_entity_decode(
+                strip_tags($processo->objeto),
+                ENT_QUOTES | ENT_HTML5,
+                'UTF-8'
+            );
+        @endphp
+
         <p class="mt-1 text-sm leading-relaxed text-gray-800">
-            {{ strip_tags($processo->objeto) ?: '—' }}
+            {{ $objeto ?: '—' }}
         </p>
 
         <dl class="grid grid-cols-2 gap-x-6 gap-y-3 mt-5 sm:grid-cols-4">
