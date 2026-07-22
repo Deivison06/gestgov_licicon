@@ -214,7 +214,9 @@
                     <div class="signature-line"></div>
                     <p class="assinatura-nome">{{ $assinante['nome'] ?? '' }}</p>
                     @php
-                        $detalhe = array_filter([$assinante['cargo'] ?? null, $assinante['unidade'] ?? null]);
+                        // Sem cargo informado (ex.: fiscal selecionado da lista), assume "Fiscal de Contrato".
+                        $cargo = trim($assinante['cargo'] ?? '') ?: 'Fiscal de Contrato';
+                        $detalhe = array_filter([$cargo, $assinante['unidade'] ?? null]);
                     @endphp
                     @if(!empty($detalhe))
                         <p class="assinatura-cargo">{{ implode(' — ', $detalhe) }}</p>
