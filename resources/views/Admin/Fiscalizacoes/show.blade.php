@@ -192,6 +192,7 @@
     <div class="mt-6 bg-white border border-gray-100 shadow-sm rounded-2xl overflow-hidden"
          x-data="assinantesFiscalizacao({
             unidades: {{ $unidadesAssinantes->toJson() }},
+            fiscais: {{ ($fiscais ?? collect())->toJson() }},
             iniciais: {{ json_encode($fiscalizacao->assinantes ?? []) }},
             saveUrl: '{{ route('admin.fiscalizacoes.assinantes', $fiscalizacao->id) }}'
          })">
@@ -211,14 +212,21 @@
 
             {{-- Formulário de adição --}}
             <div class="flex flex-col gap-3 p-4 bg-gray-50 border border-gray-200 rounded-lg sm:flex-row sm:items-end">
-                <div class="flex-1 min-w-[180px]">
-                    <label class="block mb-1 text-xs font-medium text-gray-600">Unidade / Secretaria</label>
-                    <select x-model="selUnidadeId" @change="aoSelecionarUnidade()"
+                <div class="flex-1 min-w-[200px]">
+                    <label class="block mb-1 text-xs font-medium text-gray-600">Secretaria ou Fiscal</label>
+                    <select x-model="selecionado" @change="aoSelecionar()"
                             class="block w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#009496] focus:border-[#009496]">
                         <option value="">Selecione (ou preencha manualmente)</option>
-                        <template x-for="u in unidades" :key="u.id">
-                            <option :value="u.id" x-text="u.nome"></option>
-                        </template>
+                        <optgroup label="Secretarias" x-show="unidades.length">
+                            <template x-for="u in unidades" :key="'u'+u.id">
+                                <option :value="'unidade:'+u.id" x-text="u.nome"></option>
+                            </template>
+                        </optgroup>
+                        <optgroup label="Fiscais / Usuários" x-show="fiscais.length">
+                            <template x-for="f in fiscais" :key="'f'+f.id">
+                                <option :value="'fiscal:'+f.id" x-text="f.nome + (f.unidade ? ' — ' + f.unidade : '')"></option>
+                            </template>
+                        </optgroup>
                     </select>
                 </div>
                 <div class="flex-1 min-w-[160px]">
@@ -347,9 +355,10 @@
 
 @once
 <script>
-    function assinantesFiscalizacao({ unidades, iniciais, saveUrl }) {
+    function assinantesFiscalizacao({ unidades, fiscais, iniciais, saveUrl }) {
         return {
             unidades: unidades || [],
+            fiscais: fiscais || [],
             assinantes: (iniciais || []).map(a => ({
                 nome: a.nome ?? '',
                 cargo: a.cargo ?? '',
@@ -357,29 +366,41 @@
             })),
             saveUrl,
             salvando: false,
-            selUnidadeId: '',
+            selecionado: '',   // "unidade:<id>" ou "fiscal:<id>"
             formNome: '',
             formCargo: '',
+            formUnidade: '',
 
-            aoSelecionarUnidade() {
-                if (!this.selUnidadeId) return;
-                const u = this.unidades.find(x => x.id == this.selUnidadeId);
-                if (u) {
-                    this.formNome = u.servidor_responsavel || this.formNome;
+            aoSelecionar() {
+                if (!this.selecionado) { this.formUnidade = ''; return; }
+                const [tipo, id] = this.selecionado.split(':');
+
+                if (tipo === 'unidade') {
+                    const u = this.unidades.find(x => x.id == id);
+                    if (u) {
+                        this.formNome = u.servidor_responsavel || this.formNome;
+                        this.formUnidade = u.nome || '';
+                    }
+                } else if (tipo === 'fiscal') {
+                    const f = this.fiscais.find(x => x.id == id);
+                    if (f) {
+                        this.formNome = f.nome || this.formNome;
+                        this.formUnidade = f.unidade || '';
+                    }
                 }
             },
 
             adicionar() {
                 if (!this.formNome.trim()) return;
-                const u = this.unidades.find(x => x.id == this.selUnidadeId);
                 this.assinantes.push({
                     nome: this.formNome.trim(),
                     cargo: this.formCargo.trim(),
-                    unidade: u ? u.nome : '',
+                    unidade: this.formUnidade || '',
                 });
                 this.formNome = '';
                 this.formCargo = '';
-                this.selUnidadeId = '';
+                this.formUnidade = '';
+                this.selecionado = '';
             },
 
             remover(idx) {

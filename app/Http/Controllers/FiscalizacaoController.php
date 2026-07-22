@@ -232,7 +232,20 @@ class FiscalizacaoController extends Controller
 
         $fiscalizacao->contrato_info = $this->extrairInfoContrato($fiscalizacao);
 
-        return view('Admin.Fiscalizacoes.show', compact('fiscalizacao'));
+        // Usuários (fiscais/servidores) da mesma prefeitura, para seleção como assinantes.
+        // Exclui os cadastros institucionais (a própria prefeitura), mantendo pessoas físicas.
+        $fiscais = \App\Models\User::with('unidade')
+            ->where('prefeitura_id', $fiscalizacao->prefeitura_id)
+            ->orderBy('name')
+            ->get(['id', 'name', 'unidade_id'])
+            ->map(fn ($u) => [
+                'id'      => $u->id,
+                'nome'    => $u->name,
+                'unidade' => $u->unidade->nome ?? null,
+            ])
+            ->values();
+
+        return view('Admin.Fiscalizacoes.show', compact('fiscalizacao', 'fiscais'));
     }
 
     /**
