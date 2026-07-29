@@ -372,7 +372,59 @@
     </div>
 
     @elseif($campo === 'projeto_basico_pdf')
-    <x-form-field name="projeto_basico_pdf" label="📎 Anexar PDF Projeto Básico" type="file" accept="application/pdf" />
+    @php
+        $etpFornecePdfProjetoBasico = $processo->etp
+            && !empty($processo->etp->cotacao_path)
+            && in_array($processo->modalidade, [\App\Enums\ModalidadeEnum::CONCORRENCIA, \App\Enums\ModalidadeEnum::INEXIGIBILIDADE]);
+        $temAnexoManualProjetoBasico = app(\App\Services\ProcessoDocumentoService::class)->existeAnexoManual($processo, 'projeto_basico_pdf');
+        $projetoBasicoDoEtp = $etpFornecePdfProjetoBasico && !$temAnexoManualProjetoBasico;
+    @endphp
+    @if($projetoBasicoDoEtp)
+        <div x-data="{ forcarUploadProjetoBasico: false }">
+            <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-xl shadow-sm" x-show="!forcarUploadProjetoBasico">
+                <div class="flex items-start justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                            <i class="fas fa-file-pdf text-lg"></i>
+                        </div>
+                        <div>
+                            <h5 class="text-sm font-bold text-emerald-900">Projeto Básico do ETP Vinculado</h5>
+                            <p class="text-xs text-emerald-700">O PDF anexado no ETP será usado automaticamente como Projeto Básico deste processo.</p>
+                        </div>
+                    </div>
+                    <a href="{{ route('admin.etps.show', $processo->etp->id) }}" target="_blank"
+                       class="flex-shrink-0 inline-flex items-center px-3 py-1.5 text-xs font-bold text-blue-700 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 transition-all shadow-sm">
+                        <i class="fas fa-eye mr-1.5"></i> Ver ETP
+                    </a>
+                </div>
+                <div class="mt-3 pt-3 border-t border-emerald-100">
+                    <button type="button" @click="forcarUploadProjetoBasico = true"
+                            class="text-xs font-semibold text-emerald-700 hover:text-emerald-900 underline transition-colors">
+                        Enviar meu próprio PDF mesmo assim
+                    </button>
+                </div>
+            </div>
+            <div x-show="forcarUploadProjetoBasico" x-cloak>
+                <p class="text-[10px] text-amber-600 italic mb-1">
+                    ⚠️ Isso pode gerar divergência entre o ETP e o Projeto Básico do processo.
+                </p>
+                <x-form-field name="projeto_basico_pdf" label="📎 Anexar PDF Projeto Básico" type="file" accept="application/pdf" />
+            </div>
+        </div>
+    @else
+        <x-form-field name="projeto_basico_pdf" label="📎 Anexar PDF Projeto Básico" type="file" accept="application/pdf" />
+        @if($etpFornecePdfProjetoBasico && $temAnexoManualProjetoBasico)
+            <div class="mt-2 flex items-center gap-2 p-2.5 bg-amber-50 border border-amber-200 rounded-lg">
+                <p class="text-[11px] text-amber-700 flex-1">
+                    Há um PDF anexado manualmente. O ETP vinculado também possui um PDF disponível.
+                </p>
+                <button type="button" @click="removerAnexoEtp('projeto_basico_pdf')"
+                        class="flex-shrink-0 inline-flex items-center px-2.5 py-1 text-[11px] font-bold text-emerald-700 bg-white border border-emerald-300 rounded-lg hover:bg-emerald-50 transition-all">
+                    <i class="fas fa-rotate-left mr-1"></i> Voltar a usar o PDF do ETP
+                </button>
+            </div>
+        @endif
+    @endif
 
     @elseif($campo === 'itens_especificaca_quantitativos_xml')
     @if($processo->etp)
@@ -809,35 +861,92 @@
     </div>{{-- /x-show tce --}}
 
     @elseif($campo === 'anexo_pdf_analise_mercado')
-    <div x-show="tipo_relatorio_analise_mercado !== 'pncp'" x-cloak>
-        <div class="flex items-start mb-4 space-x-2">
-            <div class="flex-1">
-                <div class="flex items-center justify-between mb-1">
-                    <label for="anexo_pdf_analise_mercado" class="block text-sm font-medium text-gray-700">
-                        <span x-text="{
-                            'tce':             '📎 Anexar PDF — Painel TCE',
-                            'fornecedor_local':'📎 Anexar PDF — Fornecedor Local',
-                            'cesta_preco':     '📎 Anexar PDF — Cesta de Preços'
-                        }[tipo_relatorio_analise_mercado] || '📎 Anexar PDF à Análise de Mercado'"></span>
-                    </label>
+    @php
+        $etpForneceAnaliseMercado = $processo->etp
+            && !empty($processo->etp->cotacao_path)
+            && in_array($processo->modalidade, [\App\Enums\ModalidadeEnum::PREGAO_ELETRONICO, \App\Enums\ModalidadeEnum::DISPENSA]);
+        $temAnexoManualAnaliseMercado = app(\App\Services\ProcessoDocumentoService::class)->existeAnexoManual($processo, 'anexo_pdf_analise_mercado');
+        $analiseMercadoDoEtpDisponivel = $etpForneceAnaliseMercado && !$temAnexoManualAnaliseMercado;
+    @endphp
+    <div x-show="tipo_relatorio_analise_mercado !== 'pncp'" x-cloak x-data="{ forcarUploadAnaliseMercado: false }">
+        @if($analiseMercadoDoEtpDisponivel)
+        <div x-show="['fornecedor_local', 'cesta_preco'].includes(tipo_relatorio_analise_mercado) && !forcarUploadAnaliseMercado" x-cloak>
+            <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-xl shadow-sm">
+                <div class="flex items-start justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                            <i class="fas fa-file-pdf text-lg"></i>
+                        </div>
+                        <div>
+                            <h5 class="text-sm font-bold text-emerald-900">PDF do ETP Vinculado</h5>
+                            <p class="text-xs text-emerald-700">
+                                <span x-text="tipo_relatorio_analise_mercado === 'fornecedor_local' ? 'A Cotação do Fornecedor anexada no ETP será usada automaticamente ao final deste documento.' : 'O PDF anexado no ETP será usado automaticamente ao final deste documento.'"></span>
+                            </p>
+                        </div>
+                    </div>
+                    <a href="{{ route('admin.etps.show', $processo->etp->id) }}" target="_blank"
+                       class="flex-shrink-0 inline-flex items-center px-3 py-1.5 text-xs font-bold text-blue-700 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 transition-all shadow-sm">
+                        <i class="fas fa-eye mr-1.5"></i> Ver ETP
+                    </a>
                 </div>
-                <input type="file"
-                       id="anexo_pdf_analise_mercado"
-                       name="anexo_pdf_analise_mercado"
-                       :disabled="confirmed.anexo_pdf_analise_mercado"
-                       accept="application/pdf"
-                       class="block w-full mt-1 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#009496] file:text-white hover:file:bg-[#007779]">
+                <div class="mt-3 pt-3 border-t border-emerald-100">
+                    <button type="button" @click="forcarUploadAnaliseMercado = true"
+                            class="text-xs font-semibold text-emerald-700 hover:text-emerald-900 underline transition-colors">
+                        Enviar meu próprio PDF mesmo assim
+                    </button>
+                </div>
             </div>
-            <div class="flex pt-6 space-x-1">
-                <button type="button" @click="saveField('anexo_pdf_analise_mercado')"
-                        x-show="!confirmed.anexo_pdf_analise_mercado"
-                        class="flex items-center justify-center w-8 h-8 transition-colors duration-200 rounded-lg bg-green-500 hover:bg-green-600 text-white"
-                        title="Confirmar">✓</button>
-                <button type="button" @click="toggleConfirm('anexo_pdf_analise_mercado')"
-                        x-show="confirmed.anexo_pdf_analise_mercado"
-                        class="flex items-center justify-center w-8 h-8 transition-colors duration-200 rounded-lg bg-red-500 hover:bg-red-600 text-white"
-                        title="Editar">✗</button>
+        </div>
+        @endif
+
+        <div @if($analiseMercadoDoEtpDisponivel) x-show="!['fornecedor_local', 'cesta_preco'].includes(tipo_relatorio_analise_mercado) || forcarUploadAnaliseMercado" x-cloak @endif>
+            @if($analiseMercadoDoEtpDisponivel)
+            <p class="text-[10px] text-amber-600 italic mb-1" x-show="forcarUploadAnaliseMercado">
+                ⚠️ Isso pode gerar divergência entre o ETP e a Análise de Mercado do processo.
+            </p>
+            @endif
+            <div class="flex items-start mb-4 space-x-2">
+                <div class="flex-1">
+                    <div class="flex items-center justify-between mb-1">
+                        <label for="anexo_pdf_analise_mercado" class="block text-sm font-medium text-gray-700">
+                            <span x-text="{
+                                'tce':             '📎 Anexar PDF — Painel TCE',
+                                'fornecedor_local':'📎 Anexar PDF — Fornecedor Local',
+                                'cesta_preco':     '📎 Anexar PDF — Cesta de Preços'
+                            }[tipo_relatorio_analise_mercado] || '📎 Anexar PDF à Análise de Mercado'"></span>
+                        </label>
+                    </div>
+                    <input type="file"
+                           id="anexo_pdf_analise_mercado"
+                           name="anexo_pdf_analise_mercado"
+                           :disabled="confirmed.anexo_pdf_analise_mercado"
+                           accept="application/pdf"
+                           class="block w-full mt-1 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#009496] file:text-white hover:file:bg-[#007779]">
+                </div>
+                <div class="flex pt-6 space-x-1">
+                    <button type="button" @click="saveField('anexo_pdf_analise_mercado')"
+                            x-show="!confirmed.anexo_pdf_analise_mercado"
+                            class="flex items-center justify-center w-8 h-8 transition-colors duration-200 rounded-lg bg-green-500 hover:bg-green-600 text-white"
+                            title="Confirmar">✓</button>
+                    <button type="button" @click="toggleConfirm('anexo_pdf_analise_mercado')"
+                            x-show="confirmed.anexo_pdf_analise_mercado"
+                            class="flex items-center justify-center w-8 h-8 transition-colors duration-200 rounded-lg bg-red-500 hover:bg-red-600 text-white"
+                            title="Editar">✗</button>
+                </div>
             </div>
+
+            @if($etpForneceAnaliseMercado && $temAnexoManualAnaliseMercado)
+            <div x-show="['fornecedor_local', 'cesta_preco'].includes(tipo_relatorio_analise_mercado)" x-cloak
+                 class="mt-2 flex items-center gap-2 p-2.5 bg-amber-50 border border-amber-200 rounded-lg">
+                <p class="text-[11px] text-amber-700 flex-1">
+                    Há um PDF anexado manualmente. O ETP vinculado também possui um PDF disponível.
+                </p>
+                <button type="button" @click="removerAnexoEtp('anexo_pdf_analise_mercado')"
+                        class="flex-shrink-0 inline-flex items-center px-2.5 py-1 text-[11px] font-bold text-emerald-700 bg-white border border-emerald-300 rounded-lg hover:bg-emerald-50 transition-all">
+                    <i class="fas fa-rotate-left mr-1"></i> Voltar a usar o PDF do ETP
+                </button>
+            </div>
+            @endif
         </div>
     </div>
 

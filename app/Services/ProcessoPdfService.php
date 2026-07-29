@@ -698,15 +698,17 @@ class ProcessoPdfService extends AbstractService
 
         if (is_array($camposAnexo)) {
             foreach ($camposAnexo as $campo) {
-                if (!empty($processo->detalhe->$campo)) {
-                    $caminho = public_path($processo->detalhe->$campo);
+                $caminhoRelativo = $this->documentoService->resolverCaminhoAnexo($processo, $campo);
+                if (!empty($caminhoRelativo)) {
+                    $caminho = public_path($caminhoRelativo);
                     $anexos[] = $caminho;
                     Log::info("Anexo encontrado para $documento", ['campo' => $campo, 'caminho' => $caminho, 'existe' => file_exists($caminho)]);
                 }
             }
         } else {
-            if (!empty($processo->detalhe->$camposAnexo)) {
-                $caminho = public_path($processo->detalhe->$camposAnexo);
+            $caminhoRelativo = $this->documentoService->resolverCaminhoAnexo($processo, $camposAnexo);
+            if (!empty($caminhoRelativo)) {
+                $caminho = public_path($caminhoRelativo);
                 $anexos[] = $caminho;
                 Log::info("Anexo encontrado para $documento", ['campo' => $camposAnexo, 'caminho' => $caminho, 'existe' => file_exists($caminho)]);
             }

@@ -697,6 +697,37 @@
             });
         }
 
+        function removerAnexoEtp(campo) {
+            if (!confirm('Remover o PDF enviado manualmente e voltar a usar o PDF do ETP vinculado?')) return;
+
+            const formData = new FormData();
+            formData.append('campo', campo);
+            formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+
+            fetch(`/admin/processos/{{ $processo->id }}/remover-anexo`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: formData
+            })
+            .then(res => res.json())
+            .then(response => {
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Sucesso!',
+                        text: response.message,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    setTimeout(() => location.reload(), 2000);
+                } else {
+                    showMessage(response.message, 'error');
+                }
+            });
+        }
+
         // Verificar se SweetAlert está disponível
         if (typeof Swal === 'undefined') {
             console.warn('SweetAlert2 não está carregado. Carregando agora...');

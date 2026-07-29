@@ -1153,6 +1153,37 @@ class ProcessoController extends AbstractController
         }
     }
 
+    /**
+     * Remove um anexo manual (upload feito diretamente no Processo) para que a
+     * geração de PDF volte a usar automaticamente o PDF anexado no ETP vinculado.
+     */
+    public function removerAnexo(Request $request, Processo $processo)
+    {
+        $request->validate([
+            'campo' => 'required|string|in:projeto_basico_pdf,anexo_pdf_analise_mercado',
+        ]);
+
+        try {
+            $this->processoService->removerAnexoManual($processo, $request->input('campo'));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Anexo removido. O PDF do ETP vinculado será usado novamente.'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Erro ao remover anexo manual do processo', [
+                'processo_id' => $processo->id,
+                'campo' => $request->input('campo'),
+                'erro' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao remover anexo: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function vincularEtp(Request $request, Processo $processo)
     {
         $request->validate([

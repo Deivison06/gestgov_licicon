@@ -397,6 +397,10 @@ Route::prefix('admin')
             Route::post('/desvincular-etp', [ProcessoController::class, 'desvincularEtp'])
                 ->name('processos.etps.desvincular');
 
+            // voltar a usar automaticamente o PDF do ETP vinculado.
+            Route::post('/remover-anexo', [ProcessoController::class, 'removerAnexo'])
+                ->name('processos.remover-anexo');
+
             // Gerar PDF
             Route::get('/pdf', [ProcessoController::class, 'gerarPdf'])
                 ->name('processos.pdf');

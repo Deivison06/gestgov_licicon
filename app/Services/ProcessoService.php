@@ -147,6 +147,27 @@ class ProcessoService extends AbstractService
         }
     }
 
+    /**
+     * Remove um anexo manual do ProcessoDetalhe (apaga o arquivo físico e limpa
+     * a coluna), permitindo que a geração de PDF volte a cair automaticamente
+     * para o PDF do ETP vinculado, quando aplicável.
+     */
+    public function removerAnexoManual(Processo $processo, string $campo): void
+    {
+        $detalhe = $processo->detalhe;
+
+        if (!$detalhe || empty($detalhe->{$campo})) {
+            return;
+        }
+
+        if (file_exists(public_path($detalhe->{$campo}))) {
+            unlink(public_path($detalhe->{$campo}));
+        }
+
+        $detalhe->{$campo} = null;
+        $detalhe->save();
+    }
+
     private function processarArquivos(array $data, ProcessoDetalhe $detalhe): void
     {
         foreach ($this->arquivosConfig as $campo => $metodo) {

@@ -453,6 +453,63 @@ class ProcessoDocumentoService extends AbstractService
         return $this->documentos[$tipo] ?? null;
     }
 
+    /**
+     * Resolve qual PDF deve ser usado para um campo de anexo do Processo.
+     *
+     * Prioriza o upload manual feito no Processo; na ausência dele, cai para o
+     * PDF anexado no ETP vinculado (`etp->cotacao_path`), desde que a
+     * modalidade/contexto do campo seja compatível — evitando divergência
+     * entre o ETP e o Processo sem duplicar o arquivo físico.
+     */
+    public function resolverCaminhoAnexo(Processo $processo, string $campo): ?string
+    {
+        if ($this->existeAnexoManual($processo, $campo)) {
+            return $processo->detalhe->{$campo};
+        }
+
+        if (!$processo->etp || empty($processo->etp->cotacao_path)) {
+            return null;
+        }
+
+        if ($campo === 'projeto_basico_pdf') {
+            $usaProjetoBasicoDoEtp = in_array($processo->modalidade, [
+                ModalidadeEnum::CONCORRENCIA,
+                ModalidadeEnum::INEXIGIBILIDADE,
+            ], true);
+
+            return $usaProjetoBasicoDoEtp ? $processo->etp->cotacao_path : null;
+        }
+
+        if ($campo === 'anexo_pdf_analise_mercado') {
+            $modalidadeElegivel = in_array($processo->modalidade, [
+                ModalidadeEnum::PREGAO_ELETRONICO,
+                ModalidadeEnum::DISPENSA,
+            ], true);
+
+            $tipoRelatorioElegivel = in_array($processo->detalhe->tipo_relatorio_analise_mercado ?? null, [
+                'fornecedor_local',
+                'cesta_preco',
+            ], true);
+
+            return ($modalidadeElegivel && $tipoRelatorioElegivel) ? $processo->etp->cotacao_path : null;
+        }
+
+        return null;
+    }
+
+    /**
+     * Verifica se existe upload manual válido (path preenchido E arquivo
+     * presente em disco) para o campo, no `ProcessoDetalhe` do processo.
+     * Um path "fantasma" (registro no banco sem arquivo em disco) não conta
+     * como manual — a resolução cai para o PDF do ETP normalmente.
+     */
+    public function existeAnexoManual(Processo $processo, string $campo): bool
+    {
+        $caminho = $processo->detalhe->{$campo} ?? null;
+
+        return !empty($caminho) && file_exists(public_path($caminho));
+    }
+
     private function getOrdemDocumentosDispensa(Processo $processo): array
     {
         $isFracassado = $processo->detalhe->is_oriundo_fracassado ?? false;
