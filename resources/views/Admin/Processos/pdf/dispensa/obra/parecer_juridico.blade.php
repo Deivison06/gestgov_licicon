@@ -128,6 +128,108 @@
     {{-- QUEBRA DE PÁGINA --}}
     <div class="page-break"></div>
 
+    @if(isset($processo->detalhe->is_oriundo_fracassado) && $processo->detalhe->is_oriundo_fracassado)
+        @php
+            $processoFracassado = $processo->detalhe->processoFracassado;
+        @endphp
+        <p style="text-align: center; font-weight: bold;">
+            PARECER JURÍDICO
+        </p>
+
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+                <td style="width: 50%;"></td>
+                <td style="width: 50%; text-align: justify; vertical-align: top; padding-top: 20px;">
+                    EMENTA: DIREITO ADMINISTRATIVO. LICITAÇÃO FRACASSADA. POSSIBILIDADE DE CONTRATAÇÃO DIRETA POR DISPENSA. APLICAÇÃO DO ART. 75, INCISO III, ALÍNEA "A", DA LEI Nº 14.133/2021. MANUTENÇÃO INTEGRAL DAS CONDIÇÕES EDITALÍCIAS. OBSERVÂNCIA DOS REQUISITOS LEGAIS. PARECER OPINATIVO FAVORÁVEL.
+                </td>
+            </tr>
+        </table>
+
+        <p style="font-weight: bold;">I. RELATÓRIO</p>
+
+        <p style="text-indent: 30px; text-align: justify;">
+            Vem à apreciação desta Assessoria Jurídica o Processo Administrativo nº {{ $processo->numero_processo }}, referente à Dispensa de Licitação nº {{ $processo->numero_procedimento }}, cujo objeto consiste na {!! strip_tags($processo->objeto) !!}.
+        </p>
+        <p style="text-indent: 30px; text-align: justify;">
+            Consta dos autos que o objeto em questão foi submetido a procedimento licitatório regular, autuado sob o Processo Administrativo nº {{ $processoFracassado ? $processoFracassado->numero_processo : 'XXX' }}, na modalidade {{ $processoFracassado ? $processoFracassado->modalidade->getDisplayName() : 'XXX' }} nº {{ $processoFracassado ? $processoFracassado->numero_procedimento : 'XXX' }}. Entretanto, conforme Ata da Sessão anexa, a referida licitação restou fracassada por não terem sido apresentadas propostas válidas (ou por inabilitação/desclassificação de todos os licitantes).
+        </p>
+        <p style="text-indent: 30px; text-align: justify;">
+            Diante do exaurimento da via ordinária e da premente necessidade de atendimento ao interesse público, a Autoridade Competente exarou Despacho autorizando a adoção da contratação direta por dispensa de licitação, com fundamento no art. 75, III, "a", da Lei nº 14.133/2021, atestando a manutenção de todas as condições definidas no edital original.
+        </p>
+        <p style="text-indent: 30px; text-align: justify;">
+            Os autos encontram-se instruídos com o Estudo Técnico Preliminar (ETP) original, o Projeto Básico originário, a Ata da sessão da licitação fracassada, a Declaração de Manutenção das Condições Editalícias, a pesquisa de preços de mercado atualizada, e os documentos de habilitação da empresa interessada.
+        </p>
+        <p style="text-indent: 30px; text-align: justify;">
+            É o breve relatório. Passa-se à fundamentação.
+        </p>
+
+        <p style="font-weight: bold;">II. FUNDAMENTAÇÃO JURÍDICA</p>
+
+        <p style="text-indent: 30px; text-align: justify;">
+            A regra no ordenamento jurídico brasileiro é a contratação precedida de licitação pública, consoante o mandamento do art. 37, inciso XXI, da Constituição Federal. Contudo, o próprio legislador constituinte ressalvou os casos especificados na legislação aplicável.
+        </p>
+        <p style="text-indent: 30px; text-align: justify;">
+            A Lei nº 14.133/2021, em seu art. 75, inciso III, prevê hipótese expressa de dispensa de licitação aplicável ao caso vertente:
+        </p>
+        <p style="text-indent: 40px; font-style: italic; text-align: justify;">
+            "Art. 75. É dispensável a licitação:<br>
+            III - para contratação que mantenha todas as condições definidas em edital de licitação realizada há menos de 1 (um) ano, quando se verificar que naquela licitação:<br>
+            a) não surgiram licitantes interessados ou não foram apresentadas propostas válidas;"
+        </p>
+        <p style="text-indent: 30px; text-align: justify;">
+            A leitura do dispositivo legal evidencia os requisitos cumulativos para a validade da presente contratação direta, quais sejam:
+        </p>
+        <p style="text-align: justify;">
+            <strong>a) Realização prévia de licitação há menos de 1 (um) ano:</strong> O requisito temporal encontra-se preenchido, posto que a sessão da licitação restou declarada fracassada em prazo inferior a um ano da presente deflagração.<br>
+            <strong>b) Licitação deserta ou fracassada:</strong> A Ata da Sessão do certame acosta aos autos comprova, de modo insofismável, que não houve propostas aptas à adjudicação.<br>
+            <strong>c) Manutenção de todas as condições definidas no edital:</strong> Consta nos autos a Declaração emitida pelo setor competente assegurando que as obrigações, prazos, especificações técnicas, exigências de habilitação e forma de pagamento permanecem idênticas àquelas ofertadas no certame anterior.
+        </p>
+        <p style="text-indent: 30px; text-align: justify;">
+            No tocante à regularidade procedimental e à instrução dos autos (art. 72 da NLLC), verifica-se a presença do Projeto Básico originário, a estimativa atualizada demonstrando a vantajosidade do preço a ser contratado frente ao mercado, a comprovação da regularidade fiscal, trabalhista e qualificação da empresa selecionada, e a correspondente dotação orçamentária.
+        </p>
+        <p style="text-indent: 30px; text-align: justify;">
+            Ressalva-se que este parecer possui natureza eminentemente jurídica, não adentrando nos juízos de conveniência, oportunidade, ou nas questões de cunho estritamente técnico e econômico, sendo tais aspectos de responsabilidade exclusiva dos setores administrativos competentes.
+        </p>
+
+        <p style="font-weight: bold;">III. CONCLUSÃO</p>
+
+        <p style="text-indent: 30px; text-align: justify;">
+            Ante o exposto, considerando que a instrução do processo atende aos requisitos formais exigidos pela Lei Federal nº 14.133/2021, em especial as diretrizes do seu art. 75, inciso III, alínea "a" e art. 72, este órgão de assessoramento jurídico <strong>OPINA FAVORAVELMENTE</strong> ao prosseguimento do feito e celebração da correspondente contratação direta por Dispensa de Licitação.
+        </p>
+        <p style="text-indent: 30px; text-align: justify;">
+            Recomenda-se, por fim, a fiel observância da publicação do ato de autorização no Portal Nacional de Contratações Públicas (PNCP) para eficácia da contratação.
+        </p>
+
+        <div style="text-align: center; margin-top: 60px;">
+            {{ $prefeitura->cidade }} – PI, {{ \Carbon\Carbon::parse($dataSelecionada)->locale('pt_BR')->translatedFormat('d \d\e F \d\e Y') }}.
+        </div>
+
+        @php
+            $hasSelectedAssinantes = isset($assinantes) && count($assinantes) > 0;
+            $primeiroAssinante = $hasSelectedAssinantes ? $assinantes[0] : null;
+        @endphp
+
+        @if ($hasSelectedAssinantes)
+            <div style="margin-top: 40px; text-align: center;">
+                <div class="signature-block" style="display: inline-block;">
+                    ___________________________________<br>
+                    <p style="line-height: 1.2; margin: 0;">
+                        {{ $primeiroAssinante['responsavel'] }}<br>
+                        <span>{{ $primeiroAssinante['unidade_nome'] }}</span>
+                    </p>
+                </div>
+            </div>
+        @else
+            <div class="signature-block" style="margin-top: 40px; text-align: center;">
+                ___________________________________<br>
+                <p style="line-height: 1.2; margin: 0;">
+                    (Nome do Assessor Jurídico/Procurador)<br>
+                    <span>Assessoria Jurídica</span>
+                </p>
+            </div>
+        @endif
+
+    @else
     @if ($parecer === 'parecer_1')
     <p style="text-align: center; font-weight: bold;">
         PARECER JURÍDICO
@@ -1689,6 +1791,7 @@
     </div>
     @endif
 
+    @endif
     @endif
 
 </body>

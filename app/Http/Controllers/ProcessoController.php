@@ -140,6 +140,13 @@ class ProcessoController extends AbstractController
     {
         $dados = $request->validated();
         unset($dados['etp_id']);
+
+        // Campos de "dispensa oriunda de certame fracassado" pertencem ao ProcessoDetalhe,
+        // não ao Processo — se ficarem em $dados são silenciosamente ignorados no create().
+        $isOriundoFracassado  = (bool) ($dados['is_oriundo_fracassado'] ?? false);
+        $processoFracassadoId = $dados['processo_fracassado_id'] ?? null;
+        unset($dados['is_oriundo_fracassado'], $dados['processo_fracassado_id']);
+
         $dados['user_id'] = auth()->id();
         $dados['status'] = ProcessoStatusEnum::EM_ANDAMENTO;
 
@@ -159,6 +166,17 @@ class ProcessoController extends AbstractController
         DB::beginTransaction();
         try {
             $processo = $this->processoService->create($dados);
+
+            // Materializa a origem "fracassado" no detalhe. É a fonte da flag
+            // usada em ProcessoDocumentoService para inserir os documentos
+            // "autorizacao_fracassada" e "declaracao_manutencao_fracassada".
+            if ($isOriundoFracassado && $processoFracassadoId) {
+                $detalhe = $processo->detalhe ?? $processo->detalhe()->create([]);
+                $detalhe->update([
+                    'is_oriundo_fracassado'  => true,
+                    'processo_fracassado_id' => $processoFracassadoId,
+                ]);
+            }
 
             if ($etp) {
                 $etp->update([
@@ -264,6 +282,38 @@ class ProcessoController extends AbstractController
                 'message' => 'Erro ao atualizar status: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    public function getProcessosFracassados(Request $request)
+    {
+        $prefeituraId = $request->get('prefeitura_id');
+        $busca = $request->get('q');
+
+        if (!$prefeituraId) {
+            return response()->json([]);
+        }
+
+        $query = Processo::where('prefeitura_id', $prefeituraId)
+            ->whereIn('status', [ProcessoStatusEnum::FINALIZADO, ProcessoStatusEnum::CANCELADO]);
+
+        if ($busca) {
+            $query->where(function ($q) use ($busca) {
+                $q->where('numero_processo', 'like', "%{$busca}%")
+                  ->orWhere('numero_procedimento', 'like', "%{$busca}%")
+                  ->orWhere('objeto', 'like', "%{$busca}%");
+            });
+        }
+
+        $processos = $query->limit(20)->get()->map(function ($proc) {
+            return [
+                'id' => $proc->id,
+                'text' => "Proc. {$proc->numero_processo} - {$proc->modalidade->getDisplayName()} ({$proc->numero_procedimento})",
+                'objeto' => $proc->objeto,
+                'tipo_procedimento' => $proc->tipo_procedimento?->value
+            ];
+        });
+
+        return response()->json($processos);
     }
 
     public function iniciar(Processo $processo)

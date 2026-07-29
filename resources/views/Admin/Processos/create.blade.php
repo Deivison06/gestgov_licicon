@@ -174,6 +174,25 @@
                             @enderror
                         </div>
 
+                        <!-- Flag de Dispensa de Licitação Fracassada (Aparece apenas na Dispensa) -->
+                        <div id="bloco_dispensa_fracassada" class="col-span-1 md:col-span-2 hidden mt-2">
+                            <div class="bg-yellow-50 border border-yellow-200 p-4 rounded-md">
+                                <label class="flex items-center space-x-2 text-sm font-medium text-yellow-800">
+                                    <input type="checkbox" name="is_oriundo_fracassado" id="is_oriundo_fracassado" value="1"
+                                        class="rounded border-yellow-400 text-yellow-600 focus:ring-yellow-500 w-5 h-5">
+                                    <span>Processo oriundo de certame fracassado (Art. 75, III, alínea "a")</span>
+                                </label>
+
+                                <div id="selecao_processo_fracassado" class="mt-4 hidden">
+                                    <label for="processo_fracassado_id" class="block text-sm font-medium text-gray-700">Selecione o Certame Fracassado</label>
+                                    <select id="processo_fracassado_id" name="processo_fracassado_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                        <!-- Preenchido via AJAX -->
+                                    </select>
+                                    <p class="mt-1 text-xs text-gray-500">Ao selecionar, o tipo e objeto da contratação serão preenchidos automaticamente e os dados originais serão herdados.</p>
+                                </div>
+                            </div>
+                        </div>
+
                         {{-- OBJETO --}}
                         <div class="md:col-span-2">
                             <label for="objeto" class="block text-sm font-medium text-gray-700">Objeto</label>
@@ -353,6 +372,100 @@
         modalidadeSelect.addEventListener('change', atualizarVisibilidadeTipos);
         tipoProcedimentoSelect.addEventListener('change', atualizarVisibilidadeTipos);
         atualizarVisibilidadeTipos();
+
+        // ===== DISPENSA FRACASSADA (JS puro — o projeto não carrega jQuery/select2) =====
+        const modalidadeEl      = document.getElementById('modalidade');
+        const blocoFracassada   = document.getElementById('bloco_dispensa_fracassada');
+        const chkOriundo        = document.getElementById('is_oriundo_fracassado');
+        const selecaoFracassado = document.getElementById('selecao_processo_fracassado');
+        const selectFracassado  = document.getElementById('processo_fracassado_id');
+        const objetoEl          = document.getElementById('objeto');
+        const tipoProcEl        = document.getElementById('tipo_procedimento');
+        const fracassadosUrl    = '{{ route('admin.api.processos.fracassados') }}';
+
+        let fracassadosCache = [];
+
+        function prefeituraIdAtual() {
+            const el = document.getElementById('prefeitura_id') || document.querySelector('[name="prefeitura_id"]');
+            return el ? el.value : '';
+        }
+
+        async function carregarFracassados() {
+            const prefId = prefeituraIdAtual();
+            if (!prefId) {
+                selectFracassado.innerHTML = '<option value="">Selecione a prefeitura primeiro</option>';
+                return;
+            }
+            selectFracassado.innerHTML = '<option value="">Carregando...</option>';
+            try {
+                const resp = await fetch(fracassadosUrl + '?prefeitura_id=' + encodeURIComponent(prefId), {
+                    headers: { 'Accept': 'application/json' }
+                });
+                const data = await resp.json();
+                fracassadosCache = Array.isArray(data) ? data : [];
+                if (fracassadosCache.length === 0) {
+                    selectFracassado.innerHTML = '<option value="">Nenhum certame fracassado/cancelado encontrado</option>';
+                    return;
+                }
+                selectFracassado.innerHTML = '<option value="">Selecione o certame...</option>' +
+                    fracassadosCache.map(p =>
+                        `<option value="${p.id}">${(p.text || '').replace(/"/g, '&quot;')}</option>`
+                    ).join('');
+            } catch (e) {
+                selectFracassado.innerHTML = '<option value="">Erro ao carregar os certames</option>';
+            }
+        }
+
+        // Mostra/oculta o bloco conforme a modalidade (2 = DISPENSA)
+        function toggleBlocoFracassada() {
+            if (modalidadeEl.value === '2') {
+                blocoFracassada.classList.remove('hidden');
+            } else {
+                blocoFracassada.classList.add('hidden');
+                if (chkOriundo.checked) {
+                    chkOriundo.checked = false;
+                    chkOriundo.dispatchEvent(new Event('change'));
+                }
+            }
+        }
+        modalidadeEl.addEventListener('change', toggleBlocoFracassada);
+        toggleBlocoFracassada(); // estado inicial (respeita old() após erro de validação)
+
+        // Checkbox: mostra o select e carrega a lista
+        chkOriundo.addEventListener('change', function () {
+            if (this.checked) {
+                selecaoFracassado.classList.remove('hidden');
+                selectFracassado.required = true;
+                carregarFracassados();
+            } else {
+                selecaoFracassado.classList.add('hidden');
+                selectFracassado.required = false;
+                selectFracassado.value = '';
+            }
+        });
+
+        // Recarrega a lista se a prefeitura mudar com o checkbox marcado
+        const prefSelectEl = document.getElementById('prefeitura_id');
+        if (prefSelectEl) {
+            prefSelectEl.addEventListener('change', function () {
+                if (chkOriundo.checked) carregarFracassados();
+            });
+        }
+
+        // Autopreenchimento ao escolher o certame fracassado
+        selectFracassado.addEventListener('change', function () {
+            const proc = fracassadosCache.find(p => String(p.id) === String(this.value));
+            if (!proc) return;
+            if (proc.objeto) {
+                const editor = window.tinymce && tinymce.get('objeto');
+                if (editor) { editor.setContent(proc.objeto); }
+                else if (objetoEl) { objetoEl.value = proc.objeto; }
+            }
+            if (proc.tipo_procedimento && tipoProcEl) {
+                tipoProcEl.value = proc.tipo_procedimento;
+                tipoProcEl.dispatchEvent(new Event('change'));
+            }
+        });
     });
 </script>
 @endsection

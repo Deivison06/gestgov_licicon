@@ -255,6 +255,21 @@ class ProcessoDocumentoService extends AbstractService
             'data_id' => 'data_contrato',
             'campos' => [''],
         ],
+        'autorizacao_fracassada' => [
+            'titulo' => 'AUTORIZAÇÃO DE CONTRATAÇÃO (FRACASSADA)',
+            'cor' => '#F59E0B', // amber
+            'data_id' => 'data_autorizacao_fracassada',
+            'campos' => [
+                'motivos_fracasso',
+                'anexo_pdf_ata_sessao_fracassada',
+            ],
+        ],
+        'declaracao_manutencao_fracassada' => [
+            'titulo' => 'DECLARAÇÃO MANUTENÇÃO EDITAL (FRACASSADA)',
+            'cor' => '#8B5CF6', // violet
+            'data_id' => 'data_declaracao_manutencao_fracassada',
+            'campos' => [''],
+        ],
     ];
 
     protected array $mapeamentoAnexos = [
@@ -265,6 +280,8 @@ class ProcessoDocumentoService extends AbstractService
         'edital' => ['anexo_pdf_minuta_contrato'],
         'projeto_basico' => 'projeto_basico_pdf',
         'termo_juntada' => 'empresa_vencedora_pdf',
+        // Ata da sessão do certame fracassado, anexada ao despacho de autorização.
+        'autorizacao_fracassada' => ['anexo_pdf_ata_sessao_fracassada'],
     ];
 
     public function getDocumentosPorModalidade(Processo $processo): array
@@ -438,32 +455,64 @@ class ProcessoDocumentoService extends AbstractService
 
     private function getOrdemDocumentosDispensa(Processo $processo): array
     {
+        $isFracassado = $processo->detalhe->is_oriundo_fracassado ?? false;
+
         if ($processo->tipo_procedimento === TipoProcedimentoEnum::OBRA) {
-            return [
+            $docs = [
                 'capa',
                 'formalizacao',
+            ];
+            if ($isFracassado) {
+                $docs[] = 'autorizacao_fracassada';
+            }
+            
+            $docs = array_merge($docs, [
                 'projeto_basico',
+            ]);
+
+            if ($isFracassado) {
+                $docs[] = 'declaracao_manutencao_fracassada';
+            }
+
+            $docs = array_merge($docs, [
                 'disponibilidade_orçamento',
                 'autorizacao_abertura_procedimento',
                 'abertura_fase_externa',
                 'avisos_licitacao',
                 'edital',
                 'publicacoes_avisos_licitacao',
-            ];
+            ]);
+            
+            return $docs;
         }
 
-        return [
+        $docs = [
             'capa',
             'formalizacao',
+        ];
+        if ($isFracassado) {
+            $docs[] = 'autorizacao_fracassada';
+        }
+        
+        $docs = array_merge($docs, [
             'analise_mercado',
             'disponibilidade_orçamento',
             'termo_referencia',
+        ]);
+
+        if ($isFracassado) {
+            $docs[] = 'declaracao_manutencao_fracassada';
+        }
+
+        $docs = array_merge($docs, [
             'autorizacao_abertura_procedimento',
             'abertura_fase_externa',
             'avisos_licitacao',
             'edital',
             'publicacoes_avisos_licitacao',
-        ];
+        ]);
+
+        return $docs;
     }
 
     private function getOrdemDocumentosPregaoEletronico(): array

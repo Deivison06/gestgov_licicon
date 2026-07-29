@@ -234,12 +234,18 @@
         </p>
         <p>
             JUSTIFICATIVA DA CONTRATAÇÃO:
-            {!! str_replace(
-                    ['<p>', '<strong>', '</strong>'],
-                    ['<p style="text-align: justify;">', '<span style="font-weight: bold;">', '</span>'],
-                    $detalhe->justificativa
-                ) 
-            !!}
+            @if(isset($processo->detalhe->is_oriundo_fracassado) && $processo->detalhe->is_oriundo_fracassado)
+                O objeto da presente contratação foi submetido a certame licitatório regular por meio do {{ $processo->detalhe->processoFracassado ? $processo->detalhe->processoFracassado->modalidade->getDisplayName() . ' nº ' . $processo->detalhe->processoFracassado->numero_procedimento : 'XXX' }}, deflagrado nesta mesma municipalidade. Contudo, conforme atestado em regular Ata de Sessão, a referida licitação restou FRACASSADA, exaurindo-se a fase competitiva sem a obtenção de proposta válida ou fornecedor habilitado, de modo que restaram frustrados os objetivos do processo licitatório na sua via ordinária.<br><br>
+                O insucesso da disputa, entretanto, não afastou a premente necessidade da Administração no provimento do objeto. Diante da iminência de paralisação de serviços públicos/atraso na execução, a opção técnica e legalmente viável e eficiente adotada por este órgão é a Contratação Direta, por intermédio da Dispensa de Licitação calcada no inciso III, alínea “a”, do Art. 75 da Lei nº 14.133/2021.<br><br>
+                A opção pela contratação direta justifica-se como medida de extrema eficiência administrativa, uma vez que a repetição integral do certame fracassado acarretaria inevitável desperdício de tempo e de recursos públicos, sem qualquer garantia razoável de que a reabertura da disputa licitatória nos mesmos moldes atrairia interessados no curto prazo.
+            @else
+                {!! str_replace(
+                        ['<p>', '<strong>', '</strong>'],
+                        ['<p style="text-align: justify;">', '<span style="font-weight: bold;">', '</span>'],
+                        $detalhe->justificativa
+                    ) 
+                !!}
+            @endif
         </p>
 
 

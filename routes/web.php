@@ -265,6 +265,10 @@ Route::prefix('admin')
         // ========================================
         // 2. PREFEITURAS
         // ========================================
+        Route::get('/api/unidades', [App\Http\Controllers\UnidadeController::class, 'getByPrefeitura'])->name('api.unidades');
+        Route::get('/api/users/responsavel', [App\Http\Controllers\UserController::class, 'getResponsaveisPorUnidade'])->name('api.users.responsavel');
+        Route::get('/api/processos-fracassados', [App\Http\Controllers\ProcessoController::class, 'getProcessosFracassados'])->name('api.processos.fracassados');
+
         Route::resource('prefeituras', PrefeituraController::class)
             ->names([
                 'index'   => 'prefeituras.index',

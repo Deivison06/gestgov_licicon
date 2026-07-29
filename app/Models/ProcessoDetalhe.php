@@ -69,6 +69,11 @@ class ProcessoDetalhe extends Model
 
         'intervalo_lances',
         'portal',
+        'is_oriundo_fracassado',
+        'processo_fracassado_id',
+        'motivo_fracasso',
+        'motivos_fracasso',
+        'anexo_pdf_ata_sessao_fracassada',
         'exigencia_garantia_proposta',
         'exigencia_garantia_contrato',
         'participacao_exclusiva_mei_epp',
@@ -129,6 +134,8 @@ class ProcessoDetalhe extends Model
         'itens_e_seus_quantitativos_xml' => 'array',
         'descricao_e_quantitativos_itens_xml' => 'array',
         'itens_especificaca_quantitativos_xml' => 'array',
+        'is_oriundo_fracassado' => 'boolean',
+        'motivos_fracasso' => 'array',
 
     ];
 
@@ -138,6 +145,11 @@ class ProcessoDetalhe extends Model
     public function processo()
     {
         return $this->belongsTo(Processo::class);
+    }
+
+    public function processoFracassado()
+    {
+        return $this->belongsTo(Processo::class, 'processo_fracassado_id');
     }
 
     /**

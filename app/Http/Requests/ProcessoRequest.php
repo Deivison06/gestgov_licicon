@@ -29,6 +29,14 @@ class ProcessoRequest extends FormRequest
             'modalidade' => 'required|integer|in:' . implode(',', ModalidadeEnum::values()),
             'numero_processo' => 'nullable|string|max:10',
             'numero_procedimento' => 'required|string|max:10',
+            // Dispensa fracassada
+            'is_oriundo_fracassado' => 'nullable|boolean',
+            'processo_fracassado_id' => 'nullable|exists:processos,id',
+            'motivo_fracasso' => 'nullable|string|max:255',
+            'anexo_pdf_ata_sessao_fracassada' => 'nullable|string',
+
+            // Detalhes do processo (Tabelas Relacionadas ou JSONs)
+            'instrumento_vinculativo' => 'nullable|array',
             'objeto' => 'required|string',
             'nome_resumido' => 'nullable|string|max:255',
             'tipo_procedimento' => ['nullable', 'int' , new Enum(TipoProcedimentoEnum::class)], // 1 para SERVIÇOS, 2 para COMPRAS

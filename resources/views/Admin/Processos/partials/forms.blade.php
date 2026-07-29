@@ -853,6 +853,16 @@
     @elseif($campo === 'anexo_pdf_minuta_contrato')
     <x-form-field name="anexo_pdf_minuta_contrato" label="📎 Anexar PDF Minuta do Contrato" type="file" accept="application/pdf" />
 
+    @elseif($campo === 'motivos_fracasso')
+    <x-form-field name="motivos_fracasso" label="Motivo(s) do fracasso do certame anterior" type="checkbox" :options="[
+            'desclassificadas' => 'Todas as propostas apresentadas foram desclassificadas por desconformidade com o Edital',
+            'inabilitados' => 'Todos os licitantes habilitados/convocados foram inabilitados por descumprimento das exigências editalícias',
+            'ambos' => 'Ocorreu a desclassificação e inabilitação de todos os licitantes participantes da disputa',
+        ]" />
+
+    @elseif($campo === 'anexo_pdf_ata_sessao_fracassada')
+    <x-form-field name="anexo_pdf_ata_sessao_fracassada" label="📎 Anexar PDF da Ata da Sessão (certame fracassado)" type="file" accept="application/pdf" />
+
     {{-- Campos Select --}}
     {{-- ATUALIZADO: Agora inclui DISPENSA também --}}
     @elseif($campo === 'encaminhamento_pesquisa_preco')

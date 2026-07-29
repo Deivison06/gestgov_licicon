@@ -1275,6 +1275,10 @@
                 instrumento_vinculativo_outro: existing?.instrumento_vinculativo_outro ?? '',
                 prazo_vigencia: existing?.prazo_vigencia ?? [],
                 prazo_vigencia_outro: existing?.prazo_vigencia_outro ?? '',
+                // Precisa ser SEMPRE um array — se vier null/string, o x-model do checkbox
+                // trata como booleano e marca todas as opções de uma vez.
+                motivos_fracasso: Array.isArray(existing?.motivos_fracasso) ? existing.motivos_fracasso : [],
+                anexo_pdf_ata_sessao_fracassada: existing?.anexo_pdf_ata_sessao_fracassada ?? '',
                 objeto_continuado: existing?.objeto_continuado ?? '',
                 itens_e_seus_quantitativos_xml: existing?.itens_e_seus_quantitativos_xml ?? '',
                 descricao_e_quantitativos_itens_xml: existing?.descricao_e_quantitativos_itens_xml ?? '',
@@ -1379,6 +1383,8 @@
                     gestor: !!existing?.gestor,
                     instrumento_vinculativo: existing?.instrumento_vinculativo?.length > 0,
                     prazo_vigencia: existing?.prazo_vigencia?.length > 0,
+                    motivos_fracasso: existing?.motivos_fracasso?.length > 0,
+                    anexo_pdf_ata_sessao_fracassada: !!existing?.anexo_pdf_ata_sessao_fracassada,
                     objeto_continuado: !!existing?.objeto_continuado,
                     itens_e_seus_quantitativos_xml: !!existing?.itens_e_seus_quantitativos_xml,
                     descricao_e_quantitativos_itens_xml: !!existing?.descricao_e_quantitativos_itens_xml,
@@ -1589,6 +1595,7 @@
                         'anexar_minuta',
                         'anexo_pdf_publicacoes',
                         'anexo_pdf_minuta_contrato',
+                        'anexo_pdf_ata_sessao_fracassada',
                         'projeto_basico_pdf',
                         'empresa_vencedora_pdf',
                     ].includes(field);

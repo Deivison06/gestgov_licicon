@@ -25,6 +25,7 @@ class ProcessoService extends AbstractService
         'anexo_pdf_analise_mercado',
         'anexar_minuta',
         'anexo_pdf_publicacoes',
+        'anexo_pdf_ata_sessao_fracassada',
         'itens_especificaca_quantitativos_xml',
         'anexo_pdf_minuta_contrato',
         'projeto_basico_pdf',
@@ -46,6 +47,7 @@ class ProcessoService extends AbstractService
         'anexo_pdf_analise_mercado' => 'salvarAnexo',
         'anexar_minuta' => 'salvarAnexo',
         'anexo_pdf_publicacoes' => 'salvarAnexo',
+        'anexo_pdf_ata_sessao_fracassada' => 'salvarAnexo',
         'anexo_pdf_minuta_contrato' => 'salvarAnexo',
         'projeto_basico_pdf' => 'salvarAnexo',
         'empresa_vencedora_pdf' => 'salvarAnexo'
