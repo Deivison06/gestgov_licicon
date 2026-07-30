@@ -271,7 +271,7 @@
         </p>
 
         <p style="text-align: justify;">
-            1.1 O objeto da presente licitação consiste {!! strip_tags($processo->objeto) !!}, na modalidade Dispensa de Licitação, nos moldes do art. 75, II da Lei 14.133/2021.
+            1.1 O objeto da presente licitação consiste {!! strip_tags($processo->objeto) !!}, na modalidade Dispensa de Licitação, nos moldes do Art. 75, Inciso III, alínea "a", da Lei Federal nº 14.133/2021.
         </p>
         <p style="text-align: justify;">
             1.2 JUSTIFICATIVA PARA CONTRATAÇÃO {!! strip_tags($detalhe->justificativa) !!}
