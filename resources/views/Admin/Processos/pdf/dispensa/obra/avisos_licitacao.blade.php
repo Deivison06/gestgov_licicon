@@ -149,7 +149,7 @@
             PROCESSO ADMINISTRATIVO {{ $processo->numero_processo }}
         </p>
         <p style="text-align: justify; text-justify: inter-word; line-height: 1; margin: 0;">
-            O Município de {{ $processo->prefeitura->cidade }},em atendimento ao § 3o e com fulcro no Art. 75, Inciso III, alínea "a", da
+            O Município de {{ $processo->prefeitura->cidade }},em atendimento ao § 3o e com fulcro no {{ optional($detalhe ?? null)->is_oriundo_fracassado ? 'Art. 75, Inciso III, alínea "a",' : 'Art. 75, Inc. II,' }} da
             Lei 14.133/21, torna público para conhecimento dos interessados, o presente aviso de
             Contratação Direta por DISPENSA DE LICITAÇÃO No {{ $processo->numero_procedimento }}, TIPO MENOR PREÇO
             GLOBAL, cujo objeto é a {!! strip_tags($processo->objeto) !!} a fim de obter

@@ -416,7 +416,7 @@
                         FUNDAMENTAÇÃO:
                     </td>
                     <td style="border: 1px solid black; padding: 5px;">
-                        Art. 75, Inciso III, alínea "a", da Lei Federal nº 14.133/2021 – Dispensa por Licitação Fracassada.
+                        {{ optional($detalhe ?? null)->is_oriundo_fracassado ? 'Art. 75, Inciso III, alínea "a", da Lei Federal nº 14.133/2021 – Dispensa por Licitação Fracassada.' : 'Lei 14.133/2021, Art. 75, II – Dispensa para Compras e Outros Serviços Comuns.' }}
                     </td>
                 </tr>
             </tbody>
