@@ -287,31 +287,50 @@ class ProcessoController extends AbstractController
     public function getProcessosFracassados(Request $request)
     {
         $prefeituraId = $request->get('prefeitura_id');
-        $busca = $request->get('q');
+        $busca = $request->get('q'); // Termo enviado pela busca do frontend
 
         if (!$prefeituraId) {
             return response()->json([]);
         }
 
-        $query = Processo::where('prefeitura_id', $prefeituraId)
-            ->whereIn('status', [ProcessoStatusEnum::FINALIZADO, ProcessoStatusEnum::CANCELADO]);
+        $query = Processo::where('prefeitura_id', $prefeituraId);
 
-        if ($busca) {
+        /* 
+        * 1. AJUSTE DE STATUS: 
+        * Verifique quais status no seu Enum/Banco realmente identificam certames que fracassaram.
+        * Se você tiver um flag ou outro status, adicione aqui. Se quiser listar todos para seleção, remova o filtro de status.
+        */
+        $query->whereIn('status', [
+            ProcessoStatusEnum::FINALIZADO, 
+            ProcessoStatusEnum::CANCELADO,
+            // ProcessoStatusEnum::FRACASSADO, // Adicione outros status se existirem no Enum
+        ]);
+
+        // 2. BUSCA POR TERMO
+        if (!empty($busca)) {
             $query->where(function ($q) use ($busca) {
                 $q->where('numero_processo', 'like', "%{$busca}%")
-                  ->orWhere('numero_procedimento', 'like', "%{$busca}%")
-                  ->orWhere('objeto', 'like', "%{$busca}%");
+                ->orWhere('numero_procedimento', 'like', "%{$busca}%")
+                ->orWhere('nome_resumido', 'like', "%{$busca}%")
+                ->orWhere('objeto', 'like', "%{$busca}%");
             });
         }
 
-        $processos = $query->limit(20)->get()->map(function ($proc) {
-            return [
-                'id' => $proc->id,
-                'text' => "Proc. {$proc->numero_processo} - {$proc->modalidade->getDisplayName()} ({$proc->numero_procedimento})",
-                'objeto' => $proc->objeto,
-                'tipo_procedimento' => $proc->tipo_procedimento?->value
-            ];
-        });
+        // 3. LIMITE DINÂMICO
+        // Se o usuário está digitando, expandimos o limite para 50. Se for a carga inicial, trazemos os 30 mais recentes.
+        $limite = !empty($busca) ? 50 : 30;
+
+        $processos = $query->latest()
+            ->limit($limite)
+            ->get()
+            ->map(function ($proc) {
+                return [
+                    'id' => $proc->id,
+                    'text' => "Proc. {$proc->numero_processo} - {$proc->modalidade?->getDisplayName()} (Nº {$proc->numero_procedimento})",
+                    'objeto' => $proc->objeto,
+                    'tipo_procedimento' => $proc->tipo_procedimento?->value ?? $proc->tipo_procedimento,
+                ];
+            });
 
         return response()->json($processos);
     }

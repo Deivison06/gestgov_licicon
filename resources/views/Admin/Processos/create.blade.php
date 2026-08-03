@@ -3,7 +3,11 @@
 @section('page-subtitle', 'Preencha os dados do processo')
 
 @section('content')
+<!-- TomSelect CSS/JS -->
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tinymce@6/tinymce.min.js" referrerpolicy="origin"></script>
+
 <div class="py-6">
     <div class="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
         <div class="overflow-hidden bg-white shadow-sm rounded-xl">
@@ -12,7 +16,6 @@
             </div>
 
             <div class="p-6">
-
                 @if ($etp)
                 <div class="flex items-center p-4 mb-6 border border-teal-200 rounded-lg bg-teal-50">
                     <i class="mr-3 fas fa-link text-[#009496]"></i>
@@ -126,18 +129,15 @@
                             </h4>
 
                             <div class="flex flex-col gap-4 md:flex-row">
-                                {{-- Unidade --}}
                                 <div class="w-full md:w-1/3">
                                     <select name="unidade_numeracao" id="unidade_numeracao" class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">
                                         <option value="">Selecione a unidade</option>
-                                        {{-- As opções serão carregadas via JavaScript --}}
                                     </select>
                                     @error('unidade_numeracao')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
                                 </div>
 
-                                {{-- Responsável --}}
                                 <div class="w-full md:w-1/3">
                                     <input type="text" name="responsavel_numeracao" id="responsavel_numeracao"
                                         value="{{ old('responsavel_numeracao') }}"
@@ -147,7 +147,6 @@
                                     @enderror
                                 </div>
 
-                                {{-- Nº Portaria --}}
                                 <div class="w-full md:w-1/3">
                                     <input type="text" name="portaria_numeracao" id="portaria_numeracao"
                                         value="{{ old('portaria_numeracao') }}"
@@ -174,7 +173,7 @@
                             @enderror
                         </div>
 
-                        <!-- Flag de Dispensa de Licitação Fracassada (Aparece apenas na Dispensa) -->
+                        <!-- Flag de Dispensa de Licitação Fracassada -->
                         <div id="bloco_dispensa_fracassada" class="col-span-1 md:col-span-2 hidden mt-2">
                             <div class="bg-yellow-50 border border-yellow-200 p-4 rounded-md">
                                 <label class="flex items-center space-x-2 text-sm font-medium text-yellow-800">
@@ -184,11 +183,13 @@
                                 </label>
 
                                 <div id="selecao_processo_fracassado" class="mt-4 hidden">
-                                    <label for="processo_fracassado_id" class="block text-sm font-medium text-gray-700">Selecione o Certame Fracassado</label>
-                                    <select id="processo_fracassado_id" name="processo_fracassado_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                        <!-- Preenchido via AJAX -->
+                                    <label for="processo_fracassado_id" class="block text-sm font-medium text-gray-700 mb-1">Selecione ou Pesquise o Certame Fracassado</label>
+                                    
+                                    <!-- Select configurado com TomSelect para busca rápida -->
+                                    <select id="processo_fracassado_id" name="processo_fracassado_id" placeholder="Digite para buscar pelo número ou objeto..." class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                                     </select>
-                                    <p class="mt-1 text-xs text-gray-500">Ao selecionar, o tipo e objeto da contratação serão preenchidos automaticamente e os dados originais serão herdados.</p>
+                                    
+                                    <p class="mt-1 text-xs text-gray-500">Ao selecionar, o tipo e objeto da contratação serão preenchidos automaticamente.</p>
                                 </div>
                             </div>
                         </div>
@@ -220,7 +221,7 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        // Configuração do TinyMCE
+        // TinyMCE
         tinymce.init({
             selector: 'textarea#objeto',
             plugins: 'lists link table code charmap emoticons',
@@ -235,113 +236,94 @@
             }
         });
 
-        // Dados das unidades organizadas por prefeitura
-    const unidadesPorPrefeitura = {!! $prefeituras->mapWithKeys(function($prefeitura) {
-        return [
-            $prefeitura->id => $prefeitura->unidades->map(function($unidade) {
-                return [
-                    'id' => $unidade->id,
-                    'nome' => $unidade->nome,
-                    'responsavel' => $unidade->servidor_responsavel,
-                    'portaria' => $unidade->numero_portaria,
-                ];
-            })
-        ];
-    })->toJson() !!};
+        // Unidades por prefeitura
+        const unidadesPorPrefeitura = {!! $prefeituras->mapWithKeys(function($prefeitura) {
+            return [
+                $prefeitura->id => $prefeitura->unidades->map(function($unidade) {
+                    return [
+                        'id' => $unidade->id,
+                        'nome' => $unidade->nome,
+                        'responsavel' => $unidade->servidor_responsavel,
+                        'portaria' => $unidade->numero_portaria,
+                    ];
+                })
+            ];
+        })->toJson() !!};
 
-    const prefeituraSelect = document.getElementById('prefeitura_id');
-    const unidadeSelect = document.getElementById('unidade_numeracao');
-    const responsavelInput = document.getElementById('responsavel_numeracao');
-    const portariaInput = document.getElementById('portaria_numeracao');
+        const prefeituraSelect = document.getElementById('prefeitura_id');
+        const unidadeSelect = document.getElementById('unidade_numeracao');
+        const responsavelInput = document.getElementById('responsavel_numeracao');
+        const portariaInput = document.getElementById('portaria_numeracao');
 
-    // Função para carregar unidades baseadas na prefeitura selecionada
-    function carregarUnidades() {
-        const prefeituraId = prefeituraSelect.value;
+        function carregarUnidades() {
+            const prefeituraId = prefeituraSelect.value;
+            unidadeSelect.innerHTML = '<option value="">Selecione a unidade</option>';
+            responsavelInput.value = '';
+            portariaInput.value = '';
 
-        // Limpar selects anteriores
-        unidadeSelect.innerHTML = '<option value="">Selecione a unidade</option>';
-        responsavelInput.value = '';
-        portariaInput.value = '';
-
-        if (prefeituraId && unidadesPorPrefeitura[prefeituraId]) {
-            // Adicionar opções das unidades da prefeitura selecionada
-            unidadesPorPrefeitura[prefeituraId].forEach(unidade => {
-                const option = document.createElement('option');
-                option.value = unidade.nome;
-                option.textContent = unidade.nome;
-                option.setAttribute('data-responsavel', unidade.responsavel);
-                option.setAttribute('data-portaria', unidade.portaria);
-                unidadeSelect.appendChild(option);
-            });
-        }
-    }
-
-    // Event listener para mudança na prefeitura
-    prefeituraSelect.addEventListener('change', function() {
-        carregarUnidades();
-        carregarNumeroProcesso();
-    });
-
-    function carregarNumeroProcesso() {
-        const prefeituraId = prefeituraSelect.value;
-        const inputNumero = document.getElementById('numero_processo');
-
-        if (prefeituraId) {
-            // Se o campo estiver vazio ou for um valor que parece novo, buscamos o próximo
-            // Isso evita sobrescrever um valor que o usuário digitou manualmente e deu erro de validação
-            const valorAtual = inputNumero.value;
-            const ehValorPadrao = !valorAtual || valorAtual.includes('/');
-
-            if (ehValorPadrao) {
-                inputNumero.placeholder = 'Gerando número...';
-
-                fetch(`{{ route('admin.processos.gerar-numeros') }}?prefeitura_id=${prefeituraId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            inputNumero.value = data.numero_processo;
-                            inputNumero.placeholder = '';
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Erro ao gerar número:', error);
-                        inputNumero.placeholder = '';
-                    });
+            if (prefeituraId && unidadesPorPrefeitura[prefeituraId]) {
+                unidadesPorPrefeitura[prefeituraId].forEach(unidade => {
+                    const option = document.createElement('option');
+                    option.value = unidade.nome;
+                    option.textContent = unidade.nome;
+                    option.setAttribute('data-responsavel', unidade.responsavel);
+                    option.setAttribute('data-portaria', unidade.portaria);
+                    unidadeSelect.appendChild(option);
+                });
             }
         }
-    }
 
-    // Event listener para mudança na unidade
-    unidadeSelect.addEventListener('change', function() {
-        const selectedOption = this.options[this.selectedIndex];
-        if (selectedOption) {
-            responsavelInput.value = selectedOption.getAttribute('data-responsavel') || '';
-            portariaInput.value = selectedOption.getAttribute('data-portaria') || '';
-        }
-    });
-
-    // Carregar unidades iniciais se já houver uma prefeitura selecionada
-    if (prefeituraSelect.value) {
-        carregarUnidades();
-        
-        // Se não houver erro de validação (valor antigo), carrega o número
-        if (!"{{ old('numero_processo') }}") {
+        prefeituraSelect.addEventListener('change', function() {
+            carregarUnidades();
             carregarNumeroProcesso();
+        });
+
+        function carregarNumeroProcesso() {
+            const prefeituraId = prefeituraSelect.value;
+            const inputNumero = document.getElementById('numero_processo');
+
+            if (prefeituraId) {
+                const valorAtual = inputNumero.value;
+                const ehValorPadrao = !valorAtual || valorAtual.includes('/');
+
+                if (ehValorPadrao) {
+                    inputNumero.placeholder = 'Gerando número...';
+                    fetch(`{{ route('admin.processos.gerar-numeros') }}?prefeitura_id=${prefeituraId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                inputNumero.value = data.numero_processo;
+                                inputNumero.placeholder = '';
+                            }
+                        })
+                        .catch(() => { inputNumero.placeholder = ''; });
+                }
+            }
         }
 
-        // Se houver um valor antigo (old) para unidade, restaurá-lo
-        const oldUnidade = "{{ old('unidade_numeracao') }}";
-        if (oldUnidade) {
-            setTimeout(() => {
-                unidadeSelect.value = oldUnidade;
-                unidadeSelect.dispatchEvent(new Event('change'));
-            }, 100);
+        unidadeSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            if (selectedOption) {
+                responsavelInput.value = selectedOption.getAttribute('data-responsavel') || '';
+                portariaInput.value = selectedOption.getAttribute('data-portaria') || '';
+            }
+        });
+
+        if (prefeituraSelect.value) {
+            carregarUnidades();
+            if (!"{{ old('numero_processo') }}") carregarNumeroProcesso();
+            const oldUnidade = "{{ old('unidade_numeracao') }}";
+            if (oldUnidade) {
+                setTimeout(() => {
+                    unidadeSelect.value = oldUnidade;
+                    unidadeSelect.dispatchEvent(new Event('change'));
+                }, 100);
+            }
         }
-    }
-        // Ocultar campos tipo quando modalidade for "Concorrência"
+
+        // Modalidade x Tipos
         const modalidadeSelect = document.getElementById('modalidade');
         const tipoProcedimentoSelect = document.getElementById('tipo_procedimento');
-
         const tipoProcedimentoDiv = document.getElementById('tipo_procedimento_wrapper');
         const tipoContratacaoDiv = document.getElementById('tipo_contratacao_wrapper');
 
@@ -349,23 +331,17 @@
             const modalidade = modalidadeSelect.value;
             const tipoProcedimento = tipoProcedimentoSelect.value;
 
-            // Reset padrão
             tipoProcedimentoDiv.style.display = '';
             tipoContratacaoDiv.style.display = '';
 
-            // 1 = CONCORRÊNCIA
             if (modalidade === "1") {
                 tipoProcedimentoDiv.style.display = 'none';
                 tipoContratacaoDiv.style.display = 'none';
                 return;
             }
 
-            // 2 = DISPENSA
-            if (modalidade === "2") {
-                // 3 = OBRA
-                if (tipoProcedimento === "3") {
-                    tipoContratacaoDiv.style.display = 'none';
-                }
+            if (modalidade === "2" && tipoProcedimento === "3") {
+                tipoContratacaoDiv.style.display = 'none';
             }
         }
 
@@ -373,8 +349,7 @@
         tipoProcedimentoSelect.addEventListener('change', atualizarVisibilidadeTipos);
         atualizarVisibilidadeTipos();
 
-        // ===== DISPENSA FRACASSADA (JS puro — o projeto não carrega jQuery/select2) =====
-        const modalidadeEl      = document.getElementById('modalidade');
+        // ===== DISPENSA FRACASSADA COM TOMSELECT (BUSCA DINÂMICA) =====
         const blocoFracassada   = document.getElementById('bloco_dispensa_fracassada');
         const chkOriundo        = document.getElementById('is_oriundo_fracassado');
         const selecaoFracassado = document.getElementById('selecao_processo_fracassado');
@@ -383,42 +358,56 @@
         const tipoProcEl        = document.getElementById('tipo_procedimento');
         const fracassadosUrl    = '{{ route('admin.api.processos.fracassados') }}';
 
-        let fracassadosCache = [];
+        let tomSelectInstance = null;
 
-        function prefeituraIdAtual() {
-            const el = document.getElementById('prefeitura_id') || document.querySelector('[name="prefeitura_id"]');
-            return el ? el.value : '';
-        }
+        function initTomSelect() {
+            if (tomSelectInstance) return;
 
-        async function carregarFracassados() {
-            const prefId = prefeituraIdAtual();
-            if (!prefId) {
-                selectFracassado.innerHTML = '<option value="">Selecione a prefeitura primeiro</option>';
-                return;
-            }
-            selectFracassado.innerHTML = '<option value="">Carregando...</option>';
-            try {
-                const resp = await fetch(fracassadosUrl + '?prefeitura_id=' + encodeURIComponent(prefId), {
-                    headers: { 'Accept': 'application/json' }
-                });
-                const data = await resp.json();
-                fracassadosCache = Array.isArray(data) ? data : [];
-                if (fracassadosCache.length === 0) {
-                    selectFracassado.innerHTML = '<option value="">Nenhum certame fracassado/cancelado encontrado</option>';
-                    return;
+            tomSelectInstance = new TomSelect('#processo_fracassado_id', {
+                valueField: 'id',
+                labelField: 'text',
+                searchField: 'text',
+                placeholder: 'Digite para buscar por nº do processo, procedimento ou objeto...',
+                loadThrottle: 300, // Aguarda 300ms após o usuário parar de digitar para fazer o fetch
+                load: function(query, callback) {
+                    const prefId = prefeituraSelect.value;
+                    if (!prefId) return callback();
+
+                    // Envia prefeitura_id e o termo digitado em 'q'
+                    const url = `${fracassadosUrl}?prefeitura_id=${encodeURIComponent(prefId)}&q=${encodeURIComponent(query)}`;
+                    
+                    fetch(url)
+                        .then(response => response.json())
+                        .then(json => {
+                            callback(json);
+                        })
+                        .catch(() => {
+                            callback();
+                        });
+                },
+                onChange: function(value) {
+                    if (!value) return;
+                    const item = this.options[value];
+                    if (item) {
+                        if (item.objeto) {
+                            const editor = window.tinymce && tinymce.get('objeto');
+                            if (editor) { 
+                                editor.setContent(item.objeto); 
+                            } else if (objetoEl) { 
+                                objetoEl.value = item.objeto; 
+                            }
+                        }
+                        if (item.tipo_procedimento && tipoProcEl) {
+                            tipoProcEl.value = item.tipo_procedimento;
+                            tipoProcEl.dispatchEvent(new Event('change'));
+                        }
+                    }
                 }
-                selectFracassado.innerHTML = '<option value="">Selecione o certame...</option>' +
-                    fracassadosCache.map(p =>
-                        `<option value="${p.id}">${(p.text || '').replace(/"/g, '&quot;')}</option>`
-                    ).join('');
-            } catch (e) {
-                selectFracassado.innerHTML = '<option value="">Erro ao carregar os certames</option>';
-            }
+            });
         }
 
-        // Mostra/oculta o bloco conforme a modalidade (2 = DISPENSA)
         function toggleBlocoFracassada() {
-            if (modalidadeEl.value === '2') {
+            if (modalidadeSelect.value === '2') {
                 blocoFracassada.classList.remove('hidden');
             } else {
                 blocoFracassada.classList.add('hidden');
@@ -428,42 +417,31 @@
                 }
             }
         }
-        modalidadeEl.addEventListener('change', toggleBlocoFracassada);
-        toggleBlocoFracassada(); // estado inicial (respeita old() após erro de validação)
 
-        // Checkbox: mostra o select e carrega a lista
+        modalidadeSelect.addEventListener('change', toggleBlocoFracassada);
+        toggleBlocoFracassada();
+
         chkOriundo.addEventListener('change', function () {
             if (this.checked) {
                 selecaoFracassado.classList.remove('hidden');
-                selectFracassado.required = true;
-                carregarFracassados();
+                initTomSelect();
+                if (tomSelectInstance) {
+                    tomSelectInstance.clearOptions();
+                    tomSelectInstance.load('');
+                }
             } else {
                 selecaoFracassado.classList.add('hidden');
-                selectFracassado.required = false;
-                selectFracassado.value = '';
+                if (tomSelectInstance) {
+                    tomSelectInstance.clear();
+                }
             }
         });
 
-        // Recarrega a lista se a prefeitura mudar com o checkbox marcado
-        const prefSelectEl = document.getElementById('prefeitura_id');
-        if (prefSelectEl) {
-            prefSelectEl.addEventListener('change', function () {
-                if (chkOriundo.checked) carregarFracassados();
-            });
-        }
-
-        // Autopreenchimento ao escolher o certame fracassado
-        selectFracassado.addEventListener('change', function () {
-            const proc = fracassadosCache.find(p => String(p.id) === String(this.value));
-            if (!proc) return;
-            if (proc.objeto) {
-                const editor = window.tinymce && tinymce.get('objeto');
-                if (editor) { editor.setContent(proc.objeto); }
-                else if (objetoEl) { objetoEl.value = proc.objeto; }
-            }
-            if (proc.tipo_procedimento && tipoProcEl) {
-                tipoProcEl.value = proc.tipo_procedimento;
-                tipoProcEl.dispatchEvent(new Event('change'));
+        prefeituraSelect.addEventListener('change', function () {
+            if (chkOriundo.checked && tomSelectInstance) {
+                tomSelectInstance.clear();
+                tomSelectInstance.clearOptions();
+                tomSelectInstance.load('');
             }
         });
     });
