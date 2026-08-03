@@ -167,71 +167,71 @@
                 @foreach($lotesAgrupados as $numeroLote => $itensLote)
                     {{-- Só exibir se o lote não estiver vazio --}}
                     @if($itensLote->count() > 0)
-                       <table style="width:100%; border-collapse:collapse; font-size:8.5pt; margin-bottom:20px; table-layout:fixed;" border="1">
+                        <table style="width:100%; border-collapse:collapse; font-size:8px; margin-bottom:20px;" border="1">
 
                             <!-- Cabeçalho do Lote -->
                             <tr>
-                                <td colspan="6" style="text-align:center; font-weight:bold; padding:6px; background-color:#f0f0f0; font-size:10pt; border:1px solid #000;">
+                                <td colspan="6" style="text-align:center; font-weight:bold; padding:8px; background-color:#f0f0f0; font-size: 14px;">
                                     LOTE {{ $numeroLote ?? 'NÃO IDENTIFICADO' }} {{ !empty($itensLote->first()->lote_nome) ? ' - ' . $itensLote->first()->lote_nome : '' }}
                                 </td>
                             </tr>
 
                             <!-- Informações do Vencedor -->
                             <tr>
-                                <td colspan="2" style="padding:5px 8px; font-weight:bold; background-color:#f8f8f8; border:1px solid #000; width:20%;">
+                                <td colspan="2" style="padding:6px; font-weight:bold; background-color:#f8f8f8;">
                                     RAZÃO SOCIAL
                                 </td>
-                                <td colspan="4" style="padding:5px 8px; border:1px solid #000; width:80%; word-wrap:break-word;">
+                                <td colspan="4" style="padding:6px;">
                                     {{ $vencedor->razao_social }}
                                 </td>
                             </tr>
 
                             <tr>
-                                <td colspan="2" style="padding:5px 8px; font-weight:bold; background-color:#f8f8f8; border:1px solid #000;">
+                                <td colspan="2" style="padding:6px; font-weight:bold; background-color:#f8f8f8;">
                                     CNPJ
                                 </td>
-                                <td colspan="4" style="padding:5px 8px; border:1px solid #000; word-wrap:break-word;">
+                                <td colspan="4" style="padding:6px;">
                                     {{ $vencedor->cnpj_formatado ?? preg_replace('/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/', '$1.$2.$3/$4-$5', $vencedor->cnpj) }}
                                 </td>
                             </tr>
 
                             <!-- Cabeçalho da Tabela -->
-                            <tr style="background-color:#e0e0e0; page-break-inside: avoid;">
-                                <td style="padding:5px; font-weight:bold; text-align:center; width:6%; border:1px solid #000;">ITEM</td>
-                                <td style="padding:5px; font-weight:bold; text-align:center; width:48%; border:1px solid #000;">DESCRIÇÃO</td>
-                                <td style="padding:5px; font-weight:bold; text-align:center; width:8%; border:1px solid #000;">UND.</td>
-                                <td style="padding:5px; font-weight:bold; text-align:center; width:10%; border:1px solid #000;">QUANT.</td>
-                                <td style="padding:5px; font-weight:bold; text-align:center; width:14%; border:1px solid #000;">VALOR UNT.</td>
-                                <td style="padding:5px; font-weight:bold; text-align:center; width:14%; border:1px solid #000;">VALOR TOTAL</td>
+                            <tr style="background-color:#e0e0e0;">
+                                <td style="padding:6px; font-weight:bold; text-align:center; width:8%;">ITEM</td>
+                                <td style="padding:6px; font-weight:bold; text-align:center; width:40%;">DESCRIÇÃO</td>
+                                <td style="padding:6px; font-weight:bold; text-align:center; width:8%;">UND.</td>
+                                <td style="padding:6px; font-weight:bold; text-align:center; width:12%;">QUANT.</td>
+                                <td style="padding:6px; font-weight:bold; text-align:center; width:16%;">VALOR UNT.</td>
+                                <td style="padding:6px; font-weight:bold; text-align:center; width:16%;">VALOR TOTAL</td>
                             </tr>
 
                             <!-- Itens do Lote -->
                             @foreach($itensLote as $item)
-                                <tr style="page-break-inside: auto;">
-                                    <td style="padding:5px; text-align:center; vertical-align:top; border:1px solid #000;">
+                                <tr>
+                                    <td style="padding:5px; text-align:center; vertical-align:top;">
                                         {{ $item->item }}
                                     </td>
-                                    <td style="padding:5px; vertical-align:top; border:1px solid #000; word-wrap:break-word; overflow-wrap:break-word; white-space:normal; text-align:justify; font-size:8pt; line-height:1.2;">
+                                    <td style="padding:5px; vertical-align:top;">
                                         {{ $item->descricao }}
                                         @if($item->marca || $item->modelo)
                                             <br>
-                                            <small style="color:#555; font-size:7.5pt;">
+                                            <small style="color:#666;">
                                                 @if($item->marca)Marca: {{ $item->marca }}@endif
                                                 @if($item->marca && $item->modelo) - @endif
                                                 @if($item->modelo)Modelo: {{ $item->modelo }}@endif
                                             </small>
                                         @endif
                                     </td>
-                                    <td style="padding:5px; text-align:center; vertical-align:top; border:1px solid #000;">
+                                    <td style="padding:5px; text-align:center; vertical-align:top;">
                                         {{ $item->unidade }}
                                     </td>
-                                    <td style="padding:5px; text-align:center; vertical-align:top; border:1px solid #000;">
+                                    <td style="padding:5px; text-align:center; vertical-align:top;">
                                         {{ $item->quantidade_formatada ?? number_format($item->quantidade, 0, ',', '.') }}
                                     </td>
-                                    <td style="padding:5px; text-align:right; vertical-align:top; border:1px solid #000;">
+                                    <td style="padding:5px; text-align:right; vertical-align:top;">
                                         {{ $item->valor_unitario_formatado ?? 'R$ ' . number_format($item->vl_unit, 2, ',', '.') }}
                                     </td>
-                                    <td style="padding:5px; text-align:right; vertical-align:top; font-weight:bold; border:1px solid #000;">
+                                    <td style="padding:5px; text-align:right; vertical-align:top; font-weight:bold;">
                                         {{ $item->valor_total_formatado ?? 'R$ ' . number_format($item->vl_total, 2, ',', '.') }}
                                     </td>
                                 </tr>
@@ -242,12 +242,12 @@
                                 $totalLote = $itensLote->sum('vl_total');
                                 $quantidadeTotalLote = $itensLote->sum('quantidade');
                             @endphp
-                            <tr style="background-color:#f0f0f0; font-weight:bold; page-break-inside: avoid;">
-                                <td colspan="4" style="padding:6px; text-align:right; border:1px solid #000;">
+                            <tr style="background-color:#f0f0f0; font-weight:bold;">
+                                <td colspan="3" style="padding:6px; text-align:right;">
                                     TOTAL DO LOTE {{ $numeroLote }}:
                                 </td>
 
-                                <td colspan="2" style="padding:6px; text-align:right; color:#d00; border:1px solid #000;">
+                                <td colspan="3" style="padding:6px; text-align:right; color:#d00;">
                                     R$ {{ number_format($totalLote, 2, ',', '.') }}
                                 </td>
                             </tr>
