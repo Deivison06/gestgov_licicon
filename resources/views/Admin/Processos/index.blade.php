@@ -517,7 +517,7 @@
                                             <i class="fas fa-ellipsis-v"></i>
                                         </button>
                                         <div x-show="open" x-cloak x-transition
-                                             class="absolute right-0 z-[9999] w-52 py-1 mt-1 origin-top-right bg-white border border-gray-200 rounded-lg shadow-lg">
+                                             class="absolute right-0 {{ $loop->last ? 'bottom-full mb-1 origin-bottom-right' : 'top-full mt-1 origin-top-right' }} z-50 w-52 py-1 bg-white border border-gray-200 rounded-lg shadow-lg">
                                             <a href="{{ route('admin.processos.edit', $processo->id) }}"
                                                class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                                                 <i class="w-4 mr-2 text-gray-400 fas fa-edit"></i> Editar processo
