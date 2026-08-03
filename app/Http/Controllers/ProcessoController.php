@@ -1263,7 +1263,7 @@ class ProcessoController extends AbstractController
                         'objeto' => \Illuminate\Support\Str::limit($etp->objeto_licitacao, 100),
                         'data' => $etp->created_at->format('d/m/Y'),
                         'tipo' => ucfirst($etp->tipo_contratacao),
-                        'qtd_itens' => $etp->tipo_contratacao === 'lote' ? $etp->lotes->count() : $etp->itens->count()
+                        'qtd_itens' => $etp->usaLotes() ? $etp->lotes->count() : $etp->itens->count()
                     ];
                 });
 
@@ -1323,7 +1323,7 @@ class ProcessoController extends AbstractController
             $fonte = 'etp';
             $etpInfo = $etp;
 
-            if ($etp->tipo_contratacao === 'lote') {
+            if ($etp->usaLotes()) {
                 $lotes = $etp->lotes()->with('itens')->get()->map(function($lote) use ($coletasPorId, $coletasPorDescricao) {
                     return [
                         'nome' => $lote->nome,
@@ -1383,7 +1383,7 @@ class ProcessoController extends AbstractController
 
         if ($processo->etp) {
             $etp = $processo->etp;
-            if ($etp->tipo_contratacao === 'lote') {
+            if ($etp->usaLotes()) {
                 $itens = $etp->lotes()->with('itens')->get()
                     ->flatMap(fn($lote) => $lote->itens->map(fn($item) => [
                         'id'        => $item->id,
@@ -1442,7 +1442,7 @@ class ProcessoController extends AbstractController
 
         if ($processo->etp) {
             $etp = $processo->etp;
-            if ($etp->tipo_contratacao === 'lote') {
+            if ($etp->usaLotes()) {
                 $itens = $etp->lotes()->with('itens')->get()
                     ->flatMap(fn($lote) => $lote->itens->map(fn($item) => [
                         'id'        => $item->id,

@@ -80,7 +80,7 @@
     $secao = 1;
 
     $temItens = 
-        ($etp->tipo_contratacao === 'lote' && $etp->lotes && $etp->lotes->count() > 0) ||
+        ($etp->usaLotes() && $etp->lotes && $etp->lotes->count() > 0) ||
         ($etp->itens && $etp->itens->count() > 0);
 @endphp
 
@@ -120,7 +120,7 @@
 @if($temItens)
     <h4>{{ $secao++ }}. Relação de Itens e Quantitativos</h4>
 
-    @if($etp->tipo_contratacao === 'lote' && $etp->lotes && $etp->lotes->count() > 0)
+    @if($etp->usaLotes() && $etp->lotes && $etp->lotes->count() > 0)
         @foreach($etp->lotes as $lote)
             <p style="margin-top: 15px; font-weight: bold;">Lote: {{ $lote->nome }}</p>
             <table>

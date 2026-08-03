@@ -17,6 +17,7 @@ class Etp extends Model
         'modalidade',
         'dotacao_orcamentaria',
         'tipo_contratacao',
+        'organizacao_itens',
         'nome_lote',
         'prazo_entrega',
         'cotacao_path',
@@ -65,12 +66,23 @@ class Etp extends Model
     }
 
     /**
+     * Indica se este ETP organiza seus itens em lotes.
+     * Para Pregão, isso vem direto de tipo_contratacao. Para Serviços/Compras
+     * (Dispensa), vem de organizacao_itens, já que tipo_contratacao ali guarda
+     * a categoria (servicos/compras), não a forma de organização.
+     */
+    public function usaLotes(): bool
+    {
+        return $this->tipo_contratacao === 'lote' || $this->organizacao_itens === 'lote';
+    }
+
+    /**
      * Retorna todos os itens do ETP, seja de forma direta ou através dos lotes.
      * @return \Illuminate\Support\Collection
      */
     public function getAllItensAttribute()
     {
-        if ($this->tipo_contratacao === 'lote') {
+        if ($this->usaLotes()) {
             return $this->lotes->flatMap->itens;
         }
         return $this->itens;
@@ -85,7 +97,7 @@ class Etp extends Model
         $itensFormatados = [];
         $num = 1;
 
-        if ($this->tipo_contratacao === 'lote') {
+        if ($this->usaLotes()) {
             foreach ($this->lotes as $lote) {
                 foreach ($lote->itens as $item) {
                     $itensFormatados[] = [

@@ -166,7 +166,7 @@
                                 <span class="text-gray-500 font-medium block text-xs uppercase tracking-wider mb-1">Tipo de
                                     Contratação</span>
                                 <span
-                                    class="inline-block bg-[#009496]/10 text-[#009496] px-3 py-1 rounded-md font-bold uppercase text-sm border border-[#009496]/20">{{ $etp->tipo_contratacao }}</span>
+                                    class="inline-block bg-[#009496]/10 text-[#009496] px-3 py-1 rounded-md font-bold uppercase text-sm border border-[#009496]/20">{{ $etp->tipo_contratacao }}{{ $etp->organizacao_itens ? ' - ' . $etp->organizacao_itens : '' }}</span>
                             </li>
                             <li>
                                 <span class="text-gray-500 font-medium block text-xs uppercase tracking-wider mb-1">Prazo de
@@ -193,7 +193,7 @@
 
                 <!-- ITENS OU LOTES -->
                 @if (!in_array($etp->modalidade, ['concorrencia', 'inexigibilidade']))
-                    @if (in_array($etp->tipo_contratacao, ['item', 'servicos', 'compras']))
+                    @if ($etp->tipo_contratacao !== 'obras' && !$etp->usaLotes())
                         <!-- ITENS (PARA ITEM, SERVIÇOS E COMPRAS) -->
                         <div class="mb-8 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
                             <div class="border-b border-gray-200 mb-4 flex items-center justify-between">
@@ -253,7 +253,7 @@
                                 </div>
                             @endif
                         </div>
-                    @elseif($etp->tipo_contratacao === 'lote' && $etp->lotes->count() > 0)
+                    @elseif($etp->usaLotes() && $etp->lotes->count() > 0)
                         <!-- LOTES -->
                         <div class="mb-8">
                             <div class="border-b border-gray-200 mb-4 flex items-center justify-between">

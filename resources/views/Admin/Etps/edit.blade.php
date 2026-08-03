@@ -215,6 +215,32 @@
                                         onchange="toggleContratacaoTipo()">
                                     <span class="ml-2">Compras</span>
                                 </label>
+                                <!-- OPÇÃO: OBRAS -->
+                                <label class="inline-flex items-center cursor-pointer border-l pl-6 border-gray-200">
+                                    <input type="radio" name="tipo_contratacao" value="obras"
+                                        class="form-radio text-[#009496] w-5 h-5"
+                                        {{ old('tipo_contratacao', $etp->tipo_contratacao) == 'obras' ? 'checked' : '' }}
+                                        onchange="toggleContratacaoTipo()">
+                                    <span class="ml-2">Obras</span>
+                                </label>
+                            </div>
+
+                            {{-- Para Serviços/Compras, permite organizar por item ou por lote --}}
+                            <div id="modo-organizacao-dispensa" class="flex items-center space-x-6 mt-3 hidden">
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="radio" name="organizacao_itens" value="item"
+                                        class="form-radio text-[#009496] w-5 h-5"
+                                        {{ old('organizacao_itens', $etp->organizacao_itens) == 'item' ? 'checked' : '' }}
+                                        onchange="toggleOrganizacaoItens()">
+                                    <span class="ml-2">Por Item</span>
+                                </label>
+                                <label class="inline-flex items-center cursor-pointer border-l pl-6 border-gray-200">
+                                    <input type="radio" name="organizacao_itens" value="lote"
+                                        class="form-radio text-[#009496] w-5 h-5"
+                                        {{ old('organizacao_itens', $etp->organizacao_itens) == 'lote' ? 'checked' : '' }}
+                                        onchange="toggleOrganizacaoItens()">
+                                    <span class="ml-2">Por Lote</span>
+                                </label>
                             </div>
                         </div>
 
@@ -230,8 +256,13 @@
                         </div>
 
                         {{-- ÁREA DE ITENS (sem lote) --}}
-                        @php $tipoAtual = old('tipo_contratacao', $etp->tipo_contratacao); @endphp
-                        <div id="area-itens-sem-lote" class="{{ $tipoAtual === 'lote' ? 'hidden' : 'block' }}">
+                        @php
+                            $tipoAtual = old('tipo_contratacao', $etp->tipo_contratacao);
+                            $organizacaoAtual = old('organizacao_itens', $etp->organizacao_itens);
+                            $isLoteAtual = $tipoAtual === 'lote'
+                                || (in_array($tipoAtual, ['servicos', 'compras']) && $organizacaoAtual === 'lote');
+                        @endphp
+                        <div id="area-itens-sem-lote" class="{{ $isLoteAtual ? 'hidden' : 'block' }}">
                             @include('Admin.Etps.partials.itens-selector-edit', [
                                 'loteIndex' => null,
                                 'etp' => $etp,
@@ -239,7 +270,7 @@
                         </div>
 
                         {{-- ÁREA DE LOTES --}}
-                        <div id="area-lotes" class="{{ $tipoAtual === 'lote' ? 'block' : 'hidden' }}">
+                        <div id="area-lotes" class="{{ $isLoteAtual ? 'block' : 'hidden' }}">
                             <div class="mb-4 flex justify-between items-center">
                                 <h5 class="text-md font-semibold text-gray-700">Lotes da Contratação</h5>
                                 <button type="button" onclick="adicionarLote()"
@@ -252,7 +283,7 @@
                                 </button>
                             </div>
                             <div id="lotes-container" class="space-y-6">
-                                @if ($etp->tipo_contratacao == 'lote' && $etp->lotes->count() > 0)
+                                @if ($etp->usaLotes() && $etp->lotes->count() > 0)
                                     @foreach ($etp->lotes as $index => $lote)
                                         @include('Admin.Etps.partials.lote-card-edit', [
                                             'loteIndex' => $index,
@@ -502,11 +533,17 @@
                 const camposItens = document.getElementById('campos-itens-contratacao');
                 const labelPdf = document.getElementById('label_pdf_anexo');
                 const cotacaoInput = document.getElementById('cotacao_path');
+                const modoDispensa = document.getElementById('modo-organizacao-dispensa');
 
                 radiosTipo.forEach(el => {
                     el.checked = false;
                     el.required = false;
                 });
+                modoDispensa.querySelectorAll('input[name="organizacao_itens"]').forEach(el => {
+                    el.checked = false;
+                    el.required = false;
+                });
+                modoDispensa.classList.add('hidden');
                 opcoesPregao.classList.add('hidden');
                 opcoesDisp.classList.add('hidden');
                 camposItens.classList.remove('hidden');
@@ -535,6 +572,11 @@
                     opcoesDisp.querySelectorAll('input[type="radio"]').forEach(el => {
                         el.required = true;
                     });
+                    const modoSalvo = '{{ old('organizacao_itens', $etp->organizacao_itens) }}';
+                    if (modoSalvo === 'item' || modoSalvo === 'lote') {
+                        const modoEl = document.querySelector(`input[name="organizacao_itens"][value="${modoSalvo}"]`);
+                        if (modoEl) modoEl.checked = true;
+                    }
                     areaItensSemLote.classList.remove('hidden');
                     toggleInputs(areaItensSemLote, true);
                     areaLotes.classList.add('hidden');
@@ -563,42 +605,73 @@
                 }
             };
 
+            /* ── ÁREA DE ITENS x LOTES (compartilhado entre Pregão e Serviços/Compras) ── */
+            function mostrarAreaItensOuLotes(isLote) {
+                const areaSemLote = document.getElementById('area-itens-sem-lote');
+                const areaLotes = document.getElementById('area-lotes');
+                const labelPdf = document.getElementById('label_pdf_anexo');
+
+                labelPdf.innerText = 'Anexar Cotação do Fornecedor Local';
+                document.getElementById('cotacao_path').removeAttribute('required');
+
+                if (isLote) {
+                    areaSemLote.classList.add('hidden');
+                    toggleInputs(areaSemLote, false);
+                    areaLotes.classList.remove('hidden');
+                    toggleInputs(areaLotes, true);
+                    if (document.querySelectorAll('.lote-card').length === 0) adicionarLote();
+                } else {
+                    areaSemLote.classList.remove('hidden');
+                    toggleInputs(areaSemLote, true);
+                    areaLotes.classList.add('hidden');
+                    toggleInputs(areaLotes, false);
+                }
+            }
+
             /* ── TIPO CONTRATAÇÃO ── */
             window.toggleContratacaoTipo = function() {
                 const selected = document.querySelector('input[name="tipo_contratacao"]:checked');
                 if (!selected) return;
                 const val = selected.value;
-                const areaSemLote = document.getElementById('area-itens-sem-lote');
-                const areaLotes = document.getElementById('area-lotes');
-                const camposItensContratacao = document.getElementById('campos-itens-contratacao');
                 const labelPdf = document.getElementById('label_pdf_anexo');
+                const modoDispensa = document.getElementById('modo-organizacao-dispensa');
+                const radiosModo = modoDispensa.querySelectorAll('input[name="organizacao_itens"]');
 
-                // Se for OBRAS, esconde a área de itens e muda o label do PDF
+                // Se for OBRAS, esconde a área de itens (e o sub-modo item/lote) e muda o label do PDF
                 if (val === 'obras') {
+                    modoDispensa.classList.add('hidden');
+                    radiosModo.forEach(el => { el.checked = false; el.required = false; });
+                    const areaSemLote = document.getElementById('area-itens-sem-lote');
+                    const areaLotes = document.getElementById('area-lotes');
                     areaSemLote.classList.add('hidden');
                     toggleInputs(areaSemLote, false);
                     areaLotes.classList.add('hidden');
                     toggleInputs(areaLotes, false);
                     labelPdf.innerText = 'Anexar Projeto Básico *';
                     document.getElementById('cotacao_path').setAttribute('required', 'required');
+                    return;
                 }
-                else if (val === 'lote') {
-                    areaSemLote.classList.add('hidden');
-                    toggleInputs(areaSemLote, false);
-                    areaLotes.classList.remove('hidden');
-                    toggleInputs(areaLotes, true);
-                    labelPdf.innerText = 'Anexar Cotação do Fornecedor Local';
-                    document.getElementById('cotacao_path').removeAttribute('required');
-                    if (document.querySelectorAll('.lote-card').length === 0) adicionarLote();
+
+                // Serviços/Compras: exige escolher Por Item ou Por Lote antes de mostrar a área
+                if (val === 'servicos' || val === 'compras') {
+                    modoDispensa.classList.remove('hidden');
+                    radiosModo.forEach(el => el.required = true);
+                    const modoSelecionado = document.querySelector('input[name="organizacao_itens"]:checked');
+                    mostrarAreaItensOuLotes(modoSelecionado?.value === 'lote');
+                    return;
                 }
-                else {
-                    areaSemLote.classList.remove('hidden');
-                    toggleInputs(areaSemLote, true);
-                    areaLotes.classList.add('hidden');
-                    toggleInputs(areaLotes, false);
-                    labelPdf.innerText = 'Anexar Cotação do Fornecedor Local';
-                    document.getElementById('cotacao_path').removeAttribute('required');
-                }
+
+                // Pregão: "item"/"lote" decidem a área diretamente, sem sub-modo
+                modoDispensa.classList.add('hidden');
+                radiosModo.forEach(el => { el.checked = false; el.required = false; });
+                mostrarAreaItensOuLotes(val === 'lote');
+            };
+
+            /* ── ORGANIZAÇÃO (POR ITEM/LOTE) PARA SERVIÇOS/COMPRAS ── */
+            window.toggleOrganizacaoItens = function() {
+                const selected = document.querySelector('input[name="organizacao_itens"]:checked');
+                if (!selected) return;
+                mostrarAreaItensOuLotes(selected.value === 'lote');
             };
 
             /* ── VALIDAÇÃO CLIENT-SIDE ── */
@@ -644,7 +717,17 @@
                     return erros;
                 }
 
-                if (tipo === 'lote') {
+                let isLote = tipo === 'lote';
+                if (tipo === 'servicos' || tipo === 'compras') {
+                    const modoEl = document.querySelector('input[name="organizacao_itens"]:checked');
+                    if (!modoEl) {
+                        erros.push('Selecione se a contratação será Por Item ou Por Lote (Passo 3).');
+                        return erros;
+                    }
+                    isLote = modoEl.value === 'lote';
+                }
+
+                if (isLote) {
                     const loteCards = document.querySelectorAll('.lote-card');
                     if (!loteCards.length) {
                         erros.push('Adicione pelo menos um lote (Passo 3).');

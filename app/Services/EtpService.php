@@ -59,8 +59,11 @@ class EtpService
 
             $etp = $this->repository->create($data);
 
+            $usaLotes = ($data['tipo_contratacao'] ?? null) === 'lote'
+                || ($data['organizacao_itens'] ?? null) === 'lote';
+
             // Sync itens para tipos que não usam lote
-            if (in_array($data['tipo_contratacao'] ?? null, ['item', 'servicos', 'compras', 'obras']) && !empty($itens)) {
+            if (!$usaLotes && !empty($itens)) {
                 $itensFormatados = [];
                 foreach ($itens as $itemId => $itemData) {
                     $itensFormatados[$itemId] = [
@@ -72,7 +75,7 @@ class EtpService
             }
 
             // Processa lotes
-            if (($data['tipo_contratacao'] ?? null) === 'lote' && !empty($lotes)) {
+            if ($usaLotes && !empty($lotes)) {
                 foreach ($lotes as $loteData) {
                     $itensLote = $loteData['itens'] ?? [];
                     unset($loteData['itens']);
@@ -152,8 +155,11 @@ class EtpService
                 $loteOld->delete();
             }
 
+            $usaLotes = ($data['tipo_contratacao'] ?? null) === 'lote'
+                || ($data['organizacao_itens'] ?? null) === 'lote';
+
             // Sync itens para tipos que não usam lote
-            if (in_array($data['tipo_contratacao'] ?? null, ['item', 'servicos', 'compras', 'obras']) && !empty($itens)) {
+            if (!$usaLotes && !empty($itens)) {
                 $itensFormatados = [];
                 foreach ($itens as $itemId => $itemData) {
                     $itensFormatados[$itemId] = [
@@ -165,7 +171,7 @@ class EtpService
             }
 
             // Processa lotes
-            if (($data['tipo_contratacao'] ?? null) === 'lote' && !empty($lotes)) {
+            if ($usaLotes && !empty($lotes)) {
                 foreach ($lotes as $loteData) {
                     $itensLote = $loteData['itens'] ?? [];
                     unset($loteData['itens']);
