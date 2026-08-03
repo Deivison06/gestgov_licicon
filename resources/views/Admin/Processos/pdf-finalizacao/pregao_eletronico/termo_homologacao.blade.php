@@ -198,11 +198,11 @@
                             <!-- Cabeçalho da Tabela -->
                             <tr style="background-color:#e0e0e0;">
                                 <td style="padding:6px; font-weight:bold; text-align:center; width:5%;">ITEM</td>
-                                <td style="padding:6px; font-weight:bold; text-align:center; width:50%;">DESCRIÇÃO</td>
+                                <td style="padding:6px; font-weight:bold; text-align:center; width:56%;">DESCRIÇÃO</td>
                                 <td style="padding:6px; font-weight:bold; text-align:center; width:5%;">UND.</td>
                                 <td style="padding:6px; font-weight:bold; text-align:center; width:12%;">QUANT.</td>
-                                <td style="padding:6px; font-weight:bold; text-align:center; width:12%;">VALOR UNT.</td>
-                                <td style="padding:6px; font-weight:bold; text-align:center; width:16%;">VALOR TOTAL</td>
+                                <td style="padding:6px; font-weight:bold; text-align:center; width:10%;">VALOR UNT.</td>
+                                <td style="padding:6px; font-weight:bold; text-align:center; width:12%;">VALOR TOTAL</td>
                             </tr>
 
                             <!-- Itens do Lote -->
