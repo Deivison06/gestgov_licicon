@@ -74,7 +74,7 @@
         <div>
             <p style="text-align: justify;">
                 A {{ $processo->prefeitura->nome }}, inscrita no CNPJ: {{ $processo->prefeitura->cnpj }}, torna público realizará
-                Dispensa de Licitação, com critério de julgamento menor preço na hipótese do {{ optional($detalhe ?? null)->is_oriundo_fracassado ? 'Art. 75, Inciso III, alínea "a", da Lei Federal nº 14.133/2021' : 'art. 75, inciso II, nos termos da Lei n.º 14.133, de 1º de abril de 2021' }}.
+                Dispensa de Licitação, com critério de julgamento menor preço na hipótese do Art. 75, Inciso I da Lei 14.133/2021.
                 As empresas interessadas a enviarem suas propostas de preços e todos os documentos
                 de habilitação para o objeto constante do Termo de Referência e conforme modelo de
                 proposta até o dia {{ ($embutidoMinuta ?? false) ? 'XXXXXXXXXXXXXX' : $detalhe->data_hora_limite_edital->translatedFormat('d \d\e F \d\e Y') }}, às {{ ($embutidoMinuta ?? false) ? 'XX:XX' : $detalhe->data_hora_limite_edital->format('H:i') }} horas, para o e-mail:
