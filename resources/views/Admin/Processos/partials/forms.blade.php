@@ -116,7 +116,7 @@
         <div class="flex-1">
             <div class="flex items-center justify-between mb-1">
                 <label for="valor_estimado" class="block text-sm font-medium text-gray-700">Valor Estimado</label>
-                @if(in_array($processo->modalidade, [\App\Enums\ModalidadeEnum::DISPENSA, \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO], true))
+                @if($processo->etp && in_array($processo->modalidade, [\App\Enums\ModalidadeEnum::DISPENSA, \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO], true))
                 <button type="button" @click="puxarValorEstimadoPesquisaPreco()"
                     class="flex items-center gap-1 px-2 py-1 text-xs font-medium text-white transition-colors rounded-md bg-[#009496] hover:bg-[#007779] shadow-sm"
                     title="Preencher com o valor total da pesquisa de preço">
