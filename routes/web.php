@@ -418,6 +418,9 @@ Route::prefix('admin')
             Route::get('/pesquisa-preco-itens', [ProcessoController::class, 'pesquisaPrecoItens'])
                 ->name('processos.pesquisa_preco_itens');
 
+            Route::get('/valor-estimado-pesquisa-preco', [ProcessoController::class, 'valorEstimadoPesquisaPreco'])
+                ->name('processos.valor_estimado_pesquisa_preco');
+
             Route::get('/pesquisa-preco-fornecedor-local', [ProcessoController::class, 'pesquisaPrecoFornecedorLocal'])
                 ->name('processos.pesquisa_preco_fornecedor_local');
 

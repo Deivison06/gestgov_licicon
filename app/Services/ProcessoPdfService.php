@@ -1228,7 +1228,7 @@ class ProcessoPdfService extends AbstractService
         }
     }
 
-    private function construirItensTr(Processo $processo, array $itensDinamicos): array
+    private function construirPrecoMapId(Processo $processo): array
     {
         $detalhe       = $processo->detalhe;
         $tipoRelatorio = $detalhe->tipo_relatorio_analise_mercado ?? 'tce';
@@ -1269,9 +1269,41 @@ class ProcessoPdfService extends AbstractService
             }
         }
 
-        $etp    = $processo->etp;
-        $result = [];
-        $fmt    = fn($v) => $v > 0 ? 'R$ ' . number_format($v, 2, ',', '.') : '';
+        return $precoMapId;
+    }
+
+    /**
+     * Soma (valor_unitario médio da pesquisa de preço × quantidade) de todos os itens do ETP vinculado.
+     */
+    public function calcularValorEstimadoTotal(Processo $processo): float
+    {
+        $etp = $processo->etp;
+
+        if (!$etp) {
+            return 0.0;
+        }
+
+        $precoMapId = $this->construirPrecoMapId($processo);
+        $itens      = $etp->tipo_contratacao === 'lote'
+            ? $etp->lotes->flatMap(fn($lote) => $lote->itens)
+            : $etp->itens;
+
+        $total = $itens->sum(function ($item) use ($precoMapId) {
+            $valorUnitario = $precoMapId[$item->id] ?? 0;
+            $quantidade    = (float) ($item->pivot->quantidade ?? 0);
+
+            return $valorUnitario * $quantidade;
+        });
+
+        return round($total, 2);
+    }
+
+    private function construirItensTr(Processo $processo, array $itensDinamicos): array
+    {
+        $precoMapId = $this->construirPrecoMapId($processo);
+        $etp        = $processo->etp;
+        $result     = [];
+        $fmt        = fn($v) => $v > 0 ? 'R$ ' . number_format($v, 2, ',', '.') : '';
 
         $processarItem = function ($item, $loteNome = null) use ($precoMapId, $fmt, &$result) {
             $valorUnitario = $precoMapId[$item->id] ?? 0;

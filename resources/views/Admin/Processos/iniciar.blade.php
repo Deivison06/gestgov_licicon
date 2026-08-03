@@ -1634,6 +1634,24 @@
 
                 submitForm() {
                     this.$el.submit();
+                },
+
+                async puxarValorEstimadoPesquisaPreco() {
+                    try {
+                        const response = await fetch("{{ route('admin.processos.valor_estimado_pesquisa_preco', $processo) }}");
+                        const data = await response.json();
+
+                        if (response.ok && data.success) {
+                            this.valor_estimado = data.texto;
+                            this.confirmed.valor_estimado = false;
+                            showMessage('Valor estimado preenchido a partir da pesquisa de preço. Confirme para salvar.', 'success');
+                        } else {
+                            showMessage(data.message || 'Não foi possível calcular o valor estimado.', 'error');
+                        }
+                    } catch (error) {
+                        showMessage('Erro de rede ao buscar valor estimado', 'error');
+                        console.error('Erro ao buscar valor estimado da pesquisa de preço:', error);
+                    }
                 }
             };
         }

@@ -112,7 +112,33 @@
     <x-form-field name="gestor" label="Gestor Indicado" />
 
     @elseif($campo === 'valor_estimado')
-    <x-form-field name="valor_estimado" label="Valor Estimado" />
+    <div class="flex items-start mb-4 space-x-2">
+        <div class="flex-1">
+            <div class="flex items-center justify-between mb-1">
+                <label for="valor_estimado" class="block text-sm font-medium text-gray-700">Valor Estimado</label>
+                @if(in_array($processo->modalidade, [\App\Enums\ModalidadeEnum::DISPENSA, \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO], true))
+                <button type="button" @click="puxarValorEstimadoPesquisaPreco()"
+                    class="flex items-center gap-1 px-2 py-1 text-xs font-medium text-white transition-colors rounded-md bg-[#009496] hover:bg-[#007779] shadow-sm"
+                    title="Preencher com o valor total da pesquisa de preço">
+                    <i class="fas fa-sync-alt"></i><span>Puxar da Pesquisa de Preço</span>
+                </button>
+                @endif
+            </div>
+            <input type="text" id="valor_estimado" name="valor_estimado" x-model="valor_estimado"
+                :disabled="confirmed.valor_estimado"
+                class="block w-full mt-1 border-gray-300 rounded-lg shadow-sm sm:text-sm focus:ring-[#009496] focus:border-[#009496] disabled:bg-gray-100 disabled:cursor-not-allowed">
+        </div>
+        <div class="flex pt-6 space-x-1">
+            <button type="button" @click="saveField('valor_estimado')" x-show="!confirmed.valor_estimado"
+                class="flex items-center justify-center w-8 h-8 text-white transition-colors duration-200 bg-green-500 rounded-lg hover:bg-green-600" title="Confirmar">
+                ✓
+            </button>
+            <button type="button" @click="toggleConfirm('valor_estimado')" x-show="confirmed.valor_estimado"
+                class="flex items-center justify-center w-8 h-8 text-white bg-red-500 rounded-lg hover:bg-red-600" title="Editar">
+                ✗
+            </button>
+        </div>
+    </div>
 
     @elseif($campo === 'dotacao_orcamentaria')
     <x-form-field name="dotacao_orcamentaria" label="CASO A LICITAÇÃO NÃO SEJA DO TIPO SRP, DESCREVA ABAIXO A DOTAÇÃO ORÇAMENTÁRIA" type="textarea" rows="5" />

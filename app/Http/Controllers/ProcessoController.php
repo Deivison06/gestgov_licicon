@@ -1279,6 +1279,27 @@ class ProcessoController extends AbstractController
         }
     }
 
+    public function valorEstimadoPesquisaPreco(Processo $processo)
+    {
+        $total = $this->pdfService->calcularValorEstimadoTotal($processo);
+
+        if ($total <= 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Nenhum valor de pesquisa de preço encontrado para este processo.',
+            ], 422);
+        }
+
+        $valorFormatado = number_format($total, 2, ',', '.');
+        $extenso        = \App\Helpers\ValorPorExtenso::escrever($total);
+
+        return response()->json([
+            'success' => true,
+            'valor'   => $total,
+            'texto'   => "{$valorFormatado} ({$extenso})",
+        ]);
+    }
+
     public function pesquisaPrecoItens(Processo $processo)
     {
         $fonte = null;
