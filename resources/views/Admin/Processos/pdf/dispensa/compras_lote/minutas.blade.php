@@ -163,7 +163,7 @@
             ___________________________________<br>
             <p style="line-height: 1.2;">
                 {{ $processo->prefeitura->autoridade_competente }} <br>
-                <span style="color: red;">[Cargo/Título Padrão - A ser ajustado]</span>
+                Prefeito Municipal
             </p>
         </div>
         @endif
