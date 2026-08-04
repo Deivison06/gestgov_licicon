@@ -37,20 +37,21 @@
         background-size: cover;
     }
 
-    /* Estrutura de tabela para garantir alinhamento exato no centro da página.
-       Altura explícita de A4 — o DomPDF não resolve height:100% como página inteira,
-       então usamos 297mm para o table-cell centralizar de verdade no eixo Y. */
+    /* Página com altura explícita de A4; o conteúdo é centralizado com posicionamento
+       absoluto + translateY(-50%), pois o DomPDF não centraliza via table-cell. */
     .pagina {
         position: relative;
-        display: table;
         width: 100%;
         height: 297mm;
-        text-align: center;
     }
 
     .conteudo {
-        display: table-cell;
-        vertical-align: middle;
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        transform: translateY(-50%);
+        text-align: center;
         padding: 0 40px;
     }
 
