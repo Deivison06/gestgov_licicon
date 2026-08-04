@@ -415,6 +415,9 @@ Route::prefix('admin')
             Route::get('/documentos/baixar-todos', [ProcessoController::class, 'baixarTodosDocumentos'])
                 ->name('processo.documento.dowload-all');
 
+            Route::get('/exportar-bnc', [ProcessoController::class, 'exportarBnc'])
+                ->name('processos.exportar-bnc');
+
             Route::get('/pesquisa-preco-itens', [ProcessoController::class, 'pesquisaPrecoItens'])
                 ->name('processos.pesquisa_preco_itens');
 

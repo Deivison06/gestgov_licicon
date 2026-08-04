@@ -1228,7 +1228,12 @@ class ProcessoPdfService extends AbstractService
         }
     }
 
-    private function construirPrecoMapId(Processo $processo): array
+    /**
+     * Monta o mapa etp_item_id => valor_unitário de referência, conforme a fonte de
+     * pesquisa de preço configurada no processo (TCE, fornecedor local ou PNCP/cesta).
+     * Público porque também é reaproveitado por ProcessoBncExportService.
+     */
+    public function construirPrecoMapId(Processo $processo): array
     {
         $detalhe       = $processo->detalhe;
         $tipoRelatorio = $detalhe->tipo_relatorio_analise_mercado ?? 'tce';

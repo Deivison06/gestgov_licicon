@@ -386,19 +386,32 @@
 
             <!-- Botão para Baixar Todos os PDFs -->
             <div class="flex flex-col items-center gap-3 p-4 mt-6 border-t border-gray-200 bg-gray-50">
-                <button type="button"
-                        id="btn-baixar-todos-iniciar"
-                        onclick="iniciarDownloadTodos('{{ $processo->id }}', 'iniciar')"
-                        class="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white transition-colors duration-200 bg-green-600 rounded-lg shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
-                    <svg id="icon-download-iniciar" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                    </svg>
-                    <svg id="spinner-iniciar" xmlns="http://www.w3.org/2000/svg" class="hidden w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                    </svg>
-                    <span id="label-baixar-todos-iniciar">📥 Baixar Todos os PDFs</span>
-                </button>
+                <div class="flex flex-wrap items-center justify-center gap-3">
+                    <button type="button"
+                            id="btn-baixar-todos-iniciar"
+                            onclick="iniciarDownloadTodos('{{ $processo->id }}', 'iniciar')"
+                            class="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white transition-colors duration-200 bg-green-600 rounded-lg shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                        <svg id="icon-download-iniciar" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                        </svg>
+                        <svg id="spinner-iniciar" xmlns="http://www.w3.org/2000/svg" class="hidden w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                        </svg>
+                        <span id="label-baixar-todos-iniciar">📥 Baixar Todos os PDFs</span>
+                    </button>
+
+                    @if ($podeExportarBnc)
+                        <a href="{{ route('admin.processos.exportar-bnc', $processo->id) }}"
+                           class="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white transition-colors duration-200 bg-[#009496] rounded-lg shadow-sm hover:bg-[#007b85] focus:outline-none focus:ring-2 focus:ring-[#009496] focus:ring-offset-2"
+                           title="Planilha de lotes/itens para importar na Bolsa Nacional de Compras">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-6h6v6m-9 4h12a2 2 0 002-2V5a2 2 0 00-2-2H6a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                            </svg>
+                            <span>📊 Exportar Planilha BNC</span>
+                        </a>
+                    @endif
+                </div>
 
                 {{-- Área de progresso --}}
                 <div id="progresso-iniciar" class="hidden w-full max-w-md">

@@ -7,6 +7,7 @@ use App\Http\Requests\ProcessoRequest;
 use App\Models\Documento;
 use App\Models\Prefeitura;
 use App\Models\Processo;
+use App\Services\ProcessoBncExportService;
 use App\Services\ProcessoDocumentoService;
 use App\Services\ProcessoPdfService;
 use App\Services\ProcessoService;
@@ -15,21 +16,25 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class ProcessoController extends AbstractController
 {
     protected ProcessoService $processoService;
     protected ProcessoPdfService $pdfService;
     protected ProcessoDocumentoService $documentoService;
+    protected ProcessoBncExportService $bncExportService;
 
     public function __construct(
         ProcessoService $processoService,
         ProcessoPdfService $pdfService,
-        ProcessoDocumentoService $documentoService
+        ProcessoDocumentoService $documentoService,
+        ProcessoBncExportService $bncExportService
     ) {
         $this->processoService = $processoService;
         $this->pdfService = $pdfService;
         $this->documentoService = $documentoService;
+        $this->bncExportService = $bncExportService;
     }
 
     public function index(Request $request)
@@ -337,7 +342,7 @@ class ProcessoController extends AbstractController
 
     public function iniciar(Processo $processo)
     {
-        $processo->load('prefeitura.unidades', 'user');
+        $processo->load('prefeitura.unidades', 'user', 'etp.lotes');
         $processo->loadMissing('documentos');
 
         // Garantir que o status seja uma instância do Enum
@@ -346,13 +351,15 @@ class ProcessoController extends AbstractController
         }
 
         $documentos = $this->documentoService->getDocumentosPorModalidade($processo);
-        
+
         $contrato_iniciar = null;
         if ($processo->modalidade === \App\Enums\ModalidadeEnum::INEXIGIBILIDADE) {
             $contrato_iniciar = \App\Models\Contrato::where('processo_id', $processo->id)->first();
         }
 
-        return view('Admin.Processos.iniciar', compact('processo', 'documentos', 'contrato_iniciar'));
+        $podeExportarBnc = $this->bncExportService->podeExportar($processo);
+
+        return view('Admin.Processos.iniciar', compact('processo', 'documentos', 'contrato_iniciar', 'podeExportarBnc'));
     }
 
     public function storeDetalhe(Request $request, Processo $processo)
@@ -400,6 +407,33 @@ class ProcessoController extends AbstractController
                 'message' => '❌ Ocorreu um erro inesperado ao gerar o PDF: ' . $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Exporta a planilha de lotes/itens para importação na Bolsa Nacional de Compras (BNC).
+     */
+    public function exportarBnc(Processo $processo)
+    {
+        try {
+            $spreadsheet = $this->bncExportService->gerar($processo);
+        } catch (\RuntimeException $e) {
+            abort(422, $e->getMessage());
+        }
+
+        $writer = new Xlsx($spreadsheet);
+        $filename = 'BNC-' . str_replace('/', '-', $processo->numero_processo) . '.xlsx';
+
+        Log::info('Planilha BNC exportada', [
+            'processo_id' => $processo->id,
+            'user_id' => auth()->id(),
+            'filename' => $filename,
+        ]);
+
+        return response()->streamDownload(function () use ($writer) {
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
     }
 
     public function baixarDocumento(Processo $processo, $tipo)
