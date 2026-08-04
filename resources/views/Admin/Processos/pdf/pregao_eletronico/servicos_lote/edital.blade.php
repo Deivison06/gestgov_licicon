@@ -1328,7 +1328,7 @@
             ___________________________________<br>
             <p style="line-height: 1.2;">
                 {{ $processo->prefeitura->autoridade_competente }} <br>
-                <span style="color: red;">[Pregoeira/Agente de Contratação]</span>
+                Prefeito Municipal
             </p>
         </div>
         @endif
