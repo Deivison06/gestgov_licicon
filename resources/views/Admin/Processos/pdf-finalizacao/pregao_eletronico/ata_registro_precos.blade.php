@@ -229,7 +229,7 @@
                 @foreach($lotesAgrupados as $numeroLote => $itensLote)
                     {{-- Só exibir se o lote não estiver vazio --}}
                     @if($itensLote->count() > 0)
-                        <table style="width:100%; border-collapse:collapse; font-size:10px; margin-bottom:20px;" border="1">
+                        <table style="width:100%; border-collapse:collapse; font-size:8px; margin-bottom:20px;" border="1">
 
                             <!-- Cabeçalho do Lote -->
                             <tr>
@@ -259,12 +259,12 @@
 
                             <!-- Cabeçalho da Tabela -->
                             <tr style="background-color:#e0e0e0;">
-                                <td style="padding:6px; font-weight:bold; text-align:center; width:8%;">ITEM</td>
-                                <td style="padding:6px; font-weight:bold; text-align:center; width:40%;">DESCRIÇÃO</td>
-                                <td style="padding:6px; font-weight:bold; text-align:center; width:8%;">UND.</td>
+                                <td style="padding:6px; font-weight:bold; text-align:center; width:5%;">ITEM</td>
+                                <td style="padding:6px; font-weight:bold; text-align:center; width:56%;">DESCRIÇÃO</td>
+                                <td style="padding:6px; font-weight:bold; text-align:center; width:5%;">UND.</td>
                                 <td style="padding:6px; font-weight:bold; text-align:center; width:12%;">QUANT.</td>
-                                <td style="padding:6px; font-weight:bold; text-align:center; width:16%;">VALOR UNT.</td>
-                                <td style="padding:6px; font-weight:bold; text-align:center; width:16%;">VALOR TOTAL</td>
+                                <td style="padding:6px; font-weight:bold; text-align:center; width:10%;">VALOR UNT.</td>
+                                <td style="padding:6px; font-weight:bold; text-align:center; width:12%;">VALOR TOTAL</td>
                             </tr>
 
                             <!-- Itens do Lote -->
