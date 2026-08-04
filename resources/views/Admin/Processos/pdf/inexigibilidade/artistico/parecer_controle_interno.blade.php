@@ -191,7 +191,7 @@
         Tratam os autos do processo de {!! strip_tags($processo->objeto) !!} mediante Inexigibilidade de licitação em favor da
         empresa/profissional {{ $processo->detalhe->razao_social }},
         inscrita no CNPJ/CPF sob o nº {{ $processo->detalhe->cnpj_empresa_vencedora }}, no valor de R$
-        {{ number_format($processo->detalhe->valor_estimado) }}. Ressalta-se que o Procedimento ocorreu
+        {{ $processo->detalhe->valor_estimado }}. Ressalta-se que o Procedimento ocorreu
         dentro das formalidades legais, conforme detalhado no processo, baseado
         na Lei 14.133/21
     </p>
