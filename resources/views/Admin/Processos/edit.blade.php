@@ -167,19 +167,19 @@
                             <div class="bg-yellow-50 border border-yellow-200 p-4 rounded-md">
                                 <label class="flex items-center space-x-2 text-sm font-medium text-yellow-800">
                                     <input type="checkbox" name="is_oriundo_fracassado" id="is_oriundo_fracassado" value="1"
-                                        {{ old('is_oriundo_fracassado', $processo->is_oriundo_fracassado) ? 'checked' : '' }}
+                                        {{ old('is_oriundo_fracassado', $processo->detalhe?->is_oriundo_fracassado) ? 'checked' : '' }}
                                         class="rounded border-yellow-400 text-yellow-600 focus:ring-yellow-500 w-5 h-5">
                                     <span>Processo oriundo de certame fracassado (Art. 75, III, alínea "a")</span>
                                 </label>
 
-                                <div id="selecao_processo_fracassado" class="mt-4 {{ old('is_oriundo_fracassado', $processo->is_oriundo_fracassado) ? '' : 'hidden' }}">
+                                <div id="selecao_processo_fracassado" class="mt-4 {{ old('is_oriundo_fracassado', $processo->detalhe?->is_oriundo_fracassado) ? '' : 'hidden' }}">
                                     <label for="processo_fracassado_id" class="block text-sm font-medium text-gray-700 mb-1">Selecione ou Pesquise o Certame Fracassado</label>
                                     
                                     <!-- Select configurado com TomSelect para busca rápida -->
                                     <select id="processo_fracassado_id" name="processo_fracassado_id" placeholder="Digite para buscar pelo número ou objeto..." class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                        @if($processo->processo_fracassado_id && $processo->processoFracassado)
-                                            <option value="{{ $processo->processo_fracassado_id }}" selected>
-                                                Processo {{ $processo->processoFracassado->numero_processo }} - {{ $processo->processoFracassado->objeto }}
+                                        @if($processo->detalhe?->processo_fracassado_id && $processo->detalhe?->processoFracassado)
+                                            <option value="{{ $processo->detalhe->processo_fracassado_id }}" selected>
+                                                Processo {{ $processo->detalhe->processoFracassado->numero_processo }} - {{ $processo->detalhe->processoFracassado->objeto }}
                                             </option>
                                         @endif
                                     </select>
