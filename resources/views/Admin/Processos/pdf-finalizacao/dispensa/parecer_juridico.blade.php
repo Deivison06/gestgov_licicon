@@ -139,6 +139,9 @@
     {{-- ====================================================================== --}}
 
     <div>
+        @if($processo->detalhe?->is_oriundo_fracassado)
+            @include('Admin.Processos.pdf-finalizacao.dispensa.partials.parecer_juridico_fracassado')
+        @else
         <p style="text-align: center; font-weight: bold;">
             PARECER JURÍDICO
         </p>
@@ -772,6 +775,7 @@
             Este é o parecer jurídico, o qual submeto à apreciação e quaisquer
             considerações das autoridades competentes.
         </p>
+        @endif
 
         {{-- Bloco de data e assinatura --}}
         <div class="footer-signature">

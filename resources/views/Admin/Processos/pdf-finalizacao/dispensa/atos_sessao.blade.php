@@ -148,7 +148,7 @@
             }), 2, ',', '.') }}
         </p>
         <p style="text-align: justify;">
-            BASE LEGAL: Art. 75, inciso II, da Lei nº 14.133 de 01 de ABRIL de 2021
+            BASE LEGAL: {{ ($processo->detalhe?->is_oriundo_fracassado) ? 'Art. 75, Inciso III, alínea "a",' : 'Art. 75, inciso II,' }} da Lei nº 14.133 de 01 de ABRIL de 2021
         </p>
         @php
             use Carbon\Carbon;
@@ -167,14 +167,36 @@
             comissão de Contratação propostas de preços: {{ $processo->finalizacao->empresas_participantes }} após análise e verificação dos preços propostos, a
             comissão julgou e decidiu em favor da empresa @foreach($vencedores as $vencedor) {{ $vencedor->razao_social }}, 
             CNPJ: {{ $vencedor->cnpj_formatado ?? preg_replace('/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/', '$1.$2.$3/$4-$5', $vencedor->cnpj) }} @break
-            @endforeach, respaldado no Art. 75, inciso II, da Lei nº
+            @endforeach, respaldado no {{ ($processo->detalhe?->is_oriundo_fracassado) ? 'Art. 75, Inciso III, alínea "a",' : 'Art. 75, inciso II,' }} da Lei nº
             14.133 de 01 de ABRIL de 2021 e demais documentos objeto do Processo.
         </p>
 
         <h4 style="text-align: center">JUSTIFICATIVA DA CONTRATAÇÃO</h4>
 
+        @if($processo->detalhe?->is_oriundo_fracassado)
+            @php $procFrac = $processo->detalhe?->processoFracassado; @endphp
+            <p style="text-align: justify; text-indent: 30px;">
+                O objeto da presente contratação foi submetido a certame licitatório regular por meio do
+                {{ $procFrac ? $procFrac->modalidade->getDisplayName() . ' nº ' . $procFrac->numero_procedimento : 'certame anterior' }}, contudo, o certame restou FRACASSADO, conforme documentação acostada aos autos.
+            </p>
+            <p style="text-align: justify; text-indent: 30px;">
+                A opção pela contratação direta por Dispensa de Licitação, embasada no Art. 75, III, alínea "a", da Lei nº 14.133/2021, justifica-se pela subsistência da necessidade pública e pela inviabilidade temporal e econômica de realização de novo certame licitatório, o qual acarretaria grave prejuízo à continuidade dos serviços públicos e custos administrativos repetitivos sem garantia de resultado diverso.
+            </p>
+            <p style="text-align: justify; text-indent: 30px;">
+                Atesta-se que a presente dispensa cumpre os requisitos legais exigidos quanto a temporalidade e manutenção das condições definidas no processo licitatório fracassado.
+            </p>
+            <p style="text-align: justify; text-indent: 30px;">
+                A dispensa de Licitação se dá pela grande necessidade {!! strip_tags($processo->objeto) !!}.
+            </p>
+            <p style="text-align: justify; text-indent: 30px;">
+                A contratação atende as normas legais, onde a contratação da empresa dar-se-á devido a mesma ter apresentado menor preço dentre aquelas que apresentaram propostas para o objeto.
+            </p>
+            <p style="text-align: justify; text-indent: 30px;">
+                Nota-se que o valor da futura contratação está dentro do limite previsto em lei, com isto, objetiva-se atender aos princípios da legalidade, economicidade e celeridade, na realização da presente contratação.
+            </p>
+        @else
         <p style="text-align: justify; text-indent: 30px;">
-            A contratação encontra-se respaldado no Art. 75, inciso II, da Lei nº 14.133 de 01
+            A contratação encontra-se respaldado no {{ ($processo->detalhe?->is_oriundo_fracassado) ? 'Art. 75, Inciso III, alínea "a",' : 'Art. 75, inciso II,' }} da Lei nº 14.133 de 01
             de ABRIL de 2021, que viabiliza a contratação em comento, diante da realidade, a própria Lei de
             Licitação se preocupou prevendo a contratação nos casos que se caracterizam como dispensa.
         </p>
@@ -184,7 +206,7 @@
                 <!-- Conteúdo da primeira célula -->
                 </td>
                 <td style="width: 50%; text-align: center; vertical-align: top; ">
-                    ART. 75, INCISO II, DA LEI Nº 14.133/21 DE 01 DE ABRIL DE 2021.
+                    {{ ($processo->detalhe?->is_oriundo_fracassado) ? 'ART. 75, INCISO III, ALÍNEA "A",' : 'ART. 75, INCISO II,' }} DA LEI Nº 14.133/21 DE 01 DE ABRIL DE 2021.
                 </td>
             </tr>
 
@@ -248,6 +270,7 @@
                 </td>
             </tr>
         </table>
+        @endif
 
         <h4>III – DA JUSTIFICATIVA DA DISPENSA</h4>
         <p style="text-align: justify; text-indent: 30px;">
@@ -376,7 +399,7 @@
             {!! strip_tags($processo->detalhe->dotacao_orcamentaria) !!}
         </p>
         <p style="text-indent: 30px; text-align: justify; ">
-            Devido à complexidade Jurídica no sentido da contratação com base no Art. 75, inciso II,
+            Devido à complexidade Jurídica no sentido da contratação com base no {{ ($processo->detalhe?->is_oriundo_fracassado) ? 'Art. 75, Inciso III, alínea "a",' : 'Art. 75, inciso II,' }}
             da Lei nº 14.133/21, indagamos esta Procuradoria para consulta sobre a legalidade da contratação
             com dispensa de licitação.
         </p>

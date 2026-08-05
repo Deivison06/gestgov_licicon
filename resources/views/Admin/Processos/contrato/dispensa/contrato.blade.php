@@ -1369,7 +1369,7 @@
                 </td>
                 <td style="padding:6px; text-align:justify;">
 					Será regida pelas normas fixadas na Dispensa de
-                    Licitação no. {{ $processo->numero_procedimento }}, e pelo Art. 75, Inciso II da Lei
+                    Licitação no. {{ $processo->numero_procedimento }}, e pelo {{ ($processo->detalhe?->is_oriundo_fracassado) ? 'Art. 75, Inciso III, alínea "a"' : 'Art. 75, Inciso II' }} da Lei
                     Federal 14.133/21, de 1 de abril de 2021, e legislação
                     posterior, que o suplementam no que for omisso
                 </td>

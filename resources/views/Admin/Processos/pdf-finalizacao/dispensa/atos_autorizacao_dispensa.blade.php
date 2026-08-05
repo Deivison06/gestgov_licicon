@@ -229,7 +229,7 @@
                     FUNDAMENTO LEGAL
                 </td>
                 <td style="border:1px solid #000; padding:6px;">
-                    Art. 75, Inciso II da Lei Federal 14.133/21
+                    {{ ($processo->detalhe?->is_oriundo_fracassado) ? 'Art. 75, Inciso III, alínea "a", da Lei Federal nº 14.133/2021' : 'Art. 75, Inciso II da Lei Federal 14.133/21' }}
                 </td>
             </tr>
         </table>
