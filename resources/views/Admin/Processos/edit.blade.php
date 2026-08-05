@@ -3,6 +3,9 @@
 @section('page-subtitle', 'Atualize os dados do processo')
 
 @section('content')
+<!-- TomSelect CSS/JS -->
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tinymce@6/tinymce.min.js" referrerpolicy="origin"></script>
 <div class="py-6">
     <div class="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
@@ -159,8 +162,36 @@
                             @enderror
                         </div>
 
+                        <!-- Flag de Dispensa de Licitação Fracassada -->
+                        <div id="bloco_dispensa_fracassada" class="col-span-1 md:col-span-2 hidden mt-2">
+                            <div class="bg-yellow-50 border border-yellow-200 p-4 rounded-md">
+                                <label class="flex items-center space-x-2 text-sm font-medium text-yellow-800">
+                                    <input type="checkbox" name="is_oriundo_fracassado" id="is_oriundo_fracassado" value="1"
+                                        {{ old('is_oriundo_fracassado', $processo->is_oriundo_fracassado) ? 'checked' : '' }}
+                                        class="rounded border-yellow-400 text-yellow-600 focus:ring-yellow-500 w-5 h-5">
+                                    <span>Processo oriundo de certame fracassado (Art. 75, III, alínea "a")</span>
+                                </label>
+
+                                <div id="selecao_processo_fracassado" class="mt-4 {{ old('is_oriundo_fracassado', $processo->is_oriundo_fracassado) ? '' : 'hidden' }}">
+                                    <label for="processo_fracassado_id" class="block text-sm font-medium text-gray-700 mb-1">Selecione ou Pesquise o Certame Fracassado</label>
+                                    
+                                    <!-- Select configurado com TomSelect para busca rápida -->
+                                    <select id="processo_fracassado_id" name="processo_fracassado_id" placeholder="Digite para buscar pelo número ou objeto..." class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                        @if($processo->processo_fracassado_id && $processo->processoFracassado)
+                                            <option value="{{ $processo->processo_fracassado_id }}" selected>
+                                                Processo {{ $processo->processoFracassado->numero_processo }} - {{ $processo->processoFracassado->objeto }}
+                                            </option>
+                                        @endif
+                                    </select>
+                                    
+                                    <p class="mt-1 text-xs text-gray-500">Ao selecionar, o tipo e objeto da contratação serão preenchidos automaticamente.</p>
+                                </div>
+                            </div>
+                        </div>
+
                         {{-- OBJETO --}}
                         <div class="md:col-span-2">
+                            <label for="objeto" class="block text-sm font-medium text-gray-700">Objeto</label>
                             <textarea name="objeto" id="objeto" rows="4" class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">{{ old('objeto', $processo->objeto) }}</textarea>
                             @error('objeto')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -243,7 +274,145 @@
                     unidadeSelect.dispatchEvent(new Event('change'));
                 }, 100);
             }
+        // Modalidade x Tipos
+        const modalidadeSelect = document.getElementById('modalidade');
+        const tipoProcedimentoSelect = document.getElementById('tipo_procedimento');
+        const tipoProcedimentoDiv = document.getElementById('tipo_procedimento_wrapper');
+        const tipoContratacaoDiv = document.getElementById('tipo_contratacao_wrapper');
+
+        function atualizarVisibilidadeTipos() {
+            const modalidade = modalidadeSelect.value;
+            const tipoProcedimento = tipoProcedimentoSelect.value;
+
+            tipoProcedimentoDiv.style.display = '';
+            tipoContratacaoDiv.style.display = '';
+
+            if (modalidade === "1") {
+                tipoProcedimentoDiv.style.display = 'none';
+                tipoContratacaoDiv.style.display = 'none';
+                return;
+            }
+
+            if (modalidade === "2" && tipoProcedimento === "3") {
+                tipoContratacaoDiv.style.display = 'none';
+            }
         }
+
+        modalidadeSelect.addEventListener('change', atualizarVisibilidadeTipos);
+        tipoProcedimentoSelect.addEventListener('change', atualizarVisibilidadeTipos);
+        atualizarVisibilidadeTipos();
+
+        // TinyMCE
+        tinymce.init({
+            selector: 'textarea#objeto',
+            plugins: 'lists link table code charmap emoticons',
+            toolbar: 'undo redo | bold italic underline | bullist numlist | link table | emoticons charmap | code',
+            menubar: false,
+            branding: false,
+            height: 300,
+            setup: function(editor) {
+                editor.on('change', function() {
+                    editor.save();
+                });
+            }
+        });
+
+        // ===== DISPENSA FRACASSADA COM TOMSELECT (BUSCA DINÂMICA) =====
+        const blocoFracassada   = document.getElementById('bloco_dispensa_fracassada');
+        const chkOriundo        = document.getElementById('is_oriundo_fracassado');
+        const selecaoFracassado = document.getElementById('selecao_processo_fracassado');
+        const selectFracassado  = document.getElementById('processo_fracassado_id');
+        const objetoEl          = document.getElementById('objeto');
+        const tipoProcEl        = document.getElementById('tipo_procedimento');
+        const fracassadosUrl    = '{{ route('admin.api.processos.fracassados') }}';
+
+        let tomSelectInstance = null;
+
+        function initTomSelect() {
+            if (tomSelectInstance) return;
+
+            tomSelectInstance = new TomSelect('#processo_fracassado_id', {
+                valueField: 'id',
+                labelField: 'text',
+                searchField: 'text',
+                placeholder: 'Digite para buscar por nº do processo, procedimento ou objeto...',
+                loadThrottle: 300, // Aguarda 300ms após o usuário parar de digitar para fazer o fetch
+                load: function(query, callback) {
+                    const prefId = prefeituraSelect.value;
+                    if (!prefId) return callback();
+
+                    // Envia prefeitura_id e o termo digitado em 'q'
+                    const url = `${fracassadosUrl}?prefeitura_id=${encodeURIComponent(prefId)}&q=${encodeURIComponent(query)}`;
+                    
+                    fetch(url)
+                        .then(response => response.json())
+                        .then(json => {
+                            callback(json);
+                        })
+                        .catch(() => {
+                            callback();
+                        });
+                },
+                onChange: function(value) {
+                    if (!value) return;
+                    const item = this.options[value];
+                    if (item) {
+                        if (item.objeto) {
+                            const editor = window.tinymce && tinymce.get('objeto');
+                            if (editor) { 
+                                editor.setContent(item.objeto); 
+                            } else if (objetoEl) { 
+                                objetoEl.value = item.objeto; 
+                            }
+                        }
+                        if (item.tipo_procedimento && tipoProcEl) {
+                            tipoProcEl.value = item.tipo_procedimento;
+                            tipoProcEl.dispatchEvent(new Event('change'));
+                        }
+                    }
+                }
+            });
+        }
+
+        function toggleBlocoFracassada() {
+            if (modalidadeSelect.value === '2') {
+                blocoFracassada.classList.remove('hidden');
+            } else {
+                blocoFracassada.classList.add('hidden');
+                if (chkOriundo.checked) {
+                    chkOriundo.checked = false;
+                    chkOriundo.dispatchEvent(new Event('change'));
+                }
+            }
+        }
+
+        modalidadeSelect.addEventListener('change', toggleBlocoFracassada);
+        toggleBlocoFracassada();
+
+        chkOriundo.addEventListener('change', function () {
+            if (this.checked) {
+                selecaoFracassado.classList.remove('hidden');
+                initTomSelect();
+            } else {
+                selecaoFracassado.classList.add('hidden');
+                if (tomSelectInstance) {
+                    tomSelectInstance.clear();
+                }
+            }
+        });
+
+        // Inicializa o TomSelect caso já esteja checado no carregamento da página
+        if (chkOriundo.checked) {
+            initTomSelect();
+        }
+
+        prefeituraSelect.addEventListener('change', function () {
+            if (chkOriundo.checked && tomSelectInstance) {
+                tomSelectInstance.clear();
+                tomSelectInstance.clearOptions();
+                tomSelectInstance.load('');
+            }
+        });
     });
 </script>
 
