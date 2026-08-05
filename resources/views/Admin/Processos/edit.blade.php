@@ -274,6 +274,8 @@
                     unidadeSelect.dispatchEvent(new Event('change'));
                 }, 100);
             }
+        }
+        
         // Modalidade x Tipos
         const modalidadeSelect = document.getElementById('modalidade');
         const tipoProcedimentoSelect = document.getElementById('tipo_procedimento');
