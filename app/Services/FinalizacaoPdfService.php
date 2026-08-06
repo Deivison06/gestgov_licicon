@@ -306,7 +306,14 @@ class FinalizacaoPdfService
     public function gerarCaminhoTodosDocumentos(Processo $processo): string
     {
         $ordem = $this->documentoService->getOrdemDocumentos($processo);
-        $documentos = Documento::where('processo_id', $processo->id)->get()->keyBy('tipo_documento');
+        $tiposPorHomologacao = $this->homologacaoService->tiposPorHomologacao();
+
+        $documentos = Documento::where('processo_id', $processo->id)
+            ->where(function ($query) use ($tiposPorHomologacao) {
+                $query->whereNotIn('tipo_documento', $tiposPorHomologacao)
+                      ->orWhereNotNull('homologacao_id');
+            })
+            ->get();
 
         return $this->baixarTodosDocumentosComGhostscript($processo, $ordem, $documentos);
     }
@@ -327,6 +334,8 @@ class FinalizacaoPdfService
             ->orderBy('vencedor_id')
             ->get();
 
+        $documentosPorTipo = $documentos->groupBy('tipo_documento');
+
         $arquivos = [];
         foreach ($ordem as $tipo) {
             // Quando bate em `ata_registro_precos`, expande para todas as Atas por vencedor.
@@ -338,19 +347,24 @@ class FinalizacaoPdfService
                     }
                 }
                 // Mantém também a Ata antiga (legado em `documentos`) se ainda existir.
-                if (isset($documentos[$tipo])) {
-                    $caminho = public_path($documentos[$tipo]->caminho);
-                    if (file_exists($caminho)) {
-                        $arquivos[] = $caminho;
+                if (isset($documentosPorTipo[$tipo])) {
+                    foreach ($documentosPorTipo[$tipo] as $doc) {
+                        $caminho = public_path($doc->caminho);
+                        if (file_exists($caminho)) {
+                            $arquivos[] = $caminho;
+                        }
                     }
                 }
                 continue;
             }
 
-            if (!isset($documentos[$tipo])) continue;
-            $caminho = public_path($documentos[$tipo]->caminho);
-            if (!file_exists($caminho)) continue;
-            $arquivos[] = $caminho;
+            if (!isset($documentosPorTipo[$tipo])) continue;
+
+            foreach ($documentosPorTipo[$tipo] as $doc) {
+                $caminho = public_path($doc->caminho);
+                if (!file_exists($caminho)) continue;
+                $arquivos[] = $caminho;
+            }
         }
 
         if (empty($arquivos)) {

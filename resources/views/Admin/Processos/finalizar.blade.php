@@ -424,55 +424,6 @@
             </div>
         </div>
 
-        {{-- ====== Documentos antigos do processo (legado) — discreto, colapsado por padrão ====== --}}
-        @if (!$ehHomologacaoUnica && $documentosLegadosList->isNotEmpty())
-            <details class="mt-6 group bg-white border border-gray-200 rounded-xl">
-                <summary class="px-5 py-3 cursor-pointer text-sm font-medium text-gray-600 hover:text-gray-900 flex items-center justify-between list-none">
-                    <span class="flex items-center gap-2">
-                        <svg class="w-4 h-4 text-gray-400 transition-transform group-open:rotate-90"
-                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                        </svg>
-                        Documentos antigos do processo (legado)
-                        <span class="px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-600 rounded-full">{{ $documentosLegadosList->count() }}</span>
-                    </span>
-                    <span class="text-xs text-gray-400 hidden sm:inline">gerados antes da homologação parcial</span>
-                </summary>
-
-                <div class="border-t border-gray-200 overflow-x-auto">
-                    <table class="min-w-full text-sm bg-white divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Tipo</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Gerado em</th>
-                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-600 uppercase">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-200">
-                            @foreach ($documentosLegadosList as $docLegado)
-                                <tr>
-                                    <td class="px-6 py-3 text-gray-800">{{ $docLegado->tipo_documento }}</td>
-                                    <td class="px-6 py-3 text-gray-600">
-                                        {{ $docLegado->gerado_em ? \Carbon\Carbon::parse($docLegado->gerado_em)->format('d/m/Y H:i') : '—' }}
-                                    </td>
-                                    <td class="px-6 py-3 text-center">
-                                        <a href="{{ route('admin.processos.finalizacao.documento.dowload', ['processo' => $processo->id, 'tipo' => $docLegado->tipo_documento]) }}"
-                                           download
-                                           class="inline-block p-2 text-white bg-green-600 rounded-md hover:bg-green-700">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                                <polyline points="7 10 12 15 17 10"></polyline>
-                                                <line x1="12" y1="15" x2="12" y2="3"></line>
-                                            </svg>
-                                        </a>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            </details>
-        @endif
 
         @if(
             in_array(
