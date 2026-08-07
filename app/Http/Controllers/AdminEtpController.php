@@ -17,7 +17,7 @@ class AdminEtpController extends Controller
 
     public function index(Request $request)
     {
-        if (!$request->has('status')) {
+        if (!$request->has('status') && !$request->has('page')) {
             $request->merge(['status' => 'em_analise']);
         }
         $filters = $request->only(['prefeitura_id', 'secretaria_id', 'status', 'modalidade', 'data_inicio', 'data_fim']);
