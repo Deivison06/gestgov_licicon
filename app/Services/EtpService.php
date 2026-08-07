@@ -279,7 +279,7 @@ class EtpService
         }
 
         return $this->repository->update($id, [
-            'status' => 'aprovado',
+            'status' => 'em_analise',
             'processo_id' => null
         ]);
     }
