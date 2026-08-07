@@ -185,10 +185,6 @@
                         </th>
 
                         <th class="px-4 py-3 text-xs font-semibold text-left text-gray-600 uppercase">
-                            Status
-                        </th>
-
-                        <th class="px-4 py-3 text-xs font-semibold text-left text-gray-600 uppercase">
                             Modalidade
                         </th>
 
@@ -246,30 +242,6 @@
                         </td>
 
                         <td class="px-4 py-3 text-sm">
-
-                            <span class="px-2 py-1 text-xs font-semibold rounded-full
-
-                                @if($etp->status === 'pendente') bg-yellow-100 text-yellow-800
-                                @elseif($etp->status === 'em_analise') bg-blue-100 text-blue-800
-                                @elseif($etp->status === 'aprovado') bg-green-100 text-green-800
-                                @elseif($etp->status === 'em_processo') bg-purple-100 text-purple-800
-                                @elseif($etp->status === 'concluido') bg-teal-100 text-teal-800
-                                @elseif($etp->status === 'recusado') bg-red-100 text-red-800
-                                @endif">
-
-                                {{ ucfirst(str_replace('_', ' ', $etp->status)) }}
-
-                            </span>
-
-                            @if($etp->status === 'aprovado' && is_null($etp->processo_id))
-                            <span class="ml-1 px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800">
-                                Pendente de Lançamento
-                            </span>
-                            @endif
-
-                        </td>
-
-                        <td class="px-4 py-3 text-sm">
                             {{ $etp->modalidade }}
                         </td>
 
@@ -315,6 +287,30 @@
 
                             </a>
 
+                            <form action="{{ route('admin.etps_recebidos.reabrir', $etp->id) }}" method="POST" class="inline"
+                                onsubmit="return confirm('Confirmar a reabertura deste ETP? Ele será desvinculado do processo atual.');">
+                                @csrf
+                                @method('PUT')
+                                <button type="submit"
+                                    class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-amber-500 rounded-md hover:bg-amber-600">
+                                    <i class="mr-1 fas fa-folder-open"></i>
+                                    Reabrir
+                                </button>
+                            </form>
+
+                            @elseif($etp->status === 'concluido')
+
+                            <form action="{{ route('admin.etps_recebidos.reabrir', $etp->id) }}" method="POST" class="inline"
+                                onsubmit="return confirm('Confirmar a reabertura deste ETP?');">
+                                @csrf
+                                @method('PUT')
+                                <button type="submit"
+                                    class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-amber-500 rounded-md hover:bg-amber-600">
+                                    <i class="mr-1 fas fa-folder-open"></i>
+                                    Reabrir
+                                </button>
+                            </form>
+
                             @endif
 
                         </td>
@@ -325,13 +321,36 @@
 
                     <tr class="bg-gray-50">
 
-                        <td colspan="7" class="px-6 py-3 text-sm text-gray-700">
+                        <td colspan="6" class="px-6 py-3 text-sm text-gray-700">
 
-                            <span class="font-semibold text-gray-600">
-                                Objeto:
-                            </span>
+                            <div class="mb-2">
+                                <span class="font-semibold text-gray-600">
+                                    Objeto:
+                                </span>
+                                {{ $etp->objeto_licitacao }}
+                            </div>
 
-                            {{ $etp->objeto_licitacao }}
+                            <div class="flex items-center gap-2 mt-2">
+                                <span class="font-semibold text-gray-600 text-xs uppercase tracking-wider">
+                                    Status:
+                                </span>
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full
+                                    @if($etp->status === 'pendente') bg-yellow-100 text-yellow-800
+                                    @elseif($etp->status === 'em_analise') bg-blue-100 text-blue-800
+                                    @elseif($etp->status === 'aprovado') bg-green-100 text-green-800
+                                    @elseif($etp->status === 'em_processo') bg-purple-100 text-purple-800
+                                    @elseif($etp->status === 'concluido') bg-teal-100 text-teal-800
+                                    @elseif($etp->status === 'recusado') bg-red-100 text-red-800
+                                    @endif">
+                                    {{ ucfirst(str_replace('_', ' ', $etp->status)) }}
+                                </span>
+
+                                @if($etp->status === 'aprovado' && is_null($etp->processo_id))
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800">
+                                    Pendente de Lançamento
+                                </span>
+                                @endif
+                            </div>
 
                         </td>
 
@@ -340,7 +359,7 @@
                     @empty
 
                     <tr>
-                        <td colspan="7" class="px-6 py-16 text-center text-gray-500">
+                        <td colspan="6" class="px-6 py-16 text-center text-gray-500">
                             Nenhum ETP encontrado
                         </td>
                     </tr>

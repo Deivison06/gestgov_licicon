@@ -59,4 +59,14 @@ class AdminEtpController extends Controller
             return redirect()->back()->with('error', $e->getMessage());
         }
     }
+
+    public function reabrir($id)
+    {
+        try {
+            $this->etpService->reabrir($id);
+            return redirect()->back()->with('success', 'ETP reaberto com sucesso. Ele foi desvinculado de qualquer processo e está pronto para nova vinculação.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
 }

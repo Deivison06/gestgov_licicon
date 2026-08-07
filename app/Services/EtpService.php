@@ -269,4 +269,18 @@ class EtpService
             'status' => 'em_processo'
         ]);
     }
+
+    public function reabrir($id)
+    {
+        $etp = $this->findById($id);
+
+        if ($etp->status !== 'concluido' && $etp->status !== 'em_processo' && is_null($etp->processo_id)) {
+            throw new Exception("Este ETP não está concluído nem vinculado a um processo para poder ser reaberto.");
+        }
+
+        return $this->repository->update($id, [
+            'status' => 'aprovado',
+            'processo_id' => null
+        ]);
+    }
 }

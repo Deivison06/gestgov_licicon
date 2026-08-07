@@ -205,6 +205,7 @@ Route::prefix('admin/etps-recebidos')->name('admin.etps_recebidos.')->middleware
     Route::get('/', [AdminEtpController::class, 'index'])->name('index');
     Route::get('/{etp}', [AdminEtpController::class, 'show'])->name('show');
     Route::put('/{etp}/status', [AdminEtpController::class, 'alterarStatus'])->name('status');
+    Route::put('/{etp}/reabrir', [AdminEtpController::class, 'reabrir'])->name('reabrir');
     Route::post('/{etp}/processo', [AdminEtpController::class, 'vincularProcesso'])->name('processo');
 });
 
@@ -265,8 +266,8 @@ Route::prefix('admin')
         // ========================================
         // 2. PREFEITURAS
         // ========================================
-        Route::get('/api/unidades', [App\Http\Controllers\UnidadeController::class, 'getByPrefeitura'])->name('api.unidades');
-        Route::get('/api/users/responsavel', [App\Http\Controllers\UserController::class, 'getResponsaveisPorUnidade'])->name('api.users.responsavel');
+        // Route::get('/api/unidades', [App\Http\Controllers\UnidadeController::class, 'getByPrefeitura'])->name('api.unidades');
+        // Route::get('/api/users/responsavel', [App\Http\Controllers\UserController::class, 'getResponsaveisPorUnidade'])->name('api.users.responsavel');
         Route::get('/api/processos-fracassados', [App\Http\Controllers\ProcessoController::class, 'getProcessosFracassados'])->name('api.processos.fracassados');
 
         Route::resource('prefeituras', PrefeituraController::class)

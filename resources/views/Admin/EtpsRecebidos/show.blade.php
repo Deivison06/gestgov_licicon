@@ -108,6 +108,18 @@
                             </button>
                         </form>
                     @endif
+
+                    @if ($etp->status === 'concluido' || $etp->status === 'em_processo' || !is_null($etp->processo_id))
+                        <form action="{{ route('admin.etps_recebidos.reabrir', $etp->id) }}" method="POST" class="inline"
+                            onsubmit="return confirm('Confirmar a reabertura deste ETP?{{ !is_null($etp->processo_id) ? ' Ele será desvinculado do processo atual.' : '' }}');">
+                            @csrf
+                            @method('PUT')
+                            <button type="submit"
+                                class="px-4 py-2 text-sm font-medium text-white bg-amber-500 rounded-lg hover:bg-amber-600 transition-all flex items-center shadow-sm">
+                                <i class="fas fa-folder-open mr-2"></i> Reabrir ETP
+                            </button>
+                        </form>
+                    @endif
                 </div>
             </div>
 
