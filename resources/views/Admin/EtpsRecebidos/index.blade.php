@@ -188,7 +188,7 @@
                             Modalidade
                         </th>
 
-                        <th class="px-4 py-3 text-xs font-semibold text-center text-gray-600 uppercase">
+                        <th class="px-4 py-3 text-xs font-semibold text-center text-gray-600 uppercase w-80">
                             Ações
                         </th>
 
@@ -245,74 +245,76 @@
                             {{ $etp->modalidade }}
                         </td>
 
-                        <td class="px-4 py-3 text-center space-y-1">
+                        <td class="px-4 py-3 text-center whitespace-nowrap">
+                            <div class="flex items-center justify-center gap-1.5">
 
-                            <a href="{{ route('admin.etps_recebidos.show', $etp->id) }}"
-                                class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-[#062F43] rounded-md hover:bg-[#065f8b]">
+                                <a href="{{ route('admin.etps_recebidos.show', $etp->id) }}"
+                                    class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-[#062F43] rounded-md hover:bg-[#065f8b]">
 
-                                Analisar
-                                <i class="fas fa-arrow-right ml-1"></i>
+                                    Analisar
+                                    <i class="fas fa-arrow-right ml-1"></i>
 
-                            </a>
+                                </a>
 
-                            @if($etp->status === 'aprovado' && is_null($etp->processo_id))
+                                @if($etp->status === 'aprovado' && is_null($etp->processo_id))
 
-                            <a href="{{ route('admin.processos.create', ['etp_id' => $etp->id]) }}"
-                                class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-orange-500 rounded-md hover:bg-orange-600">
+                                <a href="{{ route('admin.processos.create', ['etp_id' => $etp->id]) }}"
+                                    class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-orange-500 rounded-md hover:bg-orange-600">
 
-                                <i class="mr-1 fas fa-plus"></i>
-                                Criar Processo
+                                    <i class="mr-1 fas fa-plus"></i>
+                                    Criar Processo
 
-                            </a>
+                                </a>
 
-                            <form action="{{ route('admin.etps_recebidos.status', $etp->id) }}" method="POST" class="inline"
-                                onsubmit="return confirm('Confirmar conclusão manual deste ETP? Ele será encerrado sem ser vinculado a um processo.');">
-                                @csrf
-                                @method('PUT')
-                                <input type="hidden" name="status" value="concluido">
-                                <button type="submit"
-                                    class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-teal-600 rounded-md hover:bg-teal-700">
-                                    <i class="mr-1 fas fa-flag-checkered"></i>
-                                    Concluir
-                                </button>
-                            </form>
+                                <form action="{{ route('admin.etps_recebidos.status', $etp->id) }}" method="POST" class="inline"
+                                    onsubmit="return confirm('Confirmar conclusão manual deste ETP? Ele será encerrado sem ser vinculado a um processo.');">
+                                    @csrf
+                                    @method('PUT')
+                                    <input type="hidden" name="status" value="concluido">
+                                    <button type="submit"
+                                        class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-teal-600 rounded-md hover:bg-teal-700">
+                                        <i class="mr-1 fas fa-flag-checkered"></i>
+                                        Concluir
+                                    </button>
+                                </form>
 
-                            @elseif(!is_null($etp->processo_id))
+                                @elseif(!is_null($etp->processo_id))
 
-                            <a href="{{ route('admin.processos.show', $etp->processo_id) }}"
-                                class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-[#009496] rounded-md hover:bg-[#007a7a]">
+                                <a href="{{ route('admin.processos.show', $etp->processo_id) }}"
+                                    class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-[#009496] rounded-md hover:bg-[#007a7a]">
 
-                                <i class="mr-1 fas fa-eye"></i>
-                                Ver Processo
+                                    <i class="mr-1 fas fa-eye"></i>
+                                    Ver Processo
 
-                            </a>
+                                </a>
 
-                            <form action="{{ route('admin.etps_recebidos.reabrir', $etp->id) }}" method="POST" class="inline"
-                                onsubmit="return confirm('Confirmar a reabertura deste ETP? Ele será desvinculado do processo atual.');">
-                                @csrf
-                                @method('PUT')
-                                <button type="submit"
-                                    class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-amber-500 rounded-md hover:bg-amber-600">
-                                    <i class="mr-1 fas fa-folder-open"></i>
-                                    Reabrir
-                                </button>
-                            </form>
+                                <form action="{{ route('admin.etps_recebidos.reabrir', $etp->id) }}" method="POST" class="inline"
+                                    onsubmit="return confirm('Confirmar a reabertura deste ETP? Ele será desvinculado do processo atual.');">
+                                    @csrf
+                                    @method('PUT')
+                                    <button type="submit"
+                                        class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-amber-500 rounded-md hover:bg-amber-600">
+                                        <i class="mr-1 fas fa-folder-open"></i>
+                                        Reabrir
+                                    </button>
+                                </form>
 
-                            @elseif($etp->status === 'concluido')
+                                @elseif($etp->status === 'concluido')
 
-                            <form action="{{ route('admin.etps_recebidos.reabrir', $etp->id) }}" method="POST" class="inline"
-                                onsubmit="return confirm('Confirmar a reabertura deste ETP?');">
-                                @csrf
-                                @method('PUT')
-                                <button type="submit"
-                                    class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-amber-500 rounded-md hover:bg-amber-600">
-                                    <i class="mr-1 fas fa-folder-open"></i>
-                                    Reabrir
-                                </button>
-                            </form>
+                                <form action="{{ route('admin.etps_recebidos.reabrir', $etp->id) }}" method="POST" class="inline"
+                                    onsubmit="return confirm('Confirmar a reabertura deste ETP?');">
+                                    @csrf
+                                    @method('PUT')
+                                    <button type="submit"
+                                        class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-amber-500 rounded-md hover:bg-amber-600">
+                                        <i class="mr-1 fas fa-folder-open"></i>
+                                        Reabrir
+                                    </button>
+                                </form>
 
-                            @endif
+                                @endif
 
+                            </div>
                         </td>
 
                     </tr>
