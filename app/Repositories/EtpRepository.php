@@ -72,6 +72,10 @@ class EtpRepository
             $query->where('secretaria_id', $filters['secretaria_id']);
          }
 
+        if (isset($filters['modalidade']) && $filters['modalidade']) {
+            $query->where('modalidade', $filters['modalidade']);
+        }
+
         if (isset($filters['status']) && $filters['status'] === 'pendente_lancamento') {
             // ETPs aprovados que ainda não foram vinculados a um processo
             $query->where('status', 'aprovado')->whereNull('processo_id');

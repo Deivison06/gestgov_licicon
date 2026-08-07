@@ -84,6 +84,22 @@
                     </select>
                 </div>
 
+                <!-- Modalidade -->
+                <div>
+                    <label class="block mb-2 text-sm font-medium text-gray-700">Modalidade</label>
+
+                    <select name="modalidade"
+                        class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] text-sm">
+
+                        <option value="">Todas as Modalidades</option>
+                        <option value="pregao" {{ request('modalidade') == 'pregao' ? 'selected' : '' }}>Pregão</option>
+                        <option value="concorrencia" {{ request('modalidade') == 'concorrencia' ? 'selected' : '' }}>Concorrência</option>
+                        <option value="dispensa" {{ request('modalidade') == 'dispensa' ? 'selected' : '' }}>Dispensa</option>
+                        <option value="inexigibilidade" {{ request('modalidade') == 'inexigibilidade' ? 'selected' : '' }}>Inexigibilidade</option>
+
+                    </select>
+                </div>
+
                 <!-- Prefeitura -->
                 <div>
                     <label class="block mb-2 text-sm font-medium text-gray-700">Prefeitura</label>

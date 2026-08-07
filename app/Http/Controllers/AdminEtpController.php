@@ -20,7 +20,7 @@ class AdminEtpController extends Controller
         if (!$request->has('status')) {
             $request->merge(['status' => 'em_analise']);
         }
-        $filters = $request->only(['prefeitura_id', 'secretaria_id', 'status', 'data_inicio', 'data_fim']);
+        $filters = $request->only(['prefeitura_id', 'secretaria_id', 'status', 'modalidade', 'data_inicio', 'data_fim']);
         $etps = $this->etpService->getAllWithFilters($filters);
         $prefeituras = Prefeitura::orderBy('nome', 'asc')->get();
         $pendentesLancamento = $this->etpService->countPendentesLancamento();
