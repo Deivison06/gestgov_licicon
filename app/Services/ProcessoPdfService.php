@@ -1289,7 +1289,7 @@ class ProcessoPdfService extends AbstractService
         }
 
         $precoMapId = $this->construirPrecoMapId($processo);
-        $itens      = $etp->tipo_contratacao === 'lote'
+        $itens      = $etp->usaLotes()
             ? $etp->lotes->flatMap(fn($lote) => $lote->itens)
             : $etp->itens;
 
@@ -1326,7 +1326,7 @@ class ProcessoPdfService extends AbstractService
             ];
         };
 
-        if ($etp->tipo_contratacao === 'lote') {
+        if ($etp->usaLotes()) {
             foreach ($etp->lotes as $lote) {
                 foreach ($lote->itens as $item) {
                     $processarItem($item, $lote->nome);
