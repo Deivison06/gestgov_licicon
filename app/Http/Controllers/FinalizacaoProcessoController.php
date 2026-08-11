@@ -2,34 +2,48 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Homologacao;
+use App\Models\HomologacaoDesistencia;
+use App\Models\HomologacaoDesistenciaAnexo;
 use App\Models\Processo;
-use Illuminate\Http\Request;
-use App\Services\FinalizacaoService;
+use App\Models\Vencedor;
 use App\Services\FinalizacaoDocumentoService;
 use App\Services\FinalizacaoPdfService;
+use App\Services\FinalizacaoService;
 use App\Services\FinalizacaoVencedorService;
+use App\Services\HomologacaoDesistenciaService;
 use App\Services\HomologacaoService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class FinalizacaoProcessoController extends AbstractController
 {
     protected FinalizacaoService $finalizacaoService;
+
     protected FinalizacaoDocumentoService $documentoService;
+
     protected FinalizacaoPdfService $pdfService;
+
     protected FinalizacaoVencedorService $vencedorService;
+
     protected HomologacaoService $homologacaoService;
+
+    protected HomologacaoDesistenciaService $desistenciaService;
 
     public function __construct(
         FinalizacaoService $finalizacaoService,
         FinalizacaoDocumentoService $documentoService,
         FinalizacaoPdfService $pdfService,
         FinalizacaoVencedorService $vencedorService,
-        HomologacaoService $homologacaoService
+        HomologacaoService $homologacaoService,
+        HomologacaoDesistenciaService $desistenciaService
     ) {
         $this->finalizacaoService = $finalizacaoService;
         $this->documentoService = $documentoService;
         $this->pdfService = $pdfService;
         $this->vencedorService = $vencedorService;
         $this->homologacaoService = $homologacaoService;
+        $this->desistenciaService = $desistenciaService;
     }
 
     public function finalizar(Processo $processo)
@@ -41,6 +55,8 @@ class FinalizacaoProcessoController extends AbstractController
             'homologacoes.lotes.vencedor',
             'homologacoes.documentos',
             'homologacoes.atasRegistroPreco',
+            'homologacoes.desistencias.vencedor',
+            'homologacoes.desistencias.anexos',
             'documentos',
         ]);
 
@@ -81,7 +97,7 @@ class FinalizacaoProcessoController extends AbstractController
         // docs) e Dispensa de Obra (zero homologação — contratação direta).
         // Em todos esses casos, a tela mostra UMA seção com todos os documentos juntos.
         $ehHomologacaoUnica = $this->homologacaoService->ehHomologacaoUnica($processo);
-        $homologacaoUnica   = $ehHomologacaoUnica
+        $homologacaoUnica = $ehHomologacaoUnica
             ? $processo->homologacoes->sortBy('id')->first()
             : null;
 
@@ -135,7 +151,7 @@ class FinalizacaoProcessoController extends AbstractController
                 'erro' => $e->getMessage(),
             ]);
 
-            return $this->jsonFail('Erro ao criar homologação: ' . $e->getMessage(), 500);
+            return $this->jsonFail('Erro ao criar homologação: '.$e->getMessage(), 500);
         }
     }
 
@@ -149,7 +165,7 @@ class FinalizacaoProcessoController extends AbstractController
             $this->homologacaoService->deletarHomologacao($homologacao);
 
             return $this->jsonOk([
-                'message' => "Homologação #{$homologacao->numero_sequencial} excluída com sucesso."
+                'message' => "Homologação #{$homologacao->numero_sequencial} excluída com sucesso.",
             ]);
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Erro ao excluir homologação', [
@@ -157,8 +173,81 @@ class FinalizacaoProcessoController extends AbstractController
                 'erro' => $e->getMessage(),
             ]);
 
-            return $this->jsonFail('Erro ao excluir homologação: ' . $e->getMessage(), 500);
+            return $this->jsonFail('Erro ao excluir homologação: '.$e->getMessage(), 500);
         }
+    }
+
+    public function registrarDesistencia(Request $request, Processo $processo, Homologacao $homologacao)
+    {
+        if ($homologacao->processo_id !== $processo->id) {
+            return $this->jsonFail('Homologação não pertence a este processo.', 403);
+        }
+
+        $validated = $request->validate([
+            'vencedor_id' => 'required|exists:vencedores,id',
+            'data_solicitacao_assinatura' => 'required|date',
+            'observacao' => 'nullable|string',
+            'anexos' => 'required|array|min:1',
+            'anexos.*' => 'file|mimes:pdf,jpg,jpeg,png|max:10240',
+        ]);
+
+        try {
+            $vencedor = Vencedor::where('processo_id', $processo->id)->findOrFail($validated['vencedor_id']);
+
+            $desistencia = $this->desistenciaService->registrar(
+                $homologacao,
+                $vencedor,
+                $validated,
+                $request->file('anexos')
+            );
+
+            return $this->jsonOk([
+                'message' => 'Desistência registrada com sucesso. O saldo dos lotes foi zerado.',
+                'desistencia' => $desistencia->load('anexos'),
+            ]);
+        } catch (\DomainException $e) {
+            return $this->jsonFail($e->getMessage(), 422);
+        } catch (\Exception $e) {
+            Log::error('Erro ao registrar desistência', [
+                'processo_id' => $processo->id,
+                'homologacao_id' => $homologacao->id,
+                'erro' => $e->getMessage(),
+            ]);
+
+            return $this->jsonFail('Erro ao registrar desistência: '.$e->getMessage(), 500);
+        }
+    }
+
+    public function baixarPdfDesistencia(Processo $processo, Homologacao $homologacao, HomologacaoDesistencia $desistencia)
+    {
+        if ($homologacao->processo_id !== $processo->id || $desistencia->homologacao_id !== $homologacao->id) {
+            abort(403, 'Desistência não pertence a este processo/homologação.');
+        }
+
+        if (! $desistencia->caminho_pdf || ! file_exists(public_path($desistencia->caminho_pdf))) {
+            return redirect()
+                ->route('admin.processos.finalizacao.finalizar', $processo)
+                ->with('error', 'O Termo de Registro e Decisão Administrativa não foi encontrado no servidor.');
+        }
+
+        return response()->download(public_path($desistencia->caminho_pdf));
+    }
+
+    public function baixarAnexoDesistencia(Processo $processo, Homologacao $homologacao, HomologacaoDesistencia $desistencia, HomologacaoDesistenciaAnexo $anexo)
+    {
+        if ($homologacao->processo_id !== $processo->id
+            || $desistencia->homologacao_id !== $homologacao->id
+            || $anexo->homologacao_desistencia_id !== $desistencia->id) {
+            abort(403, 'Anexo não pertence a esta desistência.');
+        }
+
+        if (! file_exists(public_path($anexo->caminho))) {
+            return redirect()
+                ->route('admin.processos.finalizacao.finalizar', $processo)
+                ->with('error', 'Anexo não encontrado no servidor.');
+        }
+
+        return response()->download(public_path($anexo->caminho), $anexo->nome_original ?: basename($anexo->caminho));
     }
 
     public function storeFinalizacao(Request $request, Processo $processo)
@@ -193,7 +282,7 @@ class FinalizacaoProcessoController extends AbstractController
             $resultado = $this->vencedorService->importarExcel($processo, $request->all());
 
             return $this->jsonOk([
-                'message' => '✅ Arquivo processado com sucesso! ' . count($resultado['lotes']) . ' itens importados.',
+                'message' => '✅ Arquivo processado com sucesso! '.count($resultado['lotes']).' itens importados.',
                 'lotes' => $resultado['lotes'],
                 'vencedor' => $resultado['vencedor'],
             ]);
@@ -207,7 +296,7 @@ class FinalizacaoProcessoController extends AbstractController
                 'vencedores' => $this->vencedorService->getVencedores($processo),
             ]);
         } catch (\Exception $e) {
-            return $this->jsonFail('Erro ao buscar vencedores: ' . $e->getMessage(), 500);
+            return $this->jsonFail('Erro ao buscar vencedores: '.$e->getMessage(), 500);
         }
     }
 

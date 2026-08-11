@@ -198,6 +198,14 @@
 
                 // Primeira homologação inicia aberta; demais ficam colapsadas pra não inundar a tela.
                 $iniciaAberta = $loop->first;
+
+                // Só oferece "Registrar Desistência" enquanto houver vencedor desta
+                // homologação que ainda não tenha uma desistência registrada.
+                $vencedoresComDesistencia = $homologacao->desistencias->pluck('vencedor_id');
+                $temVencedorElegivelDesistencia = $homologacao->lotes->pluck('vencedor_id')
+                    ->unique()
+                    ->diff($vencedoresComDesistencia)
+                    ->isNotEmpty();
             @endphp
 
             <div x-data="{ aberto: {{ $iniciaAberta ? 'true' : 'false' }}, lotesAbertos: false }"
@@ -218,12 +226,21 @@
                                 <span class="px-2 py-0.5 text-xs font-medium {{ $badgeClass }} rounded-full">
                                     {{ $badgeLabel }}
                                 </span>
-                                <button type="button" 
-                                        @click.stop="deletarHomologacao('{{ $processo->id }}', '{{ $homologacao->id }}')" 
-                                        class="ml-2 p-1 text-red-500 transition-colors rounded hover:bg-red-50 hover:text-red-700 focus:outline-none cursor-pointer" 
+                                <button type="button"
+                                        @click.stop="deletarHomologacao('{{ $processo->id }}', '{{ $homologacao->id }}')"
+                                        class="ml-2 p-1 text-red-500 transition-colors rounded hover:bg-red-50 hover:text-red-700 focus:outline-none cursor-pointer"
                                         title="Excluir Homologação">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                 </button>
+                                @if ($temVencedorElegivelDesistencia)
+                                    <button type="button"
+                                            @click.stop="abrirModalDesistencia('{{ $homologacao->id }}')"
+                                            class="inline-flex items-center gap-1.5 ml-2 px-2.5 py-1 text-xs font-medium text-amber-800 transition-colors bg-amber-100 border border-amber-200 rounded-full hover:bg-amber-200 focus:outline-none cursor-pointer"
+                                            title="Registrar a desistência/abandono da assinatura da Ata por uma empresa vencedora">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"></path></svg>
+                                        Desistência/Abandono de Ata
+                                    </button>
+                                @endif
                             </div>
 
                             <div class="mt-2 flex items-center flex-wrap gap-x-4 gap-y-1 text-xs text-gray-600">
@@ -324,6 +341,12 @@
                             'atasRegistroPreco' => $homologacao->atasRegistroPreco ?? collect(),
                         ])
                     </div>
+
+                    {{-- Desistências/abandonos de Ata registrados nesta homologação --}}
+                    @include('Admin.Processos.partials.bloco-desistencias', [
+                        'processo' => $processo,
+                        'homologacao' => $homologacao,
+                    ])
                 </div>
             </div>
         @endforeach
@@ -948,6 +971,87 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal para Registrar Desistência/Abandono de Ata -->
+    <div id="desistenciaModal" class="fixed inset-20 z-50 hidden overflow-y-auto">
+        <div class="flex items-end justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" onclick="fecharModalDesistencia()"></div>
+
+            <div class="inline-block w-full max-w-lg my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
+                <div class="px-6 py-4 bg-white border-b border-gray-200">
+                    <h3 class="text-lg font-medium leading-6 text-gray-900">
+                        Registrar Desistência/Abandono de Ata
+                    </h3>
+                    <p class="mt-1 text-xs text-gray-500">
+                        A empresa selecionada perde o direito à contratação; o saldo dos lotes dela
+                        nesta homologação será zerado e um Termo de Registro e Decisão
+                        Administrativa será gerado automaticamente.
+                    </p>
+                </div>
+
+                <div class="px-6 py-4 space-y-4">
+                    <input type="hidden" id="desistenciaHomologacaoId">
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Empresa vencedora</label>
+                        <select id="desistenciaVencedorId"
+                                class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500">
+                            <option value="">Selecione a empresa</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Data da solicitação de assinatura</label>
+                        <input type="date" id="desistenciaDataSolicitacao"
+                               class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Observação (opcional)</label>
+                        <textarea id="desistenciaObservacao" rows="2"
+                                  class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">
+                            Comprovações (convocação, ausência de resposta etc.)
+                        </label>
+                        <input type="file" id="desistenciaAnexos" multiple accept=".pdf,.jpg,.jpeg,.png"
+                               class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500">
+                        <p class="mt-1 text-xs text-gray-500">É possível anexar mais de um arquivo (PDF, JPG ou PNG).</p>
+                    </div>
+                </div>
+
+                <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 sm:flex sm:flex-row-reverse">
+                    <button type="button"
+                            id="btn-confirmar-desistencia"
+                            onclick="enviarDesistencia()"
+                            class="inline-flex justify-center w-full px-4 py-2 text-base font-medium text-white bg-amber-600 border border-transparent rounded-md shadow-sm hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Registrar Desistência
+                    </button>
+                    <button type="button"
+                            onclick="fecharModalDesistencia()"
+                            class="inline-flex justify-center w-full px-4 py-2 mt-3 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Empresas vencedoras por homologação (com base nos lotes vinculados), usado
+        // para popular o <select> do modal de Desistência/Abandono de Ata. Empresas que
+        // já têm desistência registrada nesta homologação não entram na lista.
+        window.homologacaoVencedoresMap = @json(
+            $processo->homologacoes->mapWithKeys(fn ($h) => [
+                $h->id => $h->lotes->pluck('vencedor')->filter()->unique('id')
+                    ->reject(fn ($v) => $h->desistencias->pluck('vencedor_id')->contains($v->id))
+                    ->map(fn ($v) => ['id' => $v->id, 'razao_social' => $v->razao_social])
+                    ->values(),
+            ])
+        );
+    </script>
 
     <!-- Modal para Importação de Itens por Vencedor -->
     <div id="importarItensModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
@@ -2415,6 +2519,93 @@
                 })
                 .catch(err => {
                     showMessage('Erro de rede ao excluir homologação: ' + err.message, 'error');
+                });
+        }
+
+        // Abre o modal de Desistência/Abandono de Ata, populando o <select> de
+        // empresas vencedoras com base nos lotes vinculados a esta homologação.
+        function abrirModalDesistencia(homologacaoId) {
+            document.getElementById('desistenciaHomologacaoId').value = homologacaoId;
+            document.getElementById('desistenciaDataSolicitacao').value = '';
+            document.getElementById('desistenciaObservacao').value = '';
+            document.getElementById('desistenciaAnexos').value = '';
+
+            const select = document.getElementById('desistenciaVencedorId');
+            select.innerHTML = '<option value="">Selecione a empresa</option>';
+            const vencedores = (window.homologacaoVencedoresMap || {})[homologacaoId] || [];
+            vencedores.forEach(v => {
+                const option = document.createElement('option');
+                option.value = v.id;
+                option.textContent = v.razao_social;
+                select.appendChild(option);
+            });
+
+            document.getElementById('desistenciaModal').classList.remove('hidden');
+        }
+
+        function fecharModalDesistencia() {
+            document.getElementById('desistenciaModal').classList.add('hidden');
+        }
+
+        function enviarDesistencia() {
+            const homologacaoId = document.getElementById('desistenciaHomologacaoId').value;
+            const vencedorId = document.getElementById('desistenciaVencedorId').value;
+            const dataSolicitacao = document.getElementById('desistenciaDataSolicitacao').value;
+            const observacao = document.getElementById('desistenciaObservacao').value;
+            const arquivos = document.getElementById('desistenciaAnexos').files;
+
+            if (!vencedorId) {
+                showMessage('Selecione a empresa que desistiu/abandonou a assinatura.', 'error');
+                return;
+            }
+            if (!dataSolicitacao) {
+                showMessage('Informe a data da solicitação de assinatura.', 'error');
+                return;
+            }
+            if (arquivos.length === 0) {
+                showMessage('Anexe ao menos um comprovante de convocação.', 'error');
+                return;
+            }
+
+            if (!confirm('Confirma o registro da desistência? O saldo dos lotes desta empresa nesta homologação será zerado e um Termo de Registro e Decisão Administrativa será gerado.')) {
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('vencedor_id', vencedorId);
+            formData.append('data_solicitacao_assinatura', dataSolicitacao);
+            formData.append('observacao', observacao);
+            for (const arquivo of arquivos) {
+                formData.append('anexos[]', arquivo);
+            }
+            formData.append('_token', '{{ csrf_token() }}');
+
+            const btn = document.getElementById('btn-confirmar-desistencia');
+            const textoOriginal = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Registrando...';
+
+            fetch(`/admin/processos/{{ $processo->id }}/finalizacao/homologacoes/${homologacaoId}/desistencias`, {
+                method: 'POST',
+                headers: { 'Accept': 'application/json' },
+                body: formData
+            })
+                .then(r => r.json().then(data => ({ ok: r.ok, data })))
+                .then(({ ok, data }) => {
+                    if (ok && data.success) {
+                        showMessage(data.message || 'Desistência registrada com sucesso.', 'success');
+                        fecharModalDesistencia();
+                        setTimeout(() => window.location.reload(), 1200);
+                    } else {
+                        showMessage(data.message || 'Erro ao registrar desistência.', 'error');
+                        btn.disabled = false;
+                        btn.textContent = textoOriginal;
+                    }
+                })
+                .catch(err => {
+                    showMessage('Erro de rede ao registrar desistência: ' + err.message, 'error');
+                    btn.disabled = false;
+                    btn.textContent = textoOriginal;
                 });
         }
 

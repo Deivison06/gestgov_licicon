@@ -2,19 +2,18 @@
 
 namespace App\Services;
 
-use App\Models\Processo;
-use App\Models\Documento;
-use App\Models\Vencedor;
 use App\Models\AtaRegistroPreco;
-use Barryvdh\DomPDF\Facade\Pdf;
-use setasign\Fpdi\Tcpdf\Fpdi;
+use App\Models\Documento;
 use App\Models\Homologacao;
+use App\Models\HomologacaoDesistencia;
+use App\Models\Processo;
+use App\Models\Vencedor;
 use App\Services\Assinatura\DocumentoVersaoService;
 use App\Services\Assinatura\PdfWatermarkService;
 use App\Services\Assinatura\SolicitacaoService;
-use App\Services\FinalizacaoDocumentoService;
-use App\Services\HomologacaoService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Log;
+use setasign\Fpdi\Tcpdf\Fpdi;
 
 class FinalizacaoPdfService
 {
@@ -69,7 +68,7 @@ class FinalizacaoPdfService
         Log::info('PDF gerado com sucesso - Finalização', [
             'processo_id' => $processo->id,
             'documento' => $validatedData['documento'],
-            'caminho' => $caminhoCompleto
+            'caminho' => $caminhoCompleto,
         ]);
 
         // =====================================================================
@@ -93,8 +92,8 @@ class FinalizacaoPdfService
             } catch (\Throwable $e) {
                 Log::error('Falha ao iniciar rodada de assinatura — Finalização', [
                     'processo_id' => $processo->id,
-                    'documento'   => $validatedData['documento'],
-                    'erro'        => $e->getMessage(),
+                    'documento' => $validatedData['documento'],
+                    'erro' => $e->getMessage(),
                 ]);
                 // Não revertemos o PDF — ele já está salvo. A rodada pode ser
                 // disparada manualmente depois.
@@ -102,9 +101,9 @@ class FinalizacaoPdfService
         }
 
         return array_filter([
-            'success'    => true,
-            'caminho'    => $caminhoCompleto,
-            'documento'  => $validatedData['documento'],
+            'success' => true,
+            'caminho' => $caminhoCompleto,
+            'documento' => $validatedData['documento'],
             'assinatura' => $infoAssinatura,
         ], fn ($v) => $v !== null);
     }
@@ -152,7 +151,7 @@ class FinalizacaoPdfService
         $listaAssinantes = collect($assinantes)
             ->map(fn ($a, $idx) => [
                 'user_id' => (int) ($a['id'] ?? $a['user_id'] ?? 0),
-                'ordem'   => $modo === 'sequencial' ? (int) ($a['ordem'] ?? $idx + 1) : 0,
+                'ordem' => $modo === 'sequencial' ? (int) ($a['ordem'] ?? $idx + 1) : 0,
             ])
             ->filter(fn ($a) => $a['user_id'] > 0)
             ->values()
@@ -167,10 +166,10 @@ class FinalizacaoPdfService
         );
 
         return [
-            'versao_id'          => $versao->id,
+            'versao_id' => $versao->id,
             'total_solicitacoes' => $solicitacoes->count(),
-            'modo'               => $modo,
-            'prazo_dias'         => $prazoDias,
+            'modo' => $modo,
+            'prazo_dias' => $prazoDias,
         ];
     }
 
@@ -183,6 +182,7 @@ class FinalizacaoPdfService
             return $caminho;
         }
         $candidato = public_path($caminho);
+
         return is_file($candidato) ? $candidato : $caminho;
     }
 
@@ -192,7 +192,7 @@ class FinalizacaoPdfService
      */
     private function normalizarDocumentoAta(?string $documento): array
     {
-        if (!$documento || strpos($documento, 'ata_registro_precos_v') !== 0) {
+        if (! $documento || strpos($documento, 'ata_registro_precos_v') !== 0) {
             return [null, null];
         }
 
@@ -207,7 +207,7 @@ class FinalizacaoPdfService
     private function resolverVencedor(Processo $processo, array $requestData): ?Vencedor
     {
         $vencedorId = $requestData['vencedor_id'] ?? null;
-        if (!$vencedorId) {
+        if (! $vencedorId) {
             return null;
         }
 
@@ -215,7 +215,7 @@ class FinalizacaoPdfService
             ->where('id', $vencedorId)
             ->first();
 
-        if (!$vencedor) {
+        if (! $vencedor) {
             throw new \DomainException('Vencedor não pertence a este processo.');
         }
 
@@ -245,7 +245,7 @@ class FinalizacaoPdfService
         // mesmo quando exibidos dentro de um bloco de homologação (homologação única).
         // Sem isso, o filtro `where('homologacao_id', X)` não encontra o registro e o
         // download falha com uma página de erro.
-        if (!$this->homologacaoService->ehTipoPorHomologacao($tipo)) {
+        if (! $this->homologacaoService->ehTipoPorHomologacao($tipo)) {
             $homologacaoId = null;
         }
 
@@ -271,12 +271,12 @@ class FinalizacaoPdfService
      */
     private function responderDownload(Processo $processo, string $tipo, ?string $caminho, ?int $homologacaoId, ?int $vencedorId)
     {
-        if (!$caminho) {
+        if (! $caminho) {
             throw new \DomainException('Este documento ainda não foi gerado. Clique em "Gerar PDF" antes de baixá-lo.');
         }
 
         $caminhoAbsoluto = public_path($caminho);
-        if (!file_exists($caminhoAbsoluto)) {
+        if (! file_exists($caminhoAbsoluto)) {
             Log::warning('Arquivo do documento não encontrado no disco ao baixar - Finalização', [
                 'processo_id' => $processo->id,
                 'tipo' => $tipo,
@@ -311,7 +311,7 @@ class FinalizacaoPdfService
         $documentos = Documento::where('processo_id', $processo->id)
             ->where(function ($query) use ($tiposPorHomologacao) {
                 $query->whereNotIn('tipo_documento', $tiposPorHomologacao)
-                      ->orWhereNotNull('homologacao_id');
+                    ->orWhereNotNull('homologacao_id');
             })
             ->get();
 
@@ -321,6 +321,7 @@ class FinalizacaoPdfService
     public function baixarTodosDocumentos(Processo $processo)
     {
         $caminho = $this->gerarCaminhoTodosDocumentos($processo);
+
         return response()->download($caminho)->deleteFileAfterSend(true);
     }
 
@@ -355,14 +356,19 @@ class FinalizacaoPdfService
                         }
                     }
                 }
+
                 continue;
             }
 
-            if (!isset($documentosPorTipo[$tipo])) continue;
+            if (! isset($documentosPorTipo[$tipo])) {
+                continue;
+            }
 
             foreach ($documentosPorTipo[$tipo] as $doc) {
                 $caminho = public_path($doc->caminho);
-                if (!file_exists($caminho)) continue;
+                if (! file_exists($caminho)) {
+                    continue;
+                }
                 $arquivos[] = $caminho;
             }
         }
@@ -371,14 +377,15 @@ class FinalizacaoPdfService
             throw new \Exception('Nenhum documento encontrado para mesclar.');
         }
 
-        $nomeArquivo = "processo_finalizacao_" . str_replace(['/', '\\'], '_', $processo->numero_processo) . "_todos_documentos_" . now()->format('Ymd_His') . '.pdf';
-        $caminhoArquivo = public_path('uploads/documentos_finalizacao/' . $nomeArquivo);
+        $nomeArquivo = 'processo_finalizacao_'.str_replace(['/', '\\'], '_', $processo->numero_processo).'_todos_documentos_'.now()->format('Ymd_His').'.pdf';
+        $caminhoArquivo = public_path('uploads/documentos_finalizacao/'.$nomeArquivo);
 
         $caminhoCarimbado = $this->mesclarECarimbarEmLote($arquivos, $caminhoArquivo, $processo, 'finalizar');
 
         if ($caminhoCarimbado) {
             $pageCount = $this->contarPaginasPdf($caminhoCarimbado);
             $this->atualizarContadorContrato($processo, $pageCount);
+
             return $caminhoCarimbado;
         }
 
@@ -386,6 +393,7 @@ class FinalizacaoPdfService
 
         if ($sucesso) {
             Log::warning('PDF mesclado com Ghostscript sem carimbo - Finalização', ['processo_id' => $processo->id]);
+
             return $caminhoArquivo;
         } else {
             throw new \Exception('Erro ao mesclar documentos com Ghostscript');
@@ -399,32 +407,33 @@ class FinalizacaoPdfService
 
         // Modalidades que não usam homologação (Dispensa de Obra): todo documento é
         // tratado como nível-processo (homologacao_id = null no banco).
-        if (!$this->homologacaoService->usaHomologacao($processo)) {
+        if (! $this->homologacaoService->usaHomologacao($processo)) {
             return null;
         }
 
-        if (!$documento || !$this->homologacaoService->ehTipoPorHomologacao($documento)) {
+        if (! $documento || ! $this->homologacaoService->ehTipoPorHomologacao($documento)) {
             return null;
         }
 
-        if (!$homologacaoId) {
+        if (! $homologacaoId) {
             // Quando ainda não existe nenhuma homologação, criamos a primeira
             // automaticamente para que os documentos do bloco placeholder
             // possam ser gerados diretamente.
-            if (!$this->homologacaoService->temHomologacao($processo)) {
+            if (! $this->homologacaoService->temHomologacao($processo)) {
                 $homologacao = $this->homologacaoService->criarNovaHomologacao($processo);
                 Log::info('Primeira homologação criada automaticamente ao gerar PDF', [
                     'processo_id' => $processo->id,
                     'homologacao_id' => $homologacao->id,
                     'documento' => $documento,
                 ]);
+
                 return $homologacao;
             }
 
             // Modalidades de homologação efetivamente única (Concorrência, Inexigibilidade,
             // Dispensa de Obra): se já existe uma homologação e nenhuma foi informada via
             // request, usa a única existente — não faz sentido exigir id.
-            if (!$this->homologacaoService->exigeLotesPendentes($processo)) {
+            if (! $this->homologacaoService->exigeLotesPendentes($processo)) {
                 $homologacao = $processo->homologacoes()->orderBy('id')->first();
                 if ($homologacao) {
                     return $homologacao;
@@ -438,7 +447,7 @@ class FinalizacaoPdfService
             ->where('id', $homologacaoId)
             ->first();
 
-        if (!$homologacao) {
+        if (! $homologacao) {
             throw new \DomainException('Homologação não pertence a este processo.');
         }
 
@@ -457,7 +466,7 @@ class FinalizacaoPdfService
             'documento' => $documento,
             'dataSelecionada' => $dataSelecionada,
             'parecerSelecionado' => $parecerSelecionado,
-            'assinantes' => $assinantes
+            'assinantes' => $assinantes,
         ];
     }
 
@@ -465,7 +474,7 @@ class FinalizacaoPdfService
     {
         $assinantesJson = $requestData['assinantes'] ?? null;
 
-        if (!$assinantesJson) {
+        if (! $assinantesJson) {
             return [];
         }
 
@@ -473,7 +482,8 @@ class FinalizacaoPdfService
         $assinantes = json_decode($assinantesDecoded, true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
-            Log::warning("Erro ao decodificar JSON de assinantes - Finalização: " . json_last_error_msg());
+            Log::warning('Erro ao decodificar JSON de assinantes - Finalização: '.json_last_error_msg());
+
             return [];
         }
 
@@ -484,7 +494,7 @@ class FinalizacaoPdfService
     {
         $processo->load(['finalizacao', 'prefeitura', 'vencedores.lotes']);
 
-        $hasSelectedAssinantes = !empty($validatedData['assinantes']);
+        $hasSelectedAssinantes = ! empty($validatedData['assinantes']);
         $homologacao = $validatedData['homologacao'] ?? null;
         $vencedor = $validatedData['vencedor'] ?? null;
 
@@ -496,13 +506,14 @@ class FinalizacaoPdfService
             $loteIds = $homologacao->lotes->pluck('id');
             $vencedores = $processo->vencedores->map(function ($v) use ($loteIds) {
                 $v->setRelation('lotes', $v->lotes->whereIn('id', $loteIds)->values());
+
                 return $v;
-            })->filter(fn($v) => $v->lotes->isNotEmpty())->values();
+            })->filter(fn ($v) => $v->lotes->isNotEmpty())->values();
         }
 
         // Ata por vencedor: filtra para 1 vencedor só.
         if ($validatedData['documento'] === 'ata_registro_precos' && $vencedor) {
-            $vencedores = $vencedores->filter(fn($v) => $v->id === $vencedor->id)->values();
+            $vencedores = $vencedores->filter(fn ($v) => $v->id === $vencedor->id)->values();
         }
 
         // Resgata Ata persistida (para puxar número/cargo no template).
@@ -531,7 +542,7 @@ class FinalizacaoPdfService
 
     private function determinarViewPdf(Processo $processo, string $documento): string
     {
-        $viewBase = "Admin.Processos.pdf-finalizacao";
+        $viewBase = 'Admin.Processos.pdf-finalizacao';
         $modalidade = $this->formatarNomeArquivo($processo->modalidade?->name ?? '');
 
         if ($processo->modalidade === \App\Enums\ModalidadeEnum::DISPENSA) {
@@ -545,11 +556,55 @@ class FinalizacaoPdfService
             $view = "{$viewBase}.{$modalidade}.{$documento}";
         }
 
-        if (!view()->exists($view)) {
+        if (! view()->exists($view)) {
             throw new \Exception("O modelo de PDF para o documento '{$documento}' não foi encontrado. View: {$view}");
         }
 
         return $view;
+    }
+
+    /**
+     * Gera o "Termo de Registro e Decisão Administrativa" (desistência/abandono da
+     * assinatura da Ata de Registro de Preços por uma empresa vencedora) e devolve
+     * o caminho relativo salvo. Não mexe em Documento/AtaRegistroPreco — a
+     * persistência do registro é feita por HomologacaoDesistenciaService.
+     */
+    public function gerarTermoDesistencia(
+        Processo $processo,
+        Homologacao $homologacao,
+        Vencedor $vencedor,
+        HomologacaoDesistencia $desistencia
+    ): string {
+        $documento = 'termo_desistencia_abandono';
+        $view = $this->determinarViewPdf($processo, $documento);
+
+        $processo->loadMissing('prefeitura');
+
+        $data = [
+            'processo' => $processo,
+            'prefeitura' => $processo->prefeitura,
+            'homologacao' => $homologacao,
+            'vencedor' => $vencedor,
+            'desistencia' => $desistencia,
+            'dataGeracao' => now()->format('d/m/Y H:i:s'),
+        ];
+
+        $pdf = Pdf::loadView($view, $data)->setPaper('a4', 'portrait');
+
+        $subpasta = $this->gerarSubpasta($processo, $documento, $homologacao);
+        $diretorio = public_path("uploads/documentos_finalizacao/{$subpasta}");
+        if (! file_exists($diretorio)) {
+            mkdir($diretorio, 0777, true);
+        }
+
+        $numeroProcessoLimpo = str_replace(['/', '\\'], '_', $processo->numero_processo);
+        $nomeArquivo = "processo_finalizacao_{$numeroProcessoLimpo}_{$documento}_homol{$homologacao->numero_sequencial}_v{$vencedor->id}_".now()->format('Ymd_His').'.pdf';
+        $caminhoCompleto = "{$diretorio}/{$nomeArquivo}";
+        $caminhoRelativo = "uploads/documentos_finalizacao/{$subpasta}/{$nomeArquivo}";
+
+        $pdf->save($caminhoCompleto);
+
+        return $caminhoRelativo;
     }
 
     private function salvarDocumento(Processo $processo, $pdf, array $validatedData): string
@@ -560,7 +615,7 @@ class FinalizacaoPdfService
         $subpasta = $this->gerarSubpasta($processo, $validatedData['documento'], $homologacao);
 
         $diretorio = public_path("uploads/documentos_finalizacao/{$subpasta}");
-        if (!file_exists($diretorio)) {
+        if (! file_exists($diretorio)) {
             mkdir($diretorio, 0777, true);
         }
 
@@ -568,7 +623,7 @@ class FinalizacaoPdfService
         $sufixoVencedor = ($validatedData['documento'] === 'ata_registro_precos' && $vencedor)
             ? "_v{$vencedor->id}"
             : '';
-        $nomeArquivo = "processo_finalizacao_{$numeroProcessoLimpo}_{$validatedData['documento']}{$sufixoHomologacao}{$sufixoVencedor}_" . now()->format('Ymd_His') . '.pdf';
+        $nomeArquivo = "processo_finalizacao_{$numeroProcessoLimpo}_{$validatedData['documento']}{$sufixoHomologacao}{$sufixoVencedor}_".now()->format('Ymd_His').'.pdf';
         $caminhoRelativo = "uploads/documentos_finalizacao/{$subpasta}/{$nomeArquivo}";
         $caminhoCompleto = "{$diretorio}/{$nomeArquivo}";
 
@@ -699,15 +754,15 @@ class FinalizacaoPdfService
     {
         Log::info("🔍 INICIANDO PROCESSAMENTO DE ANEXOS - Finalização: {$documento}", [
             'caminho_principal' => $caminhoPrincipal,
-            'tamanho_inicial' => file_exists($caminhoPrincipal) ? filesize($caminhoPrincipal) : 0
+            'tamanho_inicial' => file_exists($caminhoPrincipal) ? filesize($caminhoPrincipal) : 0,
         ]);
 
         $anexos = $this->obterAnexos($processo, $documento, $homologacao);
 
-        if (!empty($anexos)) {
+        if (! empty($anexos)) {
             Log::info("📎 Anexos encontrados para documento: {$documento}", [
                 'quantidade' => count($anexos),
-                'anexos' => $anexos
+                'anexos' => $anexos,
             ]);
 
             if ($documento === 'atos_sessao') {
@@ -717,18 +772,18 @@ class FinalizacaoPdfService
             }
 
             if ($resultado && file_exists($resultado)) {
-                Log::info("✅ Anexos processados com SUCESSO - Finalização", [
+                Log::info('✅ Anexos processados com SUCESSO - Finalização', [
                     'documento' => $documento,
                     'arquivo_final' => $resultado,
                     'tamanho_final' => filesize($resultado),
                     'anexos_mesclados' => count($anexos),
-                    'metodo_usado' => $documento === 'atos_sessao' ? 'com capa' : 'padrão'
+                    'metodo_usado' => $documento === 'atos_sessao' ? 'com capa' : 'padrão',
                 ]);
             } else {
-                Log::error("❌ Falha ao processar anexos - Finalização", [
+                Log::error('❌ Falha ao processar anexos - Finalização', [
                     'documento' => $documento,
                     'pdf_base' => $caminhoPrincipal,
-                    'anexos' => $anexos
+                    'anexos' => $anexos,
                 ]);
             }
         } else {
@@ -742,18 +797,19 @@ class FinalizacaoPdfService
     {
         try {
             set_time_limit(180);
-            
-            Log::info("INICIANDO JUNÇÃO DE PDFs COM CAPA ESPECIAL - Finalização", [
+
+            Log::info('INICIANDO JUNÇÃO DE PDFs COM CAPA ESPECIAL - Finalização', [
                 'pdf_base' => $pdfBasePath,
-                'anexos' => $anexoPaths
+                'anexos' => $anexoPaths,
             ]);
 
             if (empty($anexoPaths)) {
                 return $pdfBasePath;
             }
 
-            if (!file_exists($pdfBasePath)) {
+            if (! file_exists($pdfBasePath)) {
                 Log::error('Arquivo base não encontrado - Finalização', ['caminho' => $pdfBasePath]);
+
                 return null;
             }
 
@@ -768,8 +824,8 @@ class FinalizacaoPdfService
                 return $pdfBasePath;
             }
 
-            $tempOutput = tempnam(sys_get_temp_dir(), 'capa_special_') . '.pdf';
-            $primeiraPaginaTemp = tempnam(sys_get_temp_dir(), 'primeira_pagina_capa_') . '.pdf';
+            $tempOutput = tempnam(sys_get_temp_dir(), 'capa_special_').'.pdf';
+            $primeiraPaginaTemp = tempnam(sys_get_temp_dir(), 'primeira_pagina_capa_').'.pdf';
             $restoPaginasTemp = null;
 
             $this->extrairPaginasPdf($pdfBasePath, $primeiraPaginaTemp, 1, 1);
@@ -777,7 +833,7 @@ class FinalizacaoPdfService
             $pageCount = $this->contarPaginasPdf($pdfBasePath);
 
             if ($pageCount > 1) {
-                $restoPaginasTemp = tempnam(sys_get_temp_dir(), 'resto_paginas_capa_') . '.pdf';
+                $restoPaginasTemp = tempnam(sys_get_temp_dir(), 'resto_paginas_capa_').'.pdf';
                 $this->extrairPaginasPdf($pdfBasePath, $restoPaginasTemp, 2, $pageCount);
 
                 $todosArquivos = array_merge([$primeiraPaginaTemp], $anexosValidos, [$restoPaginasTemp]);
@@ -785,11 +841,11 @@ class FinalizacaoPdfService
                 $todosArquivos = array_merge([$primeiraPaginaTemp], $anexosValidos);
             }
 
-            Log::info("Estrutura de mesclagem com capa", [
+            Log::info('Estrutura de mesclagem com capa', [
                 'total_arquivos' => count($todosArquivos),
                 'arquivos' => $todosArquivos,
                 'estrutura' => 'Capa (página 1) → Anexos → Resto do conteúdo',
-                'page_count' => $pageCount
+                'page_count' => $pageCount,
             ]);
 
             $sucesso = $this->mesclarPdfsComGhostscript($todosArquivos, $tempOutput);
@@ -798,29 +854,40 @@ class FinalizacaoPdfService
                 copy($tempOutput, $pdfBasePath);
                 unlink($tempOutput);
 
-                if (file_exists($primeiraPaginaTemp)) unlink($primeiraPaginaTemp);
-                if ($restoPaginasTemp && file_exists($restoPaginasTemp)) unlink($restoPaginasTemp);
+                if (file_exists($primeiraPaginaTemp)) {
+                    unlink($primeiraPaginaTemp);
+                }
+                if ($restoPaginasTemp && file_exists($restoPaginasTemp)) {
+                    unlink($restoPaginasTemp);
+                }
 
-                Log::info("PDFs mesclados com estrutura de capa - SUCESSO", [
+                Log::info('PDFs mesclados com estrutura de capa - SUCESSO', [
                     'arquivo_final' => $pdfBasePath,
                     'tamanho_final' => filesize($pdfBasePath),
                     'anexos_mesclados' => count($anexosValidos),
-                    'estrutura' => 'Capa (página 1) + Anexos + Resto do conteúdo'
+                    'estrutura' => 'Capa (página 1) + Anexos + Resto do conteúdo',
                 ]);
 
                 return $pdfBasePath;
             }
 
-            if (file_exists($tempOutput)) unlink($tempOutput);
-            if (file_exists($primeiraPaginaTemp)) unlink($primeiraPaginaTemp);
-            if ($restoPaginasTemp && file_exists($restoPaginasTemp)) unlink($restoPaginasTemp);
+            if (file_exists($tempOutput)) {
+                unlink($tempOutput);
+            }
+            if (file_exists($primeiraPaginaTemp)) {
+                unlink($primeiraPaginaTemp);
+            }
+            if ($restoPaginasTemp && file_exists($restoPaginasTemp)) {
+                unlink($restoPaginasTemp);
+            }
 
             return null;
         } catch (\Exception $e) {
             Log::error('Erro ao mesclar PDFs com capa', [
                 'erro' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
+
             return null;
         }
     }
@@ -831,8 +898,9 @@ class FinalizacaoPdfService
         $mapeamentoAnexos = $this->documentoService->getMapeamentoAnexos();
         $campoAnexo = $mapeamentoAnexos[$documento] ?? null;
 
-        if (!$campoAnexo) {
+        if (! $campoAnexo) {
             Log::info("Nenhum mapeamento de anexo encontrado para documento: {$documento}");
+
             return $anexos;
         }
 
@@ -841,7 +909,7 @@ class FinalizacaoPdfService
             ? $homologacao
             : $processo->finalizacao;
 
-        if (!empty($fonteAnexo?->$campoAnexo)) {
+        if (! empty($fonteAnexo?->$campoAnexo)) {
             $caminhoRelativo = $fonteAnexo->$campoAnexo;
             $caminho = public_path($caminhoRelativo);
 
@@ -852,19 +920,19 @@ class FinalizacaoPdfService
                     'caminho_relativo' => $caminhoRelativo,
                     'caminho_absoluto' => $caminho,
                     'existe' => file_exists($caminho),
-                    'tamanho' => filesize($caminho)
+                    'tamanho' => filesize($caminho),
                 ]);
             } else {
-                Log::warning("Anexo não encontrado no sistema de arquivos", [
+                Log::warning('Anexo não encontrado no sistema de arquivos', [
                     'campo' => $campoAnexo,
                     'caminho_relativo' => $caminhoRelativo,
-                    'caminho_absoluto' => $caminho
+                    'caminho_absoluto' => $caminho,
                 ]);
             }
         } else {
             Log::info("Campo de anexo vazio para documento: {$documento}", [
                 'campo' => $campoAnexo,
-                'finalizacao_existe' => !is_null($processo->finalizacao)
+                'finalizacao_existe' => ! is_null($processo->finalizacao),
             ]);
         }
 
@@ -874,15 +942,16 @@ class FinalizacaoPdfService
     private function juntarPdfsComGhostscript(string $pdfBasePath, array $anexoPaths): ?string
     {
         try {
-            Log::info("INICIANDO JUNÇÃO DE PDFs COM PÁGINA DE CAPA - Finalização", [
+            Log::info('INICIANDO JUNÇÃO DE PDFs COM PÁGINA DE CAPA - Finalização', [
                 'pdf_base' => $pdfBasePath,
                 'anexos_recebidos' => $anexoPaths,
                 'base_existe' => file_exists($pdfBasePath),
-                'base_tamanho' => file_exists($pdfBasePath) ? filesize($pdfBasePath) : 0
+                'base_tamanho' => file_exists($pdfBasePath) ? filesize($pdfBasePath) : 0,
             ]);
 
-            if (!file_exists($pdfBasePath)) {
+            if (! file_exists($pdfBasePath)) {
                 Log::error('❌ ARQUIVO BASE NÃO ENCONTRADO - Finalização', ['caminho' => $pdfBasePath]);
+
                 return null;
             }
 
@@ -890,8 +959,9 @@ class FinalizacaoPdfService
             if ($tamanhoBase === 0 || $tamanhoBase === false) {
                 Log::error('❌ ARQUIVO BASE VAZIO OU INVÁLIDO - Finalização', [
                     'caminho' => $pdfBasePath,
-                    'tamanho' => $tamanhoBase
+                    'tamanho' => $tamanhoBase,
                 ]);
+
                 return null;
             }
 
@@ -899,31 +969,32 @@ class FinalizacaoPdfService
             foreach ($anexoPaths as $index => $anexoPath) {
                 if (file_exists($anexoPath) && filesize($anexoPath) > 0) {
                     $anexosValidos[] = $anexoPath;
-                    Log::info("✅ Anexo válido confirmado - Finalização", [
+                    Log::info('✅ Anexo válido confirmado - Finalização', [
                         'indice' => $index,
                         'anexo' => $anexoPath,
-                        'tamanho' => filesize($anexoPath)
+                        'tamanho' => filesize($anexoPath),
                     ]);
                 } else {
                     Log::warning('⚠️ Anexo ignorado (não existe ou está vazio) - Finalização', [
                         'indice' => $index,
                         'anexo' => $anexoPath,
                         'existe' => file_exists($anexoPath),
-                        'tamanho' => file_exists($anexoPath) ? filesize($anexoPath) : 0
+                        'tamanho' => file_exists($anexoPath) ? filesize($anexoPath) : 0,
                     ]);
                 }
             }
 
             if (empty($anexosValidos)) {
-                Log::info("ℹ️ Nenhum anexo válido para mesclar - retornando arquivo base original", [
-                    'pdf_base' => $pdfBasePath
+                Log::info('ℹ️ Nenhum anexo válido para mesclar - retornando arquivo base original', [
+                    'pdf_base' => $pdfBasePath,
                 ]);
+
                 return $pdfBasePath;
             }
 
-            $tempOutput = tempnam(sys_get_temp_dir(), 'merged_pdf_finalizacao_') . '.pdf';
-            $primeiraPaginaTemp = tempnam(sys_get_temp_dir(), 'primeira_pagina_') . '.pdf';
-            $restoPaginasTemp = tempnam(sys_get_temp_dir(), 'resto_paginas_') . '.pdf()';
+            $tempOutput = tempnam(sys_get_temp_dir(), 'merged_pdf_finalizacao_').'.pdf';
+            $primeiraPaginaTemp = tempnam(sys_get_temp_dir(), 'primeira_pagina_').'.pdf';
+            $restoPaginasTemp = tempnam(sys_get_temp_dir(), 'resto_paginas_').'.pdf()';
 
             $this->extrairPaginasPdf($pdfBasePath, $primeiraPaginaTemp, 1, 1);
 
@@ -932,20 +1003,20 @@ class FinalizacaoPdfService
                 $this->extrairPaginasPdf($pdfBasePath, $restoPaginasTemp, 2, $pageCount);
 
                 $todosArquivos = array_merge(
-                    [$primeiraPaginaTemp], 
-                    $anexosValidos, 
+                    [$primeiraPaginaTemp],
+                    $anexosValidos,
                     [$restoPaginasTemp]
                 );
             } else {
                 $todosArquivos = array_merge([$primeiraPaginaTemp], $anexosValidos);
             }
 
-            Log::info("🔄 Iniciando mesclagem com estrutura de capa - Finalização", [
+            Log::info('🔄 Iniciando mesclagem com estrutura de capa - Finalização', [
                 'total_arquivos' => count($todosArquivos),
                 'arquivos' => $todosArquivos,
                 'arquivo_saida_temp' => $tempOutput,
                 'pagina_capa' => $primeiraPaginaTemp,
-                'resto_paginas' => $restoPaginasTemp ?? 'N/A'
+                'resto_paginas' => $restoPaginasTemp ?? 'N/A',
             ]);
 
             $sucesso = $this->mesclarPdfsComGhostscript($todosArquivos, $tempOutput);
@@ -953,24 +1024,28 @@ class FinalizacaoPdfService
             if ($sucesso && file_exists($tempOutput) && filesize($tempOutput) > 0) {
                 $tamanhoTemp = filesize($tempOutput);
 
-                Log::info("✅ Arquivo temporário gerado com sucesso - Finalização", [
+                Log::info('✅ Arquivo temporário gerado com sucesso - Finalização', [
                     'caminho_temp' => $tempOutput,
                     'tamanho_temp' => $tamanhoTemp,
-                    'estrutura' => 'Capa → Anexos → Resto do conteúdo'
+                    'estrutura' => 'Capa → Anexos → Resto do conteúdo',
                 ]);
 
                 if (copy($tempOutput, $pdfBasePath)) {
                     $tamanhoFinal = filesize($pdfBasePath);
-                    Log::info("🎉 PDFs mesclados com SUCESSO - Finalização", [
+                    Log::info('🎉 PDFs mesclados com SUCESSO - Finalização', [
                         'arquivo_final' => $pdfBasePath,
                         'tamanho_final' => $tamanhoFinal,
                         'anexos_mesclados' => count($anexosValidos),
-                        'estrutura_final' => 'Capa (página 1) + Anexos + Resto do conteúdo'
+                        'estrutura_final' => 'Capa (página 1) + Anexos + Resto do conteúdo',
                     ]);
 
                     unlink($tempOutput);
-                    if (file_exists($primeiraPaginaTemp)) unlink($primeiraPaginaTemp);
-                    if (file_exists($restoPaginasTemp)) unlink($restoPaginasTemp);
+                    if (file_exists($primeiraPaginaTemp)) {
+                        unlink($primeiraPaginaTemp);
+                    }
+                    if (file_exists($restoPaginasTemp)) {
+                        unlink($restoPaginasTemp);
+                    }
 
                     return $pdfBasePath;
                 } else {
@@ -980,13 +1055,19 @@ class FinalizacaoPdfService
                 Log::error('❌ Falha na mesclagem com Ghostscript - Finalização', [
                     'sucesso' => $sucesso,
                     'temp_output_existe' => file_exists($tempOutput),
-                    'temp_output_tamanho' => file_exists($tempOutput) ? filesize($tempOutput) : 0
+                    'temp_output_tamanho' => file_exists($tempOutput) ? filesize($tempOutput) : 0,
                 ]);
             }
 
-            if (file_exists($tempOutput)) unlink($tempOutput);
-            if (file_exists($primeiraPaginaTemp)) unlink($primeiraPaginaTemp);
-            if (file_exists($restoPaginasTemp)) unlink($restoPaginasTemp);
+            if (file_exists($tempOutput)) {
+                unlink($tempOutput);
+            }
+            if (file_exists($primeiraPaginaTemp)) {
+                unlink($primeiraPaginaTemp);
+            }
+            if (file_exists($restoPaginasTemp)) {
+                unlink($restoPaginasTemp);
+            }
 
             return null;
         } catch (\Exception $e) {
@@ -994,8 +1075,9 @@ class FinalizacaoPdfService
                 'erro' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
                 'pdf_base' => $pdfBasePath,
-                'anexos' => $anexoPaths
+                'anexos' => $anexoPaths,
             ]);
+
             return null;
         }
     }
@@ -1013,7 +1095,7 @@ class FinalizacaoPdfService
 
             $output = [];
             $returnCode = 0;
-            exec($comando . ' 2>&1', $output, $returnCode);
+            exec($comando.' 2>&1', $output, $returnCode);
 
             if ($returnCode === 0 && file_exists($outputPath) && filesize($outputPath) > 0) {
                 Log::info('Páginas extraídas com sucesso', [
@@ -1021,18 +1103,21 @@ class FinalizacaoPdfService
                     'arquivo_saida' => $outputPath,
                     'pagina_inicio' => $startPage,
                     'pagina_fim' => $endPage,
-                    'tamanho_saida' => filesize($outputPath)
+                    'tamanho_saida' => filesize($outputPath),
                 ]);
+
                 return true;
             } else {
                 Log::error('Erro ao extrair páginas', [
                     'return_code' => $returnCode,
-                    'saida' => implode("\n", $output)
+                    'saida' => implode("\n", $output),
                 ]);
+
                 return false;
             }
         } catch (\Exception $e) {
             Log::error('Exceção ao extrair páginas', ['erro' => $e->getMessage()]);
+
             return false;
         }
     }
@@ -1044,14 +1129,16 @@ class FinalizacaoPdfService
         try {
             $arquivosValidos = [];
             foreach ($arquivos as $index => $arquivo) {
-                if (!file_exists($arquivo)) {
+                if (! file_exists($arquivo)) {
                     Log::error('Arquivo não encontrado para mesclagem - Finalização', ['arquivo' => $arquivo]);
+
                     return false;
                 }
 
                 $tamanho = filesize($arquivo);
                 if ($tamanho === 0) {
                     Log::error('Arquivo vazio encontrado - Finalização', ['arquivo' => $arquivo]);
+
                     return false;
                 }
 
@@ -1066,9 +1153,9 @@ class FinalizacaoPdfService
             exec('command -v pdfunite', $out, $returnCode);
             if ($returnCode === 0) {
                 $arquivosStr = implode(' ', array_map('escapeshellarg', $arquivosValidos));
-                $cmdUnite = "pdfunite {$arquivosStr} " . escapeshellarg($outputPath);
+                $cmdUnite = "pdfunite {$arquivosStr} ".escapeshellarg($outputPath);
                 Log::info('Executando pdfunite (Alta velocidade)', ['comando' => $cmdUnite]);
-                exec($cmdUnite . ' 2>&1', $output, $returnCode);
+                exec($cmdUnite.' 2>&1', $output, $returnCode);
                 if ($returnCode === 0 && file_exists($outputPath) && filesize($outputPath) > 0) {
                     return true;
                 }
@@ -1083,12 +1170,12 @@ class FinalizacaoPdfService
 
             Log::info('Executando Ghostscript (Fallback)', [
                 'comando' => $comando,
-                'quantidade_arquivos' => count($arquivosValidos)
+                'quantidade_arquivos' => count($arquivosValidos),
             ]);
 
             $output = [];
             $returnCode = 0;
-            exec($comando . ' 2>&1', $output, $returnCode);
+            exec($comando.' 2>&1', $output, $returnCode);
 
             $outputExiste = file_exists($outputPath);
             $outputTamanho = $outputExiste ? filesize($outputPath) : 0;
@@ -1096,20 +1183,23 @@ class FinalizacaoPdfService
             if ($returnCode === 0 && $outputExiste && $outputTamanho > 0) {
                 Log::info('PDFs mesclados com sucesso', [
                     'arquivo_saida' => $outputPath,
-                    'tamanho' => $outputTamanho
+                    'tamanho' => $outputTamanho,
                 ]);
+
                 return true;
             } else {
                 Log::error('Erro ao mesclar PDFs', [
                     'return_code' => $returnCode,
-                    'output' => implode("\n", $output)
+                    'output' => implode("\n", $output),
                 ]);
+
                 return false;
             }
         } catch (\Exception $e) {
             Log::error('Exceção ao mesclar PDFs com Ghostscript - Finalização', [
-                'erro' => $e->getMessage()
+                'erro' => $e->getMessage(),
             ]);
+
             return false;
         } finally {
             if ($listaArquivos && file_exists($listaArquivos)) {
@@ -1126,7 +1216,7 @@ class FinalizacaoPdfService
         try {
             Log::info("Iniciando mesclarECarimbarEmLote - {$fase}", [
                 'processo_id' => $processo->id,
-                'total_arquivos' => count($arquivos)
+                'total_arquivos' => count($arquivos),
             ]);
 
             $pageCountTotal = 0;
@@ -1145,15 +1235,19 @@ class FinalizacaoPdfService
             $chunkSize = 50; // Processar em blocos para equilibrar memória e performance
 
             foreach ($arquivos as $arquivo) {
-                if (!file_exists($arquivo) || filesize($arquivo) == 0) continue;
+                if (! file_exists($arquivo) || filesize($arquivo) == 0) {
+                    continue;
+                }
 
                 $pageCount = $this->contarPaginasPdf($arquivo);
-                if ($pageCount === 0) continue;
+                if ($pageCount === 0) {
+                    continue;
+                }
 
-                Log::info("Carimbando arquivo", ['arquivo' => basename($arquivo), 'paginas' => $pageCount]);
+                Log::info('Carimbando arquivo', ['arquivo' => basename($arquivo), 'paginas' => $pageCount]);
 
                 for ($i = 1; $i <= $pageCount; $i += $chunkSize) {
-                    $pdf = new Fpdi();
+                    $pdf = new Fpdi;
                     $this->configurarFonte($pdf);
                     $pdf->setSourceFile($arquivo);
 
@@ -1171,18 +1265,19 @@ class FinalizacaoPdfService
                         $paginaAtual++;
                     }
 
-                    $tempPath = sys_get_temp_dir() . "/chunk_{$fase}_" . uniqid() . '.pdf';
+                    $tempPath = sys_get_temp_dir()."/chunk_{$fase}_".uniqid().'.pdf';
                     $pdf->Output($tempPath, 'F');
                     $chunksTemp[] = $tempPath;
                     unset($pdf);
                 }
             }
 
-            Log::info("Mesclando os chunks gerados via Ghostscript", ['total_chunks' => count($chunksTemp)]);
+            Log::info('Mesclando os chunks gerados via Ghostscript', ['total_chunks' => count($chunksTemp)]);
             $sucesso = $this->mesclarPdfsComGhostscript($chunksTemp, $caminhoSaida);
 
             if ($sucesso && file_exists($caminhoSaida) && filesize($caminhoSaida) > 0) {
-                Log::info("PDF mesclado e carimbado gerado com sucesso", ['caminho_saida' => $caminhoSaida]);
+                Log::info('PDF mesclado e carimbado gerado com sucesso', ['caminho_saida' => $caminhoSaida]);
+
                 return $caminhoSaida;
             }
 
@@ -1190,8 +1285,9 @@ class FinalizacaoPdfService
         } catch (\Exception $e) {
             Log::error('Erro ao mesclar e carimbar PDFs em lote - Finalização', [
                 'erro' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
+
             return null;
         } finally {
             foreach ($chunksTemp as $tempFile) {
@@ -1212,12 +1308,12 @@ class FinalizacaoPdfService
                 'processo_id' => $processo->id,
                 'paginas_inicializacao' => $processo->contTotalPage ?? 0,
                 'paginas_finalizacao' => $paginasFinalizacao,
-                'total_para_contrato' => ($processo->contTotalPage ?? 0) + $paginasFinalizacao
+                'total_para_contrato' => ($processo->contTotalPage ?? 0) + $paginasFinalizacao,
             ]);
         } catch (\Exception $e) {
             Log::error('Erro ao atualizar contador para contrato', [
                 'processo_id' => $processo->id,
-                'erro' => $e->getMessage()
+                'erro' => $e->getMessage(),
             ]);
         }
     }
@@ -1253,12 +1349,12 @@ class FinalizacaoPdfService
         $paginaAbsoluta = $paginaInicial + $paginaAtual;
         $totalAbsoluto = $paginaInicial + $pageCountTotal;
 
-        $codigoAutenticacao = $processo->prefeitura->id . now()->format('HisdmY');
-        $textoCarimbo = "Processo numerado por: {$processo->responsavel_numeracao} " .
-            "Cargo: {$processo->unidade_numeracao} " .
-            "Portaria nº {$processo->portaria_numeracao} " .
-            "Pág. {$paginaAbsoluta} - " .
-            "Documento gerado na Plataforma GestGov - Licenciado para Prefeitura de {$processo->prefeitura->cidade}. " .
+        $codigoAutenticacao = $processo->prefeitura->id.now()->format('HisdmY');
+        $textoCarimbo = "Processo numerado por: {$processo->responsavel_numeracao} ".
+            "Cargo: {$processo->unidade_numeracao} ".
+            "Portaria nº {$processo->portaria_numeracao} ".
+            "Pág. {$paginaAbsoluta} - ".
+            "Documento gerado na Plataforma GestGov - Licenciado para Prefeitura de {$processo->prefeitura->cidade}. ".
             "Cod. de Autenticação: {$codigoAutenticacao} - Para autenticar acesse gestgov.com.br/autenticacao";
 
         $pdf->StartTransform();
@@ -1277,13 +1373,15 @@ class FinalizacaoPdfService
     private function contarPaginasPdf(string $caminhoPdf): int
     {
         try {
-            $pdf = new Fpdi();
+            $pdf = new Fpdi;
+
             return $pdf->setSourceFile($caminhoPdf);
         } catch (\Exception $e) {
             Log::error('Erro ao contar páginas do PDF - Finalização', [
                 'caminho' => $caminhoPdf,
-                'erro' => $e->getMessage()
+                'erro' => $e->getMessage(),
             ]);
+
             return 0;
         }
     }
@@ -1291,6 +1389,7 @@ class FinalizacaoPdfService
     private function formatarNomeArquivo(string $nome): string
     {
         $nome = strtolower(iconv('UTF-8', 'ASCII//TRANSLIT', $nome));
+
         return str_replace(' ', '_', $nome);
     }
 }

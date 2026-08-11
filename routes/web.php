@@ -475,6 +475,16 @@ Route::prefix('admin')
             Route::delete('/homologacoes/{homologacao}', [FinalizacaoProcessoController::class, 'deletarHomologacao'])
                 ->name('homologacoes.destroy');
 
+            // Desistência/abandono da assinatura da Ata por uma empresa vencedora
+            Route::post('/homologacoes/{homologacao}/desistencias', [FinalizacaoProcessoController::class, 'registrarDesistencia'])
+                ->name('homologacoes.desistencias.store');
+
+            Route::get('/homologacoes/{homologacao}/desistencias/{desistencia}/pdf/baixar', [FinalizacaoProcessoController::class, 'baixarPdfDesistencia'])
+                ->name('homologacoes.desistencias.pdf.baixar');
+
+            Route::get('/homologacoes/{homologacao}/desistencias/{desistencia}/anexos/{anexo}/baixar', [FinalizacaoProcessoController::class, 'baixarAnexoDesistencia'])
+                ->name('homologacoes.desistencias.anexo.baixar');
+
             // Gerar PDF da finalização
             Route::get('/pdf', [FinalizacaoProcessoController::class, 'gerarPdf'])
                 ->name('pdf');

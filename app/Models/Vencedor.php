@@ -20,7 +20,7 @@ class Vencedor extends Model
         'representante',
         'cpf',
         'endereco', // <-- ADICIONE AQUI
-        'ordem'
+        'ordem',
     ];
 
     /**
@@ -53,6 +53,11 @@ class Vencedor extends Model
         return $this->hasMany(AtaRegistroPreco::class);
     }
 
+    public function desistencias(): HasMany
+    {
+        return $this->hasMany(HomologacaoDesistencia::class);
+    }
+
     /**
      * Scope a query to only include vencedores from a specific processo.
      */
@@ -75,6 +80,7 @@ class Vencedor extends Model
     public function getCnpjFormatadoAttribute(): string
     {
         $cnpj = $this->cnpj;
+
         return preg_replace('/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/', '$1.$2.$3/$4-$5', $cnpj);
     }
 
@@ -84,6 +90,7 @@ class Vencedor extends Model
     public function getCpfFormatadoAttribute(): string
     {
         $cpf = $this->cpf;
+
         return preg_replace('/(\d{3})(\d{3})(\d{3})(\d{2})/', '$1.$2.$3-$4', $cpf);
     }
 

@@ -85,6 +85,13 @@
                                     Gerado em {{ \Carbon\Carbon::parse($documentoGerado->gerado_em)->format('d/m/Y H:i') }}
                                 </span>
                             @endif
+                            @if ($isAtaDinamica && $documentoGerado && $documentoGerado->is_invalidada)
+                                <span class="inline-flex items-center gap-1 ml-2 px-2 py-0.5 text-xs font-medium text-red-700 bg-red-100 rounded-full align-middle"
+                                      title="Empresa desistiu/abandonou a assinatura desta Ata — vide Termo de Registro e Decisão Administrativa">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    Ata invalidada
+                                </span>
+                            @endif
                         </div>
                     </div>
                     @if ($temCampos || $requerAssinatura)

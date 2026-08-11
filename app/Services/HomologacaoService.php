@@ -106,7 +106,7 @@ class HomologacaoService
      */
     public function usaHomologacao(Processo $processo): bool
     {
-        return !($processo->modalidade === ModalidadeEnum::DISPENSA
+        return ! ($processo->modalidade === ModalidadeEnum::DISPENSA
             && $processo->tipo_procedimento === TipoProcedimentoEnum::OBRA);
     }
 
@@ -119,8 +119,8 @@ class HomologacaoService
      */
     public function ehHomologacaoUnica(Processo $processo): bool
     {
-        return !$this->permiteHomologacaoParcial($processo)
-            || !$this->usaHomologacao($processo);
+        return ! $this->permiteHomologacaoParcial($processo)
+            || ! $this->usaHomologacao($processo);
     }
 
     /**
@@ -133,7 +133,7 @@ class HomologacaoService
      */
     public function exigeLotesPendentes(Processo $processo): bool
     {
-        if (!$this->permiteHomologacaoParcial($processo)) {
+        if (! $this->permiteHomologacaoParcial($processo)) {
             return false;
         }
 
@@ -155,11 +155,11 @@ class HomologacaoService
      */
     public function podeCriarNovaHomologacao(Processo $processo): bool
     {
-        if (!$this->temHomologacao($processo)) {
+        if (! $this->temHomologacao($processo)) {
             return true;
         }
 
-        if (!$this->permiteHomologacaoParcial($processo)) {
+        if (! $this->permiteHomologacaoParcial($processo)) {
             return false;
         }
 
@@ -181,10 +181,10 @@ class HomologacaoService
     public function criarNovaHomologacao(Processo $processo): Homologacao
     {
         return DB::transaction(function () use ($processo) {
-            if ($this->temHomologacao($processo) && !$this->permiteHomologacaoParcial($processo)) {
+            if ($this->temHomologacao($processo) && ! $this->permiteHomologacaoParcial($processo)) {
                 throw new \DomainException(
                     'Esta modalidade admite apenas uma homologação completa. '
-                    . 'Edite a homologação existente em vez de criar uma nova.'
+                    .'Edite a homologação existente em vez de criar uma nova.'
                 );
             }
 
@@ -244,6 +244,16 @@ class HomologacaoService
             // Deletar documentos e atas gerados para evitar lixo
             $homologacao->documentos()->delete();
             $homologacao->atasRegistroPreco()->delete();
+
+            // Desistências: remove os arquivos físicos (PDF + anexos de comprovação)
+            // antes de apagar os registros — evita lixo em disco.
+            foreach ($homologacao->desistencias as $desistencia) {
+                foreach ($desistencia->anexos as $anexo) {
+                    \App\Support\FileStorage::remover($anexo->caminho);
+                }
+                \App\Support\FileStorage::remover($desistencia->caminho_pdf);
+            }
+            $homologacao->desistencias()->delete();
 
             if ($homologacao->contrato()->exists()) {
                 $homologacao->contrato()->delete();

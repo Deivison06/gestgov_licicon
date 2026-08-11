@@ -12,7 +12,9 @@ class Homologacao extends Model
     protected $table = 'homologacoes';
 
     public const STATUS_EM_EDICAO = 'EM_EDICAO';
+
     public const STATUS_HOMOLOGADA = 'HOMOLOGADA';
+
     public const STATUS_CANCELADA = 'CANCELADA';
 
     protected $fillable = [
@@ -73,6 +75,11 @@ class Homologacao extends Model
     public function atasRegistroPreco(): HasMany
     {
         return $this->hasMany(AtaRegistroPreco::class);
+    }
+
+    public function desistencias(): HasMany
+    {
+        return $this->hasMany(HomologacaoDesistencia::class);
     }
 
     public function getValorTotalLotesAttribute(): float
