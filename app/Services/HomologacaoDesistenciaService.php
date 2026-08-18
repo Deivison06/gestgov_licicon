@@ -27,7 +27,7 @@ class HomologacaoDesistenciaService
     ) {}
 
     /**
-     * @param  array{data_solicitacao_assinatura: string, observacao?: string|null}  $dados
+     * @param  array{data_solicitacao_assinatura: string, data_decisao: string, observacao?: string|null}  $dados
      * @param  UploadedFile[]  $arquivos
      */
     public function registrar(Homologacao $homologacao, Vencedor $vencedor, array $dados, array $arquivos): HomologacaoDesistencia
@@ -60,6 +60,7 @@ class HomologacaoDesistenciaService
                 'vencedor_id' => $vencedor->id,
                 'user_id' => auth()->id(),
                 'data_solicitacao_assinatura' => $dados['data_solicitacao_assinatura'],
+                'data_decisao' => $dados['data_decisao'],
                 'observacao' => $dados['observacao'] ?? null,
                 'quantidade_lotes_snapshot' => $snapshot,
             ]);
@@ -92,6 +93,45 @@ class HomologacaoDesistenciaService
                 ->update(['invalidada_em' => now()]);
 
             $caminhoPdf = $this->pdfService->gerarTermoDesistencia($homologacao->processo, $homologacao, $vencedor, $desistencia);
+
+            $desistencia->update([
+                'caminho_pdf' => $caminhoPdf,
+                'gerado_em' => now(),
+            ]);
+
+            return $desistencia->refresh();
+        });
+    }
+
+    /**
+     * Corrige data de convocação/decisão e observação de uma desistência já
+     * registrada, e regera o Termo de Registro e Decisão Administrativa com os
+     * dados corrigidos (o PDF antigo é substituído — o registro/anexos de
+     * comprovação não são tocados).
+     *
+     * @param  array{data_solicitacao_assinatura: string, data_decisao: string, observacao?: string|null}  $dados
+     */
+    public function atualizar(Homologacao $homologacao, HomologacaoDesistencia $desistencia, array $dados): HomologacaoDesistencia
+    {
+        if ($desistencia->homologacao_id !== $homologacao->id) {
+            throw new \DomainException('Desistência não pertence a esta homologação.');
+        }
+
+        return DB::transaction(function () use ($homologacao, $desistencia, $dados) {
+            $desistencia->update([
+                'data_solicitacao_assinatura' => $dados['data_solicitacao_assinatura'],
+                'data_decisao' => $dados['data_decisao'],
+                'observacao' => $dados['observacao'] ?? null,
+            ]);
+
+            FileStorage::remover($desistencia->caminho_pdf);
+
+            $caminhoPdf = $this->pdfService->gerarTermoDesistencia(
+                $homologacao->processo,
+                $homologacao,
+                $desistencia->vencedor,
+                $desistencia
+            );
 
             $desistencia->update([
                 'caminho_pdf' => $caminhoPdf,

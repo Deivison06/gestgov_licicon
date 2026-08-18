@@ -892,10 +892,10 @@
 
     <!-- Modal para Adicionar/Editar Vencedor -->
     <div id="vencedorModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
-        <div class="flex items-end justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-4 text-center sm:p-0">
             <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" onclick="fecharModal()"></div>
 
-            <div class="inline-block w-full max-w-2xl my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
+            <div class="inline-block w-full max-w-2xl overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl sm:my-8">
                 <div class="px-6 py-4 bg-white border-b border-gray-200">
                     <h3 class="text-lg font-medium leading-6 text-gray-900" id="modalTitle">
                         Adicionar Vencedor
@@ -973,11 +973,11 @@
     </div>
 
     <!-- Modal para Registrar Desistência/Abandono de Ata -->
-    <div id="desistenciaModal" class="fixed inset-20 z-50 hidden overflow-y-auto">
-        <div class="flex items-end justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+    <div id="desistenciaModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-4 text-center sm:p-0">
             <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" onclick="fecharModalDesistencia()"></div>
 
-            <div class="inline-block w-full max-w-lg my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
+            <div class="inline-block w-full max-w-lg overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl sm:my-8">
                 <div class="px-6 py-4 bg-white border-b border-gray-200">
                     <h3 class="text-lg font-medium leading-6 text-gray-900">
                         Registrar Desistência/Abandono de Ata
@@ -1001,9 +1001,17 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Data da solicitação de assinatura</label>
+                        <label class="block text-sm font-medium text-gray-700">Data da solicitação de assinatura (convocação)</label>
                         <input type="date" id="desistenciaDataSolicitacao"
                                class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500">
+                        <p class="mt-1 text-xs text-gray-500">Data em que a Ata foi encaminhada à empresa para assinatura.</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Data do Termo de Decisão Administrativa</label>
+                        <input type="date" id="desistenciaDataDecisao"
+                               class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500">
+                        <p class="mt-1 text-xs text-gray-500">Data em que a decisão foi tomada (ex.: após o prazo de resposta vencido) — é a data que sai no rodapé do Termo, independente de quando o PDF for gerado no sistema.</p>
                     </div>
 
                     <div>
@@ -1039,6 +1047,64 @@
         </div>
     </div>
 
+    <!-- Modal para Editar Desistência/Abandono de Ata (corrige datas/observação e regera o Termo) -->
+    <div id="editarDesistenciaModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-4 text-center sm:p-0">
+            <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" onclick="fecharEditarDesistencia()"></div>
+
+            <div class="inline-block w-full max-w-lg overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl sm:my-8">
+                <div class="px-6 py-4 bg-white border-b border-gray-200">
+                    <h3 class="text-lg font-medium leading-6 text-gray-900">
+                        Editar Desistência — <span id="editarDesistenciaVencedorNome"></span>
+                    </h3>
+                    <p class="mt-1 text-xs text-gray-500">
+                        Corrige as datas/observação deste registro e regera automaticamente o Termo
+                        de Registro e Decisão Administrativa (o PDF antigo é substituído). Empresa e
+                        anexos de comprovação não podem ser alterados aqui.
+                    </p>
+                </div>
+
+                <div class="px-6 py-4 space-y-4">
+                    <input type="hidden" id="editarDesistenciaHomologacaoId">
+                    <input type="hidden" id="editarDesistenciaId">
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Data da solicitação de assinatura (convocação)</label>
+                        <input type="date" id="editarDesistenciaDataSolicitacao"
+                               class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Data do Termo de Decisão Administrativa</label>
+                        <input type="date" id="editarDesistenciaDataDecisao"
+                               class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500">
+                        <p class="mt-1 text-xs text-gray-500">É a data que sai no rodapé do Termo regerado.</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Observação (opcional)</label>
+                        <textarea id="editarDesistenciaObservacao" rows="2"
+                                  class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500"></textarea>
+                    </div>
+                </div>
+
+                <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 sm:flex sm:flex-row-reverse">
+                    <button type="button"
+                            id="btn-salvar-edicao-desistencia"
+                            onclick="salvarEdicaoDesistencia()"
+                            class="inline-flex justify-center w-full px-4 py-2 text-base font-medium text-white bg-amber-600 border border-transparent rounded-md shadow-sm hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Salvar e Regerar Termo
+                    </button>
+                    <button type="button"
+                            onclick="fecharEditarDesistencia()"
+                            class="inline-flex justify-center w-full px-4 py-2 mt-3 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Empresas vencedoras por homologação (com base nos lotes vinculados), usado
         // para popular o <select> do modal de Desistência/Abandono de Ata. Empresas que
@@ -1055,10 +1121,10 @@
 
     <!-- Modal para Importação de Itens por Vencedor -->
     <div id="importarItensModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
-        <div class="flex items-end justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-4 text-center sm:p-0">
             <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" onclick="fecharImportarModal()"></div>
 
-            <div class="inline-block w-full max-w-2xl my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
+            <div class="inline-block w-full max-w-2xl overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl sm:my-8">
                 <div class="px-6 py-4 bg-white border-b border-gray-200">
                     <h3 class="text-lg font-medium leading-6 text-gray-900" id="importarModalTitle">
                         Importar {{ $processo->tipo_contratacao === 'LOTE' ? 'Lotes' : 'Itens' }} para Vencedor
@@ -1131,10 +1197,10 @@
 
     <!-- Modal para Adicionar/Editar Reserva -->
     <div id="reservaModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
-        <div class="flex items-end justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-4 text-center sm:p-0">
             <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" onclick="fecharModalReserva()"></div>
 
-            <div class="inline-block w-full max-w-2xl my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
+            <div class="inline-block w-full max-w-2xl overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl sm:my-8">
                 <div class="px-6 py-4 bg-white border-b border-gray-200">
                     <h3 class="text-lg font-medium leading-6 text-gray-900" id="reservaModalTitle">
                         Adicionar Reserva
@@ -2527,6 +2593,7 @@
         function abrirModalDesistencia(homologacaoId) {
             document.getElementById('desistenciaHomologacaoId').value = homologacaoId;
             document.getElementById('desistenciaDataSolicitacao').value = '';
+            document.getElementById('desistenciaDataDecisao').value = '';
             document.getElementById('desistenciaObservacao').value = '';
             document.getElementById('desistenciaAnexos').value = '';
 
@@ -2551,6 +2618,7 @@
             const homologacaoId = document.getElementById('desistenciaHomologacaoId').value;
             const vencedorId = document.getElementById('desistenciaVencedorId').value;
             const dataSolicitacao = document.getElementById('desistenciaDataSolicitacao').value;
+            const dataDecisao = document.getElementById('desistenciaDataDecisao').value;
             const observacao = document.getElementById('desistenciaObservacao').value;
             const arquivos = document.getElementById('desistenciaAnexos').files;
 
@@ -2560,6 +2628,10 @@
             }
             if (!dataSolicitacao) {
                 showMessage('Informe a data da solicitação de assinatura.', 'error');
+                return;
+            }
+            if (!dataDecisao) {
+                showMessage('Informe a data do Termo de Decisão Administrativa.', 'error');
                 return;
             }
             if (arquivos.length === 0) {
@@ -2574,6 +2646,7 @@
             const formData = new FormData();
             formData.append('vencedor_id', vencedorId);
             formData.append('data_solicitacao_assinatura', dataSolicitacao);
+            formData.append('data_decisao', dataDecisao);
             formData.append('observacao', observacao);
             for (const arquivo of arquivos) {
                 formData.append('anexos[]', arquivo);
@@ -2604,6 +2677,73 @@
                 })
                 .catch(err => {
                     showMessage('Erro de rede ao registrar desistência: ' + err.message, 'error');
+                    btn.disabled = false;
+                    btn.textContent = textoOriginal;
+                });
+        }
+
+        // Abre o modal de edição pré-preenchido com os dados do botão "Editar"
+        // (data-* attributes), lidos via `this.dataset` — evita quebrar o onclick
+        // com aspas/caracteres especiais que possam vir da observação.
+        function abrirEditarDesistencia(botao) {
+            document.getElementById('editarDesistenciaHomologacaoId').value = botao.dataset.homologacaoId;
+            document.getElementById('editarDesistenciaId').value = botao.dataset.desistenciaId;
+            document.getElementById('editarDesistenciaVencedorNome').textContent = botao.dataset.vencedor || '';
+            document.getElementById('editarDesistenciaDataSolicitacao').value = botao.dataset.dataSolicitacao || '';
+            document.getElementById('editarDesistenciaDataDecisao').value = botao.dataset.dataDecisao || '';
+            document.getElementById('editarDesistenciaObservacao').value = botao.dataset.observacao || '';
+
+            document.getElementById('editarDesistenciaModal').classList.remove('hidden');
+        }
+
+        function fecharEditarDesistencia() {
+            document.getElementById('editarDesistenciaModal').classList.add('hidden');
+        }
+
+        function salvarEdicaoDesistencia() {
+            const homologacaoId = document.getElementById('editarDesistenciaHomologacaoId').value;
+            const desistenciaId = document.getElementById('editarDesistenciaId').value;
+            const dataSolicitacao = document.getElementById('editarDesistenciaDataSolicitacao').value;
+            const dataDecisao = document.getElementById('editarDesistenciaDataDecisao').value;
+            const observacao = document.getElementById('editarDesistenciaObservacao').value;
+
+            if (!dataSolicitacao || !dataDecisao) {
+                showMessage('Informe as duas datas antes de salvar.', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('btn-salvar-edicao-desistencia');
+            const textoOriginal = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Salvando...';
+
+            fetch(`/admin/processos/{{ $processo->id }}/finalizacao/homologacoes/${homologacaoId}/desistencias/${desistenciaId}`, {
+                method: 'PUT',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}',
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    data_solicitacao_assinatura: dataSolicitacao,
+                    data_decisao: dataDecisao,
+                    observacao: observacao
+                })
+            })
+                .then(r => r.json().then(data => ({ ok: r.ok, data })))
+                .then(({ ok, data }) => {
+                    if (ok && data.success) {
+                        showMessage(data.message || 'Desistência atualizada com sucesso.', 'success');
+                        fecharEditarDesistencia();
+                        setTimeout(() => window.location.reload(), 1200);
+                    } else {
+                        showMessage(data.message || 'Erro ao atualizar desistência.', 'error');
+                        btn.disabled = false;
+                        btn.textContent = textoOriginal;
+                    }
+                })
+                .catch(err => {
+                    showMessage('Erro de rede ao atualizar desistência: ' + err.message, 'error');
                     btn.disabled = false;
                     btn.textContent = textoOriginal;
                 });

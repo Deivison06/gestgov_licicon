@@ -1,32 +1,32 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\ReservaController;
-use App\Http\Controllers\UnidadeController;
-use App\Http\Controllers\UsuarioController;
-use App\Http\Controllers\ProcessoController;
-use App\Http\Controllers\PrefeituraController;
-use App\Http\Controllers\ContratacaoController;
+use App\Http\Controllers\Admin\PesquisaPrecoController;
+use App\Http\Controllers\Admin\PncpController;
+use App\Http\Controllers\AdminEtpController;
 use App\Http\Controllers\AssinanteController;
 use App\Http\Controllers\AssinaturaController;
-use App\Http\Controllers\ContratoProcessoController;
-use App\Http\Controllers\NotificacaoController;
-use App\Http\Controllers\SelecaoAssinanteController;
-use App\Http\Controllers\ValidacaoPublicaController;
-use App\Http\Controllers\FinalizacaoProcessoController;
 use App\Http\Controllers\AtaController;
-use App\Http\Controllers\ContratoManualController; // Adicionado
+use App\Http\Controllers\ContratacaoController;
+use App\Http\Controllers\ContratoManualController;
+use App\Http\Controllers\ContratoProcessoController;
 use App\Http\Controllers\EtpController;
 use App\Http\Controllers\EtpItemController;
-use App\Http\Controllers\Admin\PncpController;
-use App\Http\Controllers\Admin\PesquisaPrecoController;
-use App\Http\Controllers\AdminEtpController;
-use App\Http\Controllers\SolicitacaoController;
-use App\Http\Controllers\PcaController;
+use App\Http\Controllers\FinalizacaoProcessoController;
 use App\Http\Controllers\FiscalizacaoController;
 use App\Http\Controllers\IAController;
-use App\Http\Controllers\PlanejamentoController;
+use App\Http\Controllers\NotificacaoController;
+use App\Http\Controllers\PcaController;
+use App\Http\Controllers\PlanejamentoController; // Adicionado
+use App\Http\Controllers\PrefeituraController;
+use App\Http\Controllers\ProcessoController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReservaController;
+use App\Http\Controllers\SelecaoAssinanteController;
+use App\Http\Controllers\SolicitacaoController;
+use App\Http\Controllers\UnidadeController;
+use App\Http\Controllers\UsuarioController;
+use App\Http\Controllers\ValidacaoPublicaController;
+use Illuminate\Support\Facades\Route;
 
 // ================================================
 // PLANEJAMENTO
@@ -49,7 +49,7 @@ Route::prefix('admin/planejamento')
 // ================================================
 Route::prefix('admin/fiscalizacoes')
     ->name('admin.fiscalizacoes.')
-    ->middleware(['auth', 'verified','can:fiscalizar contratos'])
+    ->middleware(['auth', 'verified', 'can:fiscalizar contratos'])
     ->group(function () {
         Route::get('/buscar-contratos', [FiscalizacaoController::class, 'buscarContratos'])->name('buscar-contratos');
         Route::get('/', [FiscalizacaoController::class, 'index'])->name('index');
@@ -109,11 +109,11 @@ Route::middleware(['auth', 'verified'])
     ->prefix('minhas-assinaturas')
     ->name('minhas-assinaturas.')
     ->group(function () {
-        Route::get('/',                         [AssinaturaController::class, 'index'])->name('index');
-        Route::get('/{solicitacao}',            [AssinaturaController::class, 'show'])->name('show');
-        Route::get('/{solicitacao}/pdf',        [AssinaturaController::class, 'visualizarPdf'])->name('pdf');
-        Route::post('/{solicitacao}/assinar',   [AssinaturaController::class, 'assinar'])->name('assinar');
-        Route::post('/{solicitacao}/recusar',   [AssinaturaController::class, 'recusar'])->name('recusar');
+        Route::get('/', [AssinaturaController::class, 'index'])->name('index');
+        Route::get('/{solicitacao}', [AssinaturaController::class, 'show'])->name('show');
+        Route::get('/{solicitacao}/pdf', [AssinaturaController::class, 'visualizarPdf'])->name('pdf');
+        Route::post('/{solicitacao}/assinar', [AssinaturaController::class, 'assinar'])->name('assinar');
+        Route::post('/{solicitacao}/recusar', [AssinaturaController::class, 'recusar'])->name('recusar');
     });
 
 // ================================================
@@ -143,9 +143,9 @@ Route::middleware('auth')
     ->prefix('notificacoes')
     ->name('notificacoes.')
     ->group(function () {
-        Route::get('/',                     [NotificacaoController::class, 'index'])->name('index');
-        Route::post('/{id}/marcar-lida',    [NotificacaoController::class, 'marcarLida'])->name('marcar-lida');
-        Route::post('/marcar-todas-lidas',  [NotificacaoController::class, 'marcarTodasLidas'])->name('marcar-todas-lidas');
+        Route::get('/', [NotificacaoController::class, 'index'])->name('index');
+        Route::post('/{id}/marcar-lida', [NotificacaoController::class, 'marcarLida'])->name('marcar-lida');
+        Route::post('/marcar-todas-lidas', [NotificacaoController::class, 'marcarTodasLidas'])->name('marcar-todas-lidas');
     });
 
 // ================================================
@@ -156,11 +156,11 @@ Route::middleware('throttle:10,1')
     ->prefix('autenticar')
     ->name('autenticar.')
     ->group(function () {
-        Route::get('/',                     [ValidacaoPublicaController::class, 'formulario'])->name('formulario');
-        Route::post('/buscar',              [ValidacaoPublicaController::class, 'buscar'])->name('buscar');
-        Route::get('/{codigo}',             [ValidacaoPublicaController::class, 'consultar'])->name('consultar')
+        Route::get('/', [ValidacaoPublicaController::class, 'formulario'])->name('formulario');
+        Route::post('/buscar', [ValidacaoPublicaController::class, 'buscar'])->name('buscar');
+        Route::get('/{codigo}', [ValidacaoPublicaController::class, 'consultar'])->name('consultar')
             ->where('codigo', '[A-Za-z0-9]+');
-        Route::get('/{codigo}/download',    [ValidacaoPublicaController::class, 'download'])->name('download')
+        Route::get('/{codigo}/download', [ValidacaoPublicaController::class, 'download'])->name('download')
             ->where('codigo', '[A-Za-z0-9]+');
     });
 
@@ -199,7 +199,6 @@ Route::prefix('admin/etps')->name('admin.etps.')->middleware(['auth', 'verified'
 
 });
 
-
 // Admin ETPs Recebidos
 Route::prefix('admin/etps-recebidos')->name('admin.etps_recebidos.')->middleware(['auth', 'verified', 'role:diretor_licicon|gerente_licicon|colaborador_licicon'])->group(function () {
     Route::get('/', [AdminEtpController::class, 'index'])->name('index');
@@ -233,11 +232,11 @@ Route::prefix('admin')
         // ========================================
         Route::resource('usuarios', UsuarioController::class)
             ->names([
-                'index'   => 'usuarios.index',
-                'create'  => 'usuarios.create',
-                'store'   => 'usuarios.store',
-                'edit'    => 'usuarios.edit',
-                'update'  => 'usuarios.update',
+                'index' => 'usuarios.index',
+                'create' => 'usuarios.create',
+                'store' => 'usuarios.store',
+                'edit' => 'usuarios.edit',
+                'update' => 'usuarios.update',
                 'destroy' => 'usuarios.destroy',
             ])
             ->except(['show']) // não tem show no CRUD de usuário
@@ -254,11 +253,11 @@ Route::prefix('admin')
         Route::resource('assinantes', AssinanteController::class)
             ->except(['show'])
             ->names([
-                'index'   => 'assinantes.index',
-                'create'  => 'assinantes.create',
-                'store'   => 'assinantes.store',
-                'edit'    => 'assinantes.edit',
-                'update'  => 'assinantes.update',
+                'index' => 'assinantes.index',
+                'create' => 'assinantes.create',
+                'store' => 'assinantes.store',
+                'edit' => 'assinantes.edit',
+                'update' => 'assinantes.update',
                 'destroy' => 'assinantes.destroy',
             ])
             ->middleware('role:diretor_licicon|gerente_licicon');
@@ -272,12 +271,12 @@ Route::prefix('admin')
 
         Route::resource('prefeituras', PrefeituraController::class)
             ->names([
-                'index'   => 'prefeituras.index',
-                'create'  => 'prefeituras.create',
-                'store'   => 'prefeituras.store',
-                'show'    => 'prefeituras.show',
-                'edit'    => 'prefeituras.edit',
-                'update'  => 'prefeituras.update',
+                'index' => 'prefeituras.index',
+                'create' => 'prefeituras.create',
+                'store' => 'prefeituras.store',
+                'show' => 'prefeituras.show',
+                'edit' => 'prefeituras.edit',
+                'update' => 'prefeituras.update',
                 'destroy' => 'prefeituras.destroy',
             ])
             ->middleware('role:diretor_licicon|gerente_licicon');
@@ -290,10 +289,10 @@ Route::prefix('admin')
 
         Route::resource('contratos', ContratoManualController::class)
             ->names([
-                'create'  => 'contratos.create',
-                'store'   => 'contratos.store',
-                'edit'    => 'contratos.edit',
-                'update'  => 'contratos.update',
+                'create' => 'contratos.create',
+                'store' => 'contratos.store',
+                'edit' => 'contratos.edit',
+                'update' => 'contratos.update',
                 'destroy' => 'contratos.destroy',
             ])
             ->except(['show']);
@@ -345,12 +344,12 @@ Route::prefix('admin')
         // ========================================
         Route::resource('processos', ProcessoController::class)
             ->names([
-                'index'   => 'processos.index',
-                'create'  => 'processos.create',
-                'store'   => 'processos.store',
-                'show'    => 'processos.show',
-                'edit'    => 'processos.edit',
-                'update'  => 'processos.update',
+                'index' => 'processos.index',
+                'create' => 'processos.create',
+                'store' => 'processos.store',
+                'show' => 'processos.show',
+                'edit' => 'processos.edit',
+                'update' => 'processos.update',
                 'destroy' => 'processos.destroy',
             ])
             ->middleware('role:diretor_licicon|gerente_licicon|colaborador_licicon');
@@ -474,7 +473,7 @@ Route::prefix('admin')
             // Homologação parcial — criar nova homologação para os lotes pendentes
             Route::post('/homologacoes', [FinalizacaoProcessoController::class, 'gerarNovaHomologacao'])
                 ->name('homologacoes.store');
-                
+
             // Homologação parcial — deletar uma homologação específica
             Route::delete('/homologacoes/{homologacao}', [FinalizacaoProcessoController::class, 'deletarHomologacao'])
                 ->name('homologacoes.destroy');
@@ -482,6 +481,10 @@ Route::prefix('admin')
             // Desistência/abandono da assinatura da Ata por uma empresa vencedora
             Route::post('/homologacoes/{homologacao}/desistencias', [FinalizacaoProcessoController::class, 'registrarDesistencia'])
                 ->name('homologacoes.desistencias.store');
+
+            // Corrige as datas/observação de uma desistência já registrada e regera o Termo.
+            Route::put('/homologacoes/{homologacao}/desistencias/{desistencia}', [FinalizacaoProcessoController::class, 'atualizarDesistencia'])
+                ->name('homologacoes.desistencias.update');
 
             Route::get('/homologacoes/{homologacao}/desistencias/{desistencia}/pdf/baixar', [FinalizacaoProcessoController::class, 'baixarPdfDesistencia'])
                 ->name('homologacoes.desistencias.pdf.baixar');
@@ -629,7 +632,6 @@ Route::prefix('admin')
             ->name('atas.processos-by-prefeitura')
             ->middleware('can:atas e contratacoes');
 
-
         Route::prefix('atas')->name('atas.')->middleware('can:atas e contratacoes')->group(function () {
             Route::get('/', [AtaController::class, 'index'])->name('index');
             Route::get('/dashboard', [AtaController::class, 'dashboard'])->name('dashboard');
@@ -711,4 +713,4 @@ Route::prefix('admin/pesquisa-preco')->name('admin.pesquisa_preco.')->middleware
     Route::get('/itens/processo/{processoId}', [PesquisaPrecoController::class, 'listarPorProcesso'])->name('itens.processo');
 });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

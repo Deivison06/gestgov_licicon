@@ -24,6 +24,7 @@ class HomologacaoDesistencia extends Model
         'vencedor_id',
         'user_id',
         'data_solicitacao_assinatura',
+        'data_decisao',
         'observacao',
         'quantidade_lotes_snapshot',
         'caminho_pdf',
@@ -32,6 +33,7 @@ class HomologacaoDesistencia extends Model
 
     protected $casts = [
         'data_solicitacao_assinatura' => 'date',
+        'data_decisao' => 'date',
         'quantidade_lotes_snapshot' => 'array',
         'gerado_em' => 'datetime',
     ];

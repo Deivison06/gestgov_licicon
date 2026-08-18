@@ -168,7 +168,8 @@
     @endif
 
     <div class="footer-signature">
-        {{ $processo->prefeitura->cidade }}, {{ now()->translatedFormat('d \d\e F \d\e Y') }}.
+        {{ $processo->prefeitura->cidade }},
+        {{ \Carbon\Carbon::parse($desistencia->data_decisao ?? now())->translatedFormat('d \d\e F \d\e Y') }}.
     </div>
 
     <div class="signature-block">

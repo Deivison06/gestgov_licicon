@@ -186,6 +186,7 @@ class FinalizacaoProcessoController extends AbstractController
         $validated = $request->validate([
             'vencedor_id' => 'required|exists:vencedores,id',
             'data_solicitacao_assinatura' => 'required|date',
+            'data_decisao' => 'required|date',
             'observacao' => 'nullable|string',
             'anexos' => 'required|array|min:1',
             'anexos.*' => 'file|mimes:pdf,jpg,jpeg,png|max:10240',
@@ -215,6 +216,39 @@ class FinalizacaoProcessoController extends AbstractController
             ]);
 
             return $this->jsonFail('Erro ao registrar desistência: '.$e->getMessage(), 500);
+        }
+    }
+
+    public function atualizarDesistencia(Request $request, Processo $processo, Homologacao $homologacao, HomologacaoDesistencia $desistencia)
+    {
+        if ($homologacao->processo_id !== $processo->id || $desistencia->homologacao_id !== $homologacao->id) {
+            return $this->jsonFail('Desistência não pertence a este processo/homologação.', 403);
+        }
+
+        $validated = $request->validate([
+            'data_solicitacao_assinatura' => 'required|date',
+            'data_decisao' => 'required|date',
+            'observacao' => 'nullable|string',
+        ]);
+
+        try {
+            $desistencia = $this->desistenciaService->atualizar($homologacao, $desistencia, $validated);
+
+            return $this->jsonOk([
+                'message' => 'Desistência atualizada e Termo de Decisão regerado com sucesso.',
+                'desistencia' => $desistencia,
+            ]);
+        } catch (\DomainException $e) {
+            return $this->jsonFail($e->getMessage(), 422);
+        } catch (\Exception $e) {
+            Log::error('Erro ao atualizar desistência', [
+                'processo_id' => $processo->id,
+                'homologacao_id' => $homologacao->id,
+                'desistencia_id' => $desistencia->id,
+                'erro' => $e->getMessage(),
+            ]);
+
+            return $this->jsonFail('Erro ao atualizar desistência: '.$e->getMessage(), 500);
         }
     }
 
