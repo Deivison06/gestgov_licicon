@@ -1237,6 +1237,22 @@ class ProcessoController extends AbstractController
         }
     }
 
+    /**
+     * Exibe (inline, sem salvar em disco) a Minuta do Contrato que seria gerada
+     * automaticamente para este processo, caso não haja upload manual em
+     * `anexo_pdf_minuta_contrato`. Usado pelo botão "Visualizar" na tela do processo.
+     */
+    public function visualizarMinutaContrato(Processo $processo)
+    {
+        $pdf = $this->pdfService->visualizarMinutaContratoAutomatica($processo);
+
+        if (! $pdf) {
+            abort(404, 'Não há modelo automático de Minuta do Contrato para este processo.');
+        }
+
+        return $pdf;
+    }
+
     public function vincularEtp(Request $request, Processo $processo)
     {
         $request->validate([

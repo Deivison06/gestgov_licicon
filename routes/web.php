@@ -409,6 +409,10 @@ Route::prefix('admin')
             Route::get('/visualizar-pdf', [ProcessoController::class, 'visualizarPdf'])
                 ->name('processos.visualizar-pdf');
 
+            // Preview da Minuta do Contrato gerada automaticamente (sem anexo manual)
+            Route::get('/minuta-contrato/visualizar', [ProcessoController::class, 'visualizarMinutaContrato'])
+                ->name('processos.minuta-contrato.visualizar');
+
             // Download documentos
             Route::get('/documento/{tipo}/baixar', [ProcessoController::class, 'baixarDocumento'])
                 ->name('processo.documento.dowload');

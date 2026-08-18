@@ -2,10 +2,10 @@
 
 namespace App\Services;
 
-use App\Enums\TipoContratacaoEnum;
-use App\Models\Processo;
 use App\Enums\ModalidadeEnum;
+use App\Enums\TipoContratacaoEnum;
 use App\Enums\TipoProcedimentoEnum;
+use App\Models\Processo;
 
 class ProcessoDocumentoService extends AbstractService
 {
@@ -109,7 +109,7 @@ class ProcessoDocumentoService extends AbstractService
                 'especificacao_servicos_imovel',
                 'razao_escolha_contratado',
                 'obrigacoes_contratado_extras',
-                'obrigacoes_contratante_extras'
+                'obrigacoes_contratante_extras',
             ],
         ],
         'minutas' => [
@@ -169,6 +169,7 @@ class ProcessoDocumentoService extends AbstractService
                 'data_hora_fase_edital',
                 'pregoeiro',
                 'anexo_pdf_minuta_contrato',
+                'clausulas_minuta_especiais',
             ],
         ],
 
@@ -221,7 +222,7 @@ class ProcessoDocumentoService extends AbstractService
                 'prazo_inicio_prestacao_servico',
                 'prazo_final_prestacao_servico',
                 'valor_mensal',
-                'empresa_vencedora_pdf'
+                'empresa_vencedora_pdf',
 
             ],
         ],
@@ -289,7 +290,7 @@ class ProcessoDocumentoService extends AbstractService
         $ordemDocumentos = $this->getOrdemDocumentosParaView($processo);
 
         // Remove referências estáticas de edital_republicado (agora é dinâmico)
-        $ordemDocumentos = array_values(array_filter($ordemDocumentos, fn($t) => $t !== 'edital_republicado'));
+        $ordemDocumentos = array_values(array_filter($ordemDocumentos, fn ($t) => $t !== 'edital_republicado'));
 
         // Coletar TODAS as republicações do banco, ordenadas por data
         $republicacoes = $processo->relationLoaded('documentos')
@@ -341,7 +342,7 @@ class ProcessoDocumentoService extends AbstractService
         $documentosOrdenados = [];
 
         foreach ($ordemDocumentos as $tipo) {
-            if (!isset($allDocumentos[$tipo])) {
+            if (! isset($allDocumentos[$tipo])) {
                 continue;
             }
 
@@ -352,7 +353,7 @@ class ProcessoDocumentoService extends AbstractService
                 if ($tipo === 'termo_referencia') {
                     $documentosOrdenados[$tipo]['campos'] = array_values(array_filter(
                         $documentosOrdenados[$tipo]['campos'],
-                        fn($campo) => $campo !== 'encaminhamento_parecer_juridico'
+                        fn ($campo) => $campo !== 'encaminhamento_parecer_juridico'
                     ));
                 }
 
@@ -467,7 +468,7 @@ class ProcessoDocumentoService extends AbstractService
             return $processo->detalhe->{$campo};
         }
 
-        if (!$processo->etp || empty($processo->etp->cotacao_path)) {
+        if (! $processo->etp || empty($processo->etp->cotacao_path)) {
             return null;
         }
 
@@ -507,7 +508,7 @@ class ProcessoDocumentoService extends AbstractService
     {
         $caminho = $processo->detalhe->{$campo} ?? null;
 
-        return !empty($caminho) && file_exists(public_path($caminho));
+        return ! empty($caminho) && file_exists(public_path($caminho));
     }
 
     private function getOrdemDocumentosDispensa(Processo $processo): array
@@ -522,7 +523,7 @@ class ProcessoDocumentoService extends AbstractService
             if ($isFracassado) {
                 $docs[] = 'autorizacao_fracassada';
             }
-            
+
             $docs = array_merge($docs, [
                 'projeto_basico',
             ]);
@@ -539,7 +540,7 @@ class ProcessoDocumentoService extends AbstractService
                 'edital',
                 'publicacoes_avisos_licitacao',
             ]);
-            
+
             return $docs;
         }
 
@@ -550,7 +551,7 @@ class ProcessoDocumentoService extends AbstractService
         if ($isFracassado) {
             $docs[] = 'autorizacao_fracassada';
         }
-        
+
         $docs = array_merge($docs, [
             'analise_mercado',
             'disponibilidade_orçamento',
@@ -627,7 +628,7 @@ class ProcessoDocumentoService extends AbstractService
             'parecer_controle_interno',
             'ato_autorizacao',
             'contrato',
-            'publicacoes_avisos_licitacao'
+            'publicacoes_avisos_licitacao',
         ];
     }
 
@@ -648,7 +649,7 @@ class ProcessoDocumentoService extends AbstractService
             'parecer_controle_interno',
             'ato_autorizacao',
             'contrato',
-            'publicacoes_avisos_licitacao'
+            'publicacoes_avisos_licitacao',
         ];
     }
 
@@ -669,7 +670,7 @@ class ProcessoDocumentoService extends AbstractService
             'parecer_controle_interno',
             'ato_autorizacao',
             'contrato',
-            'publicacoes_avisos_licitacao'
+            'publicacoes_avisos_licitacao',
         ];
     }
 
@@ -690,7 +691,7 @@ class ProcessoDocumentoService extends AbstractService
             'parecer_controle_interno',
             'ato_autorizacao',
             'contrato',
-            'publicacoes_avisos_licitacao'
+            'publicacoes_avisos_licitacao',
         ];
     }
 
@@ -738,9 +739,9 @@ class ProcessoDocumentoService extends AbstractService
     {
         return array_filter(
             $campos,
-            fn($campo) => !in_array($campo, [
+            fn ($campo) => ! in_array($campo, [
                 'encaminhamento_pesquisa_preco',
-                'encaminhamento_doacao_orcamentaria'
+                'encaminhamento_doacao_orcamentaria',
             ])
         );
     }

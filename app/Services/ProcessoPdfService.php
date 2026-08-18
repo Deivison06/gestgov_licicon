@@ -2,12 +2,11 @@
 
 namespace App\Services;
 
-use App\Models\Processo;
 use App\Models\Documento;
+use App\Models\Processo;
 use Barryvdh\DomPDF\Facade\Pdf;
-use setasign\Fpdi\Tcpdf\Fpdi;
-use App\Services\ProcessoDocumentoService;
 use Illuminate\Support\Facades\Log;
+use setasign\Fpdi\Tcpdf\Fpdi;
 
 class ProcessoPdfService extends AbstractService
 {
@@ -53,7 +52,7 @@ class ProcessoPdfService extends AbstractService
         Log::info('PDF gerado com sucesso', [
             'processo_id' => $processo->id,
             'documento' => $documentoSolicitado,
-            'caminho' => $caminhoCompleto
+            'caminho' => $caminhoCompleto,
         ]);
 
         // =====================================================================
@@ -76,16 +75,16 @@ class ProcessoPdfService extends AbstractService
             } catch (\Throwable $e) {
                 Log::error('Falha ao iniciar rodada de assinatura — Inicial', [
                     'processo_id' => $processo->id,
-                    'documento'   => $documentoSolicitado,
-                    'erro'        => $e->getMessage(),
+                    'documento' => $documentoSolicitado,
+                    'erro' => $e->getMessage(),
                 ]);
             }
         }
 
         return array_filter([
-            'success'    => true,
-            'caminho'    => $caminhoCompleto,
-            'documento'  => $documentoSolicitado,
+            'success' => true,
+            'caminho' => $caminhoCompleto,
+            'documento' => $documentoSolicitado,
             'assinatura' => $infoAssinatura,
         ], fn ($v) => $v !== null);
     }
@@ -123,7 +122,7 @@ class ProcessoPdfService extends AbstractService
         $listaAssinantes = collect($assinantes)
             ->map(fn ($a, $idx) => [
                 'user_id' => (int) ($a['id'] ?? $a['user_id'] ?? 0),
-                'ordem'   => $modo === 'sequencial' ? (int) ($a['ordem'] ?? $idx + 1) : 0,
+                'ordem' => $modo === 'sequencial' ? (int) ($a['ordem'] ?? $idx + 1) : 0,
             ])
             ->filter(fn ($a) => $a['user_id'] > 0)
             ->values()
@@ -137,10 +136,10 @@ class ProcessoPdfService extends AbstractService
         );
 
         return [
-            'versao_id'          => $versao->id,
+            'versao_id' => $versao->id,
             'total_solicitacoes' => $solicitacoes->count(),
-            'modo'               => $modo,
-            'prazo_dias'         => $prazoDias,
+            'modo' => $modo,
+            'prazo_dias' => $prazoDias,
         ];
     }
 
@@ -150,6 +149,7 @@ class ProcessoPdfService extends AbstractService
             return $caminho;
         }
         $candidato = public_path($caminho);
+
         return is_file($candidato) ? $candidato : $caminho;
     }
 
@@ -179,6 +179,7 @@ class ProcessoPdfService extends AbstractService
 
         return $documento;
     }
+
     private function adicionarCapaRepublicacaoAoPdf(string $caminhoPdf, Processo $processo, ?string $justificativa = null): void
     {
         try {
@@ -202,15 +203,15 @@ class ProcessoPdfService extends AbstractService
                 'titulo' => 'REPUBLICAÇÃO DE EDITAL',
                 'justificativa' => $justificativa,
                 'numero_republicacao' => Documento::where('processo_id', $processo->id)
-                        ->where('tipo_documento', 'like', '%republicacao%')
-                        ->count() + 1,
+                    ->where('tipo_documento', 'like', '%republicacao%')
+                    ->count() + 1,
             ]);
 
             // Usar a view determinada dinamicamente
             $pdfCapa = Pdf::loadView($viewCapa, $dataCapa)
                 ->setPaper('a4', 'portrait');
 
-            $caminhoCapa = storage_path('app/temp_capa_republicacao_' . uniqid() . '.pdf');
+            $caminhoCapa = storage_path('app/temp_capa_republicacao_'.uniqid().'.pdf');
             $pdfCapa->save($caminhoCapa);
 
             $this->mesclarPdfsComGhostscript([$caminhoCapa, $caminhoPdf], $caminhoPdf);
@@ -222,7 +223,7 @@ class ProcessoPdfService extends AbstractService
             Log::info('Capa de republicação adicionada com sucesso', [
                 'processo_id' => $processo->id,
                 'view_usada' => $viewCapa,
-                'caminho_pdf' => $caminhoPdf
+                'caminho_pdf' => $caminhoPdf,
             ]);
 
         } catch (\Exception $e) {
@@ -230,7 +231,7 @@ class ProcessoPdfService extends AbstractService
                 'processo_id' => $processo->id,
                 'caminho_pdf' => $caminhoPdf,
                 'erro' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
             // Opcional: relançar a exceção se quiser que o erro seja tratado externamente
             // throw $e;
@@ -257,7 +258,7 @@ class ProcessoPdfService extends AbstractService
     public function baixarTodosDocumentos(Processo $processo)
     {
         $caminho = $this->gerarCaminhoTodosDocumentos($processo);
-        
+
         return response()
             ->download($caminho)
             ->deleteFileAfterSend(true);
@@ -291,12 +292,12 @@ class ProcessoPdfService extends AbstractService
             }
 
             // 🔹 Demais documentos
-            if (!isset($documentos[$tipo])) {
+            if (! isset($documentos[$tipo])) {
                 continue;
             }
 
             $caminho = public_path($documentos[$tipo]->caminho);
-            if (!file_exists($caminho)) {
+            if (! file_exists($caminho)) {
                 continue;
             }
 
@@ -307,23 +308,24 @@ class ProcessoPdfService extends AbstractService
             throw new \Exception('Nenhum documento encontrado para mesclar.');
         }
 
-        $nomeArquivo = "processo_" .
-            str_replace(['/', '\\'], '_', $processo->numero_processo) .
-            "_todos_documentos_" . now()->format('Ymd_His') . '.pdf';
+        $nomeArquivo = 'processo_'.
+            str_replace(['/', '\\'], '_', $processo->numero_processo).
+            '_todos_documentos_'.now()->format('Ymd_His').'.pdf';
 
-        $caminhoArquivo = public_path('uploads/documentos/' . $nomeArquivo);
+        $caminhoArquivo = public_path('uploads/documentos/'.$nomeArquivo);
 
         $caminhoCarimbado = $this->mesclarECarimbarEmLote($arquivos, $caminhoArquivo, $processo, 'iniciar');
 
         if ($caminhoCarimbado) {
             $totalPaginas = $this->contarPaginasPdf($caminhoCarimbado);
             $this->salvarTotalPaginas($processo, $totalPaginas);
+
             return $caminhoCarimbado;
         }
 
         $sucesso = $this->mesclarPdfsComGhostscript($arquivos, $caminhoArquivo);
 
-        if (!$sucesso) {
+        if (! $sucesso) {
             throw new \Exception('Erro ao mesclar documentos com Ghostscript');
         }
 
@@ -332,7 +334,6 @@ class ProcessoPdfService extends AbstractService
 
         return $caminhoArquivo;
     }
-
 
     // Métodos privados mantidos do original, mas organizados...
     private function validarRequisicaoPdf(array $requestData, Processo $processo): array
@@ -356,7 +357,7 @@ class ProcessoPdfService extends AbstractService
             'documento_id' => $documentoId,
             'dataSelecionada' => $dataSelecionada,
             'parecerSelecionado' => $parecerSelecionado,
-            'assinantes' => $assinantes
+            'assinantes' => $assinantes,
         ];
     }
 
@@ -364,7 +365,7 @@ class ProcessoPdfService extends AbstractService
     {
         $assinantesJson = $requestData['assinantes'] ?? null;
 
-        if (!$assinantesJson) {
+        if (! $assinantesJson) {
             return [];
         }
 
@@ -372,7 +373,7 @@ class ProcessoPdfService extends AbstractService
         $assinantes = json_decode($assinantesDecoded, true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
-            Log::error("Erro ao decodificar JSON de assinantes: " . json_last_error_msg());
+            Log::error('Erro ao decodificar JSON de assinantes: '.json_last_error_msg());
             throw new \Exception('Ocorreu um erro ao processar a lista de assinantes. Tente novamente.');
         }
 
@@ -405,9 +406,9 @@ class ProcessoPdfService extends AbstractService
             $itensDinamicos = $processo->etp->transformarItensParaFormatoPdf();
 
             if ($processo->detalhe) {
-                $processo->detalhe->itens_e_seus_quantitativos_xml        = $itensDinamicos;
-                $processo->detalhe->descricao_e_quantitativos_itens_xml   = $itensDinamicos;
-                $processo->detalhe->itens_especificaca_quantitativos_xml  = $this->construirItensTr($processo, $itensDinamicos);
+                $processo->detalhe->itens_e_seus_quantitativos_xml = $itensDinamicos;
+                $processo->detalhe->descricao_e_quantitativos_itens_xml = $itensDinamicos;
+                $processo->detalhe->itens_especificaca_quantitativos_xml = $this->construirItensTr($processo, $itensDinamicos);
             }
         }
 
@@ -424,7 +425,7 @@ class ProcessoPdfService extends AbstractService
 
     public function determinarViewPdf(Processo $processo, string $documento): string
     {
-        $viewBase = "Admin.Processos.pdf";
+        $viewBase = 'Admin.Processos.pdf';
         $procedimento = $this->formatarNomeArquivo($processo->tipo_procedimento?->name ?? '');
         $contratacao = $this->formatarNomeArquivo($processo->tipo_contratacao?->name ?? '');
 
@@ -448,7 +449,7 @@ class ProcessoPdfService extends AbstractService
             }
         }
 
-        if (!view()->exists($view)) {
+        if (! view()->exists($view)) {
             throw new \Exception("Modelo de PDF não encontrado. View: {$view}");
         }
 
@@ -460,7 +461,7 @@ class ProcessoPdfService extends AbstractService
      */
     public function determinarViewRepublicacao(Processo $processo): string
     {
-        $viewBase = "Admin.Processos.pdf";
+        $viewBase = 'Admin.Processos.pdf';
         $procedimento = $this->formatarNomeArquivo($processo->tipo_procedimento?->name ?? '');
         $contratacao = $this->formatarNomeArquivo($processo->tipo_contratacao?->name ?? '');
 
@@ -480,10 +481,10 @@ class ProcessoPdfService extends AbstractService
         }
 
         // Se não existir a view específica de capa_republicacao, tentar a view padrão
-        if (!view()->exists($view)) {
+        if (! view()->exists($view)) {
             $view = "{$viewBase}.modelos.capa_republicacao";
 
-            if (!view()->exists($view)) {
+            if (! view()->exists($view)) {
                 throw new \Exception("Modelo de minuta de republicação não encontrado. View: {$view}");
             }
         }
@@ -501,11 +502,11 @@ class ProcessoPdfService extends AbstractService
         $subpasta = $this->gerarSubpasta($processo, $tipoPersistencia);
 
         $diretorio = public_path("uploads/documentos/{$subpasta}");
-        if (!file_exists($diretorio)) {
+        if (! file_exists($diretorio)) {
             mkdir($diretorio, 0777, true);
         }
 
-        $nomeArquivo = "processo_{$numeroProcessoLimpo}_{$tipoPersistencia}_" . now()->format('Ymd_His') . '.pdf';
+        $nomeArquivo = "processo_{$numeroProcessoLimpo}_{$tipoPersistencia}_".now()->format('Ymd_His').'.pdf';
         $caminhoRelativo = "uploads/documentos/{$subpasta}/{$nomeArquivo}";
         $caminhoCompleto = "{$diretorio}/{$nomeArquivo}";
 
@@ -527,27 +528,32 @@ class ProcessoPdfService extends AbstractService
         if ($processo->modalidade === \App\Enums\ModalidadeEnum::DISPENSA) {
             $procedimento = $this->formatarNomeArquivo($processo->tipo_procedimento?->name ?? '');
             $contratacao = $this->formatarNomeArquivo($processo->tipo_contratacao?->name ?? '');
+
             return "dispensa/{$procedimento}_{$contratacao}/{$documento}";
         }
 
         if ($processo->modalidade === \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO) {
             $procedimento = $this->formatarNomeArquivo($processo->tipo_procedimento?->name ?? '');
             $contratacao = $this->formatarNomeArquivo($processo->tipo_contratacao?->name ?? '');
+
             return "pregao_eletronico/{$procedimento}_{$contratacao}/{$documento}";
         }
 
         if ($processo->modalidade === \App\Enums\ModalidadeEnum::CONCORRENCIA) {
             $procedimento = $this->formatarNomeArquivo($processo->tipo_procedimento?->name ?? '');
             $contratacao = $this->formatarNomeArquivo($processo->tipo_contratacao?->name ?? '');
+
             return "concorrencia/{$procedimento}_{$contratacao}/{$documento}";
         }
         if ($processo->modalidade === \App\Enums\ModalidadeEnum::INEXIGIBILIDADE) {
             $procedimento = $this->formatarNomeArquivo($processo->tipo_procedimento?->name ?? '');
             $contratacao = $this->formatarNomeArquivo($processo->tipo_contratacao?->name ?? '');
+
             return "inexigibilidade/{$procedimento}_{$contratacao}/{$documento}";
         }
 
         $modalidade = $this->formatarNomeArquivo($processo->modalidade?->name ?? 'sem_modalidade');
+
         return "{$modalidade}/{$documento}";
     }
 
@@ -596,44 +602,44 @@ class ProcessoPdfService extends AbstractService
     {
         Log::info("Iniciando processamento de anexos para: {$documento}", [
             'caminho_principal' => $caminhoPrincipal,
-            'tamanho_inicial' => file_exists($caminhoPrincipal) ? filesize($caminhoPrincipal) : 0
+            'tamanho_inicial' => file_exists($caminhoPrincipal) ? filesize($caminhoPrincipal) : 0,
         ]);
 
         if ($documento === 'edital') {
-            Log::info("Processando junção de termo/projeto básico para edital");
+            Log::info('Processando junção de termo/projeto básico para edital');
             $this->juntarTermoReferenciaOuProjetoBasico($processo, $caminhoPrincipal);
         }
 
         $anexos = $this->obterAnexos($processo, $documento);
 
-        if (!empty($anexos)) {
+        if (! empty($anexos)) {
             Log::info("Processando anexos regulares para documento: {$documento}", [
                 'pdf_base' => $caminhoPrincipal,
                 'anexos' => $anexos,
-                'tamanho_base' => file_exists($caminhoPrincipal) ? filesize($caminhoPrincipal) : 0
+                'tamanho_base' => file_exists($caminhoPrincipal) ? filesize($caminhoPrincipal) : 0,
             ]);
 
             $resultado = $this->juntarPdfsComGhostscript($caminhoPrincipal, $anexos);
 
             if ($resultado) {
-                Log::info("Anexos regulares processados com sucesso", [
+                Log::info('Anexos regulares processados com sucesso', [
                     'documento' => $documento,
                     'arquivo_final' => $resultado,
-                    'tamanho_final' => filesize($resultado)
+                    'tamanho_final' => filesize($resultado),
                 ]);
             } else {
-                Log::error("Falha ao processar anexos regulares", [
+                Log::error('Falha ao processar anexos regulares', [
                     'documento' => $documento,
-                    'pdf_base' => $caminhoPrincipal
+                    'pdf_base' => $caminhoPrincipal,
                 ]);
             }
         }
 
         if ($documento === 'edital' && $processo->detalhe && $processo->detalhe->tipo_srp === 'sim') {
-            Log::info("Processando ATA de Registro de Preço para SRP");
+            Log::info('Processando ATA de Registro de Preço para SRP');
             $this->gerarEJuntarAtaRegistroPreco($processo, $caminhoPrincipal);
         }
-         // Quando geramos o PDF da MINUTA, embutimos automaticamente o Edital
+        // Quando geramos o PDF da MINUTA, embutimos automaticamente o Edital
         // entre páginas separadoras ("INÍCIO DO EDITAL" / "FIM DO EDITAL").
         // Substitui o antigo upload manual anexar_minuta.
         if ($documento === 'minutas') {
@@ -662,7 +668,7 @@ class ProcessoPdfService extends AbstractService
                 'edital' => $caminhoEdital,
                 'documento' => $caminhoDocumento,
                 'tamanho_edital' => filesize($caminhoEdital),
-                'tamanho_documento' => filesize($caminhoDocumento)
+                'tamanho_documento' => filesize($caminhoDocumento),
             ]);
 
             $sucesso = $this->juntarPdfsComGhostscript($caminhoEdital, [$caminhoDocumento]);
@@ -670,18 +676,18 @@ class ProcessoPdfService extends AbstractService
             if ($sucesso) {
                 Log::info("{$tipoDocumento} juntado com sucesso ao edital", [
                     'caminho_final' => $caminhoEdital,
-                    'tamanho_final' => filesize($caminhoEdital)
+                    'tamanho_final' => filesize($caminhoEdital),
                 ]);
             } else {
                 Log::error('Falha ao juntar termo de referência/projeto básico com edital', [
                     'edital' => $caminhoEdital,
-                    'documento' => $caminhoDocumento
+                    'documento' => $caminhoDocumento,
                 ]);
             }
         } else {
             Log::warning("Documento {$tipoDocumento} não encontrado para junção com edital", [
                 'processo_id' => $processo->id,
-                'tipo_documento' => $tipoDocumento
+                'tipo_documento' => $tipoDocumento,
             ]);
         }
     }
@@ -692,36 +698,183 @@ class ProcessoPdfService extends AbstractService
         $mapeamentoAnexos = $this->documentoService->getMapeamentoAnexos($processo);
         $camposAnexo = $mapeamentoAnexos[$documento] ?? null;
 
-        if (!$camposAnexo) {
+        if (! $camposAnexo) {
             return $anexos;
         }
 
-        if (is_array($camposAnexo)) {
-            foreach ($camposAnexo as $campo) {
-                $caminhoRelativo = $this->documentoService->resolverCaminhoAnexo($processo, $campo);
-                if (!empty($caminhoRelativo)) {
-                    $caminho = public_path($caminhoRelativo);
-                    $anexos[] = $caminho;
-                    Log::info("Anexo encontrado para $documento", ['campo' => $campo, 'caminho' => $caminho, 'existe' => file_exists($caminho)]);
-                }
-            }
-        } else {
-            $caminhoRelativo = $this->documentoService->resolverCaminhoAnexo($processo, $camposAnexo);
-            if (!empty($caminhoRelativo)) {
+        $campos = is_array($camposAnexo) ? $camposAnexo : [$camposAnexo];
+
+        foreach ($campos as $campo) {
+            $caminhoRelativo = $this->resolverCaminhoAnexoComFallback($processo, $campo);
+            if (! empty($caminhoRelativo)) {
                 $caminho = public_path($caminhoRelativo);
                 $anexos[] = $caminho;
-                Log::info("Anexo encontrado para $documento", ['campo' => $camposAnexo, 'caminho' => $caminho, 'existe' => file_exists($caminho)]);
+                Log::info("Anexo encontrado para $documento", ['campo' => $campo, 'caminho' => $caminho, 'existe' => file_exists($caminho)]);
             }
         }
 
         return $anexos;
     }
 
+    /**
+     * Resolve o caminho do anexo priorizando o upload manual (via
+     * ProcessoDocumentoService::resolverCaminhoAnexo). Quando não há upload manual
+     * e o campo é `anexo_pdf_minuta_contrato`, cai para a geração automática da
+     * Minuta do Contrato — processos antigos com upload manual continuam intocados,
+     * só processos sem anexo passam a usar o modelo automático.
+     */
+    private function resolverCaminhoAnexoComFallback(Processo $processo, string $campo): ?string
+    {
+        $caminhoRelativo = $this->documentoService->resolverCaminhoAnexo($processo, $campo);
+
+        if (empty($caminhoRelativo) && $campo === 'anexo_pdf_minuta_contrato') {
+            $caminhoRelativo = $this->gerarMinutaContratoAutomatica($processo);
+        }
+
+        return $caminhoRelativo;
+    }
+
+    /**
+     * Determina o template da Minuta do Contrato (anexo pré-licitação, ainda sem
+     * dados do vencedor) aplicável ao processo, conforme tipo_procedimento/modalidade.
+     * Retorna null quando não existe modelo automático (ex.: Inexigibilidade), preservando
+     * o comportamento de upload manual obrigatório desses casos.
+     */
+    private function determinarViewMinutaContratoAutomatica(Processo $processo): ?string
+    {
+        // Inexigibilidade não tem Edital (o anexo cai na "Minutas") e já gera um Contrato
+        // completo à parte — continua exigindo upload manual, sem modelo automático.
+        if ($processo->modalidade === \App\Enums\ModalidadeEnum::INEXIGIBILIDADE) {
+            return null;
+        }
+
+        $viewBase = 'Admin.Processos.pdf.minuta_contrato';
+
+        $isObra = $processo->modalidade === \App\Enums\ModalidadeEnum::CONCORRENCIA
+            || ($processo->modalidade === \App\Enums\ModalidadeEnum::DISPENSA
+                && $processo->tipo_procedimento === \App\Enums\TipoProcedimentoEnum::OBRA);
+
+        if ($isObra) {
+            $view = "{$viewBase}.concorrencia";
+        } elseif ($processo->tipo_procedimento === \App\Enums\TipoProcedimentoEnum::COMPRAS) {
+            $view = "{$viewBase}.compras";
+        } elseif ($processo->tipo_procedimento === \App\Enums\TipoProcedimentoEnum::SERVIÇOS) {
+            $view = "{$viewBase}.servicos";
+        } else {
+            return null;
+        }
+
+        return view()->exists($view) ? $view : null;
+    }
+
+    /**
+     * Monta os dados conhecidos do processo nesta fase (pré-licitação) para a Minuta
+     * do Contrato automática. CONTRATANTE é preenchido com o que já se sabe (Prefeitura);
+     * CONTRATADO permanece em branco, pois o vencedor ainda não existe nesta etapa.
+     */
+    private function prepararDadosMinutaContrato(Processo $processo): array
+    {
+        $processo->loadMissing(['detalhe', 'prefeitura', 'etp.itens', 'etp.lotes.itens']);
+
+        $detalhe = $processo->detalhe;
+
+        $itens = [];
+        if ($processo->etp) {
+            $itens = $processo->etp->transformarItensParaFormatoPdf();
+        } elseif (! empty($detalhe?->itens_e_seus_quantitativos_xml)) {
+            $itens = is_array($detalhe->itens_e_seus_quantitativos_xml)
+                ? $detalhe->itens_e_seus_quantitativos_xml
+                : (json_decode($detalhe->itens_e_seus_quantitativos_xml, true) ?? []);
+        }
+
+        return [
+            'processo' => $processo,
+            'prefeitura' => $processo->prefeitura,
+            'detalhe' => $detalhe,
+            'itens' => $itens,
+            'valorEstimado' => $this->calcularValorEstimadoTotal($processo),
+            'clausulasEspeciais' => $detalhe?->clausulas_minuta_especiais ?? [],
+        ];
+    }
+
+    /**
+     * Renderiza o PDF da Minuta do Contrato automática (Blade → DomPDF), sem persistir
+     * nada em disco. Retorna null quando não há modelo aplicável ao processo (ex.:
+     * Inexigibilidade). Base comum para geração (anexo mesclado) e visualização (preview).
+     */
+    private function renderizarMinutaContratoAutomatica(Processo $processo)
+    {
+        $view = $this->determinarViewMinutaContratoAutomatica($processo);
+
+        if (! $view) {
+            return null;
+        }
+
+        $dados = $this->prepararDadosMinutaContrato($processo);
+
+        return Pdf::loadView($view, $dados)->setPaper('a4', 'portrait');
+    }
+
+    /**
+     * Indica se existe modelo de Minuta do Contrato automática aplicável ao processo
+     * (Compras, Serviços ou Concorrência/Obra). Usado pela tela do processo para decidir
+     * se exibe o link de "Visualizar minuta gerada automaticamente".
+     */
+    public function temModeloMinutaContratoAutomatica(Processo $processo): bool
+    {
+        return $this->determinarViewMinutaContratoAutomatica($processo) !== null;
+    }
+
+    /**
+     * Gera automaticamente o PDF da Minuta do Contrato (anexo pré-licitação) quando o
+     * processo não possui upload manual em `anexo_pdf_minuta_contrato`. Regenerado a cada
+     * chamada — reflete sempre o estado atual do processo — e não vira um registro em
+     * `documentos` (mesma natureza do upload manual que substitui).
+     */
+    private function gerarMinutaContratoAutomatica(Processo $processo): ?string
+    {
+        $pdf = $this->renderizarMinutaContratoAutomatica($processo);
+
+        if (! $pdf) {
+            return null;
+        }
+
+        $subpasta = $this->gerarSubpasta($processo, 'minuta_contrato_automatica');
+        $diretorio = public_path("uploads/documentos/{$subpasta}");
+
+        if (! file_exists($diretorio)) {
+            mkdir($diretorio, 0777, true);
+        }
+
+        $caminhoRelativo = "uploads/documentos/{$subpasta}/minuta_contrato_automatica.pdf";
+        $pdf->save(public_path($caminhoRelativo));
+
+        Log::info('Minuta do Contrato gerada automaticamente', [
+            'processo_id' => $processo->id,
+            'caminho' => $caminhoRelativo,
+        ]);
+
+        return $caminhoRelativo;
+    }
+
+    /**
+     * Renderiza a Minuta do Contrato automática para exibição imediata no navegador
+     * (preview), sem mesclar com o Edital/Minutas e sem gravar em disco. Usada pelo botão
+     * "Visualizar minuta gerada automaticamente" na tela do processo.
+     */
+    public function visualizarMinutaContratoAutomatica(Processo $processo)
+    {
+        $pdf = $this->renderizarMinutaContratoAutomatica($processo);
+
+        return $pdf ? $pdf->stream('minuta_contrato_automatica.pdf') : null;
+    }
+
     private function juntarPdfsComGhostscript(string $pdfBasePath, array $anexoPaths): ?string
     {
         try {
-            if (!file_exists($pdfBasePath) || filesize($pdfBasePath) === 0) {
+            if (! file_exists($pdfBasePath) || filesize($pdfBasePath) === 0) {
                 Log::error('Arquivo base não encontrado ou vazio', ['caminho' => $pdfBasePath]);
+
                 return null;
             }
 
@@ -729,9 +882,9 @@ class ProcessoPdfService extends AbstractService
             foreach ($anexoPaths as $anexoPath) {
                 if (file_exists($anexoPath) && filesize($anexoPath) > 0) {
                     $anexosValidos[] = $anexoPath;
-                    Log::info("Anexo válido encontrado", [
+                    Log::info('Anexo válido encontrado', [
                         'caminho' => $anexoPath,
-                        'tamanho' => filesize($anexoPath)
+                        'tamanho' => filesize($anexoPath),
                     ]);
                 } else {
                     Log::warning('Anexo ignorado (não existe ou está vazio)', ['caminho' => $anexoPath]);
@@ -740,37 +893,38 @@ class ProcessoPdfService extends AbstractService
 
             if (empty($anexosValidos)) {
                 Log::info('Nenhum anexo válido para mesclar', ['base' => $pdfBasePath]);
+
                 return $pdfBasePath;
             }
 
-            $tempOutput = tempnam(sys_get_temp_dir(), 'merged_pdf_') . '.pdf';
+            $tempOutput = tempnam(sys_get_temp_dir(), 'merged_pdf_').'.pdf';
             $todosArquivos = array_merge([$pdfBasePath], $anexosValidos);
 
-            Log::info("Mesclando PDFs com Ghostscript - INÍCIO", [
+            Log::info('Mesclando PDFs com Ghostscript - INÍCIO', [
                 'arquivo_base' => $pdfBasePath,
                 'tamanho_base' => filesize($pdfBasePath),
                 'anexos_validos' => $anexosValidos,
                 'total_arquivos' => count($todosArquivos),
-                'arquivo_saida_temp' => $tempOutput
+                'arquivo_saida_temp' => $tempOutput,
             ]);
 
             $sucesso = $this->mesclarPdfsComGhostscript($todosArquivos, $tempOutput);
 
             if ($sucesso && file_exists($tempOutput) && filesize($tempOutput) > 0) {
                 $tamanhoTemp = filesize($tempOutput);
-                Log::info("Arquivo temporário gerado com sucesso", [
+                Log::info('Arquivo temporário gerado com sucesso', [
                     'caminho_temp' => $tempOutput,
-                    'tamanho_temp' => $tamanhoTemp
+                    'tamanho_temp' => $tamanhoTemp,
                 ]);
 
                 copy($tempOutput, $pdfBasePath);
                 unlink($tempOutput);
 
                 $tamanhoFinal = filesize($pdfBasePath);
-                Log::info("PDFs mesclados com sucesso - FIM", [
+                Log::info('PDFs mesclados com sucesso - FIM', [
                     'arquivo_final' => $pdfBasePath,
                     'tamanho_final' => $tamanhoFinal,
-                    'tamanho_esperado' => filesize($pdfBasePath) + array_sum(array_map('filesize', $anexosValidos))
+                    'tamanho_esperado' => filesize($pdfBasePath) + array_sum(array_map('filesize', $anexosValidos)),
                 ]);
 
                 return $pdfBasePath;
@@ -779,12 +933,13 @@ class ProcessoPdfService extends AbstractService
                     'sucesso' => $sucesso,
                     'temp_output_existe' => file_exists($tempOutput),
                     'temp_output_tamanho' => file_exists($tempOutput) ? filesize($tempOutput) : 0,
-                    'arquivos_entrada' => $todosArquivos
+                    'arquivos_entrada' => $todosArquivos,
                 ]);
 
                 if (file_exists($tempOutput)) {
                     unlink($tempOutput);
                 }
+
                 return null;
             }
         } catch (\Exception $e) {
@@ -792,8 +947,9 @@ class ProcessoPdfService extends AbstractService
                 'erro' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
                 'pdf_base' => $pdfBasePath,
-                'anexos' => $anexoPaths
+                'anexos' => $anexoPaths,
             ]);
+
             return null;
         }
     }
@@ -805,12 +961,13 @@ class ProcessoPdfService extends AbstractService
         try {
             $arquivosValidos = [];
             foreach ($arquivos as $index => $arquivo) {
-                if (!file_exists($arquivo)) {
+                if (! file_exists($arquivo)) {
                     Log::error('Arquivo não encontrado para mesclagem', [
                         'arquivo' => $arquivo,
                         'index' => $index,
-                        'todos_arquivos' => $arquivos
+                        'todos_arquivos' => $arquivos,
                     ]);
+
                     return false;
                 }
 
@@ -819,16 +976,17 @@ class ProcessoPdfService extends AbstractService
                     Log::error('Arquivo vazio encontrado', [
                         'arquivo' => $arquivo,
                         'index' => $index,
-                        'tamanho' => $tamanho
+                        'tamanho' => $tamanho,
                     ]);
+
                     return false;
                 }
 
                 $arquivosValidos[] = $arquivo;
-                Log::debug("Arquivo validado para mesclagem", [
+                Log::debug('Arquivo validado para mesclagem', [
                     'arquivo' => $arquivo,
                     'tamanho' => $tamanho,
-                    'index' => $index
+                    'index' => $index,
                 ]);
             }
 
@@ -840,9 +998,9 @@ class ProcessoPdfService extends AbstractService
             exec('command -v pdfunite', $out, $returnCode);
             if ($returnCode === 0) {
                 $arquivosStr = implode(' ', array_map('escapeshellarg', $arquivosValidos));
-                $cmdUnite = "pdfunite {$arquivosStr} " . escapeshellarg($outputPath);
+                $cmdUnite = "pdfunite {$arquivosStr} ".escapeshellarg($outputPath);
                 Log::info('Executando pdfunite (Alta velocidade)', ['comando' => $cmdUnite]);
-                exec($cmdUnite . ' 2>&1', $output, $returnCode);
+                exec($cmdUnite.' 2>&1', $output, $returnCode);
                 if ($returnCode === 0 && file_exists($outputPath) && filesize($outputPath) > 0) {
                     return true;
                 }
@@ -858,12 +1016,12 @@ class ProcessoPdfService extends AbstractService
             Log::info('Executando Ghostscript (Fallback)', [
                 'comando' => $comando,
                 'arquivos_entrada' => $arquivosValidos,
-                'quantidade_arquivos' => count($arquivosValidos)
+                'quantidade_arquivos' => count($arquivosValidos),
             ]);
 
             $output = [];
             $returnCode = 0;
-            exec($comando . ' 2>&1', $output, $returnCode);
+            exec($comando.' 2>&1', $output, $returnCode);
 
             $outputExiste = file_exists($outputPath);
             $outputTamanho = $outputExiste ? filesize($outputPath) : 0;
@@ -871,21 +1029,24 @@ class ProcessoPdfService extends AbstractService
             if ($returnCode === 0 && $outputExiste && $outputTamanho > 0) {
                 Log::info('PDFs mesclados com sucesso', [
                     'arquivo_saida' => $outputPath,
-                    'tamanho' => $outputTamanho
+                    'tamanho' => $outputTamanho,
                 ]);
+
                 return true;
             } else {
                 Log::error('Erro ao mesclar PDFs', [
                     'return_code' => $returnCode,
-                    'output' => implode("\n", $output)
+                    'output' => implode("\n", $output),
                 ]);
+
                 return false;
             }
         } catch (\Exception $e) {
             Log::error('Exceção ao mesclar PDFs com Ghostscript', [
                 'erro' => $e->getMessage(),
-                'arquivos' => $arquivos
+                'arquivos' => $arquivos,
             ]);
+
             return false;
         } finally {
             if ($listaArquivos && file_exists($listaArquivos)) {
@@ -897,12 +1058,13 @@ class ProcessoPdfService extends AbstractService
     private function gerarEJuntarAtaRegistroPreco(Processo $processo, string $caminhoPrincipal): void
     {
         try {
-            Log::info("Gerando ATA de Registro de Preço", ['processo_id' => $processo->id]);
+            Log::info('Gerando ATA de Registro de Preço', ['processo_id' => $processo->id]);
 
-            if (!file_exists($caminhoPrincipal) || filesize($caminhoPrincipal) === 0) {
+            if (! file_exists($caminhoPrincipal) || filesize($caminhoPrincipal) === 0) {
                 Log::error('Arquivo principal não encontrado ou vazio antes de gerar ATA', [
-                    'caminho' => $caminhoPrincipal
+                    'caminho' => $caminhoPrincipal,
                 ]);
+
                 return;
             }
 
@@ -914,28 +1076,28 @@ class ProcessoPdfService extends AbstractService
             ]);
 
             $pdfAta = Pdf::loadView($viewAta, $data)->setPaper('a4', 'portrait');
-            $arquivoAta = storage_path('app/temp_ata_' . $processo->id . '_' . uniqid() . '.pdf');
+            $arquivoAta = storage_path('app/temp_ata_'.$processo->id.'_'.uniqid().'.pdf');
             $pdfAta->save($arquivoAta);
 
             if (file_exists($arquivoAta) && filesize($arquivoAta) > 0) {
-                Log::info("ATA gerada com sucesso", [
+                Log::info('ATA gerada com sucesso', [
                     'caminho_ata' => $arquivoAta,
                     'tamanho_ata' => filesize($arquivoAta),
                     'caminho_principal' => $caminhoPrincipal,
-                    'tamanho_principal' => filesize($caminhoPrincipal)
+                    'tamanho_principal' => filesize($caminhoPrincipal),
                 ]);
 
                 $sucesso = $this->juntarPdfsComGhostscript($caminhoPrincipal, [$arquivoAta]);
 
                 if ($sucesso) {
-                    Log::info("ATA juntada com sucesso ao edital", [
+                    Log::info('ATA juntada com sucesso ao edital', [
                         'caminho_final' => $caminhoPrincipal,
-                        'tamanho_final' => filesize($caminhoPrincipal)
+                        'tamanho_final' => filesize($caminhoPrincipal),
                     ]);
                 } else {
                     Log::error('Falha ao juntar ata de registro de preço', [
                         'principal' => $caminhoPrincipal,
-                        'ata' => $arquivoAta
+                        'ata' => $arquivoAta,
                     ]);
                 }
 
@@ -944,17 +1106,18 @@ class ProcessoPdfService extends AbstractService
                 Log::error('ATA não foi gerada corretamente', [
                     'arquivo_ata' => $arquivoAta,
                     'existe' => file_exists($arquivoAta),
-                    'tamanho' => file_exists($arquivoAta) ? filesize($arquivoAta) : 0
+                    'tamanho' => file_exists($arquivoAta) ? filesize($arquivoAta) : 0,
                 ]);
             }
         } catch (\Exception $e) {
             Log::error('Erro ao gerar e juntar ATA de registro de preço', [
                 'processo_id' => $processo->id,
                 'erro' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
         }
     }
+
     /**
      * Gera o Edital da modalidade do processo e o embute no PDF da Minuta,
      * cercado por páginas separadoras "INÍCIO DO EDITAL" e "FIM DO EDITAL".
@@ -970,10 +1133,11 @@ class ProcessoPdfService extends AbstractService
                 'processo_id' => $processo->id,
             ]);
 
-            if (!file_exists($caminhoPrincipal) || filesize($caminhoPrincipal) === 0) {
+            if (! file_exists($caminhoPrincipal) || filesize($caminhoPrincipal) === 0) {
                 Log::error('PDF base da Minuta não encontrado/vazio antes de embutir Edital', [
                     'caminho' => $caminhoPrincipal,
                 ]);
+
                 return;
             }
 
@@ -985,6 +1149,7 @@ class ProcessoPdfService extends AbstractService
                     'processo_id' => $processo->id,
                     'erro' => $e->getMessage(),
                 ]);
+
                 return;
             }
 
@@ -1003,27 +1168,28 @@ class ProcessoPdfService extends AbstractService
             // 1) INÍCIO DO EDITAL
             $pdfInicio = Pdf::loadView('Admin.Processos.pdf-separadores.inicio-edital', $dados)
                 ->setPaper('a4', 'portrait');
-            $arquivoInicio = storage_path('app/temp_inicio_edital_' . $processo->id . '_' . uniqid() . '.pdf');
+            $arquivoInicio = storage_path('app/temp_inicio_edital_'.$processo->id.'_'.uniqid().'.pdf');
             $pdfInicio->save($arquivoInicio);
             $arquivosTemp[] = $arquivoInicio;
 
             // 2) EDITAL completo
             $pdfEdital = Pdf::loadView($viewEdital, $dados)->setPaper('a4', 'portrait');
-            $arquivoEdital = storage_path('app/temp_edital_embutido_' . $processo->id . '_' . uniqid() . '.pdf');
+            $arquivoEdital = storage_path('app/temp_edital_embutido_'.$processo->id.'_'.uniqid().'.pdf');
             $pdfEdital->save($arquivoEdital);
             $arquivosTemp[] = $arquivoEdital;
 
             // 3) FIM DO EDITAL
             $pdfFim = Pdf::loadView('Admin.Processos.pdf-separadores.fim-edital', $dados)
                 ->setPaper('a4', 'portrait');
-            $arquivoFim = storage_path('app/temp_fim_edital_' . $processo->id . '_' . uniqid() . '.pdf');
+            $arquivoFim = storage_path('app/temp_fim_edital_'.$processo->id.'_'.uniqid().'.pdf');
             $pdfFim->save($arquivoFim);
             $arquivosTemp[] = $arquivoFim;
 
             // Validação básica dos 3 arquivos
             foreach ([$arquivoInicio, $arquivoEdital, $arquivoFim] as $f) {
-                if (!file_exists($f) || filesize($f) === 0) {
+                if (! file_exists($f) || filesize($f) === 0) {
                     Log::error('Arquivo temporário do Edital embutido vazio/ausente', ['arquivo' => $f]);
+
                     return;
                 }
             }
@@ -1067,7 +1233,7 @@ class ProcessoPdfService extends AbstractService
         try {
             Log::info("Iniciando mesclarECarimbarEmLote - {$fase}", [
                 'processo_id' => $processo->id,
-                'total_arquivos' => count($arquivos)
+                'total_arquivos' => count($arquivos),
             ]);
 
             $pageCountTotal = 0;
@@ -1086,15 +1252,19 @@ class ProcessoPdfService extends AbstractService
             $chunkSize = 50; // Processar em blocos para equilibrar memória e performance
 
             foreach ($arquivos as $arquivo) {
-                if (!file_exists($arquivo) || filesize($arquivo) == 0) continue;
+                if (! file_exists($arquivo) || filesize($arquivo) == 0) {
+                    continue;
+                }
 
                 $pageCount = $this->contarPaginasPdf($arquivo);
-                if ($pageCount === 0) continue;
+                if ($pageCount === 0) {
+                    continue;
+                }
 
-                Log::info("Carimbando arquivo", ['arquivo' => basename($arquivo), 'paginas' => $pageCount]);
+                Log::info('Carimbando arquivo', ['arquivo' => basename($arquivo), 'paginas' => $pageCount]);
 
                 for ($i = 1; $i <= $pageCount; $i += $chunkSize) {
-                    $pdf = new Fpdi();
+                    $pdf = new Fpdi;
                     $this->configurarFonte($pdf);
                     $pdf->setSourceFile($arquivo);
 
@@ -1114,18 +1284,19 @@ class ProcessoPdfService extends AbstractService
                         $paginaAtual++;
                     }
 
-                    $tempPath = sys_get_temp_dir() . "/chunk_{$fase}_" . uniqid() . '.pdf';
+                    $tempPath = sys_get_temp_dir()."/chunk_{$fase}_".uniqid().'.pdf';
                     $pdf->Output($tempPath, 'F');
                     $chunksTemp[] = $tempPath;
                     unset($pdf);
                 }
             }
 
-            Log::info("Mesclando os chunks gerados via Ghostscript", ['total_chunks' => count($chunksTemp)]);
+            Log::info('Mesclando os chunks gerados via Ghostscript', ['total_chunks' => count($chunksTemp)]);
             $sucesso = $this->mesclarPdfsComGhostscript($chunksTemp, $caminhoSaida);
 
             if ($sucesso && file_exists($caminhoSaida) && filesize($caminhoSaida) > 0) {
-                Log::info("PDF mesclado e carimbado gerado com sucesso", ['caminho_saida' => $caminhoSaida]);
+                Log::info('PDF mesclado e carimbado gerado com sucesso', ['caminho_saida' => $caminhoSaida]);
+
                 return $caminhoSaida;
             }
 
@@ -1133,8 +1304,9 @@ class ProcessoPdfService extends AbstractService
         } catch (\Exception $e) {
             Log::error('Erro ao mesclar e carimbar PDFs em lote', [
                 'erro' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
+
             return null;
         } finally {
             foreach ($chunksTemp as $tempFile) {
@@ -1174,12 +1346,12 @@ class ProcessoPdfService extends AbstractService
         $paginaAbsoluta = $paginaInicial + $paginaAtual;
         $totalAbsoluto = $paginaInicial + $pageCountTotal;
 
-        $codigoAutenticacao = $processo->prefeitura->id . now()->format('HisdmY');
-        $textoCarimbo = "Processo numerado por: {$processo->responsavel_numeracao} " .
-            "Cargo: {$processo->unidade_numeracao} " .
-            "Portaria nº {$processo->portaria_numeracao} " .
-            "Pág. {$paginaAbsoluta} - " .
-            "Documento gerado na Plataforma GestGov - Licenciado para Prefeitura de {$processo->prefeitura->cidade}. " .
+        $codigoAutenticacao = $processo->prefeitura->id.now()->format('HisdmY');
+        $textoCarimbo = "Processo numerado por: {$processo->responsavel_numeracao} ".
+            "Cargo: {$processo->unidade_numeracao} ".
+            "Portaria nº {$processo->portaria_numeracao} ".
+            "Pág. {$paginaAbsoluta} - ".
+            "Documento gerado na Plataforma GestGov - Licenciado para Prefeitura de {$processo->prefeitura->cidade}. ".
             "Cod. de Autenticação: {$codigoAutenticacao} - Para autenticar acesse gestgov.com.br/autenticacao";
 
         $pdf->StartTransform();
@@ -1198,13 +1370,15 @@ class ProcessoPdfService extends AbstractService
     private function contarPaginasPdf(string $caminhoPdf): int
     {
         try {
-            $pdf = new Fpdi();
+            $pdf = new Fpdi;
+
             return $pdf->setSourceFile($caminhoPdf);
         } catch (\Exception $e) {
             Log::error('Erro ao contar páginas do PDF', [
                 'caminho' => $caminhoPdf,
-                'erro' => $e->getMessage()
+                'erro' => $e->getMessage(),
             ]);
+
             return 0;
         }
     }
@@ -1217,13 +1391,13 @@ class ProcessoPdfService extends AbstractService
 
             Log::info('Total de páginas salvo no banco', [
                 'processo_id' => $processo->id,
-                'total_paginas' => $totalPaginas
+                'total_paginas' => $totalPaginas,
             ]);
         } catch (\Exception $e) {
             Log::error('Erro ao salvar total de páginas no banco', [
                 'processo_id' => $processo->id,
                 'total_paginas' => $totalPaginas,
-                'erro' => $e->getMessage()
+                'erro' => $e->getMessage(),
             ]);
         }
     }
@@ -1235,7 +1409,7 @@ class ProcessoPdfService extends AbstractService
      */
     public function construirPrecoMapId(Processo $processo): array
     {
-        $detalhe       = $processo->detalhe;
+        $detalhe = $processo->detalhe;
         $tipoRelatorio = $detalhe->tipo_relatorio_analise_mercado ?? 'tce';
 
         // Mapa principal: etp_item_id (int) => valor_unitario (float)
@@ -1246,7 +1420,7 @@ class ProcessoPdfService extends AbstractService
             // Legado: alguns registros ficaram com JSON codificado em dobro; decodifica de novo se ainda vier como string.
             $painelPrecoTce = is_string($painelPrecoTce) ? (json_decode($painelPrecoTce, true) ?? []) : ($painelPrecoTce ?? []);
             foreach ($painelPrecoTce as $p) {
-                if (!empty($p['etp_item_id']) && ($p['media'] ?? '') !== '') {
+                if (! empty($p['etp_item_id']) && ($p['media'] ?? '') !== '') {
                     $media = (float) str_replace(',', '.', str_replace('.', '', $p['media']));
                     if ($media > 0) {
                         $precoMapId[(int) $p['etp_item_id']] = $media;
@@ -1255,10 +1429,12 @@ class ProcessoPdfService extends AbstractService
             }
         } elseif ($tipoRelatorio === 'fornecedor_local') {
             foreach ($detalhe->fornecedor_local_precos ?? [] as $p) {
-                if (empty($p['etp_item_id'])) continue;
+                if (empty($p['etp_item_id'])) {
+                    continue;
+                }
                 $vals = array_filter(
                     [$p['f1_preco'] ?? null, $p['f2_preco'] ?? null, $p['f3_preco'] ?? null],
-                    fn($v) => $v !== null && $v !== ''
+                    fn ($v) => $v !== null && $v !== ''
                 );
                 $avg = count($vals) > 0 ? array_sum($vals) / count($vals) : 0;
                 if ($avg > 0) {
@@ -1284,18 +1460,18 @@ class ProcessoPdfService extends AbstractService
     {
         $etp = $processo->etp;
 
-        if (!$etp) {
+        if (! $etp) {
             return 0.0;
         }
 
         $precoMapId = $this->construirPrecoMapId($processo);
-        $itens      = $etp->usaLotes()
-            ? $etp->lotes->flatMap(fn($lote) => $lote->itens)
+        $itens = $etp->usaLotes()
+            ? $etp->lotes->flatMap(fn ($lote) => $lote->itens)
             : $etp->itens;
 
         $total = $itens->sum(function ($item) use ($precoMapId) {
             $valorUnitario = $precoMapId[$item->id] ?? 0;
-            $quantidade    = (float) ($item->pivot->quantidade ?? 0);
+            $quantidade = (float) ($item->pivot->quantidade ?? 0);
 
             return $valorUnitario * $quantidade;
         });
@@ -1306,23 +1482,23 @@ class ProcessoPdfService extends AbstractService
     private function construirItensTr(Processo $processo, array $itensDinamicos): array
     {
         $precoMapId = $this->construirPrecoMapId($processo);
-        $etp        = $processo->etp;
-        $result     = [];
-        $fmt        = fn($v) => $v > 0 ? 'R$ ' . number_format($v, 2, ',', '.') : '';
+        $etp = $processo->etp;
+        $result = [];
+        $fmt = fn ($v) => $v > 0 ? 'R$ '.number_format($v, 2, ',', '.') : '';
 
         $processarItem = function ($item, $loteNome = null) use ($precoMapId, $fmt, &$result) {
             $valorUnitario = $precoMapId[$item->id] ?? 0;
-            $quantidade    = (float) ($item->pivot->quantidade ?? 0);
-            $valorTotal    = $valorUnitario > 0 ? $valorUnitario * $quantidade : 0;
+            $quantidade = (float) ($item->pivot->quantidade ?? 0);
+            $valorTotal = $valorUnitario > 0 ? $valorUnitario * $quantidade : 0;
 
             $result[] = [
-                'lote'           => $loteNome,
-                'item'           => $item->descricao_item,
+                'lote' => $loteNome,
+                'item' => $item->descricao_item,
                 'especificacoes' => $item->descricao_item,
-                'unidade'        => $item->pivot->unidade ?? '',
-                'quantidade'     => $item->pivot->quantidade ?? '',
+                'unidade' => $item->pivot->unidade ?? '',
+                'quantidade' => $item->pivot->quantidade ?? '',
                 'valor_unitario' => $fmt($valorUnitario),
-                'valor_total'    => $fmt($valorTotal),
+                'valor_total' => $fmt($valorTotal),
             ];
         };
 
@@ -1344,6 +1520,7 @@ class ProcessoPdfService extends AbstractService
     private function formatarNomeArquivo(string $nome): string
     {
         $nome = strtolower(iconv('UTF-8', 'ASCII//TRANSLIT', $nome));
+
         return str_replace(' ', '_', $nome);
     }
 }

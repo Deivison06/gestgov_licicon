@@ -986,7 +986,38 @@
     <x-form-field name="anexo_pdf_publicacoes" label="📎 Anexar PDF à Publicações" type="file" accept="application/pdf" />
 
     @elseif($campo === 'anexo_pdf_minuta_contrato')
+    @php
+        $temAnexoManualMinutaContrato = app(\App\Services\ProcessoDocumentoService::class)->existeAnexoManual($processo, 'anexo_pdf_minuta_contrato');
+        $temModeloMinutaContratoAutomatica = app(\App\Services\ProcessoPdfService::class)->temModeloMinutaContratoAutomatica($processo);
+    @endphp
+
+    @if(!$temAnexoManualMinutaContrato && $temModeloMinutaContratoAutomatica)
+    <div class="mb-2 p-3 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center justify-between gap-3">
+        <p class="text-[11px] text-emerald-700 flex-1">
+            Nenhum PDF anexado manualmente. A Minuta do Contrato será gerada automaticamente a partir do modelo padrão
+            do processo.
+        </p>
+        <a href="{{ route('admin.processos.minuta-contrato.visualizar', $processo) }}" target="_blank"
+           class="flex-shrink-0 inline-flex items-center px-2.5 py-1 text-[11px] font-bold text-emerald-700 bg-white border border-emerald-300 rounded-lg hover:bg-emerald-50 transition-all">
+            <i class="fas fa-eye mr-1"></i> Visualizar minuta gerada automaticamente
+        </a>
+    </div>
+    @elseif(!$temModeloMinutaContratoAutomatica)
+    <p class="mt-1 text-[11px] text-amber-600">
+        Este processo ainda não possui um modelo automático de Minuta do Contrato — o upload manual é obrigatório.
+    </p>
+    @endif
+
     <x-form-field name="anexo_pdf_minuta_contrato" label="📎 Anexar PDF Minuta do Contrato" type="file" accept="application/pdf" />
+    <p class="mt-1 text-[11px] text-gray-500">
+        Se nenhum PDF for anexado aqui, a Minuta do Contrato é gerada automaticamente a partir do modelo padrão do processo.
+    </p>
+
+    @elseif($campo === 'clausulas_minuta_especiais' && $processo->tipo_procedimento === \App\Enums\TipoProcedimentoEnum::COMPRAS)
+    <x-form-field name="clausulas_minuta_especiais" label="Cláusulas condicionais da Minuta do Contrato (gerada automaticamente)" type="checkbox" :options="[
+            'merenda_escolar' => 'Aquisição de gêneros alimentícios / merenda escolar',
+            'veiculos' => 'Aquisição de veículos',
+        ]" />
 
     @elseif($campo === 'motivos_fracasso')
     <x-form-field name="motivos_fracasso" label="Motivo(s) do fracasso do certame anterior" type="checkbox" :options="[
