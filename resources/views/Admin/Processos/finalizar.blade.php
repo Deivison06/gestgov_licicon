@@ -315,8 +315,8 @@
                                                     <td class="px-3 py-2 text-gray-700">
                                                         <div class="max-w-xs truncate" title="{{ $lote->descricao }}">{{ $lote->descricao }}</div>
                                                     </td>
-                                                    <td class="px-3 py-2 text-right text-gray-700">{{ number_format($lote->quantidade, 2, ',', '.') }}</td>
-                                                    <td class="px-3 py-2 text-right text-gray-700">R$ {{ number_format($lote->vl_unit, 2, ',', '.') }}</td>
+                                                    <td class="px-3 py-2 text-right text-gray-700">{{ $lote->quantidade_formatada }}</td>
+                                                    <td class="px-3 py-2 text-right text-gray-700">{{ $lote->valor_unitario_formatado }}</td>
                                                     <td class="px-3 py-2 text-right font-semibold text-gray-900">R$ {{ number_format($lote->vl_total, 2, ',', '.') }}</td>
                                                 </tr>
                                             @endforeach
@@ -406,7 +406,7 @@
                                         <td class="px-3 py-2 text-gray-700">
                                             <div class="max-w-xs truncate" title="{{ $lote->descricao }}">{{ $lote->descricao }}</div>
                                         </td>
-                                        <td class="px-3 py-2 text-right text-gray-700">{{ number_format($lote->quantidade, 2, ',', '.') }}</td>
+                                        <td class="px-3 py-2 text-right text-gray-700">{{ $lote->quantidade_formatada }}</td>
                                         <td class="px-3 py-2 text-right text-gray-700">R$ {{ number_format($lote->vl_total, 2, ',', '.') }}</td>
                                     </tr>
                                 @endforeach
@@ -639,10 +639,10 @@
                                                                                 {{ $lote->modelo }}
                                                                             </td>
                                                                             <td class="px-4 py-2 text-sm text-right text-gray-900">
-                                                                                {{ number_format($lote->quantidade, 0, ',', '.') }}
+                                                                                {{ $lote->quantidade_formatada }}
                                                                             </td>
                                                                             <td class="px-4 py-2 text-sm text-right text-gray-900">
-                                                                                R$ {{ number_format($lote->vl_unit, 2, ',', '.') }}
+                                                                                R$ {{ $lote->valor_unitario_formatado }}
                                                                             </td>
                                                                             <td class="px-4 py-2 text-sm font-semibold text-right text-gray-900">
                                                                                 R$ {{ number_format($lote->vl_total, 2, ',', '.') }}
@@ -744,10 +744,10 @@
                                                                             {{ $lote->modelo }}
                                                                         </td>
                                                                         <td class="px-4 py-2 text-sm text-right text-gray-900">
-                                                                            {{ number_format($lote->quantidade, 0, ',', '.') }}
+                                                                            {{ $lote->quantidade_formatada }}
                                                                         </td>
                                                                         <td class="px-4 py-2 text-sm text-right text-gray-900">
-                                                                            R$ {{ number_format($lote->vl_unit, 2, ',', '.') }}
+                                                                            R$ {{ $lote->valor_unitario_formatado }}
                                                                         </td>
                                                                         <td class="px-4 py-2 text-sm font-semibold text-right text-gray-900">
                                                                             R$ {{ number_format($lote->vl_total, 2, ',', '.') }}
@@ -1893,7 +1893,7 @@
                                                                     ${parseFloat(lote.quantidade).toLocaleString('pt-BR')}
                                                                 </td>
                                                                 <td class="px-4 py-2 text-sm text-right text-gray-900">
-                                                                    R$ ${parseFloat(lote.vl_unit).toLocaleString('pt-BR', {minimumFractionDigits: 2})}
+                                                                    ${parseFloat(lote.vl_unit).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL', minimumFractionDigits: 2, maximumFractionDigits: 4})}
                                                                 </td>
                                                                 <td class="px-4 py-2 text-sm font-semibold text-right text-gray-900">
                                                                     R$ ${parseFloat(lote.vl_total).toLocaleString('pt-BR', {minimumFractionDigits: 2})}
@@ -2006,7 +2006,7 @@
                                                             ${parseFloat(lote.quantidade).toLocaleString('pt-BR')}
                                                         </td>
                                                         <td class="px-4 py-2 text-sm text-right text-gray-900">
-                                                            R$ ${parseFloat(lote.vl_unit).toLocaleString('pt-BR', {minimumFractionDigits: 2})}
+                                                            ${parseFloat(lote.vl_unit).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL', minimumFractionDigits: 2, maximumFractionDigits: 4})}
                                                         </td>
                                                         <td class="px-4 py-2 text-sm font-semibold text-right text-gray-900">
                                                             R$ ${parseFloat(lote.vl_total).toLocaleString('pt-BR', {minimumFractionDigits: 2})}

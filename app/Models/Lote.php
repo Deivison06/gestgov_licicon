@@ -36,8 +36,8 @@ class Lote extends Model
      * @var array
      */
     protected $casts = [
-        'quantidade' => 'decimal:2',
-        'vl_unit' => 'decimal:2',
+        'quantidade' => 'decimal:4',
+        'vl_unit' => 'decimal:4',
         'vl_total' => 'decimal:2',
         'ordem' => 'integer',
     ];
@@ -154,7 +154,14 @@ class Lote extends Model
      */
     public function getValorUnitarioFormatadoAttribute(): string
     {
-        return 'R$ ' . number_format($this->vl_unit, 2, ',', '.');
+        $formatted = number_format($this->vl_unit, 4, ',', '.');
+        $formatted = rtrim($formatted, '0');
+        if (substr($formatted, -1) === ',') {
+            $formatted .= '00';
+        } elseif (strlen(substr($formatted, strpos($formatted, ',') + 1)) == 1) {
+            $formatted .= '0';
+        }
+        return 'R$ ' . $formatted;
     }
 
     /**
@@ -170,6 +177,11 @@ class Lote extends Model
      */
     public function getQuantidadeFormatadaAttribute(): string
     {
-        return number_format($this->quantidade, 2, ',', '.');
+        $formatted = number_format($this->quantidade, 4, ',', '.');
+        $formatted = rtrim($formatted, '0');
+        if (substr($formatted, -1) === ',') {
+            $formatted = rtrim($formatted, ',');
+        }
+        return $formatted;
     }
 }

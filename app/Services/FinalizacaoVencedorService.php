@@ -298,9 +298,27 @@ class FinalizacaoVencedorService
             return floatval($value);
         }
 
-        $stringValue = (string)$value;
+        $stringValue = trim((string)$value);
+        
         $cleanValue = preg_replace('/[^\d,\-\.]/', '', $stringValue);
-        $cleanValue = str_replace(',', '.', str_replace('.', '', $cleanValue));
+
+        $lastDot = strrpos($cleanValue, '.');
+        $lastComma = strrpos($cleanValue, ',');
+
+        if ($lastComma !== false && $lastDot !== false) {
+            if ($lastComma > $lastDot) {
+                $cleanValue = str_replace('.', '', $cleanValue);
+                $cleanValue = str_replace(',', '.', $cleanValue);
+            } else {
+                $cleanValue = str_replace(',', '', $cleanValue);
+            }
+        } elseif ($lastComma !== false) {
+            $cleanValue = str_replace(',', '.', $cleanValue);
+        } elseif ($lastDot !== false) {
+            if (substr_count($cleanValue, '.') > 1) {
+                $cleanValue = str_replace('.', '', $cleanValue);
+            }
+        }
 
         return floatval($cleanValue);
     }
