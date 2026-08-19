@@ -10,17 +10,18 @@
 
     // Labels dinâmicas por tipo (mantidas da lógica anterior)
     $labelExecucao = match($tipo) {
-        'compras' => 'Execução Física do Objeto',
-        'servicos' => 'Execução do Objeto',
+        'compras' => 'Execução no Período',
+        'servicos' => 'Execução no Período',
         'obras' => 'Execução do Objeto',
         default => 'Execução do Objeto',
     };
     $labelQualidade = match($tipo) {
         'compras' => 'Qualidade dos Produtos entregues',
-        'servicos' => 'Qualidade dos serviços Prestados',
+        'servicos' => 'Qualidade dos Serviços realizados',
         'obras' => 'Qualidade dos serviços Executados',
         default => 'Qualidade das Entregas',
     };
+    $ocorrenciaEstruturada = in_array($tipo, ['compras', 'servicos'], true);
 @endphp
 
 <div class="py-8">
@@ -134,19 +135,93 @@
                 </div>
 
                 <div class="p-8 space-y-8">
+                    {{-- CHECKLIST DE VERIFICAÇÃO (Compras e Serviços) --}}
+                    @if($ocorrenciaEstruturada && !empty($fiscalizacao->checklist_fiscalizacao))
+                        <div class="relative pl-8">
+                            <div class="absolute left-0 top-1 text-[#0596A2]">
+                                <i class="fas fa-clipboard-check text-lg"></i>
+                            </div>
+                            <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Checklist de Verificação</h4>
+                            <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 bg-gray-50/50 p-4 rounded-xl border border-gray-50">
+                                @foreach(\App\Models\Fiscalizacao::CHECKLIST_ITENS as $chave => $rotulo)
+                                    <div class="flex items-center gap-2 text-sm">
+                                        @if(data_get($fiscalizacao->checklist_fiscalizacao, $chave))
+                                            <i class="fas fa-check-circle text-green-600"></i>
+                                            <span class="text-gray-700">{{ $rotulo }}</span>
+                                        @else
+                                            <i class="fas fa-times-circle text-gray-300"></i>
+                                            <span class="text-gray-400">{{ $rotulo }}</span>
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+
                     @php
                         $campos = [
-                            ['icon' => 'fa-microscope', 'label' => 'Metodologia Aplicada', 'value' => $fiscalizacao->metodologia_fiscalizacao, 'show' => in_array($tipo, ['servicos', 'obras'])],
+                            ['icon' => 'fa-microscope', 'label' => 'Metodologia Aplicada', 'value' => $fiscalizacao->metodologia_fiscalizacao, 'show' => $tipo === 'obras'],
                             ['icon' => 'fa-box', 'label' => $labelExecucao, 'value' => $fiscalizacao->execucao_objeto, 'show' => true],
                             ['icon' => 'fa-star', 'label' => $labelQualidade, 'value' => $fiscalizacao->qualidade_entregas, 'show' => true],
                             ['icon' => 'fa-clock', 'label' => 'Pontualidade e Prazos', 'value' => $fiscalizacao->pontualidade_prazos, 'show' => true],
-                            ['icon' => 'fa-file-invoice-dollar', 'label' => 'Regularidade Fiscal/Trabalhista', 'value' => $fiscalizacao->regularidade_fiscal_trabalhista, 'show' => true],
-                            ['icon' => 'fa-comments', 'label' => 'Comunicação e Atendimento', 'value' => $fiscalizacao->comunicacao_atendimento, 'show' => true],
-                            ['icon' => 'fa-exclamation-triangle', 'label' => 'Irregularidades Observadas', 'value' => $fiscalizacao->irregularidade_observada, 'show' => true],
+                            ['icon' => 'fa-file-invoice-dollar', 'label' => 'Regularidade Fiscal/Trabalhista', 'value' => $fiscalizacao->regularidade_fiscal_trabalhista, 'show' => ! $ocorrenciaEstruturada],
+                            ['icon' => 'fa-comments', 'label' => 'Comunicação e Atendimento', 'value' => $fiscalizacao->comunicacao_atendimento, 'show' => $tipo === 'obras'],
+                            ['icon' => 'fa-exclamation-triangle', 'label' => 'Irregularidades Observadas', 'value' => $fiscalizacao->irregularidade_observada, 'show' => ! $ocorrenciaEstruturada],
                             ['icon' => 'fa-lightbulb', 'label' => 'Recomendações ao Gestor', 'value' => $fiscalizacao->recomendacoes_gestor, 'show' => true],
                             ['icon' => 'fa-building', 'label' => 'Recomendações à Empresa', 'value' => $fiscalizacao->recomendacoes_empresa, 'show' => true],
                         ];
                     @endphp
+
+                    {{-- OCORRÊNCIAS (Compras e Serviços) --}}
+                    @if($ocorrenciaEstruturada)
+                        <div class="relative pl-8">
+                            <div class="absolute left-0 top-1 text-[#0596A2]">
+                                <i class="fas fa-exclamation-triangle text-lg"></i>
+                            </div>
+                            <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Ocorrências</h4>
+                            <div class="mt-2 space-y-3">
+                                @if($fiscalizacao->houve_ocorrencia)
+                                    <span class="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold text-yellow-800 bg-yellow-100 rounded-full">
+                                        <i class="fas fa-exclamation-circle"></i> Houve ocorrências
+                                    </span>
+                                    <div class="text-sm text-gray-700 leading-relaxed bg-gray-50/50 p-4 rounded-xl border border-gray-50">
+                                        {!! nl2br(e($fiscalizacao->irregularidade_observada ?: 'Não informado.')) !!}
+                                    </div>
+                                    @if($fiscalizacao->providencias_adotadas)
+                                        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Providências adotadas</h4>
+                                        <div class="text-sm text-gray-700 leading-relaxed bg-gray-50/50 p-4 rounded-xl border border-gray-50">
+                                            {!! nl2br(e($fiscalizacao->providencias_adotadas)) !!}
+                                        </div>
+                                    @endif
+                                @else
+                                    <span class="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold text-green-800 bg-green-100 rounded-full">
+                                        <i class="fas fa-check-circle"></i> Não houve ocorrências
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+
+                        {{-- REGULARIDADE FISCAL/TRABALHISTA — SIM/NÃO (Compras e Serviços) --}}
+                        <div class="relative pl-8">
+                            <div class="absolute left-0 top-1 text-[#0596A2]">
+                                <i class="fas fa-file-invoice-dollar text-lg"></i>
+                            </div>
+                            <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Regularidade Fiscal/Trabalhista</h4>
+                            <div class="mt-2">
+                                @if($fiscalizacao->regularidade_fiscal_trabalhista === 'Sim')
+                                    <span class="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold text-green-800 bg-green-100 rounded-full">
+                                        <i class="fas fa-check-circle"></i> Sim
+                                    </span>
+                                @elseif($fiscalizacao->regularidade_fiscal_trabalhista === 'Não')
+                                    <span class="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold text-red-800 bg-red-100 rounded-full">
+                                        <i class="fas fa-times-circle"></i> Não
+                                    </span>
+                                @else
+                                    <span class="text-sm text-gray-400">Não informado.</span>
+                                @endif
+                            </div>
+                        </div>
+                    @endif
 
                     @foreach($campos as $campo)
                         @if($campo['show'] && $campo['value'])

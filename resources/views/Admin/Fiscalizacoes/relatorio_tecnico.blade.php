@@ -45,6 +45,25 @@
             font-weight: bold;
         }
 
+        /* Checklist de Verificação */
+        .checklist-table { width: 100%; border-collapse: collapse; margin: 6px 0 4px; }
+        .checklist-cell { width: 50%; padding: 3px 12px 3px 0; font-size: 11px; color: #444; vertical-align: top; }
+        .checkbox-box {
+            display: inline-block;
+            width: 11px;
+            height: 11px;
+            border: 1.3px solid #062F43;
+            border-radius: 2px;
+            text-align: center;
+            line-height: 10px;
+            font-size: 9px;
+            font-weight: bold;
+            color: #fff;
+            margin-right: 6px;
+        }
+        .checkbox-box.checked { background: #062F43; }
+        .checklist-pendente { color: #999; }
+
         .signature-section { margin-top: 50px; text-align: center; }
         .signature-line { border-top: 1px solid #000; width: 300px; margin: 0 auto; padding-top: 5px; }
         .foto-relatorio { max-width: 100%; max-height: 320px; border: 1px solid #ccc; border-radius: 4px; }
@@ -89,13 +108,13 @@
         // Labels dinâmicas conforme o tipo de contrato
         $labels = match($tipo) {
             'compras' => [
-                'execucao' => 'Execução Física do Objeto',
+                'execucao' => 'Execução no Período',
                 'qualidade' => 'Qualidade dos Produtos entregues',
                 'obs_servidor' => 'Observações indicadas por servidor próximo a execução'
             ],
             'servicos' => [
-                'execucao' => 'Execução do Objeto',
-                'qualidade' => 'Qualidade dos serviços Prestados',
+                'execucao' => 'Execução no Período',
+                'qualidade' => 'Qualidade dos Serviços realizados',
                 'obs_servidor' => 'Observações indicadas por servidor próximo a execução'
             ],
             'obras' => [
@@ -117,7 +136,12 @@
 
     <div class="content-body">
         <div class="text-center" style="margin-bottom: 20px;">
-            <h2 class="bold uppercase">Relatório Técnico de Fiscalização</h2>
+            <h2 class="bold uppercase">
+                Relatório Técnico de Fiscalização
+                @if($tipo === 'compras') — Compras
+                @elseif($tipo === 'servicos') — Serviços
+                @endif
+            </h2>
         </div>
         <p class="bold">Data da Inspeção: <span>{{ $fiscalizacao->data_fiscalizacao->format('d/m/Y') }}</span> </p>
         <p class="bold">Número da Fiscalização: <span>{{ $fiscalizacao->numero_fiscalizacao }}</span> </p>
@@ -130,52 +154,7 @@
             <li>Reuniões com funcionários e equipes da secretaria.</li>
         </ul>
 
-        <div class="resumo-item">
-            <span class="resumo-label">Contrato e Contratada:</span>
-            <span class="resumo-texto">{{ $info['numero_contrato'] }} — {{ $info['razao_social'] }} ({{ $info['cnpj'] }})</span>
-        </div>
-
-        @if($fiscalizacao->metodologia_fiscalizacao)
-            <div class="resumo-item">
-                <span class="resumo-label">Metodologia Aplicada:</span>
-                <span class="resumo-texto">{{ $fiscalizacao->metodologia_fiscalizacao }}</span>
-            </div>
-        @endif
-
-        <div class="resumo-item">
-            <span class="resumo-label">{{ $labels['execucao'] }}:</span>
-            <span class="resumo-texto">{{ $fiscalizacao->execucao_objeto ?? 'Não informado.' }}</span>
-        </div>
-
-        <div class="resumo-item">
-            <span class="resumo-label">{{ $labels['qualidade'] }}:</span>
-            <span class="resumo-texto">{{ $fiscalizacao->qualidade_entregas ?? 'Não informado.' }}</span>
-        </div>
-
-        <div class="resumo-item">
-            <span class="resumo-label">Pontualidade / Cumprimento dos Prazos:</span>
-            <span class="resumo-texto">{{ $fiscalizacao->pontualidade_prazos ?? 'Não informado.' }}</span>
-        </div>
-
-        <div class="resumo-item">
-            <span class="resumo-label">Regularidade Fiscal e Trabalhista:</span>
-            <span class="resumo-texto">{{ $fiscalizacao->regularidade_fiscal_trabalhista ?? 'Não informado.' }}</span>
-        </div>
-
-        <div class="resumo-item">
-            <span class="resumo-label">Comunicação e Atendimento:</span>
-            <span class="resumo-texto">{{ $fiscalizacao->comunicacao_atendimento ?? 'Não informado.' }}</span>
-        </div>
-
-        <div class="resumo-item">
-            <span class="resumo-label">{{ $labels['obs_servidor'] }}:</span>
-            <span class="resumo-texto">{{ $fiscalizacao->observacoes_servidor ?? 'Sem observações adicionais.' }}</span>
-        </div>
-
-        <div class="resumo-item">
-            <span class="resumo-label">Irregularidades Observadas:</span>
-            <span class="resumo-texto">{{ $fiscalizacao->irregularidade_observada ?? 'Nenhuma irregularidade observada durante o período.' }}</span>
-        </div>
+        @include('Admin.Fiscalizacoes.partials._resumo_tecnico')
 
         <div class="resumo-item" style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px;">
             <span class="resumo-label">Conclusão do Fiscal:</span>

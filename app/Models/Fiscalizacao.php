@@ -11,6 +11,27 @@ class Fiscalizacao extends Model
 {
     protected $table = 'fiscalizacoes';
 
+    /**
+     * Itens fixos do checklist de verificação inicial (Compras/Serviços),
+     * na ordem exigida pelo tribunal. Fonte única usada pelo formulário,
+     * pelo show e pelos PDFs — evita repetir a lista em cada camada.
+     */
+    public const CHECKLIST_ITENS = [
+        'designacao' => 'Recebi formalmente minha designação',
+        'acesso_contrato' => 'Tenho acesso ao contrato',
+        'acesso_tr_pb' => 'Tenho acesso ao Termo de Referência/Projeto Básico',
+        'conhece_objeto' => 'Conheço o objeto',
+        'conhece_valores' => 'Conheço os valores',
+        'conhece_quantitativos' => 'Conheço os quantitativos',
+        'conhece_prazo' => 'Conheço o prazo',
+        'conhece_local_execucao' => 'Conheço o local de execução',
+        'identificou_preposto' => 'Identifiquei o preposto da empresa',
+        'conhece_gestor' => 'Conheço o gestor do contrato',
+        'conhece_condicoes_pagamento' => 'Conheço as condições de pagamento',
+        'conhece_penalidades' => 'Conheço as penalidades',
+        'conhece_condicoes_recebimento' => 'Conheço as condições de recebimento',
+    ];
+
     protected $fillable = [
         'prefeitura_id',
         'fiscalizavel_id',
@@ -22,6 +43,8 @@ class Fiscalizacao extends Model
         'regularidade_fiscal_trabalhista',
         'comunicacao_atendimento',
         'irregularidade_observada',
+        'houve_ocorrencia',
+        'providencias_adotadas',
         'recomendacoes_gestor',
         'recomendacoes_empresa',
         'conclusao_fiscal',
@@ -29,6 +52,7 @@ class Fiscalizacao extends Model
         'qualidade_entregas',
         'observacoes_servidor',
         'metodologia_fiscalizacao',
+        'checklist_fiscalizacao',
         'relatorio_fotografico',
         'assinantes',
         'user_id',
@@ -39,11 +63,13 @@ class Fiscalizacao extends Model
         'tipo_contrato' => TipoFiscalizacaoEnum::class,
         'conclusao_fiscal' => ConclusaoFiscalEnum::class,
         'assinantes' => 'array',
+        'checklist_fiscalizacao' => 'array',
+        'houve_ocorrencia' => 'boolean',
     ];
 
     protected static function booted()
     {
-        static::addGlobalScope(new PrefeituraScope());
+        static::addGlobalScope(new PrefeituraScope);
     }
 
     // =========================================

@@ -185,6 +185,9 @@ class FiscalizacaoController extends Controller
             $dados = $request->validated();
             $dados['prefeitura_id'] = $prefeituraId;
             $dados['user_id'] = $user->id;
+            $dados['checklist_fiscalizacao'] = in_array($dados['tipo_contrato'], ['compras', 'servicos'], true)
+                ? $this->normalizarChecklist($request)
+                : null;
 
             if ($request->hasFile('relatorio_fotografico')) {
                 $dados['relatorio_fotografico'] = $this->uploadRelatorioFotografico(
@@ -373,6 +376,9 @@ class FiscalizacaoController extends Controller
 
         try {
             $dados = $request->validated();
+            $dados['checklist_fiscalizacao'] = in_array($dados['tipo_contrato'], ['compras', 'servicos'], true)
+                ? $this->normalizarChecklist($request)
+                : null;
 
             if ($request->hasFile('relatorio_fotografico')) {
                 if ($fiscalizacao->relatorio_fotografico && file_exists(public_path($fiscalizacao->relatorio_fotografico))) {
@@ -469,6 +475,18 @@ class FiscalizacaoController extends Controller
         $arquivo->move(public_path('uploads/fiscalizacoes'), $nomeArquivo);
 
         return $caminho;
+    }
+
+    /**
+     * Normaliza o checklist de verificação inicial, garantindo que todas as
+     * chaves de Fiscalizacao::CHECKLIST_ITENS sejam gravadas (marcadas ou não),
+     * já que checkboxes desmarcados simplesmente não chegam no request.
+     */
+    private function normalizarChecklist(Request $request): array
+    {
+        return collect(array_keys(Fiscalizacao::CHECKLIST_ITENS))
+            ->mapWithKeys(fn ($chave) => [$chave => $request->boolean("checklist_fiscalizacao.$chave")])
+            ->all();
     }
 
     /**

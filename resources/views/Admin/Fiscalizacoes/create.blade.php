@@ -458,6 +458,21 @@
                 <i class="fas fa-tasks text-[#009496]"></i> Avaliação da Execução
             </h3>
 
+            {{-- Checklist de Verificação (Compras e Serviços) --}}
+            <div class="p-4 mt-4 border border-gray-200 rounded-lg campo-variavel campo-oculto bg-gray-50" id="secao_checklist">
+                <p class="mb-3 text-sm font-medium text-gray-700">Checklist de Verificação</p>
+                <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    @foreach(\App\Models\Fiscalizacao::CHECKLIST_ITENS as $chave => $rotulo)
+                        <label class="flex items-start gap-2 text-sm text-gray-700">
+                            <input type="checkbox" name="checklist_fiscalizacao[{{ $chave }}]" value="1"
+                                   class="mt-0.5 rounded text-[#009496] focus:ring-[#009496]"
+                                   {{ old('checklist_fiscalizacao.'.$chave) ? 'checked' : '' }}>
+                            {{ $rotulo }}
+                        </label>
+                    @endforeach
+                </div>
+            </div>
+
             {{-- Campo exclusivo: Metodologia (Serviços e Obras) --}}
             <div class="mt-4 campo-variavel campo-oculto" id="campo_metodologia">
                 <label class="block mb-2 text-sm font-medium text-gray-700">Metodologia Aplicada na Fiscalização</label>
@@ -466,12 +481,47 @@
                           placeholder="Descreva a metodologia utilizada...">{{ old('metodologia_fiscalizacao') }}</textarea>
             </div>
 
-            {{-- Execução do Objeto (label dinâmica) --}}
+            {{-- Execução do Objeto / Execução no Período (label dinâmica) --}}
             <div class="mt-4 campo-variavel">
                 <label class="block mb-2 text-sm font-medium text-gray-700" id="label_execucao_objeto">Execução do Objeto</label>
                 <textarea name="execucao_objeto" rows="4"
                           class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496] transition-colors"
                           placeholder="Descreva a execução do objeto...">{{ old('execucao_objeto') }}</textarea>
+            </div>
+
+            {{-- Ocorrências --}}
+            <div class="mt-4">
+                <label class="block mb-2 text-sm font-medium text-gray-700" id="label_ocorrencias">Durante a vigência do contrato foi observado alguma irregularidade?</label>
+
+                {{-- Toggle Houve/Não houve ocorrência (Compras e Serviços) --}}
+                <div class="flex flex-wrap gap-4 mb-3 campo-variavel campo-oculto" id="campo_toggle_ocorrencia">
+                    <label class="inline-flex items-center gap-2 text-sm text-gray-700">
+                        <input type="radio" name="houve_ocorrencia" value="0" id="houve_ocorrencia_nao"
+                               class="text-[#009496] focus:ring-[#009496]" disabled
+                               {{ old('houve_ocorrencia') === '0' ? 'checked' : '' }}>
+                        Não houve ocorrências
+                    </label>
+                    <label class="inline-flex items-center gap-2 text-sm text-gray-700">
+                        <input type="radio" name="houve_ocorrencia" value="1" id="houve_ocorrencia_sim"
+                               class="text-[#009496] focus:ring-[#009496]" disabled
+                               {{ old('houve_ocorrencia') === '1' ? 'checked' : '' }}>
+                        Houve ocorrências, conforme descrição abaixo
+                    </label>
+                </div>
+
+                <div id="campo_detalhes_ocorrencia">
+                    <textarea name="irregularidade_observada" id="irregularidade_observada" rows="4"
+                              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496] transition-colors"
+                              placeholder="Descreva as irregularidades observadas, se houver...">{{ old('irregularidade_observada') }}</textarea>
+
+                    {{-- Providências adotadas (Compras e Serviços) --}}
+                    <div class="mt-3 campo-variavel campo-oculto" id="campo_providencias_adotadas">
+                        <label class="block mb-2 text-sm font-medium text-gray-700">Providências adotadas</label>
+                        <textarea name="providencias_adotadas" rows="3"
+                                  class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496] transition-colors"
+                                  placeholder="Descreva as providências adotadas para a correção...">{{ old('providencias_adotadas') }}</textarea>
+                    </div>
+                </div>
             </div>
 
             {{-- Qualidade das Entregas (label dinâmica) --}}
@@ -493,15 +543,33 @@
             {{-- Regularidade Fiscal --}}
             <div class="mt-4">
                 <label class="block mb-2 text-sm font-medium text-gray-700">A Empresa tem apresentado comprovação de Regularidade Fiscal e Trabalhista?</label>
-                <textarea name="regularidade_fiscal_trabalhista" rows="4"
+
+                {{-- Toggle Sim/Não (Compras e Serviços) --}}
+                <div class="flex max-w-xs gap-3 campo-variavel campo-oculto" id="campo_regularidade_simnao">
+                    <label class="flex-1">
+                        <input type="radio" name="regularidade_fiscal_trabalhista" value="Sim" id="regularidade_sim"
+                               class="sr-only peer" disabled
+                               {{ old('regularidade_fiscal_trabalhista') === 'Sim' ? 'checked' : '' }}>
+                        <span class="block p-2.5 font-medium text-center text-gray-600 border-2 border-gray-200 rounded-lg cursor-pointer peer-checked:border-green-500 peer-checked:bg-green-50 peer-checked:text-green-700">Sim</span>
+                    </label>
+                    <label class="flex-1">
+                        <input type="radio" name="regularidade_fiscal_trabalhista" value="Não" id="regularidade_nao"
+                               class="sr-only peer" disabled
+                               {{ old('regularidade_fiscal_trabalhista') === 'Não' ? 'checked' : '' }}>
+                        <span class="block p-2.5 font-medium text-center text-gray-600 border-2 border-gray-200 rounded-lg cursor-pointer peer-checked:border-red-500 peer-checked:bg-red-50 peer-checked:text-red-700">Não</span>
+                    </label>
+                </div>
+
+                {{-- Texto livre (Obras) --}}
+                <textarea name="regularidade_fiscal_trabalhista" id="regularidade_textarea" rows="4"
                           class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496] transition-colors"
                           placeholder="Descreva a situação da regularidade fiscal e trabalhista...">{{ old('regularidade_fiscal_trabalhista') }}</textarea>
             </div>
 
-            {{-- Comunicação e Atendimento --}}
-            <div class="mt-4">
+            {{-- Comunicação e Atendimento (Obras) --}}
+            <div class="mt-4 campo-variavel campo-oculto" id="campo_comunicacao">
                 <label class="block mb-2 text-sm font-medium text-gray-700">Comunicação e Atendimento</label>
-                <textarea name="comunicacao_atendimento" rows="4"
+                <textarea name="comunicacao_atendimento" id="comunicacao_atendimento" rows="4"
                           class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496] transition-colors"
                           placeholder="Avalie a comunicação e o atendimento...">{{ old('comunicacao_atendimento') }}</textarea>
             </div>
@@ -512,14 +580,6 @@
                 <textarea name="observacoes_servidor" rows="4"
                           class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496] transition-colors"
                           placeholder="Registre as observações...">{{ old('observacoes_servidor') }}</textarea>
-            </div>
-
-            {{-- Irregularidade Observada --}}
-            <div class="mt-4">
-                <label class="block mb-2 text-sm font-medium text-gray-700">Durante a vigência do contrato foi observado alguma irregularidade?</label>
-                <textarea name="irregularidade_observada" rows="4"
-                          class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496] transition-colors"
-                          placeholder="Descreva as irregularidades observadas, se houver...">{{ old('irregularidade_observada') }}</textarea>
             </div>
 
             {{-- Recomendações ao Gestor --}}
@@ -650,22 +710,34 @@ document.addEventListener('DOMContentLoaded', function () {
     // ==========================================================
     const labelsMap = {
         compras: {
-            execucao_objeto: 'Execução Física do Objeto',
+            execucao_objeto: 'Execução no Período',
             qualidade_entregas: 'Qualidade dos Produtos entregues',
             observacoes_servidor: 'Observações indicadas por servidor próximo a execução',
-            mostrar_metodologia: false
+            label_ocorrencias: 'Ocorrências',
+            mostrar_metodologia: false,
+            mostrar_comunicacao: false,
+            mostrar_checklist: true,
+            ocorrencia_estruturada: true
         },
         servicos: {
-            execucao_objeto: 'Execução do Objeto',
-            qualidade_entregas: 'Qualidade dos serviços Prestados',
+            execucao_objeto: 'Execução no Período',
+            qualidade_entregas: 'Qualidade dos Serviços realizados',
             observacoes_servidor: 'Observações indicadas por servidor próximo a execução',
-            mostrar_metodologia: true
+            label_ocorrencias: 'Ocorrências',
+            mostrar_metodologia: false,
+            mostrar_comunicacao: false,
+            mostrar_checklist: true,
+            ocorrencia_estruturada: true
         },
         obras: {
             execucao_objeto: 'Execução do Objeto',
             qualidade_entregas: 'Qualidade dos serviços Executados',
             observacoes_servidor: 'Observações indicadas por servidor Fiscal de Engenharia',
-            mostrar_metodologia: true
+            label_ocorrencias: 'Durante a vigência do contrato foi observado alguma irregularidade?',
+            mostrar_metodologia: true,
+            mostrar_comunicacao: true,
+            mostrar_checklist: false,
+            ocorrencia_estruturada: false
         }
     };
 
@@ -892,6 +964,33 @@ document.addEventListener('DOMContentLoaded', function () {
     const secaoAvaliacao = document.getElementById('secao_avaliacao');
     const secaoConclusao = document.getElementById('secao_conclusao');
     const campoMetodologia = document.getElementById('campo_metodologia');
+    const secaoChecklist = document.getElementById('secao_checklist');
+    const campoComunicacao = document.getElementById('campo_comunicacao');
+    const campoToggleOcorrencia = document.getElementById('campo_toggle_ocorrencia');
+    const campoDetalhesOcorrencia = document.getElementById('campo_detalhes_ocorrencia');
+    const campoProvidenciasAdotadas = document.getElementById('campo_providencias_adotadas');
+    const campoRegularidadeSimNao = document.getElementById('campo_regularidade_simnao');
+    const regularidadeTextarea = document.getElementById('regularidade_textarea');
+
+    // Estado atual da configuração dinâmica (usado pelos listeners abaixo)
+    let ocorrenciaEstruturadaAtiva = false;
+
+    function atualizarDetalhesOcorrencia() {
+        if (!ocorrenciaEstruturadaAtiva) {
+            campoDetalhesOcorrencia.style.display = 'block';
+            campoProvidenciasAdotadas.classList.add('campo-oculto');
+            return;
+        }
+
+        var marcado = document.querySelector('input[name="houve_ocorrencia"]:checked');
+        var houve = !!marcado && marcado.value === '1';
+        campoDetalhesOcorrencia.style.display = houve ? 'block' : 'none';
+        campoProvidenciasAdotadas.classList.toggle('campo-oculto', !houve);
+    }
+
+    document.querySelectorAll('input[name="houve_ocorrencia"]').forEach(function (radio) {
+        radio.addEventListener('change', atualizarDetalhesOcorrencia);
+    });
 
     function atualizarFormulario(tipo) {
         if (!tipo || !labelsMap[tipo]) {
@@ -906,12 +1005,31 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('label_execucao_objeto').textContent = config.execucao_objeto;
         document.getElementById('label_qualidade_entregas').textContent = config.qualidade_entregas;
         document.getElementById('label_observacoes_servidor').textContent = config.observacoes_servidor;
+        document.getElementById('label_ocorrencias').textContent = config.label_ocorrencias;
 
-        if (config.mostrar_metodologia) {
-            campoMetodologia.classList.remove('campo-oculto');
-        } else {
-            campoMetodologia.classList.add('campo-oculto');
-        }
+        campoMetodologia.classList.toggle('campo-oculto', !config.mostrar_metodologia);
+
+        secaoChecklist.classList.toggle('campo-oculto', !config.mostrar_checklist);
+
+        campoComunicacao.classList.toggle('campo-oculto', !config.mostrar_comunicacao);
+        document.getElementById('comunicacao_atendimento').disabled = !config.mostrar_comunicacao;
+
+        // Ocorrências: toggle Houve/Não houve (Compras/Serviços) x texto livre sempre visível (Obras)
+        ocorrenciaEstruturadaAtiva = !!config.ocorrencia_estruturada;
+        campoToggleOcorrencia.classList.toggle('campo-oculto', !ocorrenciaEstruturadaAtiva);
+        document.querySelectorAll('input[name="houve_ocorrencia"]').forEach(function (radio) {
+            radio.disabled = !ocorrenciaEstruturadaAtiva;
+        });
+        atualizarDetalhesOcorrencia();
+
+        // Regularidade Fiscal/Trabalhista: toggle Sim/Não (Compras/Serviços) x texto livre (Obras)
+        var estruturaSimNao = !!config.ocorrencia_estruturada;
+        campoRegularidadeSimNao.classList.toggle('campo-oculto', !estruturaSimNao);
+        document.querySelectorAll('input[name="regularidade_fiscal_trabalhista"][type="radio"]').forEach(function (radio) {
+            radio.disabled = !estruturaSimNao;
+        });
+        regularidadeTextarea.classList.toggle('campo-oculto', estruturaSimNao);
+        regularidadeTextarea.disabled = estruturaSimNao;
 
         secaoAvaliacao.style.display = 'block';
         secaoConclusao.style.display = 'block';
