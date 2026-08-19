@@ -9,6 +9,7 @@ use App\Http\Requests\FiscalizacaoRequest;
 use App\Models\Contrato;
 use App\Models\ContratoManual;
 use App\Models\Fiscalizacao;
+use App\Models\Ocorrencia;
 use App\Models\Prefeitura;
 use App\Models\Processo;
 use App\Models\Unidade;
@@ -31,13 +32,22 @@ class FiscalizacaoController extends Controller
         $userPrefeituraId = $user->prefeitura_id;
         $isPrefeituraUser = $user->hasRole('prefeitura') && $userPrefeituraId;
         $isLiciconAdmin = $user->hasAnyRole(['diretor_licicon', 'gerente_licicon']);
+        $activeTab = $request->get('tab', 'fiscalizacoes');
 
-        $query = Fiscalizacao::with(['fiscalizavel', 'prefeitura', 'user'])->latest();
+        // 1. BUSCA DE DADOS PARA FILTROS
+        $prefeituras = $isPrefeituraUser
+            ? Prefeitura::where('id', $userPrefeituraId)->get()
+            : Prefeitura::orderBy('nome')->get();
 
-        // 1. ISOLAMENTO DE UNIDADE (Fiscais Restritos)
-        // Usa a tabela explícita ou relação com User criador do processo para evitar erro 1054
+        $unidades = $isPrefeituraUser
+            ? Unidade::where('prefeitura_id', $userPrefeituraId)->orderBy('nome')->get()
+            : Unidade::orderBy('nome')->get();
+
+        // 2. QUERY FISCALIZACOES
+        $queryFisc = Fiscalizacao::with(['fiscalizavel', 'prefeitura', 'user'])->latest();
+
         if ($user->unidade_id && ! $isLiciconAdmin) {
-            $query->whereHasMorph('fiscalizavel', [ContratoManual::class, Contrato::class], function ($q, $type) use ($user) {
+            $queryFisc->whereHasMorph('fiscalizavel', [ContratoManual::class, Contrato::class], function ($q, $type) use ($user) {
                 if ($type === ContratoManual::class) {
                     $q->where('contratos_manuais.unidade_id', $user->unidade_id);
                 } else {
@@ -48,19 +58,9 @@ class FiscalizacaoController extends Controller
             });
         }
 
-        // 2. BUSCA DE DADOS PARA FILTROS
-        $prefeituras = $isPrefeituraUser
-            ? Prefeitura::where('id', $userPrefeituraId)->get()
-            : Prefeitura::orderBy('nome')->get();
-
-        $unidades = $isPrefeituraUser
-            ? Unidade::where('prefeitura_id', $userPrefeituraId)->orderBy('nome')->get()
-            : Unidade::orderBy('nome')->get();
-
-        // 3. FILTRO DE UNIDADE VIA REQUEST (Seleção na tela)
         if ($request->filled('unidade_id')) {
             $unidadeFiltro = $request->unidade_id;
-            $query->whereHasMorph('fiscalizavel', [ContratoManual::class, Contrato::class], function ($q, $type) use ($unidadeFiltro) {
+            $queryFisc->whereHasMorph('fiscalizavel', [ContratoManual::class, Contrato::class], function ($q, $type) use ($unidadeFiltro) {
                 if ($type === ContratoManual::class) {
                     $q->where('contratos_manuais.unidade_id', $unidadeFiltro);
                 } else {
@@ -69,42 +69,93 @@ class FiscalizacaoController extends Controller
             });
         }
 
-        // Multi-tenant para admin
         if (! $isPrefeituraUser && $request->filled('prefeitura_id')) {
-            $query->where('prefeitura_id', $request->prefeitura_id);
+            $queryFisc->where('prefeitura_id', $request->prefeitura_id);
         }
 
-        // Filtro por tipo de contrato
         if ($request->filled('tipo_contrato')) {
-            $query->where('tipo_contrato', $request->tipo_contrato);
+            $queryFisc->where('tipo_contrato', $request->tipo_contrato);
         }
 
-        // Filtro de pesquisa livre
-        if ($request->filled('search')) {
+        if ($request->filled('search') && $activeTab === 'fiscalizacoes') {
             $searchTerm = $request->search;
-            $query->where(function ($q) use ($searchTerm) {
+            $queryFisc->where(function ($q) use ($searchTerm) {
                 $q->where('numero_fiscalizacao', 'LIKE', "%{$searchTerm}%")
                     ->orWhere('execucao_objeto', 'LIKE', "%{$searchTerm}%")
                     ->orWhere('qualidade_entregas', 'LIKE', "%{$searchTerm}%");
             });
         }
 
-        $fiscalizacoes = $query->paginate(10);
+        $fiscalizacoes = $queryFisc->paginate(10, ['*'], 'page_fisc');
 
         $fiscalizacoes->getCollection()->transform(function ($fiscalizacao) {
             $fiscalizacao->contrato_info = $this->extrairInfoContrato($fiscalizacao->fiscalizavel);
-
             return $fiscalizacao;
+        });
+
+        // 3. QUERY OCORRENCIAS
+        $queryOcor = Ocorrencia::with(['fiscalizavel', 'prefeitura', 'user'])->latest();
+
+        if ($user->unidade_id && ! $isLiciconAdmin) {
+            $queryOcor->whereHasMorph('fiscalizavel', [ContratoManual::class, Contrato::class], function ($q, $type) use ($user) {
+                if ($type === ContratoManual::class) {
+                    $q->where('contratos_manuais.unidade_id', $user->unidade_id);
+                } else {
+                    $q->whereHas('processo.user', function ($u) use ($user) {
+                        $u->where('unidade_id', $user->unidade_id);
+                    });
+                }
+            });
+        }
+
+        if ($request->filled('unidade_id')) {
+            $unidadeFiltro = $request->unidade_id;
+            $queryOcor->whereHasMorph('fiscalizavel', [ContratoManual::class, Contrato::class], function ($q, $type) use ($unidadeFiltro) {
+                if ($type === ContratoManual::class) {
+                    $q->where('contratos_manuais.unidade_id', $unidadeFiltro);
+                } else {
+                    $q->whereHas('processo.user', fn ($u) => $u->where('unidade_id', $unidadeFiltro));
+                }
+            });
+        }
+
+        if (! $isPrefeituraUser && $request->filled('prefeitura_id')) {
+            $queryOcor->where('prefeitura_id', $request->prefeitura_id);
+        }
+
+        if ($request->filled('status')) {
+            $queryOcor->where('status', $request->status);
+        }
+
+        if ($request->filled('situacao')) {
+            $queryOcor->where('situacao', $request->situacao);
+        }
+
+        if ($request->filled('search') && $activeTab === 'ocorrencias') {
+            $searchTerm = $request->search;
+            $queryOcor->where(function ($q) use ($searchTerm) {
+                $q->where('numero_ocorrencia', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('descricao_fato', 'LIKE', "%{$searchTerm}%");
+            });
+        }
+
+        $ocorrencias = $queryOcor->paginate(10, ['*'], 'page_ocor');
+
+        $ocorrencias->getCollection()->transform(function ($ocorrencia) {
+            $ocorrencia->contrato_info = $this->extrairInfoContrato($ocorrencia->fiscalizavel);
+            return $ocorrencia;
         });
 
         $tiposFiscalizacao = TipoFiscalizacaoEnum::cases();
 
         return view('Admin.Fiscalizacoes.index', compact(
             'fiscalizacoes',
+            'ocorrencias',
             'tiposFiscalizacao',
             'prefeituras',
             'unidades',
-            'isPrefeituraUser'
+            'isPrefeituraUser',
+            'activeTab'
         ));
     }
 
