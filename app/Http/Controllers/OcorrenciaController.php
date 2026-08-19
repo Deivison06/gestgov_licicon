@@ -280,7 +280,7 @@ class OcorrenciaController extends Controller
 
         $this->authorizeAccess($ocorrencia);
 
-        if ($ocorrencia->status !== StatusOcorrenciaEnum::RASCUNHO) {
+        if ($ocorrencia->status !== StatusOcorrenciaEnum::RASCUNHO && !auth()->user()->hasAnyRole(['diretor_licicon', 'gerente_licicon'])) {
             return back()->with('error', 'Só é possível excluir ocorrências em rascunho. Esta já foi registrada.');
         }
 
@@ -291,8 +291,8 @@ class OcorrenciaController extends Controller
         $ocorrencia->delete();
 
         return redirect()
-            ->route('admin.ocorrencias.index')
-            ->with('success', 'Ocorrência (rascunho) excluída com sucesso!');
+            ->route('admin.fiscalizacoes.index', ['tab' => 'ocorrencias'])
+            ->with('success', 'Ocorrência excluída com sucesso!');
     }
 
     // =========================================================

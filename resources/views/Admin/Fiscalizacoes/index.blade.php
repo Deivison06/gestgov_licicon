@@ -272,7 +272,7 @@
                                             <i class="fas fa-edit"></i>
                                         </a>
                                     @endif
-                                    @if($ocorrencia->status->value === 'rascunho')
+                                    @if($ocorrencia->status->value === 'rascunho' || auth()->user()->hasAnyRole(['diretor_licicon', 'gerente_licicon']))
                                         <form action="{{ route('admin.ocorrencias.destroy', $ocorrencia->id) }}" method="POST"
                                               class="inline" onsubmit="return confirmarExclusao(event)">
                                             @csrf
