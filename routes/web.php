@@ -15,6 +15,7 @@ use App\Http\Controllers\FinalizacaoProcessoController;
 use App\Http\Controllers\FiscalizacaoController;
 use App\Http\Controllers\IAController;
 use App\Http\Controllers\NotificacaoController;
+use App\Http\Controllers\OcorrenciaController;
 use App\Http\Controllers\PcaController;
 use App\Http\Controllers\PlanejamentoController; // Adicionado
 use App\Http\Controllers\PrefeituraController;
@@ -67,6 +68,31 @@ Route::prefix('admin/fiscalizacoes')
         Route::post('/{id}/assinantes', [FiscalizacaoController::class, 'salvarAssinantes'])->name('assinantes');
         Route::post('/{id}/fotos', [FiscalizacaoController::class, 'uploadFotos'])->name('fotos.upload');
         Route::delete('/{id}/fotos/{fotoId}', [FiscalizacaoController::class, 'deleteFoto'])->name('fotos.delete');
+    });
+
+// ================================================
+// OCORRÊNCIAS CONTRATUAIS
+// ================================================
+Route::prefix('admin/ocorrencias')
+    ->name('admin.ocorrencias.')
+    ->middleware(['auth', 'verified', 'can:fiscalizar contratos'])
+    ->group(function () {
+        Route::get('/', [OcorrenciaController::class, 'index'])->name('index');
+        Route::get('/selecionar-contrato', [OcorrenciaController::class, 'selecionarContrato'])->name('selecionar-contrato');
+        Route::get('/create', [OcorrenciaController::class, 'create'])->name('create');
+        Route::post('/', [OcorrenciaController::class, 'store'])->name('store');
+        Route::get('/{id}', [OcorrenciaController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [OcorrenciaController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [OcorrenciaController::class, 'update'])->name('update');
+        Route::delete('/{id}', [OcorrenciaController::class, 'destroy'])->name('destroy');
+        Route::post('/{id}/concluir', [OcorrenciaController::class, 'concluir'])->name('concluir');
+        Route::post('/{id}/anexos', [OcorrenciaController::class, 'uploadAnexo'])->name('anexos.upload');
+        Route::delete('/{id}/anexos/{anexoId}', [OcorrenciaController::class, 'deleteAnexo'])->name('anexos.delete');
+        Route::post('/{id}/atesto', [OcorrenciaController::class, 'salvarAtesto'])->name('atesto.salvar');
+        Route::post('/{id}/assinantes', [OcorrenciaController::class, 'salvarAssinantes'])->name('assinantes');
+        Route::get('/{id}/pdf/registro', [OcorrenciaController::class, 'gerarRegistro'])->name('pdf.registro');
+        Route::get('/{id}/pdf/notificacoes', [OcorrenciaController::class, 'gerarNotificacoes'])->name('pdf.notificacoes');
+        Route::get('/{id}/pdf/atesto', [OcorrenciaController::class, 'gerarAtesto'])->name('pdf.atesto');
     });
 
 // ================================================

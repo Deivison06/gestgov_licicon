@@ -55,15 +55,20 @@
 <div class="resumo-item">
     <span class="resumo-label">{{ $ocorrenciaEstruturada ? '2. Ocorrências' : 'Irregularidades Observadas' }}:</span>
     @if($ocorrenciaEstruturada)
+        <div style="margin: 4px 0 2px;">
+            <span class="checkbox-box {{ $fiscalizacao->houve_ocorrencia ? '' : 'checked' }}">{{ $fiscalizacao->houve_ocorrencia ? '' : 'X' }}</span>
+            <span class="{{ $fiscalizacao->houve_ocorrencia ? 'checklist-pendente' : '' }}">Não houve ocorrências.</span>
+        </div>
+        <div style="margin-bottom: 4px;">
+            <span class="checkbox-box {{ $fiscalizacao->houve_ocorrencia ? 'checked' : '' }}">{{ $fiscalizacao->houve_ocorrencia ? 'X' : '' }}</span>
+            <span class="{{ $fiscalizacao->houve_ocorrencia ? '' : 'checklist-pendente' }}">Houve ocorrências, conforme descrição abaixo:</span>
+        </div>
         @if($fiscalizacao->houve_ocorrencia)
-            <span class="resumo-texto">☑ Houve ocorrências, conforme descrição abaixo:</span>
             <span class="resumo-texto">{{ $fiscalizacao->irregularidade_observada ?? 'Não informado.' }}</span>
             @if($fiscalizacao->providencias_adotadas)
                 <span class="resumo-label" style="margin-top: 8px;">Providências adotadas:</span>
                 <span class="resumo-texto">{{ $fiscalizacao->providencias_adotadas }}</span>
             @endif
-        @else
-            <span class="resumo-texto">☑ Não houve ocorrências.</span>
         @endif
     @else
         <span class="resumo-texto">{{ $fiscalizacao->irregularidade_observada ?? 'Nenhuma irregularidade observada durante o período.' }}</span>

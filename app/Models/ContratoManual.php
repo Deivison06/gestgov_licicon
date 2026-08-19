@@ -11,7 +11,8 @@ class ContratoManual extends Model
 {
     use FiltravelPorVencimento;
 
-    protected $table = "contratos_manuais";
+    protected $table = 'contratos_manuais';
+
     protected $fillable = [
         'empresa_id',       // Vínculo com a empresa (Novo)
         'prefeitura_id',
@@ -27,7 +28,7 @@ class ContratoManual extends Model
         'data_finalizacao',
         'arquivo_contrato',
         'situacao_manual',
-        'concluido'
+        'concluido',
     ];
 
     protected $casts = [
@@ -59,9 +60,14 @@ class ContratoManual extends Model
         return $this->morphMany(Fiscalizacao::class, 'fiscalizavel');
     }
 
+    public function ocorrencias()
+    {
+        return $this->morphMany(Ocorrencia::class, 'fiscalizavel');
+    }
+
     protected static function booted()
     {
-        static::addGlobalScope(new PrefeituraScope());
+        static::addGlobalScope(new PrefeituraScope);
     }
 
     // No modelo ContratoManual, adicione este método de acesso
@@ -72,7 +78,7 @@ class ContratoManual extends Model
         }
 
         // Lógica para determinar a situação com base na data de finalização
-        if (!$this->data_finalizacao) {
+        if (! $this->data_finalizacao) {
             return 'PENDENTE';
         }
 
@@ -85,5 +91,4 @@ class ContratoManual extends Model
             return 'VENCIDO';
         }
     }
-
 }

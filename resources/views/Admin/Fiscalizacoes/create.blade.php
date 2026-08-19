@@ -704,6 +704,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     let debounceTimer = null;
     let currentAbortController = null;
+    let ultimosResultados = [];
 
     // ==========================================================
     // 📖 MAPA DE LABELS POR TIPO DE CONTRATO
@@ -825,14 +826,16 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
+        ultimosResultados = results;
+
         let html = '';
-        results.forEach(function (item) {
+        results.forEach(function (item, index) {
             const isManual = item.origem === 'Contrato Manual';
             const badgeClass = isManual ? 'badge-manual' : 'badge-sistema';
             const badgeText = isManual ? 'Manual' : 'Sistema';
 
             html += `
-                <div class="search-result-item" data-contrato='${JSON.stringify(item)}'
+                <div class="search-result-item" data-index="${index}"
                      style="padding: 14px 16px; border-left: 4px solid transparent; transition: all 0.2s;">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
                         <span style="font-weight: 700; color: #115e59; font-size: 0.95rem;">
@@ -875,7 +878,7 @@ document.addEventListener('DOMContentLoaded', function () {
             el.addEventListener('mouseleave', () => el.style.borderLeftColor = 'transparent');
 
             el.addEventListener('click', function () {
-                const data = JSON.parse(this.getAttribute('data-contrato'));
+                const data = ultimosResultados[Number(this.getAttribute('data-index'))];
                 selecionarContrato(data);
             });
         });

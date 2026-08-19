@@ -57,13 +57,18 @@ class Contrato extends Model
         return $this->morphMany(Fiscalizacao::class, 'fiscalizavel');
     }
 
+    public function ocorrencias()
+    {
+        return $this->morphMany(Ocorrencia::class, 'fiscalizavel');
+    }
+
     public function getSituacaoAttribute()
     {
         if ($this->concluido) {
             return 'CONCLUÍDO';
         }
 
-        if (!$this->data_finalizacao) {
+        if (! $this->data_finalizacao) {
             // Contrato do sistema sem data de finalização é considerado VIGENTE
             // (nomenclatura de exibição — não altera nenhuma query/fluxo de negócio).
             return 'VIGENTE';

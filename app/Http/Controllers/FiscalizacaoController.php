@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\ConclusaoFiscalEnum;
 use App\Enums\TipoFiscalizacaoEnum;
+use App\Http\Controllers\Concerns\ExtraiInfoContrato;
 use App\Http\Requests\FiscalizacaoRequest;
 use App\Models\Contrato;
 use App\Models\ContratoManual;
@@ -19,6 +20,8 @@ use Illuminate\Support\Str;
 
 class FiscalizacaoController extends Controller
 {
+    use ExtraiInfoContrato;
+
     // =========================================================
     // INDEX — Listagem de Fiscalizações
     // =========================================================
@@ -89,7 +92,7 @@ class FiscalizacaoController extends Controller
         $fiscalizacoes = $query->paginate(10);
 
         $fiscalizacoes->getCollection()->transform(function ($fiscalizacao) {
-            $fiscalizacao->contrato_info = $this->extrairInfoContrato($fiscalizacao);
+            $fiscalizacao->contrato_info = $this->extrairInfoContrato($fiscalizacao->fiscalizavel);
 
             return $fiscalizacao;
         });
@@ -132,14 +135,7 @@ class FiscalizacaoController extends Controller
                 $contratoModel = $type::find($id);
 
                 if ($contratoModel) {
-                    $fiscFake = new Fiscalizacao([
-                        'fiscalizavel_id' => $id,
-                        'fiscalizavel_type' => $type,
-                    ]);
-
-                    $fiscFake->setRelation('fiscalizavel', $contratoModel);
-
-                    $contratoPreSelecionado = $this->extrairInfoContrato($fiscFake);
+                    $contratoPreSelecionado = $this->extrairInfoContrato($contratoModel);
                     $contratoPreSelecionado['id'] = $id.'|'.$type;
                     $contratoPreSelecionado['id_puro'] = $id;
                     $contratoPreSelecionado['type_puro'] = $type;
@@ -234,7 +230,7 @@ class FiscalizacaoController extends Controller
 
         $this->authorizeAccess($fiscalizacao);
 
-        $fiscalizacao->contrato_info = $this->extrairInfoContrato($fiscalizacao);
+        $fiscalizacao->contrato_info = $this->extrairInfoContrato($fiscalizacao->fiscalizavel);
 
         // Usuários (fiscais/servidores) da mesma prefeitura, para seleção como assinantes.
         // Exclui os cadastros institucionais (a própria prefeitura), mantendo pessoas físicas.
@@ -341,7 +337,7 @@ class FiscalizacaoController extends Controller
         $tiposFiscalizacao = TipoFiscalizacaoEnum::cases();
         $conclusoes = ConclusaoFiscalEnum::cases();
 
-        $fiscalizacao->contrato_info = $this->extrairInfoContrato($fiscalizacao);
+        $fiscalizacao->contrato_info = $this->extrairInfoContrato($fiscalizacao->fiscalizavel);
 
         return view('Admin.Fiscalizacoes.edit', compact(
             'fiscalizacao',
@@ -487,21 +483,6 @@ class FiscalizacaoController extends Controller
         return collect(array_keys(Fiscalizacao::CHECKLIST_ITENS))
             ->mapWithKeys(fn ($chave) => [$chave => $request->boolean("checklist_fiscalizacao.$chave")])
             ->all();
-    }
-
-    /**
-     * Remove tags HTML e decodifica entidades para exibir texto puro.
-     */
-    private function limparHtml(?string $texto): string
-    {
-        if (! $texto) {
-            return '—';
-        }
-
-        $texto = html_entity_decode($texto, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-        $texto = strip_tags($texto);
-
-        return trim(preg_replace('/\s+/', ' ', $texto));
     }
 
     // =========================================================
@@ -655,82 +636,13 @@ class FiscalizacaoController extends Controller
         throw new \Exception('Tipo de contrato inválido.');
     }
 
-    /**
-     * Extrai informações do contrato para exibição unificada
-     */
-    private function extrairInfoContrato(Fiscalizacao $fiscalizacao): array
-    {
-        $contrato = $fiscalizacao->fiscalizavel;
-
-        if (! $contrato) {
-            return [
-                'numero_contrato' => '—',
-                'objeto' => '—',
-                'numero_processo' => '—',
-                'modalidade' => '—',
-                'secretaria' => '—',
-                'razao_social' => '—',
-                'cnpj' => '—',
-                'endereco' => '—',
-                'representante' => '—',
-                'origem' => '—',
-            ];
-        }
-
-        if ($contrato instanceof ContratoManual) {
-            return [
-                'numero_contrato' => $contrato->numero_contrato ?? '—',
-                'objeto' => $this->limparHtml($contrato->objeto),
-                'numero_processo' => $contrato->numero_processo ?? '—',
-                'modalidade' => $contrato->modalidade?->getDisplayName() ?? '—',
-                'secretaria' => $contrato->secretaria->nome ?? '—',
-                'razao_social' => $contrato->empresa->razao_social ?? '—',
-                'cnpj' => $contrato->empresa->cnpj_formatado ?? '—',
-                'endereco' => $contrato->empresa->endereco ?? '—',
-                'representante' => $contrato->empresa->representante ?? '—',
-                'origem' => 'Contrato Manual',
-            ];
-        }
-
-        if ($contrato instanceof Contrato) {
-            $processo = $contrato->processo;
-            $vencedor = $processo?->vencedores?->first();
-
-            return [
-                'numero_contrato' => $contrato->numero_contrato ?? '—',
-                'objeto' => $this->limparHtml($processo->objeto),
-                'numero_processo' => $processo->numero_processo ?? '—',
-                'modalidade' => $processo->modalidade?->getDisplayName() ?? '—',
-                'secretaria' => $processo->unidade_numeracao ?? $processo->detalhe?->secretaria ?? '—',
-                'razao_social' => $vencedor?->razao_social ?? '—',
-                'cnpj' => $vencedor?->cnpj_formatado ?? $vencedor?->cpf_formatado ?? '—',
-                'endereco' => $vencedor?->endereco ?? '—',
-                'representante' => $vencedor?->representante ?? '—',
-                'origem' => 'Contrato do Sistema',
-            ];
-        }
-
-        return [
-            'numero_contrato' => '—',
-            'objeto' => '—',
-            'numero_processo' => '—',
-            'modalidade' => '—',
-            'secretaria' => '—',
-            'razao_social' => '—',
-            'cnpj' => '—',
-            'endereco' => '—',
-            'representante' => '—',
-            'origem' => '—',
-        ];
-    }
-
     public function gerarRelatorio($id)
     {
         $fiscalizacao = Fiscalizacao::with(['fiscalizavel', 'prefeitura', 'user'])->findOrFail($id);
 
         $this->authorizeAccess($fiscalizacao);
 
-        $fiscalizacao->contrato_info = $this->extrairInfoContrato($fiscalizacao);
+        $fiscalizacao->contrato_info = $this->extrairInfoContrato($fiscalizacao->fiscalizavel);
         $pdf = Pdf::loadView('Admin.Fiscalizacoes.relatorio', compact('fiscalizacao'));
 
         $pdf->setPaper('a4', 'portrait');
@@ -749,7 +661,7 @@ class FiscalizacaoController extends Controller
         $fiscalizacao = Fiscalizacao::with(['fiscalizavel', 'prefeitura', 'user'])->findOrFail($id);
         $this->authorizeAccess($fiscalizacao);
 
-        $fiscalizacao->contrato_info = $this->extrairInfoContrato($fiscalizacao);
+        $fiscalizacao->contrato_info = $this->extrairInfoContrato($fiscalizacao->fiscalizavel);
 
         $pdf = Pdf::loadView('Admin.Fiscalizacoes.relatorio_tecnico', compact('fiscalizacao'));
         $pdf->setPaper('a4', 'portrait');
@@ -764,7 +676,7 @@ class FiscalizacaoController extends Controller
         $fiscalizacao = Fiscalizacao::with(['fiscalizavel', 'prefeitura', 'user'])->findOrFail($id);
         $this->authorizeAccess($fiscalizacao);
 
-        $fiscalizacao->contrato_info = $this->extrairInfoContrato($fiscalizacao);
+        $fiscalizacao->contrato_info = $this->extrairInfoContrato($fiscalizacao->fiscalizavel);
 
         $pdf = Pdf::loadView('Admin.Fiscalizacoes.notificacoes', compact('fiscalizacao'));
         $pdf->setPaper('a4', 'portrait');

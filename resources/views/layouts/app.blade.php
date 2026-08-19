@@ -1069,6 +1069,12 @@
                             <i class="nav-icon fas fa-clipboard-check"></i>
                             <span>FISCALIZAÇÃO</span>
                         </a>
+
+                        <a href="{{ route('admin.ocorrencias.index') }}"
+                            class="nav-item {{ request()->routeIs('admin.ocorrencias.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-triangle-exclamation"></i>
+                            <span>OCORRÊNCIAS</span>
+                        </a>
                     @endcan
                     {{-- Apenas admin/diretor/gerente --}}
                     @if(auth()->user()->hasAnyRole(['diretor_licicon', 'gerente_licicon']))
