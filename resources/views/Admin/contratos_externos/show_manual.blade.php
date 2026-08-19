@@ -182,6 +182,148 @@
                         </div>
                     </div>
                 </div>
+
+                {{-- Acompanhamento da Execução Contratual --}}
+                <div class="mt-8 pt-8 border-t border-gray-100">
+                    <h3 class="mb-6 text-lg font-semibold text-gray-900 flex items-center gap-2">
+                        <i class="fas fa-chart-line text-[#009496]"></i>
+                        Acompanhamento da Execução (Fiscalizações & Ocorrências)
+                    </h3>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {{-- Painel de Fiscalizações --}}
+                        <div class="bg-gray-50/50 rounded-xl p-5 border border-gray-200">
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="font-medium text-gray-800 flex items-center gap-2">
+                                    <i class="fas fa-clipboard-check text-blue-600"></i>
+                                    Fiscalizações ({{ $contrato->fiscalizacoes->count() }})
+                                </h4>
+                                @can('fiscalizar contratos')
+                                    <a href="{{ route('admin.fiscalizacoes.create', ['id' => $contrato->id, 'type' => get_class($contrato)]) }}"
+                                       class="text-xs font-semibold text-[#009496] hover:underline flex items-center gap-1">
+                                        <i class="fas fa-plus"></i> Nova Fiscalização
+                                    </a>
+                                @endcan
+                            </div>
+
+                            @if($contrato->fiscalizacoes->isNotEmpty())
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-xs text-left">
+                                        <thead class="text-gray-500 uppercase bg-gray-100/50">
+                                            <tr>
+                                                <th class="px-3 py-2 rounded-l-lg">Nº</th>
+                                                <th class="px-3 py-2">Data</th>
+                                                <th class="px-3 py-2">Conclusão</th>
+                                                <th class="px-3 py-2 text-right rounded-r-lg">Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-gray-100">
+                                            @foreach($contrato->fiscalizacoes as $fisc)
+                                                <tr class="hover:bg-gray-50/80 transition-colors">
+                                                    <td class="px-3 py-2.5 font-medium text-gray-900">
+                                                        {{ $fisc->numero_fiscalizacao }}
+                                                    </td>
+                                                    <td class="px-3 py-2.5 text-gray-600">
+                                                        {{ $fisc->data_fiscalizacao?->format('d/m/Y') ?? '—' }}
+                                                    </td>
+                                                    <td class="px-3 py-2.5">
+                                                        <span class="px-2 py-0.5 text-[10px] font-medium rounded-full {{ $fisc->conclusao_badge_class }}">
+                                                            {{ $fisc->conclusao_fiscal?->getDisplayName() ?? '—' }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="px-3 py-2.5 text-right">
+                                                        <div class="flex items-center justify-end gap-1.5 font-medium">
+                                                            <a href="{{ route('admin.fiscalizacoes.show', $fisc->id) }}"
+                                                               class="p-1 text-blue-600 hover:bg-blue-50 rounded" title="Visualizar">
+                                                                <i class="fas fa-eye"></i>
+                                                            </a>
+                                                            <a href="{{ route('admin.fiscalizacoes.edit', $fisc->id) }}"
+                                                               class="p-1 text-yellow-600 hover:bg-yellow-50 rounded" title="Editar">
+                                                                <i class="fas fa-edit"></i>
+                                                            </a>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @else
+                                <div class="text-center py-6 text-gray-400">
+                                    <i class="fas fa-clipboard-check text-2xl mb-2"></i>
+                                    <p class="text-xs">Nenhuma fiscalização registrada para este contrato.</p>
+                                </div>
+                            @endif
+                        </div>
+
+                        {{-- Painel de Ocorrências --}}
+                        <div class="bg-gray-50/50 rounded-xl p-5 border border-gray-200">
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="font-medium text-gray-800 flex items-center gap-2">
+                                    <i class="fas fa-triangle-exclamation text-amber-600"></i>
+                                    Ocorrências ({{ $contrato->ocorrencias->count() }})
+                                </h4>
+                                @can('fiscalizar contratos')
+                                    <a href="{{ route('admin.ocorrencias.create', ['id' => $contrato->id, 'type' => get_class($contrato)]) }}"
+                                       class="text-xs font-semibold text-[#009496] hover:underline flex items-center gap-1">
+                                        <i class="fas fa-plus"></i> Registrar Ocorrência
+                                    </a>
+                                @endcan
+                            </div>
+
+                            @if($contrato->ocorrencias->isNotEmpty())
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-xs text-left">
+                                        <thead class="text-gray-500 uppercase bg-gray-100/50">
+                                            <tr>
+                                                <th class="px-3 py-2 rounded-l-lg">Nº</th>
+                                                <th class="px-3 py-2">Data</th>
+                                                <th class="px-3 py-2">Status</th>
+                                                <th class="px-3 py-2 text-right rounded-r-lg">Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-gray-100">
+                                            @foreach($contrato->ocorrencias as $ocor)
+                                                <tr class="hover:bg-gray-50/80 transition-colors">
+                                                    <td class="px-3 py-2.5 font-medium text-gray-900">
+                                                        {{ $ocor->numero_ocorrencia }}
+                                                    </td>
+                                                    <td class="px-3 py-2.5 text-gray-600">
+                                                        {{ $ocor->data_ocorrencia?->format('d/m/Y') ?? '—' }}
+                                                    </td>
+                                                    <td class="px-3 py-2.5">
+                                                        <span class="px-2 py-0.5 text-[10px] font-medium rounded-full {{ $ocor->status_badge_class }}">
+                                                            {{ $ocor->status_texto }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="px-3 py-2.5 text-right font-medium">
+                                                        <div class="flex items-center justify-end gap-1.5">
+                                                            <a href="{{ route('admin.ocorrencias.show', $ocor->id) }}"
+                                                               class="p-1 text-blue-600 hover:bg-blue-50 rounded" title="Visualizar">
+                                                                <i class="fas fa-eye"></i>
+                                                            </a>
+                                                            @if($ocor->status->value !== 'concluida')
+                                                                <a href="{{ route('admin.ocorrencias.edit', $ocor->id) }}"
+                                                                   class="p-1 text-yellow-600 hover:bg-yellow-50 rounded" title="Editar">
+                                                                    <i class="fas fa-edit"></i>
+                                                                </a>
+                                                            @endif
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @else
+                                <div class="text-center py-6 text-gray-400">
+                                    <i class="fas fa-triangle-exclamation text-2xl mb-2"></i>
+                                    <p class="text-xs">Nenhuma ocorrência registrada para este contrato.</p>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
