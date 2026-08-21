@@ -1640,13 +1640,43 @@
         if (btnImportar) {
             btnImportar.addEventListener('click', function() {
                 tipoContratacaoAtual = document.querySelector('input[name="tipo_contratacao"]:checked')?.value;
+                if (!tipoContratacaoAtual && (document.querySelector('input[name="tipo_contratacao"][value="compras"]')?.checked || document.querySelector('input[name="tipo_contratacao"][value="servicos"]')?.checked)) {
+                    tipoContratacaoAtual = document.querySelector('input[name="organizacao_itens"]:checked')?.value;
+                }
+                
                 if (!tipoContratacaoAtual) {
                     alert('Selecione o tipo de contratação primeiro.');
                     return;
                 }
                 resetarModal();
                 const infoLote = document.getElementById('info-lote-import');
-                if (infoLote) infoLote.classList.toggle('hidden', tipoContratacaoAtual !== 'lote');
+                if (infoLote) {
+                    infoLote.classList.toggle('hidden', tipoContratacaoAtual !== 'lote');
+                    if (tipoContratacaoAtual === 'lote') {
+                        infoLote.classList.add('flex');
+                        const selectLote = document.getElementById('select-lote-import');
+                        if (selectLote) {
+                            selectLote.innerHTML = '';
+                            const lotes = document.querySelectorAll('.lote-card');
+                            if (lotes.length === 0) {
+                                alert('Crie um lote antes de importar os itens.');
+                                return;
+                            }
+                            lotes.forEach((lote, idx) => {
+                                const idMatch = lote.id.match(/lote-(\d+)/);
+                                const indexReal = idMatch ? idMatch[1] : idx;
+                                const nomeInput = lote.querySelector(`input[name="lotes[${indexReal}][nome]"]`);
+                                const nome = nomeInput && nomeInput.value ? nomeInput.value : `Lote ${parseInt(indexReal) + 1}`;
+                                const option = document.createElement('option');
+                                option.value = indexReal;
+                                option.textContent = nome;
+                                selectLote.appendChild(option);
+                            });
+                        }
+                    } else {
+                        infoLote.classList.remove('flex');
+                    }
+                }
                 modalImportar.classList.remove('hidden');
                 setTimeout(() => modalImportar.classList.add('show'), 10);
             });
@@ -1817,8 +1847,18 @@
             btnConfirmar.addEventListener('click', function() {
                 const itensAtualizados = coletarItensAtualizados();
                 if (!itensAtualizados.length) return;
-                if (tipoContratacaoAtual === 'lote') importarItensComLote(itensAtualizados);
-                else importarItensSemLote(itensAtualizados);
+                
+                if (tipoContratacaoAtual === 'lote') {
+                    const selectLote = document.getElementById('select-lote-import');
+                    const loteIndex = selectLote ? selectLote.value : null;
+                    if (loteIndex === null || loteIndex === '') {
+                        alert('Selecione um lote.');
+                        return;
+                    }
+                    importarItensComLote(itensAtualizados, loteIndex);
+                } else {
+                    importarItensSemLote(itensAtualizados);
+                }
                 fecharModal();
             });
         }
@@ -1899,19 +1939,8 @@
             agendarAutoSave();
         }
 
-        function importarItensComLote(itens) {
-            const lotes = document.querySelectorAll('.lote-card');
-            if (!lotes.length) {
-                alert('Crie um lote antes de importar os itens.');
-                return;
-            }
-            const loteIndex = prompt('Digite o número do lote (1 a ' + lotes.length + ') para importar os itens:');
-            if (!loteIndex) return;
-            const index = parseInt(loteIndex) - 1;
-            if (isNaN(index) || index < 0 || index >= lotes.length) {
-                alert('Número de lote inválido.');
-                return;
-            }
+        function importarItensComLote(itens, selectedIndex) {
+            const index = parseInt(selectedIndex);
             const containerId = `itens-selecionados-lote-${index}`;
             const container = document.getElementById(containerId);
             if (!container) return;

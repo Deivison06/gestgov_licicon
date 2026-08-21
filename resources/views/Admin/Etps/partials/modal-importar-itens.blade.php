@@ -25,11 +25,18 @@
             <div class="overflow-y-auto flex-1 px-6 py-4 space-y-4">
 
                 <!-- Aviso: importação por lote -->
-                <div id="info-lote-import" class="hidden flex items-start gap-3 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
-                    <svg class="w-5 h-5 mt-0.5 flex-shrink-0 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                    <span>Os itens são importados <strong>um lote por vez</strong>. Ao confirmar, você escolherá em qual lote eles serão inseridos.</span>
+                <div id="info-lote-import" class="hidden flex-col gap-3 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+                    <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 mt-0.5 flex-shrink-0 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span>Os itens são importados <strong>um lote por vez</strong>. Escolha abaixo em qual lote eles serão inseridos.</span>
+                    </div>
+                    <div class="mt-2 w-full">
+                        <label for="select-lote-import" class="block text-sm font-medium text-amber-900 mb-1">Selecione o Lote</label>
+                        <select id="select-lote-import" class="w-full rounded-lg border-amber-300 text-sm focus:border-amber-500 focus:ring-amber-500 bg-white px-3 py-2">
+                        </select>
+                    </div>
                 </div>
 
                 <!-- Baixar modelo -->
