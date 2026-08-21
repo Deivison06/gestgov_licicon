@@ -96,6 +96,15 @@ class ContratoProcessoController extends Controller
 
         $documentos = $this->documentoConfig;
 
+        // "Fonte de Recurso" não é lido por nenhum template de PDF de Concorrência ou
+        // Inexigibilidade (essas modalidades usam a Dotação Orçamentária do processo,
+        // editada na tela "Iniciar Processo") — oculta o campo pra não confundir o usuário.
+        if (in_array($processo->modalidade, [ModalidadeEnum::CONCORRENCIA, ModalidadeEnum::INEXIGIBILIDADE], true)) {
+            $documentos['contrato']['campos'] = array_values(
+                array_diff($documentos['contrato']['campos'], ['fonte_recurso'])
+            );
+        }
+
         return view('Admin.Processos.contrato', compact(
             'processo',
             'documentos',
