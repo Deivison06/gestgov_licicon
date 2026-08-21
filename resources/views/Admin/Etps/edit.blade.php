@@ -1305,15 +1305,26 @@
 
         if (btnImportar) {
             btnImportar.addEventListener('click', function() {
-                tipoContratacaoAtual = document.querySelector('input[name="tipo_contratacao"]:checked')?.value;
-                if (!tipoContratacaoAtual && (document.querySelector('input[name="tipo_contratacao"][value="compras"]')?.checked || document.querySelector('input[name="tipo_contratacao"][value="servicos"]')?.checked)) {
-                    tipoContratacaoAtual = document.querySelector('input[name="organizacao_itens"]:checked')?.value;
-                }
+                let tipo = document.querySelector('input[name="tipo_contratacao"]:checked')?.value;
                 
-                if (!tipoContratacaoAtual) {
+                if (!tipo) {
                     alert('Selecione o tipo de contratação primeiro.');
                     return;
                 }
+                
+                let isLote = tipo === 'lote';
+                if (tipo === 'servicos' || tipo === 'compras') {
+                    const org = document.querySelector('input[name="organizacao_itens"]:checked');
+                    if (org) {
+                        isLote = org.value === 'lote';
+                    } else {
+                        alert('Selecione se a contratação será Por Item ou Por Lote.');
+                        return;
+                    }
+                }
+                
+                tipoContratacaoAtual = isLote ? 'lote' : 'item';
+                
                 resetarModal();
                 const infoLote = document.getElementById('info-lote-import');
                 if (infoLote) {
