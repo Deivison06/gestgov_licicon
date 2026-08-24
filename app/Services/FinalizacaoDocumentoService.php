@@ -57,7 +57,7 @@ class FinalizacaoDocumentoService
         'parecer_controle_interno' => [
             'titulo' => 'PARECER DO CONTROLE INTERNO',
             'cor' => 'bg-orange-500',
-            'campos' => [],
+            'campos' => ['cargo_controle_interno'],
             'requer_assinatura' => true,
         ],
         'termo_homologacao' => [
@@ -75,7 +75,7 @@ class FinalizacaoDocumentoService
         'ata_registro_precos' => [
             'titulo' => 'ATA DE REGISTRO DE PREÇOS',
             'cor' => 'bg-teal-500',
-            'campos' => ['numero_ata_registro_precos', 'cargo_controle_interno'],
+            'campos' => ['numero_ata_registro_precos'],
             'requer_assinatura' => true,
         ]
     ];
