@@ -277,4 +277,21 @@ class IncidenteContratualController extends Controller
 
         return $pdf->stream($tituloArquivo . '.pdf');
     }
+
+    public function destroy($contrato_id, $incidente_id)
+    {
+        $incidente = \App\Models\IncidenteContratual::where('contrato_id', $contrato_id)->findOrFail($incidente_id);
+        
+        $processo_id = $incidente->contrato->processo_id;
+
+        // Excluir os itens vinculados e documentos associados a esse incidente
+        $incidente->itens()->delete();
+        \App\Models\Documento::where('incidente_id', $incidente->id)->delete();
+        
+        // Excluir o próprio incidente
+        $incidente->delete();
+
+        return redirect()->route('admin.processos.show', $processo_id)
+            ->with('success', 'Aditivo revertido (excluído) com sucesso.');
+    }
 }

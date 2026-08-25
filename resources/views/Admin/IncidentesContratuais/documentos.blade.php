@@ -31,17 +31,26 @@
                     <h3 class="text-xl font-semibold text-gray-800">Gerar Documentos do Aditivo</h3>
                     <span class="text-sm text-gray-500">Contrato Nº {{ $contrato->numero_contrato }}</span>
                 </div>
-                <div class="w-full lg:w-72">
-                    <div class="flex items-center justify-between mb-1">
-                        <span class="text-xs font-medium text-gray-600">Documentos gerados</span>
-                        <span class="text-xs font-semibold {{ $docsPercent === 100 ? 'text-green-700' : 'text-gray-700' }}">
-                            {{ $docsGerados }}/{{ $docsTotal }}
-                        </span>
+                <div class="flex flex-col items-end gap-3 lg:flex-row lg:items-center w-full lg:w-auto">
+                    <div class="w-full lg:w-72">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-xs font-medium text-gray-600">Documentos gerados</span>
+                            <span class="text-xs font-semibold {{ $docsPercent === 100 ? 'text-green-700' : 'text-gray-700' }}">
+                                {{ $docsGerados }}/{{ $docsTotal }}
+                            </span>
+                        </div>
+                        <div class="w-full h-2 overflow-hidden bg-gray-200 rounded-full">
+                            <div class="h-2 rounded-full transition-all duration-300 {{ $docsPercent === 100 ? 'bg-green-500' : 'bg-[#009496]' }}"
+                                 style="width: {{ $docsPercent }}%"></div>
+                        </div>
                     </div>
-                    <div class="w-full h-2 overflow-hidden bg-gray-200 rounded-full">
-                        <div class="h-2 rounded-full transition-all duration-300 {{ $docsPercent === 100 ? 'bg-green-500' : 'bg-[#009496]' }}"
-                             style="width: {{ $docsPercent }}%"></div>
-                    </div>
+                    <form action="{{ route('admin.incidentes.destroy', ['contrato_id' => $contrato->id, 'incidente_id' => $incidente->id]) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja reverter e excluir este aditivo? Esta ação não pode ser desfeita.');" class="ml-0 lg:ml-4">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-red-600 transition-colors duration-200 bg-red-50 border border-red-200 rounded-md hover:bg-red-100 hover:text-red-700">
+                            <i class="fas fa-trash-alt"></i> Reverter Aditivo
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>

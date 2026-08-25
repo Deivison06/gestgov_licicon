@@ -347,6 +347,8 @@ Route::prefix('admin')
                 ->name('incidentes.documentos.salvar-campo');
             Route::get('/contratos/{contrato_id}/incidentes/{incidente_id}/pdf/{tipo}', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'gerarDocumentoPdf'])
                 ->name('incidentes.pdf');
+            Route::delete('/contratos/{contrato_id}/incidentes/{incidente_id}', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'destroy'])
+                ->name('incidentes.destroy');
         });
 
         // ========================================
