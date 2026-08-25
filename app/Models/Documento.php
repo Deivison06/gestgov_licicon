@@ -14,6 +14,7 @@ class Documento extends Model
     protected $fillable = [
         'processo_id',
         'homologacao_id',
+        'incidente_id',
         'tipo_documento',
         'data_selecionada',
         'caminho',

@@ -335,6 +335,20 @@ Route::prefix('admin')
         Route::put('/contratos/{id}/empresa', [ContratoManualController::class, 'updateEmpresa'])
             ->name('contratos.empresa.update');
 
+        // Incidentes Contratuais (Aditivos)
+        Route::middleware('role:diretor_licicon|gerente_licicon|colaborador_licicon')->group(function () {
+            Route::post('/contratos/{contrato_id}/incidentes', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'store'])
+                ->name('incidentes.store');
+            Route::post('/contratos/{contrato_id}/incidentes/{incidente_id}/atualizar-campos', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'atualizarCampos'])
+                ->name('incidentes.atualizar-campos');
+            Route::get('/contratos/{contrato_id}/incidentes/{incidente_id}/documentos', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'documentos'])
+                ->name('incidentes.documentos');
+            Route::post('/contratos/{contrato_id}/incidentes/{incidente_id}/documentos/salvar-campo', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'salvarCampoDocumento'])
+                ->name('incidentes.documentos.salvar-campo');
+            Route::get('/contratos/{contrato_id}/incidentes/{incidente_id}/pdf/{tipo}', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'gerarDocumentoPdf'])
+                ->name('incidentes.pdf');
+        });
+
         // ========================================
         // 4. UNIDADES (vinculadas à prefeitura)
         // ========================================

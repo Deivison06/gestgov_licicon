@@ -203,6 +203,28 @@
                 </div>
 
                 @if($processo->contrato)
+                    {{-- Incidentes Contratuais (Aditivos) --}}
+                    <div class="mt-8 pt-8 border-t border-gray-100">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                                <i class="fas fa-file-contract text-blue-600"></i>
+                                Incidentes Contratuais (Aditivos)
+                            </h3>
+                            @can('fiscalizar contratos')
+                                <a href="{{ route('admin.incidentes.create', ['contrato_id' => $processo->contrato->id]) }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+                                    <i class="fas fa-plus mr-2"></i>
+                                    Registrar Incidente Contratual
+                                </a>
+                            @endcan
+                        </div>
+                        
+                        {{-- Lista de Aditivos (quando tiver, iterar aqui) --}}
+                        <div class="bg-gray-50/50 rounded-xl p-5 border border-gray-200 mb-6 text-center text-gray-500">
+                            {{-- TODO: Listar os aditivos aqui, por enquanto deixamos um placeholder se vazio --}}
+                            Nenhum incidente contratual registrado.
+                        </div>
+                    </div>
+
                     {{-- Acompanhamento da Execução Contratual --}}
                     <div class="mt-8 pt-8 border-t border-gray-100">
                         <h3 class="mb-6 text-lg font-semibold text-gray-900 flex items-center gap-2">

@@ -48,7 +48,7 @@ class ContratoProcessoController extends Controller
             'vencedores.lotes.contratados',
             'homologacoes.lotes.contratados',
             'homologacoes.contrato',
-            'contratos',
+            'contratos.incidentes',
             'finalizacao',
         ]);
 

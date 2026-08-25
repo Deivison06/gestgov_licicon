@@ -62,6 +62,11 @@ class Contrato extends Model
         return $this->morphMany(Ocorrencia::class, 'fiscalizavel');
     }
 
+    public function incidentes()
+    {
+        return $this->hasMany(IncidenteContratual::class, 'contrato_id');
+    }
+
     public function getSituacaoAttribute()
     {
         if ($this->concluido) {

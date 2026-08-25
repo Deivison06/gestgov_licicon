@@ -943,6 +943,13 @@
                                                         @if ($contratoItem->gerado_em)
                                                             <span class="text-xs text-gray-500">Gerado em {{ \Carbon\Carbon::parse($contratoItem->gerado_em)->format('d/m/Y H:i') }}</span>
                                                         @endif
+                                                        @can('fiscalizar contratos')
+                                                            <button type="button"
+                                                                    onclick="abrirModalAditivo({{ $contratoItem->id }})"
+                                                                    class="px-3 py-1.5 text-xs font-medium text-white bg-[#009496] rounded-lg hover:bg-[#007779]">
+                                                                Aditivo
+                                                            </button>
+                                                        @endcan
                                                         @if ($contratoItem->caminho)
                                                             <a href="{{ route('admin.processo.contrato.download', ['processo' => $processo->id, 'contrato_id' => $contratoItem->id]) }}"
                                                                class="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
@@ -969,6 +976,44 @@
                                                     @endif
                                                     @if ($contratoItem->numero_extrato)
                                                         <div><span class="font-medium text-gray-600">Extrato:</span> {{ $contratoItem->numero_extrato }}</div>
+                                                    @endif
+                                                </div>
+
+                                                {{-- Incidentes Contratuais (Aditivos) --}}
+                                                <div class="px-4 py-3 border-t border-gray-100 bg-gray-50/50">
+                                                    <div class="flex items-center justify-between mb-2">
+                                                        <h5 class="text-xs font-semibold text-gray-900 flex items-center gap-1">
+                                                            <i class="fas fa-file-contract text-[#009496]"></i>
+                                                            Incidentes Contratuais (Aditivos)
+                                                        </h5>
+                                                    </div>
+                                                    @if($contratoItem->incidentes && $contratoItem->incidentes->isNotEmpty())
+                                                        <div class="space-y-2">
+                                                            @foreach($contratoItem->incidentes as $incidente)
+                                                                <div class="flex items-center justify-between p-2 text-xs bg-white border border-gray-200 rounded">
+                                                                    <div class="flex flex-col">
+                                                                        <span class="font-medium text-gray-800">
+                                                                            {{ ucfirst(str_replace('_', ' e ', $incidente->tipo)) }}
+                                                                        </span>
+                                                                        <span class="text-gray-500">
+                                                                            Registrado em {{ $incidente->created_at->format('d/m/Y') }}
+                                                                        </span>
+                                                                    </div>
+                                                                    <div class="flex items-center gap-2">
+                                                                        <span class="px-2 py-1 text-[10px] font-bold text-[#009496] bg-[#009496]/10 rounded-full">
+                                                                            Aditivo
+                                                                        </span>
+                                                                        <a href="{{ route('admin.incidentes.documentos', ['contrato_id' => $contratoItem->id, 'incidente_id' => $incidente->id]) }}"
+                                                                           class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#009496] bg-[#009496]/10 border border-[#009496]/20 rounded-md hover:bg-[#009496] hover:text-white transition-colors"
+                                                                           title="Gerenciar Documentos do Aditivo">
+                                                                            <i class="fas fa-file-alt"></i> Documentos
+                                                                        </a>
+                                                                    </div>
+                                                                </div>
+                                                            @endforeach
+                                                        </div>
+                                                    @else
+                                                        <p class="text-xs text-gray-500 text-center py-2 italic">Nenhum incidente contratual registrado para este contrato.</p>
                                                     @endif
                                                 </div>
                                             </details>
@@ -2525,5 +2570,67 @@
             }, 6000);
         }
     </script>
+    <!-- Modal Novo Aditivo -->
+    <div id="modalNovoAditivo" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" aria-hidden="true" onclick="fecharModalAditivo()"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <form id="formNovoAditivo" method="POST" action="">
+                    @csrf
+                    <div class="px-4 pt-5 pb-4 bg-white sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                            <div class="flex items-center justify-center flex-shrink-0 w-12 h-12 mx-auto bg-teal-100 rounded-full sm:mx-0 sm:h-10 sm:w-10">
+                                <i class="text-teal-600 fas fa-file-contract"></i>
+                            </div>
+                            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                                <h3 class="text-lg font-medium leading-6 text-gray-900" id="modal-title">
+                                    Iniciar Novo Aditivo
+                                </h3>
+                                <div class="mt-4 space-y-4">
+                                    <div>
+                                        <label for="aditivo_tipo" class="block text-sm font-medium text-gray-700">Tipo de Aditivo <span class="text-red-500">*</span></label>
+                                        <select id="aditivo_tipo" name="tipo" required class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496] sm:text-sm">
+                                            <option value="">Selecione...</option>
+                                            <option value="prazo">Prorrogação de Prazo</option>
+                                            <option value="valor">Acréscimo de Valor</option>
+                                            <option value="prazo_valor">Prazo e Valor</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="aditivo_categoria" class="block text-sm font-medium text-gray-700">Categoria do Contrato <span class="text-red-500">*</span></label>
+                                        <select id="aditivo_categoria" name="categoria" required class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496] sm:text-sm">
+                                            <option value="">Selecione...</option>
+                                            <option value="compras_servicos">Compras e Serviços</option>
+                                            <option value="obras">Obras</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="px-4 py-3 bg-gray-50 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button type="submit" class="inline-flex justify-center w-full px-4 py-2 text-base font-medium text-white bg-[#009496] border border-transparent rounded-md shadow-sm hover:bg-[#007779] focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
+                            Iniciar Aditivo
+                        </button>
+                        <button type="button" onclick="fecharModalAditivo()" class="inline-flex justify-center w-full px-4 py-2 mt-3 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                            Cancelar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
-    @endsection
+    <script>
+        function abrirModalAditivo(contratoId) {
+            const form = document.getElementById('formNovoAditivo');
+            form.action = `/admin/contratos/${contratoId}/incidentes`;
+            document.getElementById('modalNovoAditivo').classList.remove('hidden');
+        }
+
+        function fecharModalAditivo() {
+            document.getElementById('modalNovoAditivo').classList.add('hidden');
+        }
+    </script>
+@endsection
