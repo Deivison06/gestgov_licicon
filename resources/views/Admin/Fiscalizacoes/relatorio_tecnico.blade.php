@@ -2,87 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Relatório Técnico - {{ $fiscalizacao->numero_fiscalizacao }}</title>
-    <style>
-        @page { margin: 0; size: A4; }
-        body {
-            margin: 0;
-            padding: 3.5cm 1.5cm 3.5cm 1.5cm;
-            font-family: Arial, sans-serif;
-            font-size: 12px;
-            color: #000;
-            line-height: 1.5;
-            text-align: justify;
-        }
-        .timbre-bg {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: -1000;
-        }
-        .content-body { margin: 0 4rem; }
-        .text-center { text-align: center; }
-        .uppercase { text-transform: uppercase; }
-        .bold { font-weight: bold; }
-        .mt-4 { margin-top: 40px; }
-        .mt-2 { margin-top: 20px; }
-        .mb-2 { margin-bottom: 20px; }
-        p { margin: 5px 0; }
-        .indent { text-indent: 25px; }
-
-        /* Estilos para a seção de Resumo Técnico */
-        .resumo-item { margin-bottom: 15px; }
-        .resumo-label { display: block; font-weight: bold; color: #333; margin-bottom: 2px; text-transform: uppercase; font-size: 11px; }
-        .resumo-texto { display: block; margin-left: 0; line-height: 1.4; color: #444; }
-
-        .medidas-list {
-            margin: 0 0 12px 20px;
-            padding: 0;
-            list-style-type: none;
-        }
-        .medidas-list li::before {
-            content: "• ";
-            font-weight: bold;
-        }
-
-        /* Checklist de Verificação */
-        .checklist-table { width: 100%; border-collapse: collapse; margin: 6px 0 4px; }
-        .checklist-cell { width: 50%; padding: 3px 12px 3px 0; font-size: 11px; color: #444; vertical-align: top; }
-        .checkbox-box {
-            display: inline-block;
-            width: 11px;
-            height: 11px;
-            border: 1.3px solid #062F43;
-            border-radius: 2px;
-            text-align: center;
-            line-height: 10px;
-            font-size: 9px;
-            font-weight: bold;
-            color: #fff;
-            margin-right: 6px;
-        }
-        .checkbox-box.checked { background: #062F43; }
-        .checklist-pendente { color: #999; }
-
-        .signature-section { margin-top: 50px; text-align: center; }
-        .signature-line { border-top: 1px solid #000; width: 300px; margin: 0 auto; padding-top: 5px; }
-        .foto-relatorio { max-width: 100%; max-height: 320px; border: 1px solid #ccc; border-radius: 4px; }
-
-        /* Múltiplos assinantes (assinatura física) */
-        .assinatura-bloco { margin-top: 55px; text-align: center; }
-        .assinatura-bloco .signature-line { border-top: 1px solid #000; width: 300px; margin: 0 auto; padding-top: 5px; }
-        .assinatura-nome { font-weight: bold; text-transform: uppercase; margin: 0; }
-        .assinatura-cargo { margin: 0; font-size: 11px; }
-
-        /* Seção Relatório Fotográfico */
-        .fotos-section { page-break-before: always; margin-top: 20px; }
-        .fotos-titulo { text-align: center; font-weight: bold; text-transform: uppercase; margin-bottom: 20px; font-size: 14px; }
-        .foto-item { text-align: center; margin-bottom: 25px; page-break-inside: avoid; }
-        .foto-item img { max-width: 100%; max-height: 340px; border: 1px solid #ccc; border-radius: 4px; }
-        .foto-legenda { font-size: 11px; color: #555; margin-top: 4px; }
-    </style>
-</head>
-<body>
+    <title>Relatório Técnico de Fiscalização - {{ $fiscalizacao->numero_fiscalizacao }}</title>
     @php
         $timbre = $fiscalizacao->prefeitura->timbre ?? '';
         $timbrePath = public_path($timbre);
@@ -109,18 +29,18 @@
         $labels = match($tipo) {
             'compras' => [
                 'execucao' => 'Execução no Período',
-                'qualidade' => 'Qualidade dos Produtos entregues',
-                'obs_servidor' => 'Observações indicadas por servidor próximo a execução'
+                'qualidade' => 'Qualidade dos Produtos Entregues',
+                'obs_servidor' => 'Observações Indicadas por Servidor Próximo à Execução'
             ],
             'servicos' => [
                 'execucao' => 'Execução no Período',
-                'qualidade' => 'Qualidade dos Serviços realizados',
-                'obs_servidor' => 'Observações indicadas por servidor próximo a execução'
+                'qualidade' => 'Qualidade dos Serviços Realizados',
+                'obs_servidor' => 'Observações Indicadas por Servidor Próximo à Execução'
             ],
             'obras' => [
                 'execucao' => 'Execução do Objeto',
-                'qualidade' => 'Qualidade dos serviços Executados',
-                'obs_servidor' => 'Observações indicadas por servidor Fiscal de Engenharia'
+                'qualidade' => 'Qualidade dos Serviços Executados',
+                'obs_servidor' => 'Observações Indicadas por Servidor Fiscal de Engenharia'
             ],
             default => [
                 'execucao' => 'Execução do Objeto',
@@ -129,76 +49,551 @@
             ]
         };
     @endphp
+    <style>
+        @page {
+            size: A4 portrait;
+            /* Quando há timbre (imagem A4 de fundo), expande margem superior (70mm) e inferior (40mm) para total clareza do timbre */
+            margin: {{ $base64Timbre ? '70mm' : '32mm' }} 15mm {{ $base64Timbre ? '40mm' : '20mm' }} 15mm;
+        }
+
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            font-size: 10pt;
+            line-height: 1.45;
+            color: #1e293b;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Timbre Background cobrindo toda a folha A4 a partir de (0,0) */
+        .timbre-bg {
+            position: fixed;
+            top: -{{ $base64Timbre ? '70mm' : '32mm' }};
+            left: -15mm;
+            width: 210mm;
+            height: 297mm;
+            z-index: -1000;
+        }
+
+        /* Cabeçalho Institucional Fixo */
+        @if(!$base64Timbre)
+            header {
+                position: fixed;
+                top: -26mm;
+                left: 0;
+                right: 0;
+                height: 22mm;
+                border-bottom: 2px solid #0f2942;
+                padding-bottom: 4px;
+            }
+        @else
+            header {
+                position: fixed;
+                top: -14mm;
+                left: 0;
+                right: 0;
+                height: 10mm;
+                border-bottom: 1.5px solid #0f2942;
+                padding-bottom: 2px;
+            }
+        @endif
+
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .header-title-cell {
+            vertical-align: bottom;
+            text-align: left;
+            padding-left: 4px;
+        }
+        .inst-name {
+            font-size: 11pt;
+            font-weight: bold;
+            color: #0f2942;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 0;
+        }
+        .inst-sub {
+            font-size: 8pt;
+            color: #475569;
+            text-transform: uppercase;
+            margin: 1px 0 0 0;
+        }
+        .doc-badge-cell {
+            vertical-align: bottom;
+            text-align: right;
+            white-space: nowrap;
+        }
+        .doc-type-badge {
+            background-color: #0f2942;
+            color: #ffffff;
+            font-size: 8pt;
+            font-weight: bold;
+            padding: 3px 6px;
+            border-radius: 3px;
+            display: inline-block;
+            text-transform: uppercase;
+            vertical-align: middle;
+        }
+        .doc-num {
+            font-size: 8.5pt;
+            color: #334155;
+            font-weight: bold;
+            margin-top: 3px;
+        }
+        .doc-num-inline {
+            font-size: 8pt;
+            color: #334155;
+            font-weight: bold;
+            margin-left: 4px;
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+
+        /* Rodapé Fixo */
+        footer {
+            position: fixed;
+            bottom: {{ $base64Timbre ? '-30mm' : '-15mm' }};
+            left: 0;
+            right: 0;
+            height: 10mm;
+            border-top: 1px solid #cbd5e1;
+            padding-top: 4px;
+            font-size: 7.5pt;
+            color: #64748b;
+        }
+
+        /* Título Principal */
+        .main-title-container {
+            text-align: center;
+            margin-bottom: 12px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .main-title {
+            font-size: 13pt;
+            font-weight: bold;
+            color: #0f2942;
+            text-transform: uppercase;
+            margin: 0;
+            letter-spacing: 0.5px;
+        }
+        .main-subtitle {
+            font-size: 9pt;
+            color: #475569;
+            margin: 2px 0 0 0;
+        }
+
+        /* Tabela de Dados e Identificação (Grid) */
+        .meta-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 12px;
+        }
+        .meta-table th, .meta-table td {
+            border: 1px solid #cbd5e1;
+            padding: 5px 8px;
+            font-size: 8.5pt;
+        }
+        .meta-table th {
+            background-color: #f1f5f9;
+            color: #0f2942;
+            font-weight: bold;
+            text-align: left;
+            width: 22%;
+            text-transform: uppercase;
+        }
+        .meta-table td {
+            background-color: #ffffff;
+            color: #1e293b;
+        }
+
+        /* Aviso Legal */
+        .legal-notice {
+            background-color: #f8fafc;
+            border-left: 3.5px solid #0f2942;
+            border-top: 1px solid #e2e8f0;
+            border-right: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 8px 12px;
+            font-size: 8.5pt;
+            color: #334155;
+            margin-bottom: 14px;
+            text-align: justify;
+            border-radius: 0 3px 3px 0;
+        }
+        .medidas-list {
+            margin: 4px 0 0 16px;
+            padding: 0;
+            list-style-type: disc;
+        }
+        .medidas-list li {
+            margin-bottom: 2px;
+        }
+
+        /* Seções e Caixas */
+        .sec-container {
+            margin-bottom: 12px;
+            page-break-inside: avoid;
+        }
+        .sec-heading {
+            background-color: #f1f5f9;
+            color: #0f2942;
+            border-left: 3.5px solid #0f2942;
+            font-size: 9pt;
+            font-weight: bold;
+            padding: 4px 8px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            letter-spacing: 0.3px;
+        }
+        .text-box {
+            background-color: #fafafa;
+            border: 1px solid #e2e8f0;
+            border-radius: 2px;
+            padding: 7px 10px;
+            font-size: 9pt;
+            color: #1e293b;
+            line-height: 1.4;
+            text-align: justify;
+        }
+        .mt-2 { margin-top: 6px; }
+
+        /* Checklist Table */
+        .checklist-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 4px;
+        }
+        .checklist-cell {
+            width: 50%;
+            padding: 4px 6px;
+            font-size: 8.5pt;
+            vertical-align: middle;
+            border: 1px solid #e2e8f0;
+            background: #ffffff;
+        }
+        .checkbox-box {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 1.5px solid #0f2942;
+            border-radius: 2px;
+            text-align: center;
+            line-height: 11px;
+            font-size: 9px;
+            font-weight: bold;
+            color: #0f2942;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+        .checkbox-box.checked {
+            background-color: #0f2942;
+            color: #ffffff;
+        }
+        .chk-label {
+            vertical-align: middle;
+        }
+        .chk-active {
+            color: #0f172a;
+            font-weight: 500;
+        }
+        .chk-inactive {
+            color: #94a3b8;
+        }
+
+        /* Status Badge */
+        .status-badge-box {
+            padding: 6px 10px;
+            border-radius: 3px;
+            font-size: 8.5pt;
+            margin-top: 4px;
+        }
+        .badge-ok {
+            background-color: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+        }
+        .badge-alert {
+            background-color: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+        }
+
+        /* Caixas de Conclusão */
+        .conclusion-box {
+            background-color: #f0f9ff;
+            border: 1.5px solid #0284c7;
+            border-radius: 3px;
+            padding: 10px 12px;
+            margin-top: 14px;
+            margin-bottom: 14px;
+            page-break-inside: avoid;
+        }
+        .conclusion-title {
+            font-size: 9.5pt;
+            font-weight: bold;
+            color: #0369a1;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        .conclusion-text {
+            font-size: 9.5pt;
+            font-weight: bold;
+            color: #0f2942;
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        /* Foto no resumo */
+        .foto-relatorio-container {
+            text-align: center;
+            margin-top: 8px;
+        }
+        .foto-relatorio {
+            max-width: 100%;
+            max-height: 280px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+        }
+
+        /* Assinaturas */
+        .signatures-wrapper {
+            margin-top: 30px;
+            page-break-inside: avoid;
+        }
+        .sig-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .sig-cell {
+            width: 50%;
+            text-align: center;
+            vertical-align: top;
+            padding: 10px;
+        }
+        .sig-cell-single {
+            width: 100%;
+            text-align: center;
+            vertical-align: top;
+            padding: 10px;
+        }
+        .sig-line {
+            border-top: 1px solid #334155;
+            width: 240px;
+            margin: 0 auto 5px auto;
+        }
+        .sig-name {
+            font-weight: bold;
+            font-size: 9pt;
+            color: #0f2942;
+            text-transform: uppercase;
+            margin: 0;
+        }
+        .sig-role {
+            font-size: 8pt;
+            color: #475569;
+            margin: 1px 0 0 0;
+        }
+
+        /* Relatório Fotográfico */
+        .fotos-section {
+            page-break-before: always;
+            margin-top: 10px;
+        }
+        .fotos-header {
+            text-align: center;
+            font-size: 11pt;
+            font-weight: bold;
+            color: #0f2942;
+            text-transform: uppercase;
+            border-bottom: 2px solid #0f2942;
+            padding-bottom: 6px;
+            margin-bottom: 16px;
+        }
+        .foto-card {
+            text-align: center;
+            margin-bottom: 20px;
+            page-break-inside: avoid;
+        }
+        .foto-card img {
+            max-width: 90%;
+            max-height: 360px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            padding: 3px;
+            background-color: #ffffff;
+        }
+        .foto-caption {
+            font-size: 8.5pt;
+            color: #475569;
+            margin-top: 4px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    {{-- Numeração Dinâmica das Páginas --}}
+    <script type="text/php">
+        if (isset($pdf)) {
+            $font = $fontMetrics->get_font("Helvetica", "normal");
+            $size = 8;
+            $color = array(0.39, 0.45, 0.55);
+            $yPosition = {{ $base64Timbre ? '820' : '810' }};
+            $pdf->page_text(485, $yPosition, "Página {PAGE_NUM} de {PAGE_COUNT}", $font, $size, $color);
+            @if(!$base64Timbre)
+                $pdf->page_text(45, $yPosition, "Módulo de Fiscalização | Emissão: " . date('d/m/Y H:i'), $font, $size, $color);
+            @endif
+        }
+    </script>
 
     @if($base64Timbre)
         <img class="timbre-bg" src="{{ $base64Timbre }}" alt="Timbre">
     @endif
 
-    <div class="content-body">
-        <div class="text-center" style="margin-bottom: 20px;">
-            <h2 class="bold uppercase">
-                Relatório Técnico de Fiscalização
-                @if($tipo === 'compras') — Compras
-                @elseif($tipo === 'servicos') — Serviços
-                @endif
-            </h2>
-        </div>
-        <p class="bold">Data da Inspeção: <span>{{ $fiscalizacao->data_fiscalizacao->format('d/m/Y') }}</span> </p>
-        <p class="bold">Número da Fiscalização: <span>{{ $fiscalizacao->numero_fiscalizacao }}</span> </p>
-
-        <p>A fiscalização contratual foi realizada conforme as diretrizes da Lei nº 14.133/2021, por meio de:</p>
-        <ul class="medidas-list">
-            <li>Análise documental (notas fiscais, relatórios de execução, comprovantes, etc.);</li>
-            <li>Verificação presencial (vistorias in loco, fotografias, contato com usuários);</li>
-            <li>Reuniões e comunicações com representantes da contratada;</li>
-            <li>Reuniões com funcionários e equipes da secretaria.</li>
-        </ul>
-
-        @include('Admin.Fiscalizacoes.partials._resumo_tecnico')
-
-        <div class="resumo-item" style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px;">
-            <span class="resumo-label">Conclusão do Fiscal:</span>
-            <p class="bold" style="color: #062F43;">{{ $fiscalizacao->conclusao_texto }}</p>
-        </div>
-
-        @if($base64Foto)
-            <div class="resumo-item" style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px;">
-                <span class="resumo-label">Registro Fotográfico:</span>
-                <div class="text-center" style="margin-top: 10px;">
-                    <img class="foto-relatorio" src="{{ $base64Foto }}" alt="Relatório Fotográfico">
-                </div>
-            </div>
-        @endif
-
-        <div class="signature-section">
-            <div class="signature-line"></div>
-            <p class="bold uppercase" style="margin:0;">{{ $fiscalizacao->user->name }}</p>
-            <p style="margin:0;">Fiscal do Contrato</p>
-        </div>
-
-        {{-- Assinantes adicionais selecionados (assinatura física) --}}
-        @if(!empty($fiscalizacao->assinantes))
-            @foreach($fiscalizacao->assinantes as $assinante)
-                <div class="assinatura-bloco">
-                    <div class="signature-line"></div>
-                    <p class="assinatura-nome">{{ $assinante['nome'] ?? '' }}</p>
-                    @php
-                        // Sem cargo informado (ex.: fiscal selecionado da lista), assume "Fiscal de Contrato".
-                        $cargo = trim($assinante['cargo'] ?? '') ?: 'Fiscal de Contrato';
-                        $detalhe = array_filter([$cargo, $assinante['unidade'] ?? null]);
-                    @endphp
-                    @if(!empty($detalhe))
-                        <p class="assinatura-cargo">{{ implode(' — ', $detalhe) }}</p>
+    {{-- Cabeçalho Fixo --}}
+    <header>
+        <table class="header-table">
+            <tr>
+                <td class="header-title-cell">
+                    @if(!$base64Timbre)
+                        <div class="inst-name">{{ $fiscalizacao->prefeitura->nome ?? 'PREFEITURA MUNICIPAL' }}</div>
+                        <div class="inst-sub">MÓDULO DE FISCALIZAÇÃO CONTRATUAL (LEI Nº 14.133/2021)</div>
+                    @else
+                        <div class="inst-sub">FISCALIZAÇÃO (LEI Nº 14.133/2021)</div>
                     @endif
-                </div>
-            @endforeach
+                </td>
+                <td class="doc-badge-cell">
+                    @if(!$base64Timbre)
+                        <div class="doc-type-badge">RELATÓRIO TÉCNICO</div>
+                        <div class="doc-num">FISCALIZAÇÃO Nº {{ $fiscalizacao->numero_fiscalizacao }}</div>
+                    @else
+                        <div>
+                            <span class="doc-type-badge">RELATÓRIO TÉCNICO</span>
+                            <span class="doc-num-inline">FISCALIZAÇÃO Nº {{ $fiscalizacao->numero_fiscalizacao }}</span>
+                        </div>
+                    @endif
+                </td>
+            </tr>
+        </table>
+    </header>
+
+    {{-- Conteúdo Principal --}}
+    <div class="main-title-container">
+        <h1 class="main-title">
+            RELATÓRIO TÉCNICO DE FISCALIZAÇÃO CONTRATUAL
+            @if($tipo === 'compras') — COMPRAS
+            @elseif($tipo === 'servicos') — SERVIÇOS
+            @elseif($tipo === 'obras') — OBRAS E ENGENHARIA
+            @endif
+        </h1>
+        <div class="main-subtitle">Documento de instrução técnica submetido ao acompanhamento da Gestão e órgãos de controle</div>
+    </div>
+
+    {{-- Tabela Grid de Dados --}}
+    <table class="meta-table">
+        <tr>
+            <th>Nº Fiscalização</th>
+            <td><strong>{{ $fiscalizacao->numero_fiscalizacao }}</strong></td>
+            <th>Data Inspeção</th>
+            <td><strong>{{ $fiscalizacao->data_fiscalizacao->format('d/m/Y') }}</strong></td>
+        </tr>
+        <tr>
+            <th>Contrato</th>
+            <td><strong>{{ $info['numero_contrato'] }}</strong></td>
+            <th>Tipo Objeto</th>
+            <td>{{ strtoupper($tipo ?? 'Geral') }}</td>
+        </tr>
+        <tr>
+            <th>Contratada</th>
+            <td colspan="3"><strong>{{ $info['razao_social'] }}</strong> &nbsp;(CNPJ/CPF: {{ $info['cnpj'] }})</td>
+        </tr>
+        <tr>
+            <th>Objeto Contratual</th>
+            <td colspan="3">{{ $info['objeto'] }}</td>
+        </tr>
+        <tr>
+            <th>Fiscal Responsável</th>
+            <td>{{ $fiscalizacao->user->name }}</td>
+            <th>Unidade / Órgão</th>
+            <td>{{ $fiscalizacao->prefeitura->nome ?? '—' }}</td>
+        </tr>
+    </table>
+
+    {{-- Legal Notice --}}
+    <div class="legal-notice">
+        <strong>Fundamentação Legal e Procedimentos:</strong><br>
+        A presente fiscalização contratual foi executada em estrita observância aos ditames da <strong>Lei Federal nº 14.133/2021</strong> e normativos vigentes, valendo-se das seguintes etapas técnicas de instrução:
+        <ul class="medidas-list">
+            <li>Análise documental e contábil (notas fiscais, relatórios de execução, medições e comprovações);</li>
+            <li>Vistoria presencial e verificação <em>in loco</em> (registro fotográfico e aferição física das entregas/serviços);</li>
+            <li>Acompanhamento de diretrizes e alinhamento técnico com os representantes da contratada;</li>
+            <li>Entrevistas e oitiva dos servidores e equipes operacionais envolvidas no local de execução.</li>
+        </ul>
+    </div>
+
+    {{-- Resumo Técnico Partial --}}
+    @include('Admin.Fiscalizacoes.partials._resumo_tecnico')
+
+    {{-- Conclusão Formal --}}
+    <div class="conclusion-box">
+        <div class="conclusion-title">&bull; Parecer e Conclusão Técnica do Fiscal:</div>
+        <p class="conclusion-text">{{ $fiscalizacao->conclusao_texto }}</p>
+    </div>
+
+    @if($base64Foto)
+        <div class="sec-container">
+            <div class="sec-heading">REGISTRO FOTOGRÁFICO DE DESTAQUE</div>
+            <div class="foto-relatorio-container">
+                <img class="foto-relatorio" src="{{ $base64Foto }}" alt="Relatório Fotográfico">
+            </div>
+        </div>
+    @endif
+
+    {{-- Assinaturas --}}
+    <div class="signatures-wrapper">
+        @php
+            $assinantesLista = $fiscalizacao->assinantes ?? [];
+        @endphp
+
+        @if(!empty($assinantesLista))
+            <table class="sig-table">
+                @foreach(array_chunk($assinantesLista, 2) as $rowAssinantes)
+                    <tr>
+                        @foreach($rowAssinantes as $ass)
+                            <td class="sig-cell">
+                                <div class="sig-line"></div>
+                                <p class="sig-name">{{ $ass['nome'] ?? '' }}</p>
+                                @php
+                                    $cargo = trim($ass['cargo'] ?? '') ?: 'Fiscal de Contrato';
+                                    $detalhe = array_filter([$cargo, $ass['unidade'] ?? null]);
+                                @endphp
+                                @if(!empty($detalhe))
+                                    <p class="sig-role">{{ implode(' — ', $detalhe) }}</p>
+                                @endif
+                            </td>
+                        @endforeach
+                        @if(count($rowAssinantes) === 1)
+                            <td class="sig-cell"></td>
+                        @endif
+                    </tr>
+                @endforeach
+            </table>
+        @else
+            <div class="sig-cell-single">
+                <div class="sig-line"></div>
+                <p class="sig-name">{{ $fiscalizacao->user->name }}</p>
+                <p class="sig-role">Fiscal do Contrato / Responsável Técnico</p>
+            </div>
         @endif
     </div>
 
-    {{-- ===================== RELATÓRIO FOTOGRÁFICO ===================== --}}
+    {{-- Relatório Fotográfico --}}
     @if($fiscalizacao->fotos->isNotEmpty())
-        <div class="content-body fotos-section">
-            <div class="fotos-titulo">Relatório Fotográfico</div>
+        <div class="fotos-section">
+            <div class="fotos-header">Anexo — Relatório Fotográfico Integrante</div>
             @foreach($fiscalizacao->fotos as $foto)
                 @php
                     $fotoAbs = public_path($foto->caminho);
@@ -209,9 +604,13 @@
                     }
                 @endphp
                 @if($fotoB64)
-                    <div class="foto-item">
+                    <div class="foto-card">
                         <img src="{{ $fotoB64 }}" alt="Foto {{ $loop->iteration }}">
-                        {{-- <div class="foto-legenda">{{ $foto->legenda ?? ('Imagem ' . $loop->iteration) }}</div> --}}
+                        @if(!empty($foto->legenda))
+                            <div class="foto-caption">Registro {{ $loop->iteration }}: {{ $foto->legenda }}</div>
+                        @else
+                            <div class="foto-caption">Registro Fotográfico de Vistoria {{ $loop->iteration }}</div>
+                        @endif
                     </div>
                 @endif
             @endforeach
