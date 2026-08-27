@@ -62,6 +62,10 @@ class IncidenteContratualController extends Controller
             'percentual_valor' => 'required_if:tipo,valor,prazo_valor|nullable|numeric',
             'justificativa' => 'nullable|string',
             'arquivo_solicitacao' => 'nullable|file|mimes:pdf|max:10240',
+            'nome_solicitante' => 'nullable|string',
+            'cargo_solicitante' => 'nullable|string',
+            'nome_parecerista' => 'nullable|string',
+            'oab_parecerista' => 'nullable|string',
         ];
 
         if ($incidente->categoria === 'obras' && in_array($incidente->tipo, ['valor', 'prazo_valor'])) {
@@ -108,6 +112,7 @@ class IncidenteContratualController extends Controller
             'solicitacao_aditivo' => [
                 'titulo' => 'Solicitação do Aditivo',
                 'cor' => '#009496',
+                'requer_assinatura' => true,
                 'campos' => [
                     [
                         'name' => 'justificativa',
@@ -116,6 +121,7 @@ class IncidenteContratualController extends Controller
                         'ia' => true,
                         'value' => $incidente->justificativa,
                     ],
+
                     [
                         'name' => 'arquivo_solicitacao',
                         'label' => 'Anexar PDF da solicitação de aditivo',
@@ -127,16 +133,21 @@ class IncidenteContratualController extends Controller
             'parecer_juridico_aditivo' => [
                 'titulo' => 'Parecer Jurídico',
                 'cor' => '#dc2626', // vermelho
-                'campos' => []
+                'requer_assinatura' => true,
+                'campos' => [
+
+                ]
             ],
             'autorizacao_prefeito_aditivo' => [
                 'titulo' => 'Autorização do Prefeito',
                 'cor' => '#ea580c', // laranja
+                'requer_assinatura' => true,
                 'campos' => []
             ],
             'termo_aditivo' => [
                 'titulo' => 'Termo Aditivo ao Contrato',
                 'cor' => '#0284c7', // azul
+                'requer_assinatura' => true,
                 'campos' => []
             ]
         ];
@@ -209,6 +220,42 @@ class IncidenteContratualController extends Controller
         $prefeitura = $processo->prefeitura;
         $detalhe = $processo->detalhe;
 
+        // Garantir dados da empresa
+        if (empty($contrato->dados_contratante)) {
+            $loteContratado = \App\Models\LoteContratado::where('contrato_id', $contrato->id)->first() 
+                ?? \App\Models\LoteContratado::where('processo_id', $processo->id)->first();
+            
+            if ($loteContratado && $loteContratado->vencedor) {
+                $v = $loteContratado->vencedor;
+                $contrato->dados_contratante = [
+                    'razao_social' => $v->razao_social,
+                    'cnpj' => $v->cnpj,
+                    'endereco' => $v->endereco,
+                    'representante' => $v->representante ?? 'Representante não informado',
+                    'cpf_representante' => $v->cpf,
+                    'orgao_responsavel' => 'Secretaria Municipal',
+                ];
+            } elseif ($processo->finalizacao) {
+                $contrato->dados_contratante = [
+                    'razao_social' => $processo->finalizacao->razao_social ?? 'CONTRATADA',
+                    'cnpj' => $processo->finalizacao->cnpj_empresa_vencedora ?? 'CNPJ',
+                    'endereco' => $processo->finalizacao->endereco_empresa_vencedora ?? 'Endereço',
+                    'representante' => $processo->finalizacao->representante_legal_empresa ?? 'Representante não informado',
+                    'cpf_representante' => $processo->finalizacao->cpf_representante ?? 'CPF',
+                    'orgao_responsavel' => 'Secretaria Municipal',
+                ];
+            } else {
+                $contrato->dados_contratante = [
+                    'razao_social' => 'CONTRATADA',
+                    'cnpj' => 'CNPJ',
+                    'endereco' => 'Endereço da Empresa',
+                    'representante' => 'Representante Legal',
+                    'cpf_representante' => 'CPF',
+                    'orgao_responsavel' => 'Secretaria Municipal',
+                ];
+            }
+        }
+
         $viewName = '';
         $tituloArquivo = '';
 
@@ -251,6 +298,12 @@ class IncidenteContratualController extends Controller
         
         $data_selecionada = $documento ? $documento->data_selecionada : null;
 
+        // Recupera a seleção de assinantes, se houver
+        $documentoSelecao = \App\Models\DocumentoSelecaoAssinantes::where('processo_id', $processo->id)
+            ->where('incidente_id', $incidente->id)
+            ->where('tipo_documento', $tipo)
+            ->first();
+
         // Marca como gerado
         if ($documento) {
             $documento->update(['gerado_em' => now()]);
@@ -272,7 +325,8 @@ class IncidenteContratualController extends Controller
             'processo',
             'prefeitura',
             'detalhe',
-            'data_selecionada'
+            'data_selecionada',
+            'documentoSelecao'
         ))->setPaper('a4', 'portrait');
 
         return $pdf->stream($tituloArquivo . '.pdf');

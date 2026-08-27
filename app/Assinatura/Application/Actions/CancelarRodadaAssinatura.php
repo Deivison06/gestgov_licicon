@@ -23,10 +23,11 @@ class CancelarRodadaAssinatura
         string $tipoDocumento,
         ?int $homologacaoId,
         ?int $vencedorId,
+        ?int $incidenteId,
         int $userId,
         ?string $motivo = null
     ): int {
-        $documento = $this->consulta->localizarDocumentoGerado($processo, $tipoDocumento, $homologacaoId);
+        $documento = $this->consulta->localizarDocumentoGerado($processo, $tipoDocumento, $homologacaoId, $incidenteId);
 
         if (!$documento) {
             throw new \DomainException('Documento não encontrado para cancelar a rodada.');

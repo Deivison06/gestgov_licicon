@@ -37,11 +37,12 @@ class SelecaoAssinantesService
         string $tipoDocumento,
         ?int $homologacaoId,
         ?int $vencedorId,
+        ?int $incidenteId,
         array $dados,
         int $atualizadoPorUserId
     ): DocumentoSelecaoAssinantes {
         return $this->salvarSelecao->executar(
-            $processo, $tipoDocumento, $homologacaoId, $vencedorId, $dados, $atualizadoPorUserId
+            $processo, $tipoDocumento, $homologacaoId, $vencedorId, $incidenteId, $dados, $atualizadoPorUserId
         );
     }
 
@@ -49,9 +50,10 @@ class SelecaoAssinantesService
         Processo $processo,
         string $tipoDocumento,
         ?int $homologacaoId = null,
-        ?int $vencedorId = null
+        ?int $vencedorId = null,
+        ?int $incidenteId = null
     ): ?DocumentoSelecaoAssinantes {
-        return $this->consulta->obterSelecao($processo, $tipoDocumento, $homologacaoId, $vencedorId);
+        return $this->consulta->obterSelecao($processo, $tipoDocumento, $homologacaoId, $vencedorId, $incidenteId);
     }
 
     public function solicitarAssinatura(
@@ -59,10 +61,11 @@ class SelecaoAssinantesService
         string $tipoDocumento,
         ?int $homologacaoId,
         ?int $vencedorId,
+        ?int $incidenteId,
         int $solicitadoPorUserId
     ): array {
         return $this->solicitarAssinatura->executar(
-            $processo, $tipoDocumento, $homologacaoId, $vencedorId, $solicitadoPorUserId
+            $processo, $tipoDocumento, $homologacaoId, $vencedorId, $incidenteId, $solicitadoPorUserId
         );
     }
 
@@ -85,9 +88,10 @@ class SelecaoAssinantesService
         Processo $processo,
         string $tipoDocumento,
         ?int $homologacaoId = null,
-        ?int $vencedorId = null
+        ?int $vencedorId = null,
+        ?int $incidenteId = null
     ): array {
-        return $this->consulta->status($processo, $tipoDocumento, $homologacaoId, $vencedorId);
+        return $this->consulta->status($processo, $tipoDocumento, $homologacaoId, $vencedorId, $incidenteId);
     }
 
     public function caminhoPdfAssinado(?Documento $documento): ?string
@@ -100,11 +104,12 @@ class SelecaoAssinantesService
         string $tipoDocumento,
         ?int $homologacaoId,
         ?int $vencedorId,
+        ?int $incidenteId,
         int $userId,
         ?string $motivo = null
     ): int {
         return $this->cancelarRodadaAssinatura->executar(
-            $processo, $tipoDocumento, $homologacaoId, $vencedorId, $userId, $motivo
+            $processo, $tipoDocumento, $homologacaoId, $vencedorId, $incidenteId, $userId, $motivo
         );
     }
 }

@@ -55,11 +55,6 @@
             </div>
         </div>
 
-        <form action="{{ route('admin.incidentes.atualizar-campos', ['contrato_id' => $contrato->id, 'incidente_id' => $incidente->id]) }}" method="POST" enctype="multipart/form-data">
-            @csrf
-            <input type="hidden" name="tipo" value="{{ $incidente->tipo }}">
-            <input type="hidden" name="categoria" value="{{ $incidente->categoria }}">
-            
             <div class="overflow-x-auto bg-white border-x border-b border-gray-200 shadow-sm rounded-b-xl">
                 <!-- Área de Mensagens -->
                 <div id="message-container" class="p-4"></div>
@@ -80,11 +75,7 @@
                     </div>
                 @endif
 
-                <div class="flex justify-end px-6 pt-4 pb-2">
-                    <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 bg-[#009496] rounded-md hover:bg-[#007b85]">
-                        <i class="fas fa-save"></i> Salvar Configurações
-                    </button>
-                </div>
+
 
                 <table class="min-w-full bg-white divide-y divide-gray-200">
                     <thead class="bg-gray-100">
@@ -109,6 +100,7 @@
                         @php
                             $dataId = 'data_' . $tipo;
                             $accordionId = "accordion-collapse-{$tipo}";
+                            $requerAssinatura = $doc['requer_assinatura'] ?? false;
                             $temCampos = !empty($doc['campos']);
                             $documentoGerado = $documentosProcesso->firstWhere('tipo_documento', $tipo);
                             $dataSelecionada = $documentoGerado->data_selecionada ?? '';
@@ -130,12 +122,20 @@
                                         @endif
                                     </div>
                                 </div>
-                                @if ($temCampos)
+                                @if ($temCampos || $requerAssinatura)
                                     <button type="button"
                                             class="inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 text-xs font-medium text-[#009496] bg-[#009496]/10 rounded-md hover:bg-[#009496]/20 transition-colors"
                                             onclick="document.getElementById('{{ $accordionId }}').classList.toggle('hidden')">
                                         <i class="fas fa-sliders-h text-[10px]"></i>
-                                        <span class="collapse-text">Definir Campos</span>
+                                        <span class="collapse-text">
+                                            @if($requerAssinatura && $temCampos)
+                                                Definir Assinantes e Campos
+                                            @elseif($requerAssinatura)
+                                                Definir Assinantes
+                                            @else
+                                                Definir Campos
+                                            @endif
+                                        </span>
                                     </button>
                                 @endif
                             </td>
@@ -157,20 +157,84 @@
                             </td>
 
                             <td class="px-6 py-4 text-center">
-                                <button type="button"
-                                        onclick="gerarPdfAditivo('{{ $contrato->id }}', '{{ $incidente->id }}', '{{ $tipo }}', document.getElementById('{{ $dataId }}').value)"
-                                        class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white transition-colors duration-200 bg-[#009496] rounded-md hover:bg-[#007b85] focus:outline-none focus:ring-2 focus:ring-[#009496] focus:ring-offset-2">
-                                    <i class="fas fa-file-pdf"></i> Gerar PDF
-                                </button>
+                                <div class="flex justify-center space-x-2">
+                                    <button type="button"
+                                            onclick="gerarPdfAditivo('{{ $contrato->id }}', '{{ $incidente->id }}', '{{ $tipo }}', document.getElementById('{{ $dataId }}').value, this)"
+                                            class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white transition-colors duration-200 bg-[#009496] rounded-md hover:bg-[#007b85] focus:outline-none focus:ring-2 focus:ring-[#009496] focus:ring-offset-2">
+                                        <i class="fas fa-file-pdf"></i> Gerar PDF
+                                    </button>
+                                    @if ($requerAssinatura)
+                                        <x-botao-solicitar-assinatura
+                                            :processo-id="$processo->id"
+                                            :tipo="$tipo"
+                                            :incidente-id="$incidente->id" />
+                                    @endif
+                                </div>
                             </td>
                         </tr>
 
-                        @if ($temCampos)
+                        @if ($temCampos || $requerAssinatura)
                             <tr>
                                 <td colspan="3" class="p-0">
                                     <div id="{{ $accordionId }}" class="hidden">
                                         <div class="p-4 border-t border-gray-200 bg-gray-50">
-                                            <h4 class="mb-3 text-sm font-semibold text-gray-700">Campos do Documento</h4>
+                                            @if ($requerAssinatura)
+                                                <div class="pb-4 mb-6 border-b border-gray-200">
+                                                    <h4 class="mb-4 text-sm font-semibold text-gray-700">Seleção de Assinantes</h4>
+                                                    <div id="assinantes-container-{{ $tipo }}-i{{ $incidente->id }}" class="space-y-3"
+                                                         data-assinante-bridge
+                                                         data-tipo="{{ $tipo }}"
+                                                         data-incidente-id="{{ $incidente->id }}"
+                                                         data-obter-url="{{ route('admin.processos.assinatura.selecao.obter', $processo->id) }}"
+                                                         data-salvar-url="{{ route('admin.processos.assinatura.selecao.salvar', $processo->id) }}">
+                                                        <div class="flex flex-col gap-3 p-4 bg-white border border-gray-200 rounded-lg assinante-item">
+                                                            <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+                                                                <div class="flex-1 min-w-[180px]">
+                                                                    <label class="block mb-1 text-xs font-medium text-gray-600">Unidade</label>
+                                                                    <select name="assinante_unidade[]"
+                                                                            class="block w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 unidade-select"
+                                                                            onchange="updateResponsavel(this, '{{ $tipo }}-i{{ $incidente->id }}')">
+                                                                        <option value="">Selecione a Unidade</option>
+                                                                        @foreach ($processo->prefeitura->unidades as $unidade)
+                                                                            <option value="{{ $unidade->id }}">{{ $unidade->nome }}</option>
+                                                                        @endforeach
+                                                                    </select>
+                                                                </div>
+
+                                                                <div class="flex flex-col flex-1 gap-2 sm:flex-row sm:items-center sm:gap-3">
+                                                                    <div class="flex-1 min-w-[200px]">
+                                                                        <label class="block mb-1 text-xs font-medium text-gray-600">Responsável</label>
+                                                                        <input type="text" name="assinante_responsavel[]" placeholder="Nome do Responsável" readonly class="block w-full px-3 py-2 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded-md shadow-sm responsavel-input">
+                                                                    </div>
+
+                                                                    <div class="flex-1 min-w-[150px]">
+                                                                        <label class="block mb-1 text-xs font-medium text-gray-600">Nº Portaria</label>
+                                                                        <input type="text" name="assinante_portaria[]" placeholder="Número da Portaria" readonly class="block w-full px-3 py-2 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded-md shadow-sm portaria-input">
+                                                                    </div>
+
+                                                                    <div class="flex-1 min-w-[150px]">
+                                                                        <label class="block mb-1 text-xs font-medium text-gray-600">Data Portaria</label>
+                                                                        <input type="text" name="assinante_data_portaria[]" placeholder="Data da Portaria" readonly class="block w-full px-3 py-2 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded-md shadow-sm data-portaria-input">
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="mt-4">
+                                                        <button type="button" onclick="adicionarAssinante('{{ $tipo }}-i{{ $incidente->id }}')" class="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-blue-500 rounded-md shadow hover:bg-blue-600 focus:ring-2 focus:ring-blue-300">
+                                                            + Adicionar Assinante
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            @endif
+                                            
+                                            @if ($temCampos)
+                                            <form action="{{ route('admin.incidentes.atualizar-campos', ['contrato_id' => $contrato->id, 'incidente_id' => $incidente->id]) }}" method="POST" enctype="multipart/form-data">
+                                                @csrf
+                                                <input type="hidden" name="tipo" value="{{ $incidente->tipo }}">
+                                                <input type="hidden" name="categoria" value="{{ $incidente->categoria }}">
+                                                <h4 class="mb-3 text-sm font-semibold text-gray-700">Campos do Documento</h4>
                                             <div class="grid gap-4">
                                                 @foreach ($doc['campos'] as $campo)
                                                     <div>
@@ -192,15 +256,19 @@
                                                             @endif
                                                         @elseif($campo['tipo'] === 'number')
                                                             <input type="number" name="{{ $campo['name'] }}" id="{{ $tipo }}_{{ $campo['name'] }}" step="{{ $campo['step'] ?? '1' }}" value="{{ $campo['value'] }}" class="block w-full px-3 py-2 text-sm border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">
+                                                        @elseif($campo['tipo'] === 'string')
+                                                            <input type="text" name="{{ $campo['name'] }}" id="{{ $tipo }}_{{ $campo['name'] }}" value="{{ $campo['value'] }}" class="block w-full px-3 py-2 text-sm border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">
                                                         @endif
                                                     </div>
                                                 @endforeach
                                             </div>
-                                            <div class="flex justify-end mt-4">
-                                                <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 bg-[#009496] rounded-md hover:bg-[#007b85]">
-                                                    <i class="fas fa-save"></i> Salvar Informações
-                                                </button>
-                                            </div>
+                                                <div class="flex justify-end mt-4">
+                                                    <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 bg-[#009496] rounded-md hover:bg-[#007b85]">
+                                                        <i class="fas fa-save"></i> Salvar Informações
+                                                    </button>
+                                                </div>
+                                            </form>
+                                            @endif
                                         </div>
                                     </div>
                                 </td>
@@ -210,8 +278,9 @@
                     </tbody>
                 </table>
             </div>
-        </form>
     </div>
+
+    @include('Admin.Processos.partials.assinante-bridge-script')
 
     <script>
         function showMessage(message, type) {
@@ -261,7 +330,20 @@
             }));
         });
 
-        function gerarPdfAditivo(contratoId, incidenteId, tipo, dataSelecionada) {
+        async function gerarPdfAditivo(contratoId, incidenteId, tipo, dataSelecionada, btnElement) {
+            // Se houver script de assinaturas, tenta salvar as assinaturas primeiro
+            if (typeof window.salvarSelecaoAntesDeGerar === 'function') {
+                const tr = btnElement.closest('tr').nextElementSibling;
+                if (tr) {
+                    const bridgeContainer = tr.querySelector(`[data-assinante-bridge][data-tipo="${tipo}"]`);
+                    if (bridgeContainer) {
+                        try {
+                            await window.salvarSelecaoAntesDeGerar({{ $processo->id }}, tipo, null, null, incidenteId);
+                        } catch (e) { console.warn('Falha salvar assinaturas antes de gerar', e); }
+                    }
+                }
+            }
+
             let url = `/admin/contratos/${contratoId}/incidentes/${incidenteId}/pdf/${tipo}`;
             if (dataSelecionada) {
                 // Força o salvamento da data antes de abrir o PDF

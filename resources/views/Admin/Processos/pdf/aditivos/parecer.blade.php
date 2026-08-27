@@ -55,7 +55,7 @@
 
     <div class="section-title">I – RELATÓRIO</div>
     <div class="clause-content">
-        Trata-se de solicitação de manifestação jurídica acerca da possibilidade de celebração de Termo Aditivo ao Contrato nº {{ $contrato->numero_contrato ?? 'S/N' }}, cujo objeto consiste em {{ strtolower($processo->detalhe->objeto ?? 'execução do objeto') }}, celebrado entre o Município de {{ $prefeitura->cidade ?? 'Município' }} - {{ $prefeitura->estado ?? 'UF' }} e a empresa {{ $contrato->dados_contratante['razao_social'] ?? 'CONTRATADA' }}.
+        Trata-se de solicitação de manifestação jurídica acerca da possibilidade de celebração de Termo Aditivo ao Contrato nº {{ $contrato->numero_contrato ?? 'S/N' }}, cujo objeto consiste em {{ strtolower(trim(html_entity_decode(strip_tags($processo->objeto ?? 'execução do objeto')))) }}, celebrado entre o Município de {{ $prefeitura->cidade ?? 'Município' }} - {{ $prefeitura->estado ?? 'UF' }} e a empresa {{ $contrato->dados_contratante['razao_social'] ?? 'CONTRATADA' }}.
     </div>
 
     <div class="clause-content" style="text-indent: 0;">
@@ -124,10 +124,23 @@
         {{ $prefeitura->cidade ?? 'Cidade' }} – {{ $prefeitura->estado ?? 'UF' }}, {{ \Carbon\Carbon::parse($data_selecionada ?? now())->translatedFormat('d \d\e F \d\e Y') }}.
     </div>
 
-    <div class="signature-block">
-        ___________________________________<br>
-        <strong>PROCURADORIA GERAL DO MUNICÍPIO</strong><br>
-        Procurador(a)/Assessor(a) Jurídico(a)
-    </div>
+    @if(isset($documentoSelecao) && is_array($documentoSelecao->assinantes) && count($documentoSelecao->assinantes) > 0)
+        @foreach($documentoSelecao->assinantes as $assinante)
+            <div class="signature-block" style="margin-top: 40px; text-align: center;">
+                ___________________________________<br>
+                <strong>{{ mb_strtoupper($assinante['responsavel']) }}</strong><br>
+                {{ $assinante['unidade_nome'] }}
+                @if(!empty($assinante['portaria']))
+                <br>Portaria: {{ $assinante['portaria'] }}
+                @endif
+            </div>
+        @endforeach
+    @else
+        <div class="signature-block">
+            ___________________________________<br>
+            <strong>{{ $incidente->nome_parecerista ?? 'Assessor Jurídico / Parecerista' }}</strong><br>
+            {{ $incidente->oab_parecerista ?? 'OAB/UF nº XXXXXX' }}
+        </div>
+    @endif
 </body>
 </html>

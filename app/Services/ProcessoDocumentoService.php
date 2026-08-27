@@ -685,7 +685,7 @@ class ProcessoDocumentoService extends AbstractService
             'termo_referencia',
             'autorizacao_abertura_procedimento',
             'termo_recebimento',
-            'termo_autuacao',
+            'termo_juntada',
             'parecer_tecnico',
             'parecer_juridico',
             'parecer_controle_interno',

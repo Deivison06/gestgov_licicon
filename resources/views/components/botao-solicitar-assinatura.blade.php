@@ -3,6 +3,7 @@
     'tipo',
     'homologacaoId' => null,
     'vencedorId'    => null,
+    'incidenteId'   => null,
     'compacto'      => false,
 ])
 
@@ -22,6 +23,7 @@
      data-tipo="{{ $tipo }}"
      data-homologacao-id="{{ $homologacaoId ?? '' }}"
      data-vencedor-id="{{ $vencedorId ?? '' }}"
+     data-incidente-id="{{ $incidenteId ?? '' }}"
      data-status-url="{{ $statusUrl }}"
      data-salvar-url="{{ $salvarUrl }}"
      data-solicitar-url="{{ $solicitarUrl }}"
@@ -86,11 +88,12 @@
         },
 
         /** Hidrata window.assinaturaConfig[tipo] a partir do backend. */
-        async hidratar(processoId, tipo, homologacaoId, vencedorId) {
+        async hidratar(processoId, tipo, homologacaoId, vencedorId, incidenteId) {
             const url = '{{ route('admin.processos.assinatura.selecao.obter', ':pid') }}'.replace(':pid', processoId)
                 + `?tipo_documento=${encodeURIComponent(tipo)}`
                 + (homologacaoId ? `&homologacao_id=${homologacaoId}` : '')
-                + (vencedorId    ? `&vencedor_id=${vencedorId}`    : '');
+                + (vencedorId    ? `&vencedor_id=${vencedorId}`    : '')
+                + (incidenteId   ? `&incidente_id=${incidenteId}`  : '');
             const r = await this._fetch(url);
             if (r.success && r.data) {
                 window.assinaturaConfig = window.assinaturaConfig || {};
@@ -127,12 +130,13 @@
         },
 
         /** Salva a seleção atual (window.assinaturaConfig[tipo]). */
-        async salvar(salvarUrl, tipo, homologacaoId, vencedorId, opts = {}) {
+        async salvar(salvarUrl, tipo, homologacaoId, vencedorId, incidenteId, opts = {}) {
             const conf = (window.assinaturaConfig && window.assinaturaConfig[tipo]) || {};
             const body = {
                 tipo_documento: tipo,
                 homologacao_id: homologacaoId || null,
                 vencedor_id:    vencedorId    || null,
+                incidente_id:   incidenteId   || null,
                 modo:           conf.modo || 'paralelo',
                 prazo_dias:     conf.prazoDias || 7,
                 assinantes:     conf.assinantes || opts.assinantes || [],
@@ -144,8 +148,8 @@
         },
 
         /** Dispara a rodada (após salvar). */
-        async solicitar(salvarUrl, solicitarUrl, tipo, homologacaoId, vencedorId) {
-            const salvou = await this.salvar(salvarUrl, tipo, homologacaoId, vencedorId);
+        async solicitar(salvarUrl, solicitarUrl, tipo, homologacaoId, vencedorId, incidenteId) {
+            const salvou = await this.salvar(salvarUrl, tipo, homologacaoId, vencedorId, incidenteId);
             if (!salvou.success) return salvou;
             return this._fetch(solicitarUrl, {
                 method: 'POST',
@@ -153,27 +157,30 @@
                     tipo_documento: tipo,
                     homologacao_id: homologacaoId || null,
                     vencedor_id:    vencedorId    || null,
+                    incidente_id:   incidenteId   || null,
                 }),
             });
         },
 
         /** Cancela a rodada ativa do documento. */
-        async cancelar(cancelarUrl, tipo, homologacaoId, vencedorId) {
+        async cancelar(cancelarUrl, tipo, homologacaoId, vencedorId, incidenteId) {
             return this._fetch(cancelarUrl, {
                 method: 'POST',
                 body: JSON.stringify({
                     tipo_documento: tipo,
                     homologacao_id: homologacaoId || null,
                     vencedor_id:    vencedorId    || null,
+                    incidente_id:   incidenteId   || null,
                 }),
             });
         },
 
-        async status(statusUrl, tipo, homologacaoId, vencedorId) {
+        async status(statusUrl, tipo, homologacaoId, vencedorId, incidenteId) {
             const url = statusUrl
                 + `?tipo_documento=${encodeURIComponent(tipo)}`
                 + (homologacaoId ? `&homologacao_id=${homologacaoId}` : '')
-                + (vencedorId    ? `&vencedor_id=${vencedorId}`    : '');
+                + (vencedorId    ? `&vencedor_id=${vencedorId}`    : '')
+                + (incidenteId   ? `&incidente_id=${incidenteId}`  : '');
             const r = await this._fetch(url);
             return r.data;
         },
@@ -183,7 +190,7 @@
          * Garante que "Solicitar Assinatura" depois encontre os dados.
          * Aceita assinantes/modo/prazo explícitos OU lê de window.assinaturaConfig[tipo].
          */
-        async salvarSelecaoAntesDeGerar(processoId, tipo, homologacaoId, vencedorId, opts = {}) {
+        async salvarSelecaoAntesDeGerar(processoId, tipo, homologacaoId, vencedorId, incidenteId, opts = {}) {
             const conf = (window.assinaturaConfig && window.assinaturaConfig[tipo]) || {};
             const assinantes = opts.assinantes || conf.assinantes || [];
             if (!assinantes.length) return null;
@@ -193,6 +200,7 @@
                 tipo_documento: tipo,
                 homologacao_id: homologacaoId || null,
                 vencedor_id:    vencedorId    || null,
+                incidente_id:   incidenteId   || null,
                 modo:           opts.modo || conf.modo || 'paralelo',
                 prazo_dias:     opts.prazoDias || conf.prazoDias || 7,
                 assinantes:     assinantes,
@@ -261,8 +269,9 @@
         const tipo = root.dataset.tipo;
         const h    = root.dataset.homologacaoId || null;
         const v    = root.dataset.vencedorId || null;
+        const i    = root.dataset.incidenteId || null;
         try {
-            const status = await window.AssinaturaPersistencia.status(root.dataset.statusUrl, tipo, h, v);
+            const status = await window.AssinaturaPersistencia.status(root.dataset.statusUrl, tipo, h, v, i);
             renderWidget(root, status);
         } catch (e) {
             console.warn('[assinatura] falha ao buscar status', tipo, e);
@@ -273,6 +282,7 @@
         const tipo = root.dataset.tipo;
         const h    = root.dataset.homologacaoId || null;
         const v    = root.dataset.vencedorId || null;
+        const i    = root.dataset.incidenteId || null;
         const btn  = root.querySelector('[data-btn-solicitar]');
         const orig = btn.querySelector('[data-btn-label]').textContent;
 
@@ -280,7 +290,7 @@
         btn.querySelector('[data-btn-label]').textContent = 'Enviando...';
         try {
             const r = await window.AssinaturaPersistencia.solicitar(
-                root.dataset.salvarUrl, root.dataset.solicitarUrl, tipo, h, v
+                root.dataset.salvarUrl, root.dataset.solicitarUrl, tipo, h, v, i
             );
             if (r.success) {
                 showMsg(r.message || 'Solicitação enviada.', 'success');
@@ -300,6 +310,7 @@
         const tipo = root.dataset.tipo;
         const h    = root.dataset.homologacaoId || null;
         const v    = root.dataset.vencedorId || null;
+        const i    = root.dataset.incidenteId || null;
         const btn  = root.querySelector('[data-btn-cancelar]');
 
         if (!confirm('Cancelar a rodada de assinatura em andamento? As solicitações pendentes serão canceladas.')) {
@@ -308,7 +319,7 @@
 
         btn.disabled = true;
         try {
-            const r = await window.AssinaturaPersistencia.cancelar(root.dataset.cancelarUrl, tipo, h, v);
+            const r = await window.AssinaturaPersistencia.cancelar(root.dataset.cancelarUrl, tipo, h, v, i);
             if (r.success) {
                 showMsg(r.message || 'Rodada cancelada.', 'success');
                 await atualizarWidget(root);
@@ -349,8 +360,9 @@
             const tipo = root.dataset.tipo;
             const h    = root.dataset.homologacaoId || null;
             const v    = root.dataset.vencedorId || null;
+            const i    = root.dataset.incidenteId || null;
             const procId = root.dataset.solicitarUrl.match(/processos\/(\d+)\//)?.[1];
-            if (procId) window.AssinaturaPersistencia.hidratar(procId, tipo, h, v).catch(() => {});
+            if (procId) window.AssinaturaPersistencia.hidratar(procId, tipo, h, v, i).catch(() => {});
         });
     }
 

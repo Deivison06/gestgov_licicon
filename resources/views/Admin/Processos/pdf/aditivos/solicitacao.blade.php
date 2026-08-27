@@ -59,13 +59,13 @@
         <p><strong>Assunto:</strong> Solicitação de Aditivo</p>
         <p><strong>Contrato n°:</strong> {{ $contrato->numero_contrato ?? 'S/N' }}</p>
         <p><strong>Contratada:</strong> {{ $contrato->dados_contratante['razao_social'] ?? 'NOME DA EMPRESA' }}</p>
-        <p><strong>Objeto:</strong> {{ $processo->detalhe->objeto ?? 'Objeto do Processo' }}</p>
+        <p><strong>Objeto:</strong> {{ trim(html_entity_decode(strip_tags($processo->objeto ?? 'Objeto do Processo'))) }}</p>
     </div>
 
     <p style="font-weight: bold; margin-bottom: 15px;">Sr(a). {{ $prefeitura->autoridade_competente ?? 'Prefeito(a)' }},</p>
 
     <div class="clause-content">
-        O Contrato nº {{ $contrato->numero_contrato ?? 'S/N' }} tem como objeto a {!! strip_tags($processo->objeto) !!}.
+        O Contrato nº {{ $contrato->numero_contrato ?? 'S/N' }} tem como objeto a {{ strtolower(trim(html_entity_decode(strip_tags($processo->objeto ?? '')))) }}.
     </div>
 
     <div class="clause-content">
@@ -89,10 +89,24 @@
         {{ $prefeitura->cidade ?? 'Cidade' }} – {{ $prefeitura->estado ?? 'UF' }}, {{ \Carbon\Carbon::parse($data_selecionada ?? now())->translatedFormat('d \d\e F \d\e Y') }}
     </div>
 
-    <div class="signature-block">
-        ___________________________________<br>
-        <strong>{{ mb_strtoupper($contrato->dados_contratante['orgao_responsavel'] ?? 'SECRETARIA MUNICIPAL') }}</strong>
-    </div>
+    @if(isset($documentoSelecao) && is_array($documentoSelecao->assinantes) && count($documentoSelecao->assinantes) > 0)
+        @foreach($documentoSelecao->assinantes as $assinante)
+            <div class="signature-block" style="margin-top: 40px; text-align: center;">
+                ___________________________________<br>
+                <strong>{{ mb_strtoupper($assinante['responsavel']) }}</strong><br>
+                {{ $assinante['unidade_nome'] }}
+                @if(!empty($assinante['portaria']))
+                <br>Portaria: {{ $assinante['portaria'] }}
+                @endif
+            </div>
+        @endforeach
+    @else
+        <div class="signature-block">
+            ___________________________________<br>
+            <strong>{{ mb_strtoupper($incidente->nome_solicitante ?? ($contrato->dados_contratante['orgao_responsavel'] ?? 'SECRETARIA MUNICIPAL')) }}</strong><br>
+            {{ $incidente->cargo_solicitante ?? 'Secretário(a)' }}
+        </div>
+    @endif
  {{-- QUEBRA DE PÁGINA --}}
     <div class="page-break"></div>
 

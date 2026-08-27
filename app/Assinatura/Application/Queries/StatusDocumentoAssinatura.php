@@ -25,13 +25,15 @@ class StatusDocumentoAssinatura
         Processo $processo,
         string $tipoDocumento,
         ?int $homologacaoId = null,
-        ?int $vencedorId = null
+        ?int $vencedorId = null,
+        ?int $incidenteId = null
     ): ?DocumentoSelecaoAssinantes {
         return DocumentoSelecaoAssinantes::query()
             ->where('processo_id', $processo->id)
             ->where('tipo_documento', $tipoDocumento)
             ->where('homologacao_id', $homologacaoId)
             ->where('vencedor_id', $vencedorId)
+            ->where('incidente_id', $incidenteId)
             ->first();
     }
 
@@ -41,7 +43,8 @@ class StatusDocumentoAssinatura
     public function localizarDocumentoGerado(
         Processo $processo,
         string $tipoDocumento,
-        ?int $homologacaoId
+        ?int $homologacaoId,
+        ?int $incidenteId = null
     ): ?Documento {
         return Documento::query()
             ->where('processo_id', $processo->id)
@@ -50,6 +53,11 @@ class StatusDocumentoAssinatura
                 $homologacaoId,
                 fn ($q) => $q->where('homologacao_id', $homologacaoId),
                 fn ($q) => $q->whereNull('homologacao_id')
+            )
+            ->when(
+                $incidenteId,
+                fn ($q) => $q->where('incidente_id', $incidenteId),
+                fn ($q) => $q->whereNull('incidente_id')
             )
             ->latest('id')
             ->first();
@@ -101,13 +109,14 @@ class StatusDocumentoAssinatura
         Processo $processo,
         string $tipoDocumento,
         ?int $homologacaoId = null,
-        ?int $vencedorId = null
+        ?int $vencedorId = null,
+        ?int $incidenteId = null
     ): array {
         // $vencedorId está no contrato público pra simetria com obter/salvar,
         // mas Documento não tem coluna vencedor_id — fluxos por-vencedor (ata_registro_precos)
         // usam AtaRegistroPreco em tabela separada.
         unset($vencedorId);
-        $documento = $this->localizarDocumentoGerado($processo, $tipoDocumento, $homologacaoId);
+        $documento = $this->localizarDocumentoGerado($processo, $tipoDocumento, $homologacaoId, $incidenteId);
 
         if (!$documento) {
             return [

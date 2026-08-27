@@ -18,6 +18,10 @@ class IncidenteContratual extends Model
         'status',
         'arquivo_solicitacao_path',
         'arquivo_orcamento_obra_path',
+        'nome_solicitante',
+        'cargo_solicitante',
+        'nome_parecerista',
+        'oab_parecerista'
     ];
 
     public function contrato()

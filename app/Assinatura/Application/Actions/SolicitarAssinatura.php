@@ -37,9 +37,10 @@ class SolicitarAssinatura
         string $tipoDocumento,
         ?int $homologacaoId,
         ?int $vencedorId,
+        ?int $incidenteId,
         int $solicitadoPorUserId
     ): array {
-        $selecao = $this->consulta->obterSelecao($processo, $tipoDocumento, $homologacaoId, $vencedorId);
+        $selecao = $this->consulta->obterSelecao($processo, $tipoDocumento, $homologacaoId, $vencedorId, $incidenteId);
 
         if (!$selecao) {
             throw new \DomainException(
@@ -67,7 +68,7 @@ class SolicitarAssinatura
         $ignorados = count($selecao->assinantes) - count($listaResolvida);
 
         // Localiza o Documento gerado (PDF rascunho atual)
-        $documento = $this->consulta->localizarDocumentoGerado($processo, $tipoDocumento, $homologacaoId);
+        $documento = $this->consulta->localizarDocumentoGerado($processo, $tipoDocumento, $homologacaoId, $incidenteId);
 
         if (!$documento) {
             throw new \DomainException(

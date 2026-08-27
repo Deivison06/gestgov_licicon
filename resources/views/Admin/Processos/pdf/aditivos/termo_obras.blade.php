@@ -112,18 +112,33 @@
         {{ $prefeitura->cidade ?? 'Cidade' }} – {{ $prefeitura->estado ?? 'UF' }}, {{ \Carbon\Carbon::parse($data_selecionada ?? now())->translatedFormat('d \d\e F \d\e Y') }}.
     </div>
 
-    <div class="signature-section">
-        <div class="signature-box">
-            ___________________________________<br>
-            <strong>{{ mb_strtoupper($prefeitura->autoridade_competente ?? 'Prefeito') }}</strong><br>
-            <strong>CONTRATANTE</strong>
+    @if(isset($documentoSelecao) && is_array($documentoSelecao->assinantes) && count($documentoSelecao->assinantes) > 0)
+        <div class="signature-section" style="margin-top: 60px; width: 100%; text-align: center;">
+        @foreach($documentoSelecao->assinantes as $assinante)
+            <div class="signature-box" style="display: inline-block; width: 45%; vertical-align: top; margin-bottom: 40px;">
+                ___________________________________<br>
+                <strong>{{ mb_strtoupper($assinante['responsavel']) }}</strong><br>
+                {{ $assinante['unidade_nome'] }}
+                @if(!empty($assinante['portaria']))
+                <br>Portaria: {{ $assinante['portaria'] }}
+                @endif
+            </div>
+        @endforeach
         </div>
-        <div class="signature-box">
-            ___________________________________<br>
-            <strong>{{ $contrato->dados_contratante['razao_social'] ?? 'CONTRATADA' }}</strong><br>
-            <strong>CONTRATADA</strong>
+    @else
+        <div class="signature-section">
+            <div class="signature-box">
+                ___________________________________<br>
+                <strong>{{ mb_strtoupper($prefeitura->autoridade_competente ?? 'Prefeito') }}</strong><br>
+                <strong>CONTRATANTE</strong>
+            </div>
+            <div class="signature-box">
+                ___________________________________<br>
+                <strong>{{ $contrato->dados_contratante['razao_social'] ?? 'CONTRATADA' }}</strong><br>
+                <strong>CONTRATADA</strong>
+            </div>
         </div>
-    </div>
+    @endif
 
     <div class="witness-box">
         <p>Testemunhas:</p>

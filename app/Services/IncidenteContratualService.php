@@ -14,11 +14,17 @@ class IncidenteContratualService
     {
         return DB::transaction(function () use ($incidente, $contrato, $dados) {
             $incidente->update([
+                'tipo' => $dados['tipo'],
+                'categoria' => $dados['categoria'],
                 'meses_prorrogacao' => $dados['meses_prorrogacao'] ?? $incidente->meses_prorrogacao,
                 'percentual_valor' => $dados['percentual_valor'] ?? $incidente->percentual_valor,
                 'justificativa' => $dados['justificativa'] ?? $incidente->justificativa,
                 'arquivo_solicitacao_path' => $dados['arquivo_solicitacao_path'] ?? $incidente->arquivo_solicitacao_path,
                 'arquivo_orcamento_obra_path' => $dados['arquivo_orcamento_obra_path'] ?? $incidente->arquivo_orcamento_obra_path,
+                'nome_solicitante' => $dados['nome_solicitante'] ?? $incidente->nome_solicitante,
+                'cargo_solicitante' => $dados['cargo_solicitante'] ?? $incidente->cargo_solicitante,
+                'nome_parecerista' => $dados['nome_parecerista'] ?? $incidente->nome_parecerista,
+                'oab_parecerista' => $dados['oab_parecerista'] ?? $incidente->oab_parecerista,
             ]);
 
             // Clear previous items to avoid duplication if user changes the percentage
@@ -26,7 +32,8 @@ class IncidenteContratualService
 
             // If it's a value incident for Compras e Serviços, calculate items
             if (in_array($dados['tipo'], ['valor', 'prazo_valor']) && $dados['categoria'] === 'compras_servicos') {
-                $percentual = $dados['percentual_valor'] / 100;
+                $percentual_valor = $dados['percentual_valor'] ?? $incidente->percentual_valor;
+                $percentual = $percentual_valor / 100;
 
                 $lotesContratados = LoteContratado::where('contrato_id', $contrato->id)->get();
                 if ($lotesContratados->isEmpty()) {

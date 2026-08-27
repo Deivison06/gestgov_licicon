@@ -53,10 +53,23 @@
         {{ $prefeitura->cidade ?? 'Cidade' }} – {{ $prefeitura->estado ?? 'UF' }}, {{ \Carbon\Carbon::parse($data_selecionada ?? now())->translatedFormat('d \d\e F \d\e Y') }}.
     </div>
 
-    <div class="signature-block">
-        ___________________________________<br>
-        <strong>{{ mb_strtoupper($prefeitura->autoridade_competente ?? 'Prefeito') }}</strong><br>
-        {{ $prefeitura->cargo_autoridade ?? 'Prefeito Municipal' }}
-    </div>
+    @if(isset($documentoSelecao) && is_array($documentoSelecao->assinantes) && count($documentoSelecao->assinantes) > 0)
+        @foreach($documentoSelecao->assinantes as $assinante)
+            <div class="signature-block" style="margin-top: 40px; text-align: center;">
+                ___________________________________<br>
+                <strong>{{ mb_strtoupper($assinante['responsavel']) }}</strong><br>
+                {{ $assinante['unidade_nome'] }}
+                @if(!empty($assinante['portaria']))
+                <br>Portaria: {{ $assinante['portaria'] }}
+                @endif
+            </div>
+        @endforeach
+    @else
+        <div class="signature-block">
+            ___________________________________<br>
+            <strong>{{ mb_strtoupper($prefeitura->autoridade_competente ?? 'Prefeito') }}</strong><br>
+            {{ $prefeitura->cargo_autoridade ?? 'Prefeito Municipal' }}
+        </div>
+    @endif
 </body>
 </html>

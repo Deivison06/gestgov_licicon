@@ -19,6 +19,7 @@ class SalvarSelecaoAssinantes
         string $tipoDocumento,
         ?int $homologacaoId,
         ?int $vencedorId,
+        ?int $incidenteId,
         array $dados,
         int $atualizadoPorUserId
     ): DocumentoSelecaoAssinantes {
@@ -30,6 +31,7 @@ class SalvarSelecaoAssinantes
                 'tipo_documento' => $tipoDocumento,
                 'homologacao_id' => $homologacaoId,
                 'vencedor_id'    => $vencedorId,
+                'incidente_id'   => $incidenteId,
             ],
             [
                 'modo'                   => in_array($dados['modo'] ?? null, ['paralelo', 'sequencial'], true)

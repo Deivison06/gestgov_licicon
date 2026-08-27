@@ -30,13 +30,15 @@ class SelecaoAssinanteController extends Controller
             'tipo_documento' => ['required', 'string', 'max:80'],
             'homologacao_id' => ['nullable', 'integer', 'exists:homologacoes,id'],
             'vencedor_id'    => ['nullable', 'integer', 'exists:vencedores,id'],
+            'incidente_id'   => ['nullable', 'integer', 'exists:incidentes_contratuais,id'],
         ]);
 
         $selecao = $this->service->obter(
             $processo,
             $request->input('tipo_documento'),
             $request->integer('homologacao_id') ?: null,
-            $request->integer('vencedor_id') ?: null
+            $request->integer('vencedor_id') ?: null,
+            $request->integer('incidente_id') ?: null
         );
 
         return response()->json([
@@ -59,6 +61,7 @@ class SelecaoAssinanteController extends Controller
             'tipo_documento'        => ['required', 'string', 'max:80'],
             'homologacao_id'        => ['nullable', 'integer', 'exists:homologacoes,id'],
             'vencedor_id'           => ['nullable', 'integer', 'exists:vencedores,id'],
+            'incidente_id'          => ['nullable', 'integer', 'exists:incidentes_contratuais,id'],
             'modo'                  => ['nullable', 'in:paralelo,sequencial'],
             'prazo_dias'            => ['nullable', 'integer', 'min:1', 'max:60'],
             'assinantes'            => ['required', 'array'],
@@ -76,6 +79,7 @@ class SelecaoAssinanteController extends Controller
                 $request->input('tipo_documento'),
                 $request->integer('homologacao_id') ?: null,
                 $request->integer('vencedor_id') ?: null,
+                $request->integer('incidente_id') ?: null,
                 [
                     'modo'       => $request->input('modo', 'paralelo'),
                     'prazo_dias' => (int) $request->input('prazo_dias', 7),
@@ -114,13 +118,15 @@ class SelecaoAssinanteController extends Controller
             'tipo_documento' => ['required', 'string', 'max:80'],
             'homologacao_id' => ['nullable', 'integer', 'exists:homologacoes,id'],
             'vencedor_id'    => ['nullable', 'integer', 'exists:vencedores,id'],
+            'incidente_id'   => ['nullable', 'integer', 'exists:incidentes_contratuais,id'],
         ]);
 
         $status = $this->service->statusDocumento(
             $processo,
             $request->input('tipo_documento'),
             $request->integer('homologacao_id') ?: null,
-            $request->integer('vencedor_id') ?: null
+            $request->integer('vencedor_id') ?: null,
+            $request->integer('incidente_id') ?: null
         );
 
         return response()->json(['success' => true, 'data' => $status]);
@@ -135,6 +141,7 @@ class SelecaoAssinanteController extends Controller
             'tipo_documento' => ['required', 'string', 'max:80'],
             'homologacao_id' => ['nullable', 'integer', 'exists:homologacoes,id'],
             'vencedor_id'    => ['nullable', 'integer', 'exists:vencedores,id'],
+            'incidente_id'   => ['nullable', 'integer', 'exists:incidentes_contratuais,id'],
         ]);
 
         try {
@@ -143,6 +150,7 @@ class SelecaoAssinanteController extends Controller
                 $request->input('tipo_documento'),
                 $request->integer('homologacao_id') ?: null,
                 $request->integer('vencedor_id') ?: null,
+                $request->integer('incidente_id') ?: null,
                 $request->user()->id
             );
 
@@ -182,6 +190,7 @@ class SelecaoAssinanteController extends Controller
             'tipo_documento' => ['required', 'string', 'max:80'],
             'homologacao_id' => ['nullable', 'integer', 'exists:homologacoes,id'],
             'vencedor_id'    => ['nullable', 'integer', 'exists:vencedores,id'],
+            'incidente_id'   => ['nullable', 'integer', 'exists:incidentes_contratuais,id'],
             'motivo'         => ['nullable', 'string', 'max:500'],
         ]);
 
@@ -191,6 +200,7 @@ class SelecaoAssinanteController extends Controller
                 $request->input('tipo_documento'),
                 $request->integer('homologacao_id') ?: null,
                 $request->integer('vencedor_id') ?: null,
+                $request->integer('incidente_id') ?: null,
                 $request->user()->id,
                 $request->input('motivo')
             );
