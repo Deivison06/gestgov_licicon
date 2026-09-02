@@ -946,9 +946,7 @@ class EtpController extends Controller
             $sheet->setCellValueByColumnAndRow(6, $row, $item->descricao_item);
             $sheet->setCellValueByColumnAndRow(7, $row, $item->pivot->unidade);
             $sheet->setCellValueByColumnAndRow(10, $row, (float) $item->pivot->quantidade);
-            // Valor unitário fica em branco e destacado — é o campo que o admin precisa preencher.
-            $sheet->getStyleByColumnAndRow(11, $row)->getFill()
-                ->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFFFF3CD');
+            // Valor unitário fica em branco — é o campo que o admin precisa preencher.
             $row++;
         };
 

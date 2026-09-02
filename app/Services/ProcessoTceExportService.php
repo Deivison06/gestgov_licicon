@@ -113,8 +113,6 @@ class ProcessoTceExportService
                     'item' => $itemLote->item,
                     'descricao' => $itemLote->descricao,
                 ];
-                $sheet->getStyleByColumnAndRow(5, $row)->getFill()
-                    ->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFFFF3CD');
             }
 
             $sheet->setCellValueByColumnAndRow(6, $row, round((float) $itemLote->vl_unit, 2));
