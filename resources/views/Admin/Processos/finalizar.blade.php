@@ -419,19 +419,33 @@
 
 <!-- Botão para Baixar Todos os PDFs -->
         <div class="flex flex-col items-center gap-3 p-4 mt-6 border-t border-gray-200 bg-gray-50 rounded-lg">
-            <button type="button"
-                    id="btn-baixar-todos-finalizar"
-                    onclick="iniciarDownloadTodos('{{ $processo->id }}', 'finalizar')"
-                    class="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white transition-colors duration-200 bg-green-600 rounded-lg shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
-                <svg id="icon-download-finalizar" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                </svg>
-                <svg id="spinner-finalizar" xmlns="http://www.w3.org/2000/svg" class="hidden w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                </svg>
-                <span id="label-baixar-todos-finalizar">📥 Baixar Todos os PDFs</span>
-            </button>
+            <div class="flex flex-wrap items-center justify-center gap-3">
+                <button type="button"
+                        id="btn-baixar-todos-finalizar"
+                        onclick="iniciarDownloadTodos('{{ $processo->id }}', 'finalizar')"
+                        class="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white transition-colors duration-200 bg-green-600 rounded-lg shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                    <svg id="icon-download-finalizar" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                    </svg>
+                    <svg id="spinner-finalizar" xmlns="http://www.w3.org/2000/svg" class="hidden w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                    </svg>
+                    <span id="label-baixar-todos-finalizar">📥 Baixar Todos os PDFs</span>
+                </button>
+
+                @if ($podeExportarTce)
+                    <button type="button"
+                            onclick="abrirModalExportarTce()"
+                            class="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white transition-colors duration-200 bg-[#009496] rounded-lg shadow-sm hover:bg-[#007b85] focus:outline-none focus:ring-2 focus:ring-[#009496] focus:ring-offset-2"
+                            title="Planilha de itens homologados de um lote para importar no Licitações Web (TCE)">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-6h6v6m-9 4h12a2 2 0 002-2V5a2 2 0 00-2-2H6a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                        </svg>
+                        <span>📊 Exportar Planilha para o TCE</span>
+                    </button>
+                @endif
+            </div>
 
             {{-- Área de progresso --}}
             <div id="progresso-finalizar" class="hidden w-full max-w-md">
@@ -1117,6 +1131,85 @@
                     ->values(),
             ])
         );
+
+        // Lotes já homologados neste processo, usado para popular o <select> do
+        // modal "Exportar Planilha para o TCE" (a exportação é sempre lote a lote).
+        window.lotesDisponiveisTce = @json($lotesDisponiveisTce ?? []);
+    </script>
+
+    {{-- Modal para Exportar Planilha para o TCE --}}
+    <div id="modalExportarTce" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-4 text-center sm:p-0">
+            <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" onclick="fecharModalExportarTce()"></div>
+
+            <div class="inline-block w-full max-w-lg overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl sm:my-8">
+                <div class="px-6 py-4 bg-white border-b border-gray-200">
+                    <h3 class="text-lg font-medium leading-6 text-gray-900">
+                        Exportar Planilha para o TCE
+                    </h3>
+                    <p class="mt-1 text-xs text-gray-500">
+                        O Tribunal de Contas importa a planilha lote a lote. Selecione o lote desejado
+                        para gerar o arquivo já preenchido (número, descrição, quantidade, unidade,
+                        valor previsto, valor homologado e CNPJ do vencedor).
+                    </p>
+                </div>
+
+                <div class="px-6 py-4 space-y-4">
+                    <div>
+                        <label for="tceLoteSelecionado" class="block text-sm font-medium text-gray-700">Lote</label>
+                        <select id="tceLoteSelecionado"
+                                class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">
+                            <option value="">Selecione o lote</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 sm:flex sm:flex-row-reverse">
+                    <button type="button"
+                            onclick="exportarPlanilhaTce()"
+                            class="inline-flex justify-center w-full px-4 py-2 text-base font-medium text-white bg-[#009496] border border-transparent rounded-md shadow-sm hover:bg-[#007b85] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#009496] sm:ml-3 sm:w-auto sm:text-sm">
+                        Exportar
+                    </button>
+                    <button type="button"
+                            onclick="fecharModalExportarTce()"
+                            class="inline-flex justify-center w-full px-4 py-2 mt-3 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function abrirModalExportarTce() {
+            const select = document.getElementById('tceLoteSelecionado');
+            select.innerHTML = '<option value="">Selecione o lote</option>';
+
+            (window.lotesDisponiveisTce || []).forEach(lote => {
+                const option = document.createElement('option');
+                option.value = lote.valor;
+                option.textContent = lote.label;
+                select.appendChild(option);
+            });
+
+            document.getElementById('modalExportarTce').classList.remove('hidden');
+        }
+
+        function fecharModalExportarTce() {
+            document.getElementById('modalExportarTce').classList.add('hidden');
+        }
+
+        function exportarPlanilhaTce() {
+            const select = document.getElementById('tceLoteSelecionado');
+
+            if (!select.value) {
+                showMessage('Selecione um lote para exportar.', 'error');
+                return;
+            }
+
+            window.location.href = '{{ route("admin.processos.finalizacao.exportar-tce", $processo) }}?lote=' + encodeURIComponent(select.value);
+            fecharModalExportarTce();
+        }
     </script>
 
     <!-- Modal para Importação de Itens por Vencedor -->

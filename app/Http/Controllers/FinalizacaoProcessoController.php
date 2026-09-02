@@ -13,8 +13,10 @@ use App\Services\FinalizacaoService;
 use App\Services\FinalizacaoVencedorService;
 use App\Services\HomologacaoDesistenciaService;
 use App\Services\HomologacaoService;
+use App\Services\ProcessoTceExportService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class FinalizacaoProcessoController extends AbstractController
 {
@@ -30,13 +32,16 @@ class FinalizacaoProcessoController extends AbstractController
 
     protected HomologacaoDesistenciaService $desistenciaService;
 
+    protected ProcessoTceExportService $tceExportService;
+
     public function __construct(
         FinalizacaoService $finalizacaoService,
         FinalizacaoDocumentoService $documentoService,
         FinalizacaoPdfService $pdfService,
         FinalizacaoVencedorService $vencedorService,
         HomologacaoService $homologacaoService,
-        HomologacaoDesistenciaService $desistenciaService
+        HomologacaoDesistenciaService $desistenciaService,
+        ProcessoTceExportService $tceExportService
     ) {
         $this->finalizacaoService = $finalizacaoService;
         $this->documentoService = $documentoService;
@@ -44,6 +49,7 @@ class FinalizacaoProcessoController extends AbstractController
         $this->vencedorService = $vencedorService;
         $this->homologacaoService = $homologacaoService;
         $this->desistenciaService = $desistenciaService;
+        $this->tceExportService = $tceExportService;
     }
 
     public function finalizar(Processo $processo)
@@ -117,6 +123,11 @@ class FinalizacaoProcessoController extends AbstractController
             ->whereNull('homologacao_id')
             ->whereIn('tipo_documento', $tiposPorHomologacao);
 
+        $podeExportarTce = $this->tceExportService->podeExportar($processo);
+        $lotesDisponiveisTce = $podeExportarTce
+            ? $this->tceExportService->listarLotesDisponiveis($processo)
+            : collect();
+
         return view('Admin.Processos.finalizar', compact(
             'processo',
             'documentos',
@@ -130,8 +141,46 @@ class FinalizacaoProcessoController extends AbstractController
             'podeCriarNovaHomologacao',
             'documentosLegados',
             'ehHomologacaoUnica',
-            'homologacaoUnica'
+            'homologacaoUnica',
+            'podeExportarTce',
+            'lotesDisponiveisTce'
         ));
+    }
+
+    /**
+     * Exporta a planilha de itens homologados de um lote para importação no
+     * sistema "Licitações Web" do Tribunal de Contas do Estado (TCE).
+     */
+    public function exportarTce(Processo $processo, Request $request)
+    {
+        $lote = $request->query('lote');
+
+        if (! $lote) {
+            abort(422, 'Selecione um lote para exportar.');
+        }
+
+        try {
+            $resultado = $this->tceExportService->gerar($processo, $lote);
+        } catch (\RuntimeException $e) {
+            abort(422, $e->getMessage());
+        }
+
+        $writer = new Xlsx($resultado['spreadsheet']);
+        $filename = 'TCE-'.str_replace('/', '-', $processo->numero_processo).'-Lote-'.$lote.'.xlsx';
+
+        Log::info('Planilha TCE exportada', [
+            'processo_id' => $processo->id,
+            'user_id' => auth()->id(),
+            'lote' => $lote,
+            'filename' => $filename,
+            'itens_sem_preco_previsto' => count($resultado['itensSemPrecoPrevisto']),
+        ]);
+
+        return response()->streamDownload(function () use ($writer) {
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
     }
 
     public function gerarNovaHomologacao(Processo $processo)

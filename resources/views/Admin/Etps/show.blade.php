@@ -151,7 +151,13 @@
                                     <a href="{{ route('admin.etps.export-itens', $etp->id) }}"
                                         class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-all shadow-sm">
                                         <i class="fas fa-file-excel mr-2"></i>
-                                        Exportar XLS
+                                        Exportar Itens
+                                    </a>
+                                    <a href="{{ route('admin.etps.export-itens-vencedor', $etp->id) }}"
+                                        class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-all shadow-sm ml-2"
+                                        title="Planilha pronta no formato de importação de itens do vencedor (Finalização) — falta só preencher o valor unitário homologado">
+                                        <i class="fas fa-trophy mr-2"></i>
+                                        Planilha p/ Vencedor
                                     </a>
                                 @endif
                             </div>
@@ -223,6 +229,12 @@
                                         class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-all shadow-sm">
                                         <i class="fas fa-file-excel mr-2"></i>
                                         Exportar XLS
+                                    </a>
+                                    <a href="{{ route('admin.etps.export-itens-vencedor', $etp->id) }}"
+                                        class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-all shadow-sm ml-2"
+                                        title="Planilha pronta no formato de importação de itens do vencedor (Finalização) — falta só preencher o valor unitário homologado">
+                                        <i class="fas fa-trophy mr-2"></i>
+                                        Planilha p/ Vencedor
                                     </a>
                                 @endif
                             </div>

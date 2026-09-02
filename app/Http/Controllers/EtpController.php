@@ -908,6 +908,98 @@ class EtpController extends Controller
         ]);
     }
 
+    /**
+     * Exporta os itens do ETP já no formato de importação de itens do vencedor
+     * (aba "Importar Itens" da tela de Finalização — ver
+     * FinalizacaoVencedorService::processarDadosExcel()): título "LOTE N - Nome"
+     * por lote e, por item, lote/status/item/descrição/unidade/marca/modelo/
+     * quantidade preenchidos, deixando só a coluna "Valor Unitário Homologado"
+     * em branco para o admin editar antes de importar para um vencedor.
+     */
+    public function exportItensVencedor($id)
+    {
+        $etp = $this->etpService->findById($id);
+
+        $user = auth()->user();
+        $isSuperAdmin = $user->hasAnyRole(['diretor_licicon', 'gerente_licicon', 'colaborador_licicon']);
+
+        if (!$isSuperAdmin && $etp->prefeitura_id !== $user->prefeitura_id) {
+            abort(403, 'Acesso negado.');
+        }
+
+        $spreadsheet = new Spreadsheet();
+        $sheet       = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Itens Vencedor');
+
+        $cabecalho = ['↓ Preencha o Valor Unitário Homologado antes de importar', '', 'Lote', 'Status', 'Item', 'Descrição', 'Unidade', 'Marca', 'Modelo', 'Quantidade', 'Valor Unitário Homologado (R$)'];
+        foreach ($cabecalho as $col => $texto) {
+            $sheet->setCellValueByColumnAndRow($col + 1, 1, $texto);
+            $sheet->getStyleByColumnAndRow($col + 1, 1)->getFont()->setBold(true);
+            $sheet->getStyleByColumnAndRow($col + 1, 1)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFE2E8F0');
+        }
+
+        $row = 2;
+        $escreverItem = function ($lote, $item, $numeroItem) use ($sheet, &$row) {
+            $sheet->setCellValueByColumnAndRow(3, $row, $lote !== null ? (string) $lote : '');
+            $sheet->setCellValueByColumnAndRow(4, $row, 'HOMOLOGADO');
+            $sheet->setCellValueByColumnAndRow(5, $row, (string) $numeroItem);
+            $sheet->setCellValueByColumnAndRow(6, $row, $item->descricao_item);
+            $sheet->setCellValueByColumnAndRow(7, $row, $item->pivot->unidade);
+            $sheet->setCellValueByColumnAndRow(10, $row, (float) $item->pivot->quantidade);
+            // Valor unitário fica em branco e destacado — é o campo que o admin precisa preencher.
+            $sheet->getStyleByColumnAndRow(11, $row)->getFill()
+                ->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFFFF3CD');
+            $row++;
+        };
+
+        if ($etp->usaLotes() && $etp->lotes->count() > 0) {
+            foreach ($etp->lotes as $loteIndice => $lote) {
+                $numeroLote = $loteIndice + 1;
+
+                // Alguns ETPs já guardam o nome do lote com o prefixo "LOTE N - " incluso
+                // (ex.: "LOTE 1 - MATERIAIS DE INFORMÁTICA") — não duplica o prefixo nesse caso.
+                $tituloLote = str_starts_with(strtoupper(trim($lote->nome)), 'LOTE ')
+                    ? $lote->nome
+                    : "LOTE {$numeroLote} - {$lote->nome}";
+
+                $sheet->setCellValueByColumnAndRow(1, $row, $tituloLote);
+                $sheet->getStyleByColumnAndRow(1, $row)->getFont()->setBold(true);
+                $sheet->getStyleByColumnAndRow(1, $row)->getFill()
+                    ->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFE0F2FE');
+                $row++;
+
+                foreach ($lote->itens as $itemIndice => $item) {
+                    $escreverItem($numeroLote, $item, $itemIndice + 1);
+                }
+            }
+        } else {
+            foreach ($etp->itens as $itemIndice => $item) {
+                $escreverItem(null, $item, $itemIndice + 1);
+            }
+        }
+
+        foreach (range('A', 'K') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        $etpNumFile = 'ETP-' . str_pad($etp->id, 4, '0', STR_PAD_LEFT) . '-' . $etp->created_at->format('Y');
+        $filename   = $etpNumFile . '_importacao-vencedor.xlsx';
+        $writer     = new Xlsx($spreadsheet);
+
+        Log::info('Planilha de importação de vencedor exportada a partir do ETP', [
+            'user_id' => auth()->id(),
+            'etp_id' => $id,
+            'total_itens' => $row - 2,
+            'filename' => $filename,
+        ]);
+
+        return response()->streamDownload(function () use ($writer) {
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
+    }
+
     private function etpValidationMessages(): array
     {
         return [

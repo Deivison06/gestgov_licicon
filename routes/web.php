@@ -221,6 +221,7 @@ Route::prefix('admin/etps')->name('admin.etps.')->middleware(['auth', 'verified'
     Route::put('/{id}', [EtpController::class, 'update'])->name('update');
     Route::delete('/{id}', [EtpController::class, 'destroy'])->name('destroy');
     Route::get('/{id}/export-itens', [EtpController::class, 'exportItens'])->name('export-itens');
+    Route::get('/{id}/export-itens-vencedor', [EtpController::class, 'exportItensVencedor'])->name('export-itens-vencedor');
     Route::get('/{id}/pdf', [EtpController::class, 'gerarPdf'])->name('pdf');
 
 });
@@ -504,6 +505,10 @@ Route::prefix('admin')
             // Importar Excel
             Route::post('/importar-excel', [FinalizacaoProcessoController::class, 'importarExcel'])
                 ->name('importar-excel');
+
+            // Exportar planilha de itens homologados de um lote para o TCE
+            Route::get('/exportar-tce', [FinalizacaoProcessoController::class, 'exportarTce'])
+                ->name('exportar-tce');
 
             // Reservas
             Route::post('/reservas', [ReservaController::class, 'store'])
