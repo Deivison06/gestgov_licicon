@@ -153,12 +153,6 @@
                                         <i class="fas fa-file-excel mr-2"></i>
                                         Exportar Itens
                                     </a>
-                                    <a href="{{ route('admin.etps.export-itens-vencedor', $etp->id) }}"
-                                        class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-all shadow-sm ml-2"
-                                        title="Planilha pronta no formato de importação de itens do vencedor (Finalização) — falta só preencher o valor unitário homologado">
-                                        <i class="fas fa-trophy mr-2"></i>
-                                        Planilha p/ Vencedor
-                                    </a>
                                 @endif
                             </div>
 
@@ -229,12 +223,6 @@
                                         class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-all shadow-sm">
                                         <i class="fas fa-file-excel mr-2"></i>
                                         Exportar XLS
-                                    </a>
-                                    <a href="{{ route('admin.etps.export-itens-vencedor', $etp->id) }}"
-                                        class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-all shadow-sm ml-2"
-                                        title="Planilha pronta no formato de importação de itens do vencedor (Finalização) — falta só preencher o valor unitário homologado">
-                                        <i class="fas fa-trophy mr-2"></i>
-                                        Planilha p/ Vencedor
                                     </a>
                                 @endif
                             </div>
@@ -357,10 +345,12 @@
                                 <i class="fas fa-link text-xl"></i>
                             </div>
                             <div>
-                                <h4 class="text-lg font-bold text-purple-900">Vinculado a Processo de Licitação</h4>
-                                <p class="text-sm text-purple-800">Este ETP foi aprovado e agora faz parte do Processo Nº
-                                    <span class="font-bold">{{ $etp->processo->numero_processo ?? $etp->processo_id }}</span>
-                                </p>
+                                <a href="{{ route('admin.processos.iniciar', $etp->processo_id) }}">
+                                    <h4 class="text-lg font-bold text-purple-900">Vinculado a Processo de Licitação</h4>
+                                    <p class="text-sm text-purple-800">Este ETP foi aprovado e agora faz parte do Processo Nº
+                                        <span class="font-bold">{{ $etp->processo->numero_processo ?? $etp->processo_id }}</span>
+                                    </p>      
+                                </a>
                             </div>
                         </div>
                     </div>

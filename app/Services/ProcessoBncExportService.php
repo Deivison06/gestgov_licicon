@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\Etp;
 use App\Models\Processo;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
@@ -25,7 +24,8 @@ class ProcessoBncExportService
     private const TEXTO_CONFORME_EDITAL = 'CONFORME EDITAL';
 
     public function __construct(
-        private readonly ProcessoPdfService $pdfService
+        private readonly ProcessoPdfService $pdfService,
+        private readonly CotaReservadaService $cotaReservadaService
     ) {
     }
 
@@ -49,17 +49,24 @@ class ProcessoBncExportService
         }
 
         $precoMapId  = $this->pdfService->construirPrecoMapId($processo);
-        $exclusivoMe = ($processo->detalhe->participacao_exclusiva_mei_epp ?? 'nao') === 'sim' ? 'Sim' : 'Não';
+        $exclusivoMeGlobal = ($processo->detalhe->participacao_exclusiva_mei_epp ?? 'nao') === 'sim' ? 'Sim' : 'Não';
 
         // "Margem Lance" fica em branco de propósito: o campo `intervalo_lances` guarda texto
         // livre para compor a prosa do edital (ex.: "R$ 10,00 (dez reais)"), não o número puro
         // que a BNC espera — o usuário preenche manualmente antes de importar a planilha.
         $margemLance = '';
 
+        // Cota Reservada ME/EPP: divide (só em memória, sem alterar o ETP) os lotes
+        // marcados em Ampla Concorrência / Cota Reservada. Ver App\Services\CotaReservadaService.
+        $loteIdsReservados = $this->cotaReservadaService->loteIdsAtivos(
+            $processo->detalhe->lotes_cota_reservada ?? null
+        );
+        $lotesEfetivos = $this->cotaReservadaService->dividirItensPorLote($etp->lotes, $loteIdsReservados);
+
         $spreadsheet = new Spreadsheet();
 
-        $this->preencherAbaLotes($spreadsheet->getActiveSheet(), $etp, $margemLance, $exclusivoMe);
-        $this->preencherAbaItens($spreadsheet->createSheet(), $etp, $precoMapId);
+        $this->preencherAbaLotes($spreadsheet->getActiveSheet(), $lotesEfetivos, $margemLance, $exclusivoMeGlobal);
+        $this->preencherAbaItens($spreadsheet->createSheet(), $lotesEfetivos, $precoMapId);
         $this->preencherAbaTipoLance($spreadsheet->createSheet());
 
         $spreadsheet->setActiveSheetIndex(0);
@@ -67,16 +74,23 @@ class ProcessoBncExportService
         return $spreadsheet;
     }
 
-    private function preencherAbaLotes(Worksheet $sheet, Etp $etp, string $margemLance, string $exclusivoMe): void
+    private function preencherAbaLotes(Worksheet $sheet, array $lotesEfetivos, string $margemLance, string $exclusivoMeGlobal): void
     {
         $sheet->setTitle('Lotes');
 
         $this->escreverCabecalho($sheet, ['Lote', 'Título', 'Tipo Lance', 'Quantidade', 'Margem Lance', 'Garantia', 'Local Entrega', 'Exclusivo ME']);
 
         $row = 2;
-        foreach ($etp->lotes as $indice => $lote) {
+        foreach ($lotesEfetivos as $indice => $lote) {
+            // Quando o lote foi de fato dividido, a coluna "Exclusivo ME" reflete
+            // a metade ("Sim" na Cota Reservada, "Não" na Ampla Concorrência);
+            // fora da divisão, mantém o valor único já usado hoje para o processo.
+            $exclusivoMe = $lote['cota_reservada'] === null
+                ? $exclusivoMeGlobal
+                : ($lote['cota_reservada'] ? 'Sim' : 'Não');
+
             $sheet->setCellValueByColumnAndRow(1, $row, $indice + 1);
-            $sheet->setCellValueByColumnAndRow(2, $row, $lote->nome);
+            $sheet->setCellValueByColumnAndRow(2, $row, $lote['nome']);
             $sheet->setCellValueByColumnAndRow(3, $row, self::TIPO_LANCE_GLOBAL);
             $sheet->setCellValueByColumnAndRow(4, $row, self::QUANTIDADE_LOTE_FIXA);
             $sheet->setCellValueByColumnAndRow(5, $row, $margemLance);
@@ -89,22 +103,22 @@ class ProcessoBncExportService
         $this->autoSize($sheet, 'A', 'H');
     }
 
-    private function preencherAbaItens(Worksheet $sheet, Etp $etp, array $precoMapId): void
+    private function preencherAbaItens(Worksheet $sheet, array $lotesEfetivos, array $precoMapId): void
     {
         $sheet->setTitle('Itens');
 
         $this->escreverCabecalho($sheet, ['Lote', 'Item', 'Descrição', 'Unidade', 'Quantidade', 'Valor Referência', 'Info Detalhada', 'Arquivo requerido']);
 
         $row = 2;
-        foreach ($etp->lotes as $loteIndice => $lote) {
-            foreach ($lote->itens as $itemIndice => $item) {
-                $valorUnitario = (float) ($precoMapId[$item->id] ?? 0);
+        foreach ($lotesEfetivos as $loteIndice => $lote) {
+            foreach ($lote['itens'] as $itemIndice => $item) {
+                $valorUnitario = (float) ($precoMapId[$item['etp_item_id']] ?? 0);
 
                 $sheet->setCellValueByColumnAndRow(1, $row, $loteIndice + 1);
                 $sheet->setCellValueByColumnAndRow(2, $row, $itemIndice + 1);
-                $sheet->setCellValueByColumnAndRow(3, $row, $item->descricao_item);
-                $sheet->setCellValueByColumnAndRow(4, $row, $item->pivot->unidade);
-                $sheet->setCellValueByColumnAndRow(5, $row, (float) $item->pivot->quantidade);
+                $sheet->setCellValueByColumnAndRow(3, $row, $item['descricao_item']);
+                $sheet->setCellValueByColumnAndRow(4, $row, $item['unidade']);
+                $sheet->setCellValueByColumnAndRow(5, $row, (float) $item['quantidade']);
                 $sheet->setCellValueByColumnAndRow(6, $row, round($valorUnitario, 2));
                 $sheet->setCellValueByColumnAndRow(7, $row, 'Não');
                 $sheet->setCellValueByColumnAndRow(8, $row, $itemIndice === 0 ? 'Sim' : 'Não');

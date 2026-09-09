@@ -21,15 +21,19 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
  * itens já homologados (tabela `lotes` + `vencedores`, criados na finalização).
  * O Valor Unitário Previsto vem do ETP Inteligente (lado "inicial"/TR), casado
  * por descrição do item — não existe FK entre o item vencedor e o item do ETP.
- * "Reservado" fica fixo em "N" por enquanto (cota reservada ME/EPP é uma feature
- * futura, fora de escopo desta exportação).
+ *
+ * "Reservado" é preenchido a partir do nome do lote homologado (`lote_nome`):
+ * se ele termina com o sufixo de Cota Reservada ME/EPP (ver
+ * App\Services\CotaReservadaService), sai "S", senão "N". É uma checagem
+ * textual best-effort — não há FK entre o lote homologado e o ETP — então
+ * depende de quem digita/importa o vencedor copiar o nome do lote exatamente
+ * como saiu no edital/TR.
  */
 class ProcessoTceExportService
 {
-    private const TEXTO_RESERVADO_PADRAO = 'N';
-
     public function __construct(
-        private readonly ProcessoPdfService $pdfService
+        private readonly ProcessoPdfService $pdfService,
+        private readonly CotaReservadaService $cotaReservadaService
     ) {}
 
     public function podeExportar(Processo $processo): bool
@@ -83,7 +87,9 @@ class ProcessoTceExportService
         }
 
         $precoMapId = $this->pdfService->construirPrecoMapId($processo);
-        $poolEtpItens = $this->poolDeItensDoEtp($processo, $itensDoLote->first()->lote_nome);
+        $loteNomeHomologado = $itensDoLote->first()->lote_nome;
+        $poolEtpItens = $this->poolDeItensDoEtp($processo, $loteNomeHomologado);
+        $reservado = $this->cotaReservadaService->nomeIndicaCotaReservada($loteNomeHomologado) ? 'S' : 'N';
 
         $spreadsheet = new Spreadsheet;
         $sheet = $spreadsheet->getActiveSheet();
@@ -117,7 +123,7 @@ class ProcessoTceExportService
 
             $sheet->setCellValueByColumnAndRow(6, $row, round((float) $itemLote->vl_unit, 2));
             $sheet->setCellValueByColumnAndRow(7, $row, $itemLote->vencedor->cnpj_formatado ?? '');
-            $sheet->setCellValueByColumnAndRow(8, $row, self::TEXTO_RESERVADO_PADRAO);
+            $sheet->setCellValueByColumnAndRow(8, $row, $reservado);
             $row++;
         }
 
@@ -145,7 +151,10 @@ class ProcessoTceExportService
         }
 
         if ($loteNome && $etp->usaLotes()) {
-            $nomeAlvo = $this->normalizar($loteNome);
+            // O lote_nome digitado na Finalização pode vir sufixado (Ampla
+            // Concorrência/Cota Reservada) quando o lote passou pela divisão —
+            // remove o sufixo antes de comparar com o nome "base" do ETP.
+            $nomeAlvo = $this->normalizar($this->cotaReservadaService->removerSufixos($loteNome));
             $etpLote = $etp->lotes->first(fn ($l) => $this->normalizar($l->nome) === $nomeAlvo);
 
             if ($etpLote) {

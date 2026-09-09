@@ -221,7 +221,6 @@ Route::prefix('admin/etps')->name('admin.etps.')->middleware(['auth', 'verified'
     Route::put('/{id}', [EtpController::class, 'update'])->name('update');
     Route::delete('/{id}', [EtpController::class, 'destroy'])->name('destroy');
     Route::get('/{id}/export-itens', [EtpController::class, 'exportItens'])->name('export-itens');
-    Route::get('/{id}/export-itens-vencedor', [EtpController::class, 'exportItensVencedor'])->name('export-itens-vencedor');
     Route::get('/{id}/pdf', [EtpController::class, 'gerarPdf'])->name('pdf');
 
 });
@@ -500,6 +499,12 @@ Route::prefix('admin')
 
             Route::post('/pesquisa-preco-tce', [ProcessoController::class, 'salvarTcePrecos'])
                 ->name('processos.pesquisa_preco_tce.store');
+
+            Route::get('/cota-reservada', [ProcessoController::class, 'cotaReservada'])
+                ->name('processos.cota_reservada');
+
+            Route::post('/cota-reservada', [ProcessoController::class, 'salvarCotaReservada'])
+                ->name('processos.cota_reservada.store');
         });
 
         // ========================================
@@ -527,6 +532,10 @@ Route::prefix('admin')
             // Exportar planilha de itens homologados de um lote para o TCE
             Route::get('/exportar-tce', [FinalizacaoProcessoController::class, 'exportarTce'])
                 ->name('exportar-tce');
+
+            // Planilha pré-preenchida (nomes de lote já com Cota Reservada resolvida) para importar um vencedor
+            Route::get('/planilha-vencedor', [FinalizacaoProcessoController::class, 'planilhaVencedor'])
+                ->name('planilha-vencedor');
 
             // Reservas
             Route::post('/reservas', [ReservaController::class, 'store'])

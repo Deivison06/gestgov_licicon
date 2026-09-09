@@ -17,6 +17,7 @@ class ProcessoPdfService extends AbstractService
         protected \App\Services\Assinatura\PdfWatermarkService $watermarkService,
         protected \App\Services\Assinatura\DocumentoVersaoService $versaoService,
         protected \App\Services\Assinatura\SolicitacaoService $solicitacaoService,
+        protected CotaReservadaService $cotaReservadaService,
     ) {}
 
     public function gerarPdf(Processo $processo, array $requestData): array
@@ -1502,10 +1503,35 @@ class ProcessoPdfService extends AbstractService
             ];
         };
 
+        // Item já "resolvido" pelo CotaReservadaService (array simples, não Eloquent) —
+        // usado quando o lote foi dividido em Ampla Concorrência / Cota Reservada.
+        $processarItemResolvido = function (array $item, string $loteNome) use ($precoMapId, $fmt, &$result) {
+            $valorUnitario = $precoMapId[$item['etp_item_id']] ?? 0;
+            $quantidade = $item['quantidade'];
+            $valorTotal = $valorUnitario > 0 ? $valorUnitario * $quantidade : 0;
+
+            $result[] = [
+                'lote' => $loteNome,
+                'item' => $item['descricao_item'],
+                'especificacoes' => $item['descricao_item'],
+                'unidade' => $item['unidade'] ?? '',
+                'quantidade' => $quantidade,
+                'valor_unitario' => $fmt($valorUnitario),
+                'valor_total' => $fmt($valorTotal),
+            ];
+        };
+
         if ($etp->usaLotes()) {
-            foreach ($etp->lotes as $lote) {
-                foreach ($lote->itens as $item) {
-                    $processarItem($item, $lote->nome);
+            // Cota Reservada ME/EPP: só afeta o TR/Edital (via este método) e a
+            // exportação BNC — nunca o ETP em si. Ver App\Services\CotaReservadaService.
+            $loteIdsReservados = $this->cotaReservadaService->loteIdsAtivos(
+                $processo->detalhe->lotes_cota_reservada ?? null
+            );
+            $lotesEfetivos = $this->cotaReservadaService->dividirItensPorLote($etp->lotes, $loteIdsReservados);
+
+            foreach ($lotesEfetivos as $loteEfetivo) {
+                foreach ($loteEfetivo['itens'] as $item) {
+                    $processarItemResolvido($item, $loteEfetivo['nome']);
                 }
             }
         } else {

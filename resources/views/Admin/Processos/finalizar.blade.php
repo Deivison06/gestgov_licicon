@@ -1212,6 +1212,12 @@
         }
     </script>
 
+    <script>
+        // Lotes efetivos do ETP (já com Cota Reservada resolvida), usado para
+        // popular o <select> do modal "Planilha p/ Importar Vencedor".
+        window.lotesPlanilhaVencedor = @json($lotesPlanilhaVencedor ?? []);
+    </script>
+
     <!-- Modal para Importação de Itens por Vencedor -->
     <div id="importarItensModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
         <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-4 text-center sm:p-0">
@@ -1226,6 +1232,35 @@
 
                 <div class="px-6 py-4">
                     <input type="hidden" id="importarVencedorIndex">
+
+                    @if ($podePlanilhaVencedor)
+                    <div class="mb-4 p-3 bg-indigo-50 border border-indigo-200 rounded-lg">
+                        <p class="text-xs font-semibold text-indigo-800 mb-2">
+                            <i class="fas fa-file-download mr-1"></i> Não tem a planilha ainda?
+                        </p>
+                        @if ($etpUsaLotesPlanilhaVencedor)
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <select id="modeloVencedorLoteSelecionado"
+                                    class="flex-1 text-sm border border-indigo-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="">Selecione o lote</option>
+                            </select>
+                            <button type="button" onclick="baixarModeloVencedor()"
+                                    class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-indigo-600 rounded-md hover:bg-indigo-700 transition-all whitespace-nowrap">
+                                <i class="fas fa-download"></i> Baixar modelo
+                            </button>
+                        </div>
+                        @else
+                        <button type="button" onclick="baixarModeloVencedor()"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-indigo-600 rounded-md hover:bg-indigo-700 transition-all">
+                            <i class="fas fa-download"></i> Baixar modelo pronto
+                        </button>
+                        @endif
+                        <p class="mt-1.5 text-[11px] text-indigo-700">
+                            Sai preenchido com descrição/unidade/quantidade — nome do lote já certo (incluindo o sufixo de
+                            Cota Reservada, quando houver) — só falta o valor unitário homologado antes de subir aqui.
+                        </p>
+                    </div>
+                    @endif
 
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700">
@@ -1653,9 +1688,36 @@
             document.getElementById('importarModalTitle').textContent =
                 'Importar {{ $processo->tipo_contratacao === 'LOTE' ? 'Lotes' : 'Itens' }} para Vencedor ' + (parseInt(vencedorIndex) + 1);
 
+            const loteSelect = document.getElementById('modeloVencedorLoteSelecionado');
+            if (loteSelect) {
+                loteSelect.innerHTML = '<option value="">Selecione o lote</option>';
+                (window.lotesPlanilhaVencedor || []).forEach(lote => {
+                    const option = document.createElement('option');
+                    option.value = lote.valor;
+                    option.textContent = lote.label;
+                    loteSelect.appendChild(option);
+                });
+            }
+
             const modal = document.getElementById('importarItensModal');
             modal.classList.remove('hidden');
             modal.style.display = 'block';
+        }
+
+        function baixarModeloVencedor() {
+            const select = document.getElementById('modeloVencedorLoteSelecionado');
+
+            if (select && !select.value) {
+                showMessage('Selecione um lote para baixar o modelo.', 'error');
+                return;
+            }
+
+            let url = '{{ route("admin.processos.finalizacao.planilha-vencedor", $processo) }}';
+            if (select) {
+                url += '?lote=' + encodeURIComponent(select.value);
+            }
+
+            window.open(url, '_blank');
         }
 
         function fecharImportarModal() {

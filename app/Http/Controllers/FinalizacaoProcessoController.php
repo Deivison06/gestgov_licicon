@@ -13,6 +13,7 @@ use App\Services\FinalizacaoService;
 use App\Services\FinalizacaoVencedorService;
 use App\Services\HomologacaoDesistenciaService;
 use App\Services\HomologacaoService;
+use App\Services\PlanilhaImportacaoVencedorService;
 use App\Services\ProcessoTceExportService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -34,6 +35,8 @@ class FinalizacaoProcessoController extends AbstractController
 
     protected ProcessoTceExportService $tceExportService;
 
+    protected PlanilhaImportacaoVencedorService $planilhaVencedorService;
+
     public function __construct(
         FinalizacaoService $finalizacaoService,
         FinalizacaoDocumentoService $documentoService,
@@ -41,7 +44,8 @@ class FinalizacaoProcessoController extends AbstractController
         FinalizacaoVencedorService $vencedorService,
         HomologacaoService $homologacaoService,
         HomologacaoDesistenciaService $desistenciaService,
-        ProcessoTceExportService $tceExportService
+        ProcessoTceExportService $tceExportService,
+        PlanilhaImportacaoVencedorService $planilhaVencedorService
     ) {
         $this->finalizacaoService = $finalizacaoService;
         $this->documentoService = $documentoService;
@@ -50,6 +54,7 @@ class FinalizacaoProcessoController extends AbstractController
         $this->homologacaoService = $homologacaoService;
         $this->desistenciaService = $desistenciaService;
         $this->tceExportService = $tceExportService;
+        $this->planilhaVencedorService = $planilhaVencedorService;
     }
 
     public function finalizar(Processo $processo)
@@ -57,6 +62,7 @@ class FinalizacaoProcessoController extends AbstractController
         $processo->load([
             'prefeitura.unidades',
             'detalhe',
+            'etp.lotes.itens',
             'vencedores.lotes',
             'homologacoes.lotes.vencedor',
             'homologacoes.documentos',
@@ -128,6 +134,12 @@ class FinalizacaoProcessoController extends AbstractController
             ? $this->tceExportService->listarLotesDisponiveis($processo)
             : collect();
 
+        $podePlanilhaVencedor = $this->planilhaVencedorService->podeExportar($processo);
+        $etpUsaLotesPlanilhaVencedor = $podePlanilhaVencedor && $processo->etp->usaLotes();
+        $lotesPlanilhaVencedor = $etpUsaLotesPlanilhaVencedor
+            ? $this->planilhaVencedorService->listarLotesDisponiveis($processo)
+            : collect();
+
         return view('Admin.Processos.finalizar', compact(
             'processo',
             'documentos',
@@ -143,7 +155,10 @@ class FinalizacaoProcessoController extends AbstractController
             'ehHomologacaoUnica',
             'homologacaoUnica',
             'podeExportarTce',
-            'lotesDisponiveisTce'
+            'lotesDisponiveisTce',
+            'podePlanilhaVencedor',
+            'etpUsaLotesPlanilhaVencedor',
+            'lotesPlanilhaVencedor'
         ));
     }
 
@@ -174,6 +189,39 @@ class FinalizacaoProcessoController extends AbstractController
             'lote' => $lote,
             'filename' => $filename,
             'itens_sem_preco_previsto' => count($resultado['itensSemPrecoPrevisto']),
+        ]);
+
+        return response()->streamDownload(function () use ($writer) {
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
+    }
+
+    /**
+     * Baixa a planilha pré-preenchida (já no formato de "Importar Itens")
+     * para cadastrar um vencedor, com os nomes de lote já resolvidos pela
+     * Cota Reservada ME/EPP (Ampla Concorrência/Cota Reservada), evitando
+     * que alguém precise digitar/copiar esse nome manualmente.
+     */
+    public function planilhaVencedor(Processo $processo, Request $request)
+    {
+        $lote = $request->query('lote');
+
+        try {
+            $spreadsheet = $this->planilhaVencedorService->gerar($processo, $lote);
+        } catch (\RuntimeException $e) {
+            abort(422, $e->getMessage());
+        }
+
+        $writer = new Xlsx($spreadsheet);
+        $filename = 'Importacao-Vencedor-'.str_replace('/', '-', $processo->numero_processo).($lote ? '-Lote-'.$lote : '').'.xlsx';
+
+        Log::info('Planilha de importação de vencedor exportada a partir da Finalização', [
+            'processo_id' => $processo->id,
+            'user_id' => auth()->id(),
+            'lote' => $lote,
+            'filename' => $filename,
         ]);
 
         return response()->streamDownload(function () use ($writer) {

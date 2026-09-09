@@ -7,6 +7,7 @@ use App\Http\Requests\ProcessoRequest;
 use App\Models\Documento;
 use App\Models\Prefeitura;
 use App\Models\Processo;
+use App\Services\CotaReservadaService;
 use App\Services\ProcessoBncExportService;
 use App\Services\ProcessoDocumentoService;
 use App\Services\ProcessoPdfService;
@@ -24,17 +25,20 @@ class ProcessoController extends AbstractController
     protected ProcessoPdfService $pdfService;
     protected ProcessoDocumentoService $documentoService;
     protected ProcessoBncExportService $bncExportService;
+    protected CotaReservadaService $cotaReservadaService;
 
     public function __construct(
         ProcessoService $processoService,
         ProcessoPdfService $pdfService,
         ProcessoDocumentoService $documentoService,
-        ProcessoBncExportService $bncExportService
+        ProcessoBncExportService $bncExportService,
+        CotaReservadaService $cotaReservadaService
     ) {
         $this->processoService = $processoService;
         $this->pdfService = $pdfService;
         $this->documentoService = $documentoService;
         $this->bncExportService = $bncExportService;
+        $this->cotaReservadaService = $cotaReservadaService;
     }
 
     public function index(Request $request)
@@ -1563,6 +1567,72 @@ class ProcessoController extends AbstractController
         );
 
         return response()->json(['success' => true, 'message' => 'Preços TCE salvos com sucesso.']);
+    }
+
+    /**
+     * Tela para marcar quais lotes do ETP vinculado têm Cota Reservada ME/EPP.
+     * Não altera o ETP — só grava, por Processo, quais lotes devem ser
+     * divididos (Ampla Concorrência/Cota Reservada) na hora de gerar o
+     * TR/Edital e a planilha BNC. Ver App\Services\CotaReservadaService.
+     */
+    public function cotaReservada(Processo $processo)
+    {
+        $etp = $processo->etp;
+
+        if (! $etp || ! $etp->usaLotes()) {
+            abort(404, 'Este processo não possui ETP Inteligente organizado por lotes.');
+        }
+
+        $etp->loadMissing('lotes.itens');
+
+        $lotes = $etp->lotes->map(function ($lote) {
+            $itens = $lote->itens->map(function ($item) {
+                $quantidade = (int) round((float) $item->pivot->quantidade);
+                $divide = $quantidade >= CotaReservadaService::QUANTIDADE_MINIMA_PARA_DIVIDIR;
+                $reservada = $divide ? (int) ceil($quantidade * CotaReservadaService::PERCENTUAL_RESERVADO) : 0;
+                $ampla = $divide ? $quantidade - $reservada : $quantidade;
+
+                return [
+                    'descricao' => $item->descricao_item,
+                    'unidade' => $item->pivot->unidade,
+                    'quantidade' => $quantidade,
+                    'quantidade_ampla' => $ampla,
+                    'quantidade_reservada' => $reservada,
+                    'divide' => $divide,
+                ];
+            })->values();
+
+            return [
+                'etp_lote_id' => $lote->id,
+                'nome' => $lote->nome,
+                'itens' => $itens,
+                'itens_abaixo_do_minimo' => $itens->where('divide', false)->count(),
+            ];
+        });
+
+        $loteIdsAtivos = $this->cotaReservadaService->loteIdsAtivos($processo->detalhe?->lotes_cota_reservada ?? null);
+
+        return view('Admin.Processos.cota_reservada', compact('processo', 'lotes', 'loteIdsAtivos'));
+    }
+
+    public function salvarCotaReservada(Request $request, Processo $processo)
+    {
+        $request->validate([
+            'lote_ids' => 'array',
+            'lote_ids.*' => 'integer',
+        ]);
+
+        $config = collect($request->input('lote_ids', []))
+            ->map(fn ($id) => ['etp_lote_id' => (int) $id, 'ativo' => true])
+            ->values()
+            ->all();
+
+        $processo->detalhe()->updateOrCreate(
+            ['processo_id' => $processo->id],
+            ['lotes_cota_reservada' => $config]
+        );
+
+        return response()->json(['success' => true, 'message' => 'Configuração de Cota Reservada salva com sucesso.']);
     }
 
     public function gerarNumeros(Request $request)

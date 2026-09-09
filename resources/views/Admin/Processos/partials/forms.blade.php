@@ -467,6 +467,33 @@
                 <i class="fas fa-eye mr-1.5"></i> Ver ETP
             </a>
         </div>
+
+        @if($processo->etp->usaLotes())
+        @php
+            $qtdLotesReservados = count(
+                app(\App\Services\CotaReservadaService::class)->loteIdsAtivos($processo->detalhe?->lotes_cota_reservada ?? null)
+            );
+        @endphp
+        <div class="mt-2 p-3 bg-[#009496]/5 border border-[#009496]/20 rounded-xl flex items-center gap-3">
+            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-[#009496]/10 text-[#009496] flex items-center justify-center">
+                <i class="fas fa-balance-scale-right text-sm"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-xs font-bold text-[#007a7a]">Cota Reservada ME/EPP</p>
+                <p class="text-xs text-[#007a7a]/80">Divide os lotes marcados em Ampla Concorrência / Cota Reservada ao gerar este documento.</p>
+            </div>
+            <a href="{{ route('admin.processos.cota_reservada', $processo->id) }}" target="_blank"
+               class="flex-shrink-0 inline-flex items-center px-3 py-1.5 text-xs font-bold text-white bg-[#009496] rounded-lg hover:bg-[#007a7a] transition-all shadow-sm">
+                <i class="fas fa-sliders-h mr-1.5"></i> Configurar
+            </a>
+            @if($qtdLotesReservados > 0)
+            <span class="flex-shrink-0 inline-flex items-center gap-1 px-2.5 py-1 bg-[#009496]/10 text-[#007a7a] text-xs font-bold rounded-full border border-[#009496]/20">
+                <i class="fas fa-check-circle"></i>
+                {{ $qtdLotesReservados }} {{ Str::plural('lote', $qtdLotesReservados) }}
+            </span>
+            @endif
+        </div>
+        @endif
     @else
         <x-form-field name="itens_especificaca_quantitativos_xml" label="📦 Itens e Seus quantitativos e especificações" type="file" accept=".xml, .xlsx, .xls, .csv" />
     @endif
