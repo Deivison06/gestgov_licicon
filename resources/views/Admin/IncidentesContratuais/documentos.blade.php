@@ -6,10 +6,20 @@
 @section('content')
 
     @php
+        // Contrato do Sistema (App\Models\Contrato) tem Processo; Contrato Manual/Externo
+        // (App\Models\ContratoManual) não. As rotas/URLs "voltar" e de ação mudam conforme
+        // o tipo — resolvidas aqui uma vez para reuso no resto da view.
+        $ehManual = $contrato instanceof \App\Models\ContratoManual;
+        $rotaBase = $ehManual ? 'admin.incidentes-manual' : 'admin.incidentes';
+        $pathBase = $ehManual ? 'contratos-manuais' : 'contratos';
+        $urlVoltar = $ehManual
+            ? route('admin.contratos.show.manual', $contrato->id)
+            : route('admin.processos.show', $processo->id);
+
         $docsTotal = count($documentos);
         $docsGerados = 0;
-        $documentosProcesso = $processo->documentos->where('incidente_id', $incidente->id);
-        
+        $documentosProcesso = $documentosGerados; // já filtrado por incidente_id no controller
+
         foreach ($documentos as $tipoProg => $docProg) {
             $doc = $documentosProcesso->firstWhere('tipo_documento', $tipoProg);
             if ($doc && $doc->gerado_em) $docsGerados++;
@@ -18,10 +28,17 @@
     @endphp
 
     <div class="mb-4">
-        <a href="{{ route('admin.processos.show', $processo->id) }}" class="inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-700">
-            <i class="fas fa-arrow-left mr-2"></i> Voltar para o Processo
+        <a href="{{ $urlVoltar }}" class="inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-700">
+            <i class="fas fa-arrow-left mr-2"></i> Voltar para o {{ $ehManual ? 'Contrato' : 'Processo' }}
         </a>
     </div>
+
+    @unless($temAssinaturaEletronica)
+        <div class="mb-4 p-3 text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg flex items-center gap-2">
+            <i class="fas fa-circle-info"></i>
+            Contrato Manual/Externo: os documentos deste aditivo são gerados para assinatura física (impressa) — não há rodada de assinatura eletrônica.
+        </div>
+    @endunless
 
     <!-- Seção de Documentos -->
     <div class="mb-8">
@@ -44,7 +61,7 @@
                                  style="width: {{ $docsPercent }}%"></div>
                         </div>
                     </div>
-                    <form action="{{ route('admin.incidentes.destroy', ['contrato_id' => $contrato->id, 'incidente_id' => $incidente->id]) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja reverter e excluir este aditivo? Esta ação não pode ser desfeita.');" class="ml-0 lg:ml-4">
+                    <form action="{{ route("$rotaBase.destroy", ['contrato_id' => $contrato->id, 'incidente_id' => $incidente->id]) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja reverter e excluir este aditivo? Esta ação não pode ser desfeita.');" class="ml-0 lg:ml-4">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-red-600 transition-colors duration-200 bg-red-50 border border-red-200 rounded-md hover:bg-red-100 hover:text-red-700">
@@ -230,7 +247,7 @@
                                             @endif
                                             
                                             @if ($temCampos)
-                                            <form action="{{ route('admin.incidentes.atualizar-campos', ['contrato_id' => $contrato->id, 'incidente_id' => $incidente->id]) }}" method="POST" enctype="multipart/form-data">
+                                            <form action="{{ route("$rotaBase.atualizar-campos", ['contrato_id' => $contrato->id, 'incidente_id' => $incidente->id]) }}" method="POST" enctype="multipart/form-data">
                                                 @csrf
                                                 <input type="hidden" name="tipo" value="{{ $incidente->tipo }}">
                                                 <input type="hidden" name="categoria" value="{{ $incidente->categoria }}">
@@ -244,7 +261,7 @@
                                                             <div class="relative" x-data="{ openIA: false, queryIA: '{{ $campo['value'] }}', loadingIA: false }">
                                                                 <textarea name="{{ $campo['name'] }}" id="{{ $tipo }}_{{ $campo['name'] }}" class="block w-full px-3 py-2 text-sm border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]" rows="4" x-model="queryIA">{{ $campo['value'] }}</textarea>
                                                                 @if(isset($campo['ia']) && $campo['ia'])
-                                                                    <x-ia-popover name="{{ $tipo }}_{{ $campo['name'] }}" :processoId="$processo->id" />
+                                                                    <x-ia-popover name="{{ $tipo }}_{{ $campo['name'] }}" :processoId="$processo?->id" />
                                                                 @endif
                                                             </div>
                                                         @elseif($campo['tipo'] === 'file')
@@ -303,7 +320,7 @@
                 saveField(field) {
                     const value = this[field];
                     
-                    fetch(`{{ route('admin.incidentes.documentos.salvar-campo', ['contrato_id' => $contrato->id, 'incidente_id' => $incidente->id]) }}`, {
+                    fetch(`{{ route("$rotaBase.documentos.salvar-campo", ['contrato_id' => $contrato->id, 'incidente_id' => $incidente->id]) }}`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -338,16 +355,16 @@
                     const bridgeContainer = tr.querySelector(`[data-assinante-bridge][data-tipo="${tipo}"]`);
                     if (bridgeContainer) {
                         try {
-                            await window.salvarSelecaoAntesDeGerar({{ $processo->id }}, tipo, null, null, incidenteId);
+                            await window.salvarSelecaoAntesDeGerar({{ $processo?->id ?? 'null' }}, tipo, null, null, incidenteId);
                         } catch (e) { console.warn('Falha salvar assinaturas antes de gerar', e); }
                     }
                 }
             }
 
-            let url = `/admin/contratos/${contratoId}/incidentes/${incidenteId}/pdf/${tipo}`;
+            let url = `/admin/{{ $pathBase }}/${contratoId}/incidentes/${incidenteId}/pdf/${tipo}`;
             if (dataSelecionada) {
                 // Força o salvamento da data antes de abrir o PDF
-                fetch(`{{ route('admin.incidentes.documentos.salvar-campo', ['contrato_id' => $contrato->id, 'incidente_id' => $incidente->id]) }}`, {
+                fetch(`{{ route("$rotaBase.documentos.salvar-campo", ['contrato_id' => $contrato->id, 'incidente_id' => $incidente->id]) }}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

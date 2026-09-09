@@ -65,6 +65,11 @@ class ContratoManual extends Model
         return $this->morphMany(Ocorrencia::class, 'fiscalizavel');
     }
 
+    public function incidentes()
+    {
+        return $this->morphMany(IncidenteContratual::class, 'contratavel');
+    }
+
     protected static function booted()
     {
         static::addGlobalScope(new PrefeituraScope);

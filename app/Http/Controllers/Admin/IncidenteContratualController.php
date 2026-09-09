@@ -5,8 +5,25 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Contrato;
+use App\Models\ContratoManual;
+use App\Models\Documento;
+use App\Models\DocumentoSelecaoAssinantes;
+use App\Models\IncidenteContratual;
 use App\Services\IncidenteContratualService;
 
+/**
+ * Gerencia o fluxo de Aditivo (IncidenteContratual), que pode pertencer tanto a um
+ * Contrato do Sistema (App\Models\Contrato, vinculado a um Processo licitatório)
+ * quanto a um Contrato Manual/Externo (App\Models\ContratoManual, sem Processo).
+ *
+ * As rotas de "sistema" (nome admin.incidentes.*) e "manual" (nome
+ * admin.incidentes-manual.*) apontam para os MESMOS métodos abaixo — o tipo é
+ * resolvido via resolverContrato(), a partir do nome da rota atual.
+ *
+ * Contratos Manuais não têm assinatura eletrônica disponível (não há Processo para
+ * amarrar a rodada de assinatura) — os documentos saem para assinatura física, como
+ * já ocorre no fluxo de Fiscalização.
+ */
 class IncidenteContratualController extends Controller
 {
     protected $incidenteService;
@@ -16,29 +33,54 @@ class IncidenteContratualController extends Controller
         $this->incidenteService = $incidenteService;
     }
 
-    public function create($contrato_id)
+    /**
+     * Resolve o contratável (Contrato ou ContratoManual) a partir do id da rota,
+     * usando o nome da rota atual para decidir o tipo.
+     */
+    private function resolverContrato($contrato_id): Contrato|ContratoManual
     {
-        $contrato = Contrato::with('processo')->findOrFail($contrato_id);
-        
-        return view('Admin.IncidentesContratuais.create', compact('contrato'));
+        if (request()->routeIs('admin.incidentes-manual.*')) {
+            return ContratoManual::findOrFail($contrato_id);
+        }
+
+        return Contrato::findOrFail($contrato_id);
+    }
+
+    /**
+     * Nome de rota completo (admin.incidentes.{suffix} ou admin.incidentes-manual.{suffix}),
+     * espelhando o prefixo da rota atual.
+     */
+    private function routeName(string $suffix): string
+    {
+        $base = request()->routeIs('admin.incidentes-manual.*') ? 'admin.incidentes-manual' : 'admin.incidentes';
+
+        return "{$base}.{$suffix}";
+    }
+
+    private function buscarIncidente($contrato, $incidente_id): IncidenteContratual
+    {
+        return IncidenteContratual::where('contratavel_id', $contrato->id)
+            ->where('contratavel_type', get_class($contrato))
+            ->findOrFail($incidente_id);
     }
 
     public function store(Request $request, $contrato_id)
     {
-        $contrato = Contrato::findOrFail($contrato_id);
+        $contrato = $this->resolverContrato($contrato_id);
 
         $validated = $request->validate([
             'tipo' => 'required|in:prazo,valor,prazo_valor',
             'categoria' => 'required|in:compras_servicos,obras',
         ]);
 
-        $incidente = \App\Models\IncidenteContratual::create([
-            'contrato_id' => $contrato->id,
+        $incidente = IncidenteContratual::create([
+            'contratavel_id' => $contrato->id,
+            'contratavel_type' => get_class($contrato),
             'tipo' => $validated['tipo'],
             'categoria' => $validated['categoria'],
         ]);
 
-        return redirect()->route('admin.incidentes.documentos', [
+        return redirect()->route($this->routeName('documentos'), [
             'contrato_id' => $contrato->id,
             'incidente_id' => $incidente->id
         ])->with('success', 'Rascunho de aditivo criado. Preencha os campos para finalizar.');
@@ -46,8 +88,8 @@ class IncidenteContratualController extends Controller
 
     public function atualizarCampos(Request $request, $contrato_id, $incidente_id)
     {
-        $contrato = Contrato::findOrFail($contrato_id);
-        $incidente = \App\Models\IncidenteContratual::where('contrato_id', $contrato_id)->findOrFail($incidente_id);
+        $contrato = $this->resolverContrato($contrato_id);
+        $incidente = $this->buscarIncidente($contrato, $incidente_id);
 
         $dadosInput = $request->all();
         if (isset($dadosInput['percentual_valor']) && str_contains($dadosInput['percentual_valor'], ',')) {
@@ -99,9 +141,17 @@ class IncidenteContratualController extends Controller
 
     public function documentos($contrato_id, $incidente_id)
     {
-        $contrato = Contrato::with(['processo.prefeitura', 'processo.detalhe'])->findOrFail($contrato_id);
-        $incidente = \App\Models\IncidenteContratual::where('contrato_id', $contrato_id)->findOrFail($incidente_id);
-        $processo = $contrato->processo;
+        $ehManual = request()->routeIs('admin.incidentes-manual.*');
+        $contrato = $ehManual
+            ? ContratoManual::with(['prefeitura', 'empresa'])->findOrFail($contrato_id)
+            : Contrato::with(['processo.prefeitura', 'processo.detalhe'])->findOrFail($contrato_id);
+        $incidente = $this->buscarIncidente($contrato, $incidente_id);
+
+        // Contratos Manuais não têm Processo — logo, não há como amarrar uma rodada de
+        // assinatura eletrônica (que depende de processo_id). Os documentos saem para
+        // assinatura física, como já ocorre no fluxo de Fiscalização.
+        $processo = $contrato instanceof Contrato ? $contrato->processo : null;
+        $temAssinaturaEletronica = $processo !== null;
 
         $documentos = [
             'capa_aditivo' => [
@@ -112,7 +162,7 @@ class IncidenteContratualController extends Controller
             'solicitacao_aditivo' => [
                 'titulo' => 'Solicitação do Aditivo',
                 'cor' => '#009496',
-                'requer_assinatura' => true,
+                'requer_assinatura' => $temAssinaturaEletronica,
                 'campos' => [
                     [
                         'name' => 'justificativa',
@@ -133,7 +183,7 @@ class IncidenteContratualController extends Controller
             'parecer_juridico_aditivo' => [
                 'titulo' => 'Parecer Jurídico',
                 'cor' => '#dc2626', // vermelho
-                'requer_assinatura' => true,
+                'requer_assinatura' => $temAssinaturaEletronica,
                 'campos' => [
 
                 ]
@@ -141,13 +191,13 @@ class IncidenteContratualController extends Controller
             'autorizacao_prefeito_aditivo' => [
                 'titulo' => 'Autorização do Prefeito',
                 'cor' => '#ea580c', // laranja
-                'requer_assinatura' => true,
+                'requer_assinatura' => $temAssinaturaEletronica,
                 'campos' => []
             ],
             'termo_aditivo' => [
                 'titulo' => 'Termo Aditivo ao Contrato',
                 'cor' => '#0284c7', // azul
-                'requer_assinatura' => true,
+                'requer_assinatura' => $temAssinaturaEletronica,
                 'campos' => []
             ]
         ];
@@ -181,23 +231,30 @@ class IncidenteContratualController extends Controller
             }
         }
 
-        return view('Admin.IncidentesContratuais.documentos', compact('contrato', 'incidente', 'processo', 'documentos'));
+        // Datas já salvas para este incidente (Documento agora existe sem processo_id
+        // para aditivos de Contrato Manual).
+        $documentosGerados = Documento::where('incidente_id', $incidente->id)->get();
+
+        return view('Admin.IncidentesContratuais.documentos', compact(
+            'contrato', 'incidente', 'processo', 'documentos', 'documentosGerados', 'temAssinaturaEletronica'
+        ));
     }
 
     public function salvarCampoDocumento(Request $request, $contrato_id, $incidente_id)
     {
-        $contrato = Contrato::findOrFail($contrato_id);
-        $processo = $contrato->processo;
+        $contrato = $this->resolverContrato($contrato_id);
+        $incidente = $this->buscarIncidente($contrato, $incidente_id);
+        $processo = $contrato instanceof Contrato ? $contrato->processo : null;
 
         $dados = $request->except(['_token', '_method']);
 
         foreach ($dados as $campo => $valor) {
             if (strpos($campo, 'data_doc_') === 0) {
                 $tipoDocumento = substr($campo, 9);
-                \App\Models\Documento::updateOrCreate(
+                Documento::updateOrCreate(
                     [
-                        'processo_id' => $processo->id,
-                        'incidente_id' => $incidente_id,
+                        'processo_id' => $processo?->id,
+                        'incidente_id' => $incidente->id,
                         'tipo_documento' => $tipoDocumento,
                     ],
                     [
@@ -213,18 +270,39 @@ class IncidenteContratualController extends Controller
 
     public function gerarDocumentoPdf($contrato_id, $incidente_id, $tipo)
     {
-        $contrato = Contrato::with(['processo.prefeitura', 'processo.detalhe', 'processo.documentos'])->findOrFail($contrato_id);
-        $incidente = \App\Models\IncidenteContratual::with(['itens.loteContratado'])->where('contrato_id', $contrato_id)->findOrFail($incidente_id);
+        $ehManual = request()->routeIs('admin.incidentes-manual.*');
+        $contrato = $ehManual
+            ? ContratoManual::with(['prefeitura', 'empresa'])->findOrFail($contrato_id)
+            : Contrato::with(['processo.prefeitura', 'processo.detalhe', 'processo.documentos'])->findOrFail($contrato_id);
+        $incidente = IncidenteContratual::with(['itens.loteContratado'])
+            ->where('contratavel_id', $contrato->id)
+            ->where('contratavel_type', get_class($contrato))
+            ->findOrFail($incidente_id);
 
-        $processo = $contrato->processo;
-        $prefeitura = $processo->prefeitura;
-        $detalhe = $processo->detalhe;
+        $processo = $contrato instanceof Contrato ? $contrato->processo : null;
+        $prefeitura = $processo?->prefeitura ?? $contrato->prefeitura;
+        $detalhe = $processo?->detalhe;
+
+        // Objeto do contrato: Contrato (sistema) só tem via Processo; ContratoManual
+        // tem o campo direto. Normalizado aqui para os templates usarem sempre
+        // $objetoContrato, em vez de $processo->objeto (que não existe sem Processo).
+        $objetoContrato = $processo?->objeto ?? $contrato->objeto ?? '';
 
         // Garantir dados da empresa
-        if (empty($contrato->dados_contratante)) {
-            $loteContratado = \App\Models\LoteContratado::where('contrato_id', $contrato->id)->first() 
+        if ($contrato instanceof ContratoManual) {
+            $empresa = $contrato->empresa;
+            $contrato->dados_contratante = [
+                'razao_social' => $empresa?->razao_social ?? 'CONTRATADA',
+                'cnpj' => $empresa?->cnpj_formatado ?? $empresa?->cnpj ?? 'CNPJ',
+                'endereco' => $empresa?->endereco ?? 'Endereço da Empresa',
+                'representante' => $empresa?->representante ?? 'Representante não informado',
+                'cpf_representante' => 'CPF',
+                'orgao_responsavel' => $contrato->secretaria?->nome ?? 'Secretaria Municipal',
+            ];
+        } elseif (empty($contrato->dados_contratante)) {
+            $loteContratado = \App\Models\LoteContratado::where('contrato_id', $contrato->id)->first()
                 ?? \App\Models\LoteContratado::where('processo_id', $processo->id)->first();
-            
+
             if ($loteContratado && $loteContratado->vencedor) {
                 $v = $loteContratado->vencedor;
                 $contrato->dados_contratante = [
@@ -290,27 +368,29 @@ class IncidenteContratualController extends Controller
                 abort(404, 'Documento não encontrado.');
         }
 
-        // Recupera o documento para pegar a data, se houver
-        $documento = \App\Models\Documento::where('processo_id', $processo->id)
-                                          ->where('incidente_id', $incidente->id)
+        // Recupera o documento para pegar a data, se houver (identificado por
+        // incidente_id + tipo_documento — processo_id pode ser nulo para manuais)
+        $documento = Documento::where('incidente_id', $incidente->id)
                                           ->where('tipo_documento', $tipo)
                                           ->first();
-        
+
         $data_selecionada = $documento ? $documento->data_selecionada : null;
 
-        // Recupera a seleção de assinantes, se houver
-        $documentoSelecao = \App\Models\DocumentoSelecaoAssinantes::where('processo_id', $processo->id)
-            ->where('incidente_id', $incidente->id)
-            ->where('tipo_documento', $tipo)
-            ->first();
+        // Recupera a seleção de assinantes, se houver (só existe quando há Processo)
+        $documentoSelecao = $processo
+            ? DocumentoSelecaoAssinantes::where('processo_id', $processo->id)
+                ->where('incidente_id', $incidente->id)
+                ->where('tipo_documento', $tipo)
+                ->first()
+            : null;
 
         // Marca como gerado
         if ($documento) {
             $documento->update(['gerado_em' => now()]);
         } else {
             $data_selecionada = now()->toDateString();
-            \App\Models\Documento::create([
-                'processo_id' => $processo->id,
+            Documento::create([
+                'processo_id' => $processo?->id,
                 'incidente_id' => $incidente->id,
                 'tipo_documento' => $tipo,
                 'data_selecionada' => $data_selecionada,
@@ -325,6 +405,7 @@ class IncidenteContratualController extends Controller
             'processo',
             'prefeitura',
             'detalhe',
+            'objetoContrato',
             'data_selecionada',
             'documentoSelecao'
         ))->setPaper('a4', 'portrait');
@@ -334,18 +415,22 @@ class IncidenteContratualController extends Controller
 
     public function destroy($contrato_id, $incidente_id)
     {
-        $incidente = \App\Models\IncidenteContratual::where('contrato_id', $contrato_id)->findOrFail($incidente_id);
-        
-        $processo_id = $incidente->contrato->processo_id;
+        $contrato = $this->resolverContrato($contrato_id);
+        $incidente = $this->buscarIncidente($contrato, $incidente_id);
 
         // Excluir os itens vinculados e documentos associados a esse incidente
         $incidente->itens()->delete();
-        \App\Models\Documento::where('incidente_id', $incidente->id)->delete();
-        
-        // Excluir o próprio incidente
+        Documento::where('incidente_id', $incidente->id)->delete();
+        DocumentoSelecaoAssinantes::where('incidente_id', $incidente->id)->delete();
+
         $incidente->delete();
 
-        return redirect()->route('admin.processos.show', $processo_id)
+        if ($contrato instanceof ContratoManual) {
+            return redirect()->route('admin.contratos.show.manual', $contrato->id)
+                ->with('success', 'Aditivo revertido (excluído) com sucesso.');
+        }
+
+        return redirect()->route('admin.processos.show', $contrato->processo_id)
             ->with('success', 'Aditivo revertido (excluído) com sucesso.');
     }
 }

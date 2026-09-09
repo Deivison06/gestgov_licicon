@@ -9,7 +9,8 @@ class IncidenteContratual extends Model
     protected $table = 'incidentes_contratuais';
 
     protected $fillable = [
-        'contrato_id',
+        'contratavel_id',
+        'contratavel_type',
         'tipo',
         'categoria',
         'meses_prorrogacao',
@@ -24,9 +25,14 @@ class IncidenteContratual extends Model
         'oab_parecerista'
     ];
 
-    public function contrato()
+    /**
+     * O contrato ao qual este aditivo pertence — pode ser um Contrato do Sistema
+     * (App\Models\Contrato) ou um Contrato Manual/Externo (App\Models\ContratoManual).
+     * Mesmo padrão morphTo usado por Fiscalizacao/Ocorrencia ('fiscalizavel').
+     */
+    public function contratavel()
     {
-        return $this->belongsTo(Contrato::class);
+        return $this->morphTo();
     }
 
     public function itens()

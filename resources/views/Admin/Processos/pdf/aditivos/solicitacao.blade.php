@@ -59,13 +59,13 @@
         <p><strong>Assunto:</strong> Solicitação de Aditivo</p>
         <p><strong>Contrato n°:</strong> {{ $contrato->numero_contrato ?? 'S/N' }}</p>
         <p><strong>Contratada:</strong> {{ $contrato->dados_contratante['razao_social'] ?? 'NOME DA EMPRESA' }}</p>
-        <p><strong>Objeto:</strong> {{ trim(html_entity_decode(strip_tags($processo->objeto ?? 'Objeto do Processo'))) }}</p>
+        <p><strong>Objeto:</strong> {{ trim(html_entity_decode(strip_tags($objetoContrato ?? 'Objeto do Processo'))) }}</p>
     </div>
 
     <p style="font-weight: bold; margin-bottom: 15px;">Sr(a). {{ $prefeitura->autoridade_competente ?? 'Prefeito(a)' }},</p>
 
     <div class="clause-content">
-        O Contrato nº {{ $contrato->numero_contrato ?? 'S/N' }} tem como objeto a {{ strtolower(trim(html_entity_decode(strip_tags($processo->objeto ?? '')))) }}.
+        O Contrato nº {{ $contrato->numero_contrato ?? 'S/N' }} tem como objeto a {{ strtolower(trim(html_entity_decode(strip_tags($objetoContrato ?? '')))) }}.
     </div>
 
     <div class="clause-content">

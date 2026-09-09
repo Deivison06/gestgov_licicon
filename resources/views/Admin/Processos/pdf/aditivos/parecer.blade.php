@@ -55,7 +55,7 @@
 
     <div class="section-title">I – RELATÓRIO</div>
     <div class="clause-content">
-        Trata-se de solicitação de manifestação jurídica acerca da possibilidade de celebração de Termo Aditivo ao Contrato nº {{ $contrato->numero_contrato ?? 'S/N' }}, cujo objeto consiste em {{ strtolower(trim(html_entity_decode(strip_tags($processo->objeto ?? 'execução do objeto')))) }}, celebrado entre o Município de {{ $prefeitura->cidade ?? 'Município' }} - {{ $prefeitura->estado ?? 'UF' }} e a empresa {{ $contrato->dados_contratante['razao_social'] ?? 'CONTRATADA' }}.
+        Trata-se de solicitação de manifestação jurídica acerca da possibilidade de celebração de Termo Aditivo ao Contrato nº {{ $contrato->numero_contrato ?? 'S/N' }}, cujo objeto consiste em {{ strtolower(trim(html_entity_decode(strip_tags($objetoContrato ?? 'execução do objeto')))) }}, celebrado entre o Município de {{ $prefeitura->cidade ?? 'Município' }} - {{ $prefeitura->estado ?? 'UF' }} e a empresa {{ $contrato->dados_contratante['razao_social'] ?? 'CONTRATADA' }}.
     </div>
 
     <div class="clause-content" style="text-indent: 0;">

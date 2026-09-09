@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Contrato;
+use App\Models\ContratoManual;
 use App\Models\IncidenteContratual;
 use App\Models\IncidenteContratualItem;
 use App\Models\LoteContratado;
@@ -10,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 
 class IncidenteContratualService
 {
-    public function atualizarAditivo(IncidenteContratual $incidente, Contrato $contrato, array $dados)
+    public function atualizarAditivo(IncidenteContratual $incidente, Contrato|ContratoManual $contrato, array $dados)
     {
         return DB::transaction(function () use ($incidente, $contrato, $dados) {
             $incidente->update([
@@ -30,8 +31,13 @@ class IncidenteContratualService
             // Clear previous items to avoid duplication if user changes the percentage
             $incidente->itens()->delete();
 
-            // If it's a value incident for Compras e Serviços, calculate items
-            if (in_array($dados['tipo'], ['valor', 'prazo_valor']) && $dados['categoria'] === 'compras_servicos') {
+            // Cálculo automático de itens aditivados (por percentual, a partir dos lotes
+            // contratados) só existe para Contratos do Sistema — Contratos Manuais/Externos
+            // não têm lotes formalizados no sistema (não vieram de um Processo licitatório).
+            // Para eles, o aditivo segue apenas com o texto/percentual informado.
+            if ($contrato instanceof Contrato
+                && in_array($dados['tipo'], ['valor', 'prazo_valor'])
+                && $dados['categoria'] === 'compras_servicos') {
                 $percentual_valor = $dados['percentual_valor'] ?? $incidente->percentual_valor;
                 $percentual = $percentual_valor / 100;
 

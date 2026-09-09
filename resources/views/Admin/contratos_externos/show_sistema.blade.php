@@ -211,19 +211,105 @@
                                 Incidentes Contratuais (Aditivos)
                             </h3>
                             @can('fiscalizar contratos')
-                                <a href="{{ route('admin.incidentes.create', ['contrato_id' => $processo->contrato->id]) }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+                                <button type="button"
+                                        onclick="document.getElementById('modalNovoAditivoSistema').classList.remove('hidden')"
+                                        class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
                                     <i class="fas fa-plus mr-2"></i>
                                     Registrar Incidente Contratual
-                                </a>
+                                </button>
                             @endcan
                         </div>
-                        
-                        {{-- Lista de Aditivos (quando tiver, iterar aqui) --}}
-                        <div class="bg-gray-50/50 rounded-xl p-5 border border-gray-200 mb-6 text-center text-gray-500">
-                            {{-- TODO: Listar os aditivos aqui, por enquanto deixamos um placeholder se vazio --}}
-                            Nenhum incidente contratual registrado.
-                        </div>
+
+                        {{-- Lista de Aditivos --}}
+                        @if($processo->contrato->incidentes && $processo->contrato->incidentes->isNotEmpty())
+                            <div class="space-y-2 mb-6">
+                                @foreach($processo->contrato->incidentes as $incidente)
+                                    <div class="flex items-center justify-between p-3 text-sm bg-white border border-gray-200 rounded-lg">
+                                        <div class="flex flex-col">
+                                            <span class="font-medium text-gray-800">
+                                                {{ ucfirst(str_replace('_', ' e ', $incidente->tipo)) }}
+                                                <span class="ml-1 text-xs font-normal text-gray-400">
+                                                    ({{ $incidente->categoria === 'obras' ? 'Obras' : 'Compras e Serviços' }})
+                                                </span>
+                                            </span>
+                                            <span class="text-xs text-gray-500">
+                                                Registrado em {{ $incidente->created_at->format('d/m/Y') }}
+                                            </span>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="px-2 py-1 text-[10px] font-bold text-[#009496] bg-[#009496]/10 rounded-full">
+                                                Aditivo
+                                            </span>
+                                            <a href="{{ route('admin.incidentes.documentos', ['contrato_id' => $processo->contrato->id, 'incidente_id' => $incidente->id]) }}"
+                                               class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#009496] bg-[#009496]/10 border border-[#009496]/20 rounded-md hover:bg-[#009496] hover:text-white transition-colors"
+                                               title="Gerenciar Documentos do Aditivo">
+                                                <i class="fas fa-file-alt"></i> Documentos
+                                            </a>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="bg-gray-50/50 rounded-xl p-5 border border-gray-200 mb-6 text-center text-gray-500">
+                                Nenhum incidente contratual registrado.
+                            </div>
+                        @endif
                     </div>
+
+                    {{-- Modal: Iniciar Novo Aditivo --}}
+                    @can('fiscalizar contratos')
+                        <div id="modalNovoAditivoSistema" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title-aditivo-sistema" role="dialog" aria-modal="true">
+                            <div class="flex items-end justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                                <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" aria-hidden="true"
+                                     onclick="document.getElementById('modalNovoAditivoSistema').classList.add('hidden')"></div>
+                                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                                <div class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                                    <form method="POST" action="{{ route('admin.incidentes.store', $processo->contrato->id) }}">
+                                        @csrf
+                                        <div class="px-4 pt-5 pb-4 bg-white sm:p-6 sm:pb-4">
+                                            <div class="sm:flex sm:items-start">
+                                                <div class="flex items-center justify-center flex-shrink-0 w-12 h-12 mx-auto bg-teal-100 rounded-full sm:mx-0 sm:h-10 sm:w-10">
+                                                    <i class="text-teal-600 fas fa-file-contract"></i>
+                                                </div>
+                                                <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                                                    <h3 class="text-lg font-medium leading-6 text-gray-900" id="modal-title-aditivo-sistema">
+                                                        Iniciar Novo Aditivo
+                                                    </h3>
+                                                    <div class="mt-4 space-y-4">
+                                                        <div>
+                                                            <label for="aditivo_tipo_sistema" class="block text-sm font-medium text-gray-700">Tipo de Aditivo <span class="text-red-500">*</span></label>
+                                                            <select id="aditivo_tipo_sistema" name="tipo" required class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496] sm:text-sm">
+                                                                <option value="">Selecione...</option>
+                                                                <option value="prazo">Prorrogação de Prazo</option>
+                                                                <option value="valor">Acréscimo de Valor</option>
+                                                                <option value="prazo_valor">Prazo e Valor</option>
+                                                            </select>
+                                                        </div>
+                                                        <div>
+                                                            <label for="aditivo_categoria_sistema" class="block text-sm font-medium text-gray-700">Categoria do Contrato <span class="text-red-500">*</span></label>
+                                                            <select id="aditivo_categoria_sistema" name="categoria" required class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496] sm:text-sm">
+                                                                <option value="">Selecione...</option>
+                                                                <option value="compras_servicos">Compras e Serviços</option>
+                                                                <option value="obras">Obras</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="px-4 py-3 bg-gray-50 sm:px-6 sm:flex sm:flex-row-reverse">
+                                            <button type="submit" class="inline-flex justify-center w-full px-4 py-2 text-base font-medium text-white bg-[#009496] border border-transparent rounded-md shadow-sm hover:bg-[#007779] focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
+                                                Iniciar Aditivo
+                                            </button>
+                                            <button type="button" onclick="document.getElementById('modalNovoAditivoSistema').classList.add('hidden')" class="inline-flex justify-center w-full px-4 py-2 mt-3 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                                                Cancelar
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    @endcan
 
                     {{-- Acompanhamento da Execução Contratual --}}
                     <div class="mt-8 pt-8 border-t border-gray-100">

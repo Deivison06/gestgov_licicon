@@ -64,7 +64,7 @@ class Contrato extends Model
 
     public function incidentes()
     {
-        return $this->hasMany(IncidenteContratual::class, 'contrato_id');
+        return $this->morphMany(IncidenteContratual::class, 'contratavel');
     }
 
     public function getSituacaoAttribute()

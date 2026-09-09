@@ -488,7 +488,7 @@ class ContratoManualController extends Controller
     // Método para visualizar detalhes do contrato manual
     public function showManual($id)
     {
-        $contrato = ContratoManual::with(['empresa', 'secretaria', 'prefeitura', 'fiscalizacoes', 'ocorrencias'])
+        $contrato = ContratoManual::with(['empresa', 'secretaria', 'prefeitura', 'fiscalizacoes', 'ocorrencias', 'incidentes'])
             ->findOrFail($id);
 
         $this->authorizeAccess($contrato);
@@ -503,6 +503,7 @@ class ContratoManualController extends Controller
             'prefeitura',
             'contrato.fiscalizacoes',
             'contrato.ocorrencias',
+            'contrato.incidentes',
             'vencedores',
             'detalhe'
         ])->findOrFail($id);

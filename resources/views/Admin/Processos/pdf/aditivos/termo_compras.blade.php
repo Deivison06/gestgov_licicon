@@ -49,18 +49,23 @@
         elseif ($incidente->tipo === 'valor') $strTipo = 'ACRÉSCIMO DE VALOR';
         else $strTipo = 'ACRÉSCIMO DE VALOR E PRORROGAÇÃO DE PRAZO';
 
-        // Calcular o valor original do contrato
-        $valorOriginalContrato = \App\Models\LoteContratado::where('processo_id', $contrato->processo_id)
-            ->when($contrato->vencedor_id, function($query) use ($contrato) {
-                return $query->where('vencedor_id', $contrato->vencedor_id);
-            })->sum('valor_total');
+        // Calcular o valor original do contrato. Contrato Manual/Externo tem o valor
+        // direto no cadastro; Contrato do Sistema usa os lotes contratados.
+        if ($contrato instanceof \App\Models\ContratoManual) {
+            $valorOriginalContrato = (float) $contrato->valor_total;
+        } else {
+            $valorOriginalContrato = \App\Models\LoteContratado::where('processo_id', $contrato->processo_id)
+                ->when($contrato->vencedor_id, function($query) use ($contrato) {
+                    return $query->where('vencedor_id', $contrato->vencedor_id);
+                })->sum('valor_total');
+        }
 
         $valorStr = '';
         if (in_array($incidente->tipo, ['valor', 'prazo_valor'])) {
             $valorAcrescentado = $valorOriginalContrato * ($incidente->percentual_valor / 100);
             $novoValorGlobal = $valorOriginalContrato + $valorAcrescentado;
 
-            $objetoProcesso = trim(html_entity_decode(strip_tags($processo->objeto ?? '')));
+            $objetoProcesso = trim(html_entity_decode(strip_tags($objetoContrato ?? '')));
             $valorStr = 'AUMENTAR o valor previsto no contrato referente a "' . $objetoProcesso . '", em ' . number_format($incidente->percentual_valor, 2, ',', '.') . '% conforme solicitação aprovada pela Autoridade Competente, acrescentando ao valor do contrato a quantia de R$ ' . number_format($valorAcrescentado, 2, ',', '.') . ', passando a vigorar o valor global do contrato em R$ ' . number_format($novoValorGlobal, 2, ',', '.');
         }
 
