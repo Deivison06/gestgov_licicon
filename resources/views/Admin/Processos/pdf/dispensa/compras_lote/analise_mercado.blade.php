@@ -4,16 +4,6 @@
     <meta charset="UTF-8">
     <title>RELATÓRIO DE COTAÇÃO - {{ $processo->numero_processo ?? $processo->id }}</title>
     <style type="text/css">
-        @font-face {
-            font-family: 'Aptos';
-            src: url('{{ public_path('storage/fonts/Aptos.ttf') }}') format('truetype');
-            font-style: normal;
-        }
-        @font-face {
-            font-family: 'AptosExtraBold';
-            src: url('{{ public_path('storage/fonts/Aptos-ExtraBold.ttf') }}') format('truetype');
-            font-style: normal;
-        }
         @page {
             margin: 0;
             size: A4;
@@ -21,8 +11,8 @@
         body {
             margin: 0;
             padding: 4cm 2cm 2cm;
-            font-size: 11pt;
-            font-family: 'Aptos', sans-serif;
+            font-size: 10pt;
+            font-family: Arial, Helvetica, sans-serif;
             background-image: url('{{ public_path($prefeitura->timbre) }}');
             background-repeat: no-repeat;
             background-position: top left;
@@ -38,7 +28,7 @@
             font-weight: bold;
             font-size: 11pt;
             margin-bottom: 2pt;
-            font-family: 'AptosExtraBold', sans-serif;
+            font-family: Arial, Helvetica, sans-serif;
         }
         .subtitulo-pesquisa {
             text-align: center;
@@ -57,7 +47,7 @@
         table {
             border-collapse: collapse;
             width: 100%;
-            font-size: 8pt;
+            font-size: 10pt;
             margin-bottom: 8pt;
         }
         table th, table td {
@@ -94,7 +84,7 @@
             display: inline-block;
             line-height: 0.9;
             padding: 10px 50px;
-            font-family: 'AptosExtraBold', sans-serif;
+            font-family: Arial, Helvetica, sans-serif;
         }
     </style>
 </head>
@@ -246,7 +236,7 @@
             @foreach($painelPorLote as $loteNome => $itensLote)
                 @if($hasLotes)
                 <tr style="background-color: #c8d3da; border-top: 2px solid #607d8b;">
-                    <td colspan="{{ $temFornecedorLocalTce ? 6 : 5 }}" style="text-align:left; font-weight:bold; padding: 5px 10px; font-size:8.5pt; border-left: 4px solid #607d8b;">{{ $loteNome }}</td>
+                    <td colspan="{{ $temFornecedorLocalTce ? 6 : 5 }}" style="text-align:left; font-weight:bold; padding: 5px 10px; font-size:10pt; border-left: 4px solid #607d8b;">{{ $loteNome }}</td>
                 </tr>
                 @endif
                 @foreach($itensLote as $item)
@@ -308,7 +298,7 @@
             @foreach($flPorLote as $loteNome => $itensLote)
                 @if($hasLotes)
                 <tr style="background-color: #c8d3da; border-top: 2px solid #607d8b;">
-                    <td colspan="5" style="text-align:left; font-weight:bold; padding: 5px 10px; font-size:8.5pt; border-left: 4px solid #607d8b;">{{ $loteNome }}</td>
+                    <td colspan="5" style="text-align:left; font-weight:bold; padding: 5px 10px; font-size:10pt; border-left: 4px solid #607d8b;">{{ $loteNome }}</td>
                 </tr>
                 @endif
                 @php $totalLoteFL = 0; @endphp

@@ -5,19 +5,6 @@
     <meta charset="UTF-8">
     <title>DISPONIBILIDADE ORÇAMENTÁRIA - Processo {{ $processo->numero_processo ?? $processo->id }}</title>
     <style type="text/css">
-        @font-face {
-            font-family: 'Aptos';
-            src: url('{{ public_path('storage/fonts/Aptos.ttf') }}') format('truetype');
-            font-style: normal;
-        }
-
-        @font-face {
-            font-family: 'AptosExtraBold';
-            src: url('{{ public_path('storage/fonts/Aptos-ExtraBold.ttf') }}') format('truetype');
-            font-style: normal;
-        }
-
-
         @page {
             margin: 0;
             size: A4;
@@ -26,8 +13,8 @@
         body {
             margin: 0;
             padding: 4cm 2cm;
-            font-size: 11pt;
-            font-family: 'Aptos', sans-serif;
+            font-size: 10pt;
+            font-family: Arial, Helvetica, sans-serif;
             /* Adiciona o timbre como background */
             background-image: url('{{ public_path($prefeitura->timbre) }}');
             background-repeat: no-repeat;
@@ -36,7 +23,7 @@
 
             text-align: justify;
             text-justify: inter-word;
-            line-height: 1;
+            line-height: normal;
         }
 
         /* CLASSE PARA FORÇAR QUEBRA DE PÁGINA (ESSENCIAL PARA PDF) */
@@ -76,7 +63,7 @@
             display: inline-block;
             line-height: 0.9;
             padding: 10px 50px;
-            font-family: 'AptosExtraBold', sans-serif;
+            font-family: Arial, Helvetica, sans-serif;
         }
 
         .footer-signature {

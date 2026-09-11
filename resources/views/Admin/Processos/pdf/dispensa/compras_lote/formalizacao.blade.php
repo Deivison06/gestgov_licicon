@@ -9,18 +9,6 @@
         /* ---------------------------------- */
         /* ESTILOS GERAIS E QUEBRA DE PÁGINA */
         /* ---------------------------------- */
-        @font-face {
-            font-family: 'Aptos';
-            src: url('{{ public_path('storage/fonts/Aptos.ttf') }}') format('truetype');
-            font-style: normal;
-        }
-
-        @font-face {
-            font-family: 'AptosExtraBold';
-            src: url('{{ public_path('storage/fonts/Aptos-ExtraBold.ttf') }}') format('truetype');
-            font-style: normal;
-        }
-
         @page {
             margin: 0;
             size: A4;
@@ -29,8 +17,8 @@
         body {
             margin: 0;
             padding: 4cm 2cm;
-            font-size: 11pt;
-            font-family: 'Aptos', sans-serif;
+            font-size: 10pt;
+            font-family: Arial, Helvetica, sans-serif;
             /* Adiciona o timbre como background */
             background-image: url('{{ public_path($prefeitura->timbre) }}');
             background-repeat: no-repeat;
@@ -39,7 +27,7 @@
 
             text-align: justify;
             text-justify: inter-word;
-            line-height: 1;
+            line-height: normal;
         }
 
         /* CLASSE PARA FORÇAR QUEBRA DE PÁGINA (ESSENCIAL PARA PDF) */
@@ -78,7 +66,7 @@
             display: inline-block;
             line-height: 0.9;
             padding: 10px 50px;
-            font-family: 'AptosExtraBold', sans-serif;
+            font-family: Arial, Helvetica, sans-serif;
         }
 
         /* ---------------------------------- */
@@ -287,7 +275,7 @@
             </tr>
             <tr>
                 <td>
-                    <span class="field-label" style="font-size: 10px !important;">
+                    <span class="field-label" style="font-size: 10pt !important;">
                         {!! strip_tags($processo->objeto) !!}
                     </span>
                     {{-- <div class="large-value-cell">
@@ -299,7 +287,7 @@
         <div style="
             border: 1px solid #000;
             padding: 8px;
-            font-size:11px;
+            font-size:10pt;
             text-align: justify;
             margin-top: 10px;
             margin-bottom: 10px;
@@ -310,12 +298,12 @@
                 Justificativa da necessidade da contratação:
             </span>
 
-            <div style="font-size:11px !important; text-align: justify;">
+            <div style="font-size:10pt !important; text-align: justify;">
                 {!! $detalhe->justificativa !!}
             </div>
         </div>
 
-        <table border="1" cellspacing="0" cellpadding="4" style="border-collapse: collapse; width: 100%; text-align: center; font-size: 9pt;">
+        <table border="1" cellspacing="0" cellpadding="4" style="border-collapse: collapse; width: 100%; text-align: center; font-size: 10pt;">
             <thead>
                 <tr>
                     <th colspan="4" class="section-header">
@@ -360,7 +348,7 @@
             </tbody>
         </table>
 
-        <table style="width: 100%; border-collapse: collapse; border: 1px solid #000 !important; margin-bottom: 15px; page-break-inside: avoid; font-family: Arial, sans-serif; font-size: 12px;">
+        <table style="width: 100%; border-collapse: collapse; border: 1px solid #000 !important; margin-bottom: 15px; page-break-inside: avoid; font-family: Arial, Helvetica, sans-serif; font-size: 10pt;">
             <tr>
                 <td colspan="2" style="font-weight: bold; text-align: center; background-color: #f2f2f2;">
                     4 – OBSERVAÇÕES GERAIS
@@ -388,7 +376,7 @@
                     @endphp
                     <div style="display: flex; gap: 20px; padding: 5px 0;">
                         @foreach ($opcoes as $valor => $texto)
-                        <div style="display: flex; align-items: center; gap: 5px; font-size: 12px;">
+                        <div style="display: flex; align-items: center; gap: 5px; font-size: 10pt;">
                             <span style="width: 14px; height: 14px; border: 1px solid #000; text-align: center; line-height: 12px; font-weight: bold; display: inline-block; margin: 2px;">
                                 {{ $contratacoes === $valor ? 'X' : '' }}
                             </span>
@@ -400,7 +388,7 @@
             </tr>
         </table>
 
-        <table style="width: 100%; border: 1px solid #000; border-collapse: collapse; font-family: Arial, sans-serif; font-size: 12px;">
+        <table style="width: 100%; border: 1px solid #000; border-collapse: collapse; font-family: Arial, Helvetica, sans-serif; font-size: 10pt;">
             <tr>
                 <!-- Coluna esquerda -->
                 <td style="width: 50%; border-right: 1px solid #000; padding: 20px; vertical-align: top;">
