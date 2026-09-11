@@ -43,12 +43,20 @@ class PaginaAssinaturasRenderer
         $pdf->SetMargins(15, 15, 15);
         $pdf->SetAutoPageBreak(true, 20);
 
-        // Se o rascunho tiver o sufixo _watermark, usa o original limpo para a consolidação
+        // Resolve o PDF-base para a consolidação: prefere a versão "limpa" (sem a marca
+        // d'água "AGUARDANDO ASSINATURAS"), mantendo o selo de autenticação quando existir.
         $caminhoBase = $versao->caminho_pdf;
-        $caminhoLimpo = preg_replace('/_watermark\.pdf$/i', '.pdf', $caminhoBase);
-
-        if ($caminhoLimpo !== $caminhoBase && file_exists($caminhoLimpo)) {
-            $caminhoBase = $caminhoLimpo;
+        $candidatos = [
+            // Rascunho com marca d'água + selo → versão limpa + selo (sem "aguardando").
+            preg_replace('/_watermark_autenticado\.pdf$/i', '_autenticado.pdf', $caminhoBase),
+            // Compatibilidade com versões antigas (sem selo de autenticação).
+            preg_replace('/_watermark\.pdf$/i', '.pdf', $caminhoBase),
+        ];
+        foreach ($candidatos as $candidato) {
+            if ($candidato !== $caminhoBase && file_exists($candidato)) {
+                $caminhoBase = $candidato;
+                break;
+            }
         }
 
         // 1) Copia todas as páginas do arquivo preservando orientação
@@ -154,13 +162,16 @@ class PaginaAssinaturasRenderer
 
     private function renderizarRodapeAutenticacao(Fpdi $pdf, DocumentoVersao $versao, Collection $assinaturas): void
     {
-        // Usa o código verificador da primeira assinatura DESTA PÁGINA como "código mestre".
+        // Código mestre: o da própria versão (selo de autenticação, carimbado na geração)
+        // — o mesmo QR usado desde antes de o documento ser assinado. Documentos gerados
+        // antes dessa versão do sistema não têm codigo_verificador na versão: cai de volta
+        // no código da primeira assinatura, como sempre funcionou.
         $primeiraAssinatura = $assinaturas->sortBy('assinado_em')->first();
-        if (!$primeiraAssinatura) {
+        $codigoMestre = $versao->codigo_verificador ?? optional($primeiraAssinatura)->codigo_verificador;
+        if (!$codigoMestre) {
             return;
         }
-        $codigoMestre = $primeiraAssinatura->codigo_verificador;
-        $crcMestre    = $primeiraAssinatura->crc_humano;
+        $crcMestre    = optional($primeiraAssinatura)->crc_humano;
         $urlValidacao = $this->urlValidacaoBase . '/' . $codigoMestre;
 
         // Linha separadora

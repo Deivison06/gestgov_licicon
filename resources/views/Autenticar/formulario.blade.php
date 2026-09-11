@@ -49,10 +49,10 @@
                 <i class="fas fa-info-circle mr-1"></i> Como funciona
             </h3>
             <ul class="text-xs text-blue-900 list-disc list-inside space-y-1">
-                <li>Cada documento assinado recebe um <strong>código único de 20 caracteres</strong>.</li>
-                <li>O código + um QR Code aparecem na <strong>última página</strong> do PDF assinado.</li>
+                <li>Cada documento gerado recebe um <strong>código único de 20 caracteres</strong>, já na primeira página.</li>
+                <li>Se o documento for assinado depois, o <strong>mesmo código</strong> passa a validar também a(s) assinatura(s), agora na última página.</li>
                 <li>Você também pode escanear o QR Code para validar automaticamente.</li>
-                <li>O resultado mostra <strong>todos os assinantes</strong> e a data/hora de cada assinatura.</li>
+                <li>O resultado mostra quem gerou o documento e, se houver, <strong>todos os assinantes</strong> com a data/hora de cada assinatura.</li>
             </ul>
         </div>
     </div>

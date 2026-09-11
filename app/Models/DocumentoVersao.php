@@ -20,6 +20,7 @@ class DocumentoVersao extends Model
         'versao',
         'caminho_pdf',
         'hash_sha256',
+        'codigo_verificador',
         'gerado_por_user_id',
         'gerado_em',
         'assinaturas_consolidadas_em',

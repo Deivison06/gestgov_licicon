@@ -13,7 +13,6 @@ use App\Models\DocumentoVersao;
 use App\Models\SolicitacaoAssinatura;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 /**
  * Núcleo do ato de assinar / recusar.
@@ -33,7 +32,8 @@ class AssinaturaService
 {
     public function __construct(
         private readonly SolicitacaoService $solicitacaoService,
-        private readonly RodadaStrategyFactory $strategyFactory
+        private readonly RodadaStrategyFactory $strategyFactory,
+        private readonly CodigoVerificadorService $codigoVerificadorService
     ) {}
 
     /**
@@ -87,7 +87,7 @@ class AssinaturaService
                 'hash_documento_no_momento' => $versao->hash_sha256,
                 'hash_cadeia_anterior'      => $hashCadeiaAnterior,
                 'hash_proprio'              => $hashProprio,
-                'codigo_verificador'        => $this->gerarCodigoVerificadorUnico(),
+                'codigo_verificador'        => $this->codigoVerificadorService->gerarUnico(),
                 'ip'                        => $ip,
                 'user_agent'                => $userAgent,
                 'assinado_em'               => $assinadoEm,
@@ -247,23 +247,6 @@ class AssinaturaService
             $assinanteId,
             $timestampStr
         );
-    }
-
-    /**
-     * Gera código verificador único de 20 chars (10 numéricos + 10 alfanuméricos).
-     * Tenta até 5x em caso de colisão (extremamente improvável).
-     */
-    private function gerarCodigoVerificadorUnico(): string
-    {
-        for ($i = 0; $i < 5; $i++) {
-            $numerico = str_pad((string) random_int(1, 9_999_999_999), 10, '0', STR_PAD_LEFT);
-            $alfa     = substr(strtoupper(Str::random(20)), 0, 10);
-            $codigo   = $numerico . $alfa;
-            if (!AssinaturaDigital::where('codigo_verificador', $codigo)->exists()) {
-                return $codigo;
-            }
-        }
-        throw new \RuntimeException('Não foi possível gerar um código verificador único após 5 tentativas.');
     }
 
     /**

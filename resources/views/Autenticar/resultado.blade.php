@@ -1,23 +1,30 @@
 @extends('Autenticar._layout')
 
-@section('title', $resultado['status'] === 'autentico' ? 'Documento autêntico' : 'Código não encontrado')
+@section('title', match($resultado['status']) {
+    'autentico' => 'Documento autêntico',
+    'autentico_nao_assinado' => 'Documento autêntico — aguardando assinatura',
+    default => 'Código não encontrado',
+})
 
 @section('content')
-    @if ($resultado['status'] === 'autentico')
+    @if ($resultado['status'] === 'autentico' || $resultado['status'] === 'autentico_nao_assinado')
 
         {{-- ========================================== --}}
         {{-- SUCESSO — documento autêntico                --}}
         {{-- ========================================== --}}
+        @php $naoAssinado = $resultado['status'] === 'autentico_nao_assinado'; @endphp
         <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
-            {{-- Header verde --}}
-            <div class="bg-gradient-to-r from-emerald-500 to-emerald-600 px-8 py-6 text-white">
+            {{-- Header --}}
+            <div class="bg-gradient-to-r {{ $naoAssinado ? 'from-amber-500 to-amber-600' : 'from-emerald-500 to-emerald-600' }} px-8 py-6 text-white">
                 <div class="flex items-center gap-4">
                     <div class="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center">
-                        <i class="fas fa-check-circle text-3xl"></i>
+                        <i class="fas {{ $naoAssinado ? 'fa-hourglass-half' : 'fa-check-circle' }} text-3xl"></i>
                     </div>
                     <div>
-                        <h2 class="text-2xl font-bold">Documento autêntico</h2>
-                        <p class="text-sm text-emerald-100">
+                        <h2 class="text-2xl font-bold">
+                            {{ $naoAssinado ? 'Documento autêntico — aguardando assinatura' : 'Documento autêntico' }}
+                        </h2>
+                        <p class="text-sm {{ $naoAssinado ? 'text-amber-100' : 'text-emerald-100' }}">
                             Verificado em {{ now()->format('d/m/Y \à\s H:i') }}
                         </p>
                     </div>
@@ -76,6 +83,14 @@
                         ({{ $resultado['assinaturas']->count() }})
                     </span>
                 </h3>
+
+                @if ($naoAssinado)
+                    <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-900">
+                        <i class="fas fa-hourglass-half mr-1"></i>
+                        Este documento ainda não foi assinado. Assim que houver assinatura(s),
+                        elas aparecerão aqui — com o mesmo código verificador acima.
+                    </div>
+                @endif
 
                 <ul class="space-y-3">
                     @foreach ($resultado['assinaturas'] as $ass)
@@ -142,7 +157,7 @@
                        target="_blank"
                        class="px-5 py-2 text-sm font-semibold text-white bg-[#009496] rounded-md hover:bg-[#007779] flex items-center gap-2">
                         <i class="fas fa-download"></i>
-                        Baixar PDF assinado
+                        {{ $naoAssinado ? 'Baixar PDF' : 'Baixar PDF assinado' }}
                     </a>
                 </div>
             @endif

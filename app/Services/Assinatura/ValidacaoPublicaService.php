@@ -23,7 +23,7 @@ class ValidacaoPublicaService
 
     /**
      * @return array{
-     *   status: 'autentico'|'nao_encontrado',
+     *   status: 'autentico'|'autentico_nao_assinado'|'nao_encontrado',
      *   versao?: DocumentoVersao,
      *   assinatura_referenciada?: AssinaturaDigital,
      *   assinaturas?: Collection,
@@ -47,7 +47,8 @@ class ValidacaoPublicaService
             fn () => $this->buscarPorCodigo($codigo)
         );
 
-        // Re-cache com TTL longo se foi sucesso
+        // Re-cache com TTL longo se foi sucesso. "autentico_nao_assinado" fica com TTL
+        // curto (como falha): o status pode mudar a qualquer momento (assinatura chegando).
         if ($resultado['status'] === 'autentico') {
             Cache::put(self::CACHE_PREFIX . $codigo, $resultado, self::CACHE_TTL_SUCESSO);
         }
@@ -59,17 +60,22 @@ class ValidacaoPublicaService
     }
 
     /**
-     * Retorna o caminho absoluto do PDF assinado para download, ou null.
+     * Retorna o caminho absoluto do PDF para download: o assinado, se já houver
+     * assinatura(s) consolidada(s); senão o rascunho (com o selo de autenticação).
      */
     public function caminhoDownload(string $codigo): ?string
     {
         $resultado = $this->consultar($codigo);
+        $versao = $resultado['versao'] ?? null;
 
-        if ($resultado['status'] !== 'autentico') {
+        if (!$versao) {
             return null;
         }
 
-        $caminho = optional($resultado['versao'])->caminho_pdf_assinado;
+        $caminho = $resultado['status'] === 'autentico'
+            ? $versao->caminho_pdf_assinado
+            : $versao->caminho_pdf;
+
         return ($caminho && file_exists($caminho)) ? $caminho : null;
     }
 
@@ -79,6 +85,19 @@ class ValidacaoPublicaService
 
     private function buscarPorCodigo(string $codigo): array
     {
+        // Busca primeiro pelo código da versão — selo de autenticação, carimbado já na
+        // geração do documento (existe para toda versão gerada a partir desta feature).
+        $versao = DocumentoVersao::query()
+            ->where('codigo_verificador', $codigo)
+            ->with(['assinaturas.assinante'])
+            ->first();
+
+        if ($versao) {
+            return $this->resultadoParaVersao($versao);
+        }
+
+        // Compatibilidade permanente: códigos impressos em PDFs assinados antes desta
+        // mudança são o código da própria assinatura, não da versão.
         $assinatura = AssinaturaDigital::query()
             ->where('codigo_verificador', $codigo)
             ->with(['versao.assinaturas.assinante'])
@@ -88,13 +107,31 @@ class ValidacaoPublicaService
             return ['status' => 'nao_encontrado'];
         }
 
-        $versao = $assinatura->versao;
+        return $this->resultadoParaVersao($assinatura->versao, $assinatura);
+    }
+
+    private function resultadoParaVersao(DocumentoVersao $versao, ?AssinaturaDigital $assinaturaReferenciada = null): array
+    {
+        $assinaturas = $versao->assinaturas->sortBy('assinado_em')->values();
+
+        if ($assinaturas->isEmpty()) {
+            return [
+                'status'               => 'autentico_nao_assinado',
+                'versao'               => $versao,
+                'assinaturas'          => $assinaturas,
+                'documento_tipo'       => class_basename($versao->documentavel_type),
+                'versao_numero'        => $versao->versao,
+                'gerado_em'            => $versao->gerado_em?->format('d/m/Y H:i'),
+                'hash'                 => $versao->hash_sha256,
+                'download_disponivel'  => $versao->caminho_pdf && file_exists($versao->caminho_pdf),
+            ];
+        }
 
         return [
             'status'                  => 'autentico',
             'versao'                  => $versao,
-            'assinatura_referenciada' => $assinatura,
-            'assinaturas'             => $versao->assinaturas->sortBy('assinado_em')->values(),
+            'assinatura_referenciada' => $assinaturaReferenciada,
+            'assinaturas'             => $assinaturas,
             'documento_tipo'          => class_basename($versao->documentavel_type),
             'versao_numero'           => $versao->versao,
             'gerado_em'               => $versao->gerado_em?->format('d/m/Y H:i'),
@@ -112,7 +149,7 @@ class ValidacaoPublicaService
                 'documento_versao_id' => optional($resultado['versao'] ?? null)->id,
                 'ip'                  => $ip ?? '0.0.0.0',
                 'user_agent'          => substr((string) ($userAgent ?? ''), 0, 500),
-                'sucesso'             => $resultado['status'] === 'autentico',
+                'sucesso'             => in_array($resultado['status'], ['autentico', 'autentico_nao_assinado'], true),
                 'consultado_em'       => now(),
             ]);
         } catch (\Throwable $e) {
