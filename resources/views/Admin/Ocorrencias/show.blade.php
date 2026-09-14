@@ -347,7 +347,7 @@
          })">
         <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
             <h3 class="text-lg font-semibold text-gray-800">
-                <i class="fas fa-file-signature text-[#0596A2] mr-2"></i>Assinantes do Registro
+                <i class="fas fa-file-signature text-[#0596A2] mr-2"></i>Quem deve assinar o registro?
             </h3>
             <span class="text-xs font-medium text-gray-500" x-show="assinantes.length > 0">
                 <span x-text="assinantes.length"></span> assinante(s)
@@ -356,12 +356,12 @@
 
         <div class="p-6 space-y-5">
             <p class="text-sm text-gray-500">
-                Selecione os servidores responsáveis que assinarão fisicamente o registro. Os assinantes aparecem no rodapé do documento impresso, sem assinatura eletrônica.
+                Informe abaixo os servidores que deverão assinar o registro impresso. Os nomes aparecerão no rodapé do documento e a assinatura será feita fisicamente.
             </p>
 
             <div class="flex flex-col gap-3 p-4 bg-gray-50 border border-gray-200 rounded-lg sm:flex-row sm:items-end">
                 <div class="flex-1 min-w-[200px]">
-                    <label class="block mb-1 text-xs font-medium text-gray-600">Secretaria ou Fiscal</label>
+                    <label class="block mb-1 text-xs font-medium text-gray-600">Selecione a secretaria ou o fiscal responsável</label>
                     <select x-model="selecionado" @change="aoSelecionar()"
                             class="block w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#009496] focus:border-[#009496]">
                         <option value="">Selecione (ou preencha manualmente)</option>
@@ -378,12 +378,12 @@
                     </select>
                 </div>
                 <div class="flex-1 min-w-[160px]">
-                    <label class="block mb-1 text-xs font-medium text-gray-600">Nome do Servidor <span class="text-red-500">*</span></label>
+                    <label class="block mb-1 text-xs font-medium text-gray-600">Informe o nome completo do servidor <span class="text-red-500">*</span></label>
                     <input type="text" x-model="formNome" placeholder="Nome completo"
                            class="block w-full px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-[#009496]">
                 </div>
                 <div class="flex-1 min-w-[140px]">
-                    <label class="block mb-1 text-xs font-medium text-gray-600">Cargo / Função</label>
+                    <label class="block mb-1 text-xs font-medium text-gray-600">Informe o cargo ou a função do servidor</label>
                     <input type="text" x-model="formCargo" placeholder="Ex: Fiscal de Contrato"
                            class="block w-full px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-[#009496]">
                 </div>

@@ -17,19 +17,19 @@ class Fiscalizacao extends Model
      * pelo show e pelos PDFs — evita repetir a lista em cada camada.
      */
     public const CHECKLIST_ITENS = [
-        'designacao' => 'Recebi formalmente minha designação',
-        'acesso_contrato' => 'Tenho acesso ao contrato',
-        'acesso_tr_pb' => 'Tenho acesso ao Termo de Referência/Projeto Básico',
-        'conhece_objeto' => 'Conheço o objeto',
-        'conhece_valores' => 'Conheço os valores',
-        'conhece_quantitativos' => 'Conheço os quantitativos',
-        'conhece_prazo' => 'Conheço o prazo',
-        'conhece_local_execucao' => 'Conheço o local de execução',
-        'identificou_preposto' => 'Identifiquei o preposto da empresa',
-        'conhece_gestor' => 'Conheço o gestor do contrato',
-        'conhece_condicoes_pagamento' => 'Conheço as condições de pagamento',
-        'conhece_penalidades' => 'Conheço as penalidades',
-        'conhece_condicoes_recebimento' => 'Conheço as condições de recebimento',
+        'designacao' => 'Recebi oficialmente o documento que me designa como fiscal do contrato',
+        'acesso_contrato' => 'Tenho acesso ao contrato e aos documentos necessários para a fiscalização',
+        'acesso_tr_pb' => 'Tenho acesso ao Termo de Referência ou Projeto Básico do contrato',
+        'conhece_objeto' => 'Sei o que a empresa deve fornecer ou executar',
+        'conhece_valores' => 'Sei quais são os valores previstos no contrato',
+        'conhece_quantitativos' => 'Sei quais são as quantidades contratadas',
+        'conhece_prazo' => 'Sei qual é o prazo previsto no contrato',
+        'conhece_local_execucao' => 'Sei onde o serviço deve ser realizado ou onde o produto deve ser entregue',
+        'identificou_preposto' => 'Sei quem é o representante da empresa responsável pelo acompanhamento do contrato (preposto)',
+        'conhece_gestor' => 'Sei quem é o gestor responsável pelo contrato',
+        'conhece_condicoes_pagamento' => 'Sei como e quando os pagamentos devem ser realizados',
+        'conhece_penalidades' => 'Sei quais medidas podem ser aplicadas se a empresa não cumprir o contrato',
+        'conhece_condicoes_recebimento' => 'Sei como os produtos ou serviços devem ser conferidos e recebidos',
     ];
 
     protected $fillable = [

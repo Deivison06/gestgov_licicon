@@ -10,14 +10,14 @@
 
     // Labels dinâmicas por tipo (mantidas da lógica anterior)
     $labelExecucao = match($tipo) {
-        'compras' => 'Execução no Período',
-        'servicos' => 'Execução no Período',
+        'compras' => 'Como o objeto do contrato foi executado neste período?',
+        'servicos' => 'Como o objeto do contrato foi executado neste período?',
         'obras' => 'Execução do Objeto',
         default => 'Execução do Objeto',
     };
     $labelQualidade = match($tipo) {
-        'compras' => 'Qualidade dos Produtos entregues',
-        'servicos' => 'Qualidade dos Serviços realizados',
+        'compras' => 'Os produtos entregues ou os serviços executados estão de acordo com a qualidade exigida no contrato?',
+        'servicos' => 'Os produtos entregues ou os serviços executados estão de acordo com a qualidade exigida no contrato?',
         'obras' => 'Qualidade dos serviços Executados',
         default => 'Qualidade das Entregas',
     };
@@ -131,7 +131,7 @@
         <div class="lg:col-span-2">
             <div class="bg-white border border-gray-100 shadow-sm rounded-2xl overflow-hidden min-h-full">
                 <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
-                    <h3 class="text-lg font-semibold text-gray-800">Avaliação da Execução</h3>
+                    <h3 class="text-lg font-semibold text-gray-800">Avaliação do cumprimento do contrato</h3>
                 </div>
 
                 <div class="p-8 space-y-8">
@@ -163,8 +163,8 @@
                             ['icon' => 'fa-microscope', 'label' => 'Metodologia Aplicada', 'value' => $fiscalizacao->metodologia_fiscalizacao, 'show' => $tipo === 'obras'],
                             ['icon' => 'fa-box', 'label' => $labelExecucao, 'value' => $fiscalizacao->execucao_objeto, 'show' => true],
                             ['icon' => 'fa-star', 'label' => $labelQualidade, 'value' => $fiscalizacao->qualidade_entregas, 'show' => true],
-                            ['icon' => 'fa-clock', 'label' => 'Pontualidade e Prazos', 'value' => $fiscalizacao->pontualidade_prazos, 'show' => true],
-                            ['icon' => 'fa-file-invoice-dollar', 'label' => 'Regularidade Fiscal/Trabalhista', 'value' => $fiscalizacao->regularidade_fiscal_trabalhista, 'show' => ! $ocorrenciaEstruturada],
+                            ['icon' => 'fa-clock', 'label' => 'A empresa cumpriu os prazos de entrega ou de execução previstos no contrato?', 'value' => $fiscalizacao->pontualidade_prazos, 'show' => true],
+                            ['icon' => 'fa-file-invoice-dollar', 'label' => 'A empresa está com a regularidade fiscal e trabalhista em dia?', 'value' => $fiscalizacao->regularidade_fiscal_trabalhista, 'show' => ! $ocorrenciaEstruturada],
                             ['icon' => 'fa-comments', 'label' => 'Comunicação e Atendimento', 'value' => $fiscalizacao->comunicacao_atendimento, 'show' => $tipo === 'obras'],
                             ['icon' => 'fa-exclamation-triangle', 'label' => 'Irregularidades Observadas', 'value' => $fiscalizacao->irregularidade_observada, 'show' => ! $ocorrenciaEstruturada],
                             ['icon' => 'fa-lightbulb', 'label' => 'Recomendações ao Gestor', 'value' => $fiscalizacao->recomendacoes_gestor, 'show' => true],
@@ -178,7 +178,7 @@
                             <div class="absolute left-0 top-1 text-[#0596A2]">
                                 <i class="fas fa-exclamation-triangle text-lg"></i>
                             </div>
-                            <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Ocorrências</h4>
+                            <h4 class="text-xs font-bold text-gray-400">Houve alguma ocorrência ou problema durante a execução do contrato neste período?</h4>
                             <div class="mt-2 space-y-3">
                                 @if($fiscalizacao->houve_ocorrencia)
                                     <span class="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold text-yellow-800 bg-yellow-100 rounded-full">
@@ -195,7 +195,7 @@
                                     @endif
                                 @else
                                     <span class="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold text-green-800 bg-green-100 rounded-full">
-                                        <i class="fas fa-check-circle"></i> Não houve ocorrências
+                                        <i class="fas fa-check-circle"></i> Não houve problemas ou ocorrências durante este período
                                     </span>
                                 @endif
                             </div>
@@ -206,7 +206,7 @@
                             <div class="absolute left-0 top-1 text-[#0596A2]">
                                 <i class="fas fa-file-invoice-dollar text-lg"></i>
                             </div>
-                            <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Regularidade Fiscal/Trabalhista</h4>
+                            <h4 class="text-xs font-bold text-gray-400">A empresa está com a regularidade fiscal e trabalhista em dia?</h4>
                             <div class="mt-2">
                                 @if($fiscalizacao->regularidade_fiscal_trabalhista === 'Sim')
                                     <span class="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold text-green-800 bg-green-100 rounded-full">
@@ -244,7 +244,7 @@
                                 {{ $fiscalizacao->conclusao_fiscal?->value }}
                             </div>
                             <div>
-                                <h4 class="text-sm font-bold uppercase">Conclusão Final do Fiscal</h4>
+                                <h4 class="text-sm font-bold">Qual é a sua conclusão sobre o cumprimento do contrato neste período?</h4>
                                 <p class="mt-1 text-sm leading-relaxed font-medium">{{ $fiscalizacao->conclusao_texto }}</p>
                             </div>
                         </div>
@@ -273,7 +273,7 @@
          })">
         <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
             <h3 class="text-lg font-semibold text-gray-800">
-                <i class="fas fa-file-signature text-[#0596A2] mr-2"></i>Assinantes do Relatório
+                <i class="fas fa-file-signature text-[#0596A2] mr-2"></i>Quem deve assinar o relatório?
             </h3>
             <span class="text-xs font-medium text-gray-500" x-show="assinantes.length > 0">
                 <span x-text="assinantes.length"></span> assinante(s)
@@ -282,13 +282,13 @@
 
         <div class="p-6 space-y-5">
             <p class="text-sm text-gray-500">
-                Selecione os servidores responsáveis que assinarão fisicamente o relatório. Os assinantes aparecem no rodapé do relatório impresso, sem assinatura eletrônica.
+                Informe abaixo os servidores que deverão assinar o relatório impresso. Os nomes aparecerão no rodapé do relatório e a assinatura será feita fisicamente.
             </p>
 
             {{-- Formulário de adição --}}
             <div class="flex flex-col gap-3 p-4 bg-gray-50 border border-gray-200 rounded-lg sm:flex-row sm:items-end">
                 <div class="flex-1 min-w-[200px]">
-                    <label class="block mb-1 text-xs font-medium text-gray-600">Secretaria ou Fiscal</label>
+                    <label class="block mb-1 text-xs font-medium text-gray-600">Selecione a secretaria ou o fiscal responsável</label>
                     <select x-model="selecionado" @change="aoSelecionar()"
                             class="block w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#009496] focus:border-[#009496]">
                         <option value="">Selecione (ou preencha manualmente)</option>
@@ -305,12 +305,12 @@
                     </select>
                 </div>
                 <div class="flex-1 min-w-[160px]">
-                    <label class="block mb-1 text-xs font-medium text-gray-600">Nome do Servidor <span class="text-red-500">*</span></label>
+                    <label class="block mb-1 text-xs font-medium text-gray-600">Informe o nome completo do servidor <span class="text-red-500">*</span></label>
                     <input type="text" x-model="formNome" placeholder="Nome completo"
                            class="block w-full px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-[#009496]">
                 </div>
                 <div class="flex-1 min-w-[140px]">
-                    <label class="block mb-1 text-xs font-medium text-gray-600">Cargo / Função</label>
+                    <label class="block mb-1 text-xs font-medium text-gray-600">Informe o cargo ou a função do servidor</label>
                     <input type="text" x-model="formCargo" placeholder="Ex: Fiscal de Contrato"
                            class="block w-full px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-[#009496]">
                 </div>

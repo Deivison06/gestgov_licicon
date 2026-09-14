@@ -455,12 +455,12 @@
         {{-- ============================================================ --}}
         <div class="py-6 border-b border-gray-100" id="secao_avaliacao" style="display: none;">
             <h3 class="flex items-center gap-2 text-lg font-medium text-gray-700">
-                <i class="fas fa-tasks text-[#009496]"></i> Avaliação da Execução
+                <i class="fas fa-tasks text-[#009496]"></i> Avaliação do cumprimento do contrato
             </h3>
 
             {{-- Checklist de Verificação (Compras e Serviços) --}}
             <div class="p-4 mt-4 border border-gray-200 rounded-lg campo-variavel campo-oculto bg-gray-50" id="secao_checklist">
-                <p class="mb-3 text-sm font-medium text-gray-700">Checklist de Verificação</p>
+                <p class="mb-3 text-sm font-medium text-gray-700">Antes de preencher, confira se você conhece estas informações do contrato</p>
                 <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
                     @foreach(\App\Models\Fiscalizacao::CHECKLIST_ITENS as $chave => $rotulo)
                         <label class="flex items-start gap-2 text-sm text-gray-700">
@@ -499,7 +499,7 @@
                         <input type="radio" name="houve_ocorrencia" value="0" id="houve_ocorrencia_nao"
                                class="text-[#009496] focus:ring-[#009496]" disabled
                                {{ old('houve_ocorrencia') === '0' ? 'checked' : '' }}>
-                        Não houve ocorrências
+                        Não houve problemas ou ocorrências durante este período
                     </label>
                     <label class="inline-flex items-center gap-2 text-sm text-gray-700">
                         <input type="radio" name="houve_ocorrencia" value="1" id="houve_ocorrencia_sim"
@@ -534,7 +534,7 @@
 
             {{-- Pontualidade / Prazos --}}
             <div class="mt-4">
-                <label class="block mb-2 text-sm font-medium text-gray-700">Pontualidade / Cumprimento dos Prazos</label>
+                <label class="block mb-2 text-sm font-medium text-gray-700">A empresa cumpriu os prazos de entrega ou de execução previstos no contrato?</label>
                 <textarea name="pontualidade_prazos" rows="4"
                           class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496] transition-colors"
                           placeholder="Avalie a pontualidade e cumprimento dos prazos...">{{ old('pontualidade_prazos') }}</textarea>
@@ -542,7 +542,7 @@
 
             {{-- Regularidade Fiscal --}}
             <div class="mt-4">
-                <label class="block mb-2 text-sm font-medium text-gray-700">A Empresa tem apresentado comprovação de Regularidade Fiscal e Trabalhista?</label>
+                <label class="block mb-2 text-sm font-medium text-gray-700">A empresa está com a regularidade fiscal e trabalhista em dia?</label>
 
                 {{-- Toggle Sim/Não (Compras e Serviços) --}}
                 <div class="flex max-w-xs gap-3 campo-variavel campo-oculto" id="campo_regularidade_simnao">
@@ -604,7 +604,7 @@
         {{-- ============================================================ --}}
         <div class="py-6 border-b border-gray-100" id="secao_conclusao" style="display: none;">
             <h3 class="flex items-center gap-2 text-lg font-medium text-gray-700">
-                <i class="fas fa-gavel text-[#009496]"></i> Conclusão do Fiscal
+                <i class="fas fa-gavel text-[#009496]"></i> Qual é a sua conclusão sobre o cumprimento do contrato neste período?
             </h3>
             <p class="mt-1 text-sm text-gray-500">Selecione a conclusão que melhor descreve a situação do contrato</p>
 
@@ -711,20 +711,20 @@ document.addEventListener('DOMContentLoaded', function () {
     // ==========================================================
     const labelsMap = {
         compras: {
-            execucao_objeto: 'Execução no Período',
-            qualidade_entregas: 'Qualidade dos Produtos entregues',
+            execucao_objeto: 'Como o objeto do contrato foi executado neste período?',
+            qualidade_entregas: 'Os produtos entregues ou os serviços executados estão de acordo com a qualidade exigida no contrato?',
             observacoes_servidor: 'Observações indicadas por servidor próximo a execução',
-            label_ocorrencias: 'Ocorrências',
+            label_ocorrencias: 'Houve alguma ocorrência ou problema durante a execução do contrato neste período?',
             mostrar_metodologia: false,
             mostrar_comunicacao: false,
             mostrar_checklist: true,
             ocorrencia_estruturada: true
         },
         servicos: {
-            execucao_objeto: 'Execução no Período',
-            qualidade_entregas: 'Qualidade dos Serviços realizados',
+            execucao_objeto: 'Como o objeto do contrato foi executado neste período?',
+            qualidade_entregas: 'Os produtos entregues ou os serviços executados estão de acordo com a qualidade exigida no contrato?',
             observacoes_servidor: 'Observações indicadas por servidor próximo a execução',
-            label_ocorrencias: 'Ocorrências',
+            label_ocorrencias: 'Houve alguma ocorrência ou problema durante a execução do contrato neste período?',
             mostrar_metodologia: false,
             mostrar_comunicacao: false,
             mostrar_checklist: true,
