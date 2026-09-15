@@ -324,10 +324,10 @@
         }
 
         .page-content {
-            padding: 2rem 0;
+            padding: 2.5rem;
             flex: 1;
-            width: 100%;
             /* max-width: 1400px; */
+            width: 100%;
             margin: 0 auto;
         }
 
