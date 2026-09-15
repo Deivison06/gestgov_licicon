@@ -327,7 +327,7 @@
             padding: 2rem 0;
             flex: 1;
             width: 100%;
-            max-width: 1400px;
+            /* max-width: 1400px; */
             margin: 0 auto;
         }
 
