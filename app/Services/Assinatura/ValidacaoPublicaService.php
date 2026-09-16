@@ -31,6 +31,7 @@ class ValidacaoPublicaService
      *   gerado_em?: string,
      *   hash?: string,
      *   download_url?: ?string,
+     *   versao_superada?: bool,
      * }
      */
     public function consultar(string $codigo, ?string $ip = null, ?string $userAgent = null): array
@@ -124,6 +125,7 @@ class ValidacaoPublicaService
                 'gerado_em'            => $versao->gerado_em?->format('d/m/Y H:i'),
                 'hash'                 => $versao->hash_sha256,
                 'download_disponivel'  => $versao->caminho_pdf && file_exists($versao->caminho_pdf),
+                'versao_superada'      => $this->existeVersaoMaisRecente($versao),
             ];
         }
 
@@ -139,6 +141,22 @@ class ValidacaoPublicaService
             'download_disponivel'     => $versao->caminho_pdf_assinado
                 && file_exists($versao->caminho_pdf_assinado),
         ];
+    }
+
+    /**
+     * Só faz sentido para uma versão AINDA NÃO assinada: um rascunho gerado de novo
+     * (ex.: documento editado e re-gerado) deixa o rascunho anterior desatualizado,
+     * mesmo que o código antigo continue publicamente consultável. Uma versão já
+     * assinada nunca é considerada "superada" por esta checagem — ela é, por si só,
+     * um registro válido, independentemente de existir uma versão mais nova depois.
+     */
+    private function existeVersaoMaisRecente(DocumentoVersao $versao): bool
+    {
+        return DocumentoVersao::query()
+            ->where('documentavel_type', $versao->documentavel_type)
+            ->where('documentavel_id', $versao->documentavel_id)
+            ->where('versao', '>', $versao->versao)
+            ->exists();
     }
 
     private function registrarConsulta(string $codigo, array $resultado, ?string $ip, ?string $userAgent): void

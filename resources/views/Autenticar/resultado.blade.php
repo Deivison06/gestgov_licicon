@@ -12,7 +12,10 @@
         {{-- ========================================== --}}
         {{-- SUCESSO — documento autêntico                --}}
         {{-- ========================================== --}}
-        @php $naoAssinado = $resultado['status'] === 'autentico_nao_assinado'; @endphp
+        @php
+            $naoAssinado = $resultado['status'] === 'autentico_nao_assinado';
+            $superada = $naoAssinado && !empty($resultado['versao_superada']);
+        @endphp
         <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
             {{-- Header --}}
             <div class="bg-gradient-to-r {{ $naoAssinado ? 'from-amber-500 to-amber-600' : 'from-emerald-500 to-emerald-600' }} px-8 py-6 text-white">
@@ -30,6 +33,17 @@
                     </div>
                 </div>
             </div>
+
+            @if ($superada)
+                <div class="px-8 py-4 bg-red-50 border-b border-red-200 text-sm text-red-900 flex items-start gap-3">
+                    <i class="fas fa-triangle-exclamation mt-0.5"></i>
+                    <div>
+                        <strong>Esta é uma versão desatualizada.</strong>
+                        Já existe uma versão mais recente deste documento no sistema — este
+                        código corresponde a um rascunho anterior, substituído antes de ser assinado.
+                    </div>
+                </div>
+            @endif
 
             {{-- Metadados --}}
             <div class="px-8 py-6 border-b border-slate-200">
