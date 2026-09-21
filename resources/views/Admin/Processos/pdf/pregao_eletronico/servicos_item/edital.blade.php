@@ -276,7 +276,7 @@
                     entre fornecedores, o que pode resultar em custos mais baixos e condições mais
                     vantajosas para a Administração Pública. Ao permitir que empresas ofereçam suas
                     propostas por ITEM, a Prefeitura pode beneficiar-se da especialização dos
-                    fornecedores, garantindo aquisição de XXXXXXXXX de melhor qualidade. Essa dinâmica
+                    fornecedores, garantindo aquisição de melhor qualidade. Essa dinâmica
                     também contribui para minimizar riscos, uma vez que cada item pode ser ajustado
                     conforme a resposta do mercado e as demandas emergentes facilitando adaptações ao
                     longo do fornecimento.
