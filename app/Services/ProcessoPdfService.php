@@ -43,7 +43,7 @@ class ProcessoPdfService extends AbstractService
 
         // Processa anexos como se fosse "edital" quando for "edital_republicado"
         $documentoParaAnexos = $this->normalizarDocumentoParaAnexos($documentoSolicitado);
-        $this->processarAnexos($processo, $documentoParaAnexos, $caminhoCompleto);
+        $this->processarAnexos($processo, $documentoParaAnexos, $caminhoCompleto, $validatedData['dataSelecionada']);
 
         // Capa específica para "Edital Republicado"
         if ($documentoSolicitado === 'edital_republicado') {
@@ -599,7 +599,7 @@ class ProcessoPdfService extends AbstractService
         }
     }
 
-    private function processarAnexos(Processo $processo, string $documento, string $caminhoPrincipal): void
+    private function processarAnexos(Processo $processo, string $documento, string $caminhoPrincipal, string $dataSelecionada): void
     {
         Log::info("Iniciando processamento de anexos para: {$documento}", [
             'caminho_principal' => $caminhoPrincipal,
@@ -644,7 +644,7 @@ class ProcessoPdfService extends AbstractService
         // entre páginas separadoras ("INÍCIO DO EDITAL" / "FIM DO EDITAL").
         // Substitui o antigo upload manual anexar_minuta.
         if ($documento === 'minutas') {
-            $this->gerarEJuntarEditalNaMinuta($processo, $caminhoPrincipal);
+            $this->gerarEJuntarEditalNaMinuta($processo, $caminhoPrincipal, $dataSelecionada);
         }
 
         Log::info("Processamento de anexos concluído para: {$documento}");
@@ -1125,7 +1125,7 @@ class ProcessoPdfService extends AbstractService
      *
      * Substitui o antigo upload manual de `anexar_minuta`.
      */
-    private function gerarEJuntarEditalNaMinuta(Processo $processo, string $caminhoPrincipal): void
+    private function gerarEJuntarEditalNaMinuta(Processo $processo, string $caminhoPrincipal, string $dataSelecionada): void
     {
         $arquivosTemp = [];
 
@@ -1155,7 +1155,7 @@ class ProcessoPdfService extends AbstractService
             }
 
             $dados = $this->prepararDadosPdf($processo, [
-                'dataSelecionada' => now()->format('Y-m-d'),
+                'dataSelecionada' => $dataSelecionada,
                 'assinantes' => [],
                 'parecerSelecionado' => null,
             ]);
