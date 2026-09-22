@@ -909,8 +909,12 @@
                 <img src="{{ public_path('icons/check.png') }}" width="20" style="margin-right: 10px;"> 6. DA FASE DE HABILITAÇÃO
             </p>
             <p style="text-align: justify;">
-                6.1. Iniciando a fase de habilitação o Pregoeiro irá convocar o licitante classificado em primeiro lugar para apresentação em
-                um prazo de 02 (duas) horas os seguintes documentos:
+                @if (isset($detalhe) && $detalhe->inversao_fase === 'sim')
+                    6.1. Por se tratar de um certame com Inversão de Fases, todos os licitantes devem anexar os seguintes documentos no momento do cadastro de suas propostas:
+                @else
+                    6.1. Iniciando a fase de habilitação o Pregoeiro irá convocar o licitante classificado em primeiro lugar para apresentação em
+                    um prazo de 02 (duas) horas os seguintes documentos:
+                @endif
             </p>
             <p style="text-align: justify;">
                 6.2. Habilitação Jurídica:
