@@ -60,12 +60,13 @@
         }
 
         .cover-title {
-            font-size: 18pt;
+            width: 60%;
+            font-size: 16pt;
             font-weight: 900;
             border: 2px solid #000;
             display: inline-block;
             line-height: 0.9;
-            padding: 10px 50px;
+            padding: 8px 40px;
             font-family: Arial, Helvetica, sans-serif;
         }
 
@@ -76,7 +77,7 @@
         .title {
             text-align: center;
             font-weight: bold;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
 
         .form-table {
@@ -95,9 +96,9 @@
         }
 
         .section-header {
-            background-color: #e7e7e7;
+            background-color: #c8d3da;
             text-align: center;
-            padding: 15px;
+            padding: 8px;
             border: 1px solid #000;
         }
 
@@ -141,6 +142,7 @@
             vertical-align: middle;
             text-align: center;
             line-height: 10px;
+            font-size: 10px;
             font-weight: bold;
         }
 
@@ -171,51 +173,15 @@
             page-break-inside: avoid;
         }
 
-        /* ---------------------------------- */
-        /* ESTILOS - AUTORIZAÇÃO (PÁGINA 2) */
-        /* ---------------------------------- */
-
-        .center {
-            text-align: center;
-        }
-
-        .bold {
-            font-weight: bold;
-        }
-
-        .section {
-            margin-bottom: 20px;
-        }
-
-        .auth-table {
-            /* Renomeado para evitar conflito com .form-table */
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 10px;
-        }
-
-        .auth-table td {
-            border: 1px solid #000;
-            /* padding: 5px; */
-            vertical-align: top;
-        }
-
-        .no-border {
-            border: none;
-        }
-
-        .table-title {
-            background-color: #ebebeb;
-        }
-
         .footer-signature {
-            margin-top: 60px;
+            margin-top: 24px;
             text-align: right;
         }
 
         .signature-block {
-            margin-top: 60px;
+            margin-top: 24px;
             text-align: center;
+            page-break-inside: avoid;
         }
 
     </style>
@@ -327,7 +293,7 @@
                 @if ($itens && count($itens) > 0)
                     @foreach ($itensAgrupados as $loteNome => $itensDoLote)
                         @if($loteNome !== 'Sem Lote')
-                            <tr style="background-color: #e9e9e9;">
+                            <tr style="background-color: #f0f0f0;">
                                 <td colspan="4" style="text-align: left; font-weight: bold; padding-left: 10px;">{{ $loteNome }}</td>
                             </tr>
                         @endif
@@ -348,21 +314,21 @@
             </tbody>
         </table>
 
-        <table style="width: 100%; border-collapse: collapse; border: 1px solid #000 !important; margin-bottom: 15px; page-break-inside: avoid; font-family: Arial, Helvetica, sans-serif; font-size: 10pt;">
+        <table style="width: 100%; border-collapse: collapse; border: 1px solid #000 !important; margin-top: 10px; margin-bottom: 15px; page-break-inside: avoid; font-family: Arial, Helvetica, sans-serif; font-size: 10pt;">
             <tr>
-                <td colspan="2" style="font-weight: bold; text-align: center; background-color: #f2f2f2;">
+                <td colspan="2" style="font-weight: bold; text-align: center; background-color: #c8d3da;">
                     4 – OBSERVAÇÕES GERAIS
                 </td>
             </tr>
 
             <tr>
-                <td style="width: 100%;  padding: 5px 8px; vertical-align: top;">
+                <td colspan="2" style="width: 100%; border: 1px solid #000; padding: 5px 8px; vertical-align: top;">
                     Prazo de entrega/execução: {{ $detalhe->prazo_entrega ?? '' }}
                 </td>
             </tr>
 
             <tr>
-                <td style="width: 100%; border: 1px solid #000; padding: 5px 8px; vertical-align: top;">
+                <td colspan="2" style="width: 100%; border: 1px solid #000; padding: 5px 8px; vertical-align: top;">
                     Local(is) e horário(s) de entrega: {{ $detalhe->local_entrega ?? '' }}
                 </td>
             </tr>
@@ -377,7 +343,7 @@
                     <div style="display: flex; gap: 20px; padding: 5px 0;">
                         @foreach ($opcoes as $valor => $texto)
                         <div style="display: flex; align-items: center; gap: 5px; font-size: 10pt;">
-                            <span style="width: 14px; height: 14px; border: 1px solid #000; text-align: center; line-height: 12px; font-weight: bold; display: inline-block; margin: 2px;">
+                            <span class="checkbox-box" style="margin: 2px;">
                                 {{ $contratacoes === $valor ? 'X' : '' }}
                             </span>
                             {{ $texto }}
@@ -402,19 +368,19 @@
                     <div style="font-weight: bold; margin-bottom: 5px;">Instrumento Vinculativo</div>
 
                     <div style="display: block; margin-bottom: 3px;">
-                        <span style="width: 14px; height: 14px; border: 1px solid #000; display: inline-block; text-align: center; line-height: 12px; font-weight: bold;">
+                        <span class="checkbox-box">
                             {{ in_array('contrato', $vinculativo) ? 'X' : '' }}
                         </span>
                         Contrato
                     </div>
                     <div style="display: block; margin-bottom: 3px;">
-                        <span style="width: 14px; height: 14px; border: 1px solid #000; display: inline-block; text-align: center; line-height: 12px; font-weight: bold;">
+                        <span class="checkbox-box">
                             {{ in_array('ata_registro_precos', $vinculativo) ? 'X' : '' }}
                         </span>
                         Ata de Registro de Preços
                     </div>
                     <div style="display: block; margin-bottom: 3px;">
-                        <span style="width: 14px; height: 14px; border: 1px solid #000; display: inline-block; text-align: center; line-height: 12px; font-weight: bold;">
+                        <span class="checkbox-box">
                             {{ in_array('outro', $vinculativo) ? 'X' : '' }}
                         </span>
                         Outro: <span style="font-weight: normal; text-decoration: underline;">{{ $outro_vinculativo }}</span>
@@ -434,19 +400,19 @@
                     <div style="font-weight: bold; margin-bottom: 5px;">Prazo de Vigência do Objeto</div>
 
                     <div style="display: block; margin-bottom: 3px;">
-                        <span style="width: 14px; height: 14px; border: 1px solid #000; display: inline-block; text-align: center; line-height: 12px; font-weight: bold;">
+                        <span class="checkbox-box">
                             {{ in_array('exercicio_financeiro', $vigencia) ? 'X' : '' }}
                         </span>
                         Exercício financeiro da contratação (até 31/12)
                     </div>
                     <div style="display: block; margin-bottom: 3px;">
-                        <span style="width: 14px; height: 14px; border: 1px solid #000; display: inline-block; text-align: center; line-height: 12px; font-weight: bold;">
+                        <span class="checkbox-box">
                             {{ in_array('12_meses', $vigencia) ? 'X' : '' }}
                         </span>
                         Vigência de 12 meses
                     </div>
                     <div style="display: block; margin-bottom: 10px;">
-                        <span style="width: 14px; height: 14px; border: 1px solid #000; display: inline-block; text-align: center; line-height: 12px; font-weight: bold;">
+                        <span class="checkbox-box">
                             {{ in_array('outro', $vigencia) ? 'X' : '' }}
                         </span>
                         Outro: <span style="font-weight: normal; text-decoration: underline;">{{ $outro_vigencia }}</span>
@@ -457,13 +423,13 @@
                             Contratação
                             de objeto continuado:</div>
                         <div style="display: block; margin-bottom: 3px;">
-                            <span style="width: 14px; height: 14px; border: 1px solid #000; display: inline-block; text-align: center; line-height: 12px; font-weight: bold;">
+                            <span class="checkbox-box">
                                 {{ $objeto_continuado == 'sim' ? 'X' : '' }}
                             </span>
                             Sim
                         </div>
                         <div style="display: block; margin-bottom: 3px;">
-                            <span style="width: 14px; height: 14px; border: 1px solid #000; display: inline-block; text-align: center; line-height: 12px; font-weight: bold;">
+                            <span class="checkbox-box">
                                 {{ $objeto_continuado == 'nao' ? 'X' : '' }}
                             </span>
                             Não
@@ -499,7 +465,7 @@
             <tr>
                 <td style="border: 1px solid black; padding: 8px;">
                     <div style="display: block; margin-bottom: 4px;">
-                        <span style="display:inline-block; width:12px; height:12px; border:1px solid #000; margin-right:5px; vertical-align:middle; text-align:center; line-height:10px; font-size:10px; font-weight:bold;">
+                        <span class="checkbox-box">
                             @if ($processo->modalidade === \App\Enums\ModalidadeEnum::DISPENSA)
                             X
                             @endif
@@ -534,8 +500,8 @@
         $primeiroAssinante = $assinantes[0]; // Pega o primeiro item
         @endphp
 
-        <div style="margin-top: 40px; text-align: center;">
-            <div class="signature-block" style="display: inline-block; margin: 0 40px;">
+        <div style="text-align: center;">
+            <div class="signature-block" style="display: inline-block; margin-left: 40px; margin-right: 40px;">
                 ___________________________________<br>
                 <p style="line-height: 1.2;">
                     {{ $primeiroAssinante['responsavel'] }} <br>
@@ -545,7 +511,7 @@
         </div>
         @else
         {{-- Bloco Padrão (Fallback) --}}
-        <div class="signature-block" style="margin-top: 40px; text-align: center;">
+        <div class="signature-block">
             ___________________________________<br>
             <p style="line-height: 1.2;">
                 {{ $processo->prefeitura->autoridade_competente }} <br>

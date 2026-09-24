@@ -5,18 +5,6 @@
     <meta charset="UTF-8">
     <title>TERMO DE REFERÊNCIA - Processo {{ $processo->numero_processo ?? $processo->id }}</title>
     <style type="text/css">
-        @font-face {
-            font-family: 'Aptos';
-            src: url('{{ public_path('storage/fonts/Aptos.ttf') }}') format('truetype');
-            font-style: normal;
-        }
-
-        @font-face {
-            font-family: 'AptosExtraBold';
-            src: url('{{ public_path('storage/fonts/Aptos-ExtraBold.ttf') }}') format('truetype');
-            font-style: normal;
-        }
-
         @page {
             margin: 0;
             size: A4;
@@ -25,8 +13,8 @@
         body {
             margin: 0;
             padding: 4cm 2cm;
-            font-size: 11pt;
-            font-family: 'Aptos', sans-serif;
+            font-size: 10pt;
+            font-family: Arial, Helvetica, sans-serif;
             /* Adiciona o timbre como background */
             background-image: url('{{ public_path($prefeitura->timbre) }}');
             background-repeat: no-repeat;
@@ -35,7 +23,7 @@
 
             text-align: justify;
             text-justify: inter-word;
-            line-height: 1;
+            line-height: normal;
         }
 
         /* CLASSE PARA FORÇAR QUEBRA DE PÁGINA (ESSENCIAL PARA PDF) */
@@ -69,43 +57,24 @@
 
         .cover-title {
             width: 60%;
-            font-size: 18pt;
+            font-size: 16pt;
             font-weight: 900;
             border: 2px solid #000;
             display: inline-block;
             line-height: 0.9;
-            padding: 10px 50px;
-            font-family: 'AptosExtraBold', sans-serif;
+            padding: 8px 40px;
+            font-family: Arial, Helvetica, sans-serif;
         }
 
         .footer-signature {
-            margin-top: 60px;
+            margin-top: 24px;
             text-align: right;
         }
 
         .signature-block {
-            margin-top: 60px;
+            margin-top: 24px;
             text-align: center;
-        }
-
-        /* Estilos opcionais para simular as linhas da imagem */
-        .line {
-            border-top: 2px solid black;
-            margin: 10px 0;
-            /* Espaçamento entre as linhas */
-        }
-
-        .content {
-            /* Centraliza o texto como na imagem */
-            margin: 40px 0;
-            /* Espaçamento acima e abaixo do conteúdo principal */
-        }
-
-        strong {
-            line-height: 1.5;
-            /* Melhora a leitura do texto em várias linhas */
-            display: block;
-            /* Garante que o strong ocupe a largura total */
+            page-break-inside: avoid;
         }
 
         /* ---------------------------------- */
@@ -127,14 +96,13 @@
         }
 
         .title {
-            margin-left: -85px;
             font-weight: bold;
-            font-size: 20pt;
-            background: #bebebe;
-            border: 1px solid #7a7a7a;
-            padding: 5px 50px;
+            font-size: 15pt;
+            background: #c8d3da;
+            border: 1px solid #607d8b;
+            padding: 5px 40px;
             display: inline-block;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             text-align: center;
         }
 
@@ -207,7 +175,7 @@
     {{-- ====================================================================== --}}
     <div class="container">
         <div class="conteudo-all">
-            <div style="margin: 30px 0 0;">
+            <div style="margin: 30px 0 0; text-align: center;">
                 <div class="title">ANEXO I <br> TERMO DE REFERÊNCIA</div>
             </div>
             <div class="conteudo">
@@ -280,7 +248,7 @@
             1.3 Para a cotação de preços a ser realizada neste certame, esta administração coloca à disposição dos licitantes, as informações e preços unitários a seguir:
         </p>
 
-        <table border="1" cellspacing="0" cellpadding="4" style="border-collapse: collapse; width: 100%; text-align: center; font-size: 8pt;">
+        <table border="1" cellspacing="0" cellpadding="4" style="border-collapse: collapse; width: 100%; text-align: center; font-size: 10pt;">
             <thead>
                 <tr>
                     <th style="width: 6%;">ITEM</th>
@@ -307,7 +275,7 @@
                     @foreach ($itensAgrupados as $loteNome => $itensDoLote)
                         @php $sumLote = 0; @endphp
                         @if($loteNome !== 'Sem Lote')
-                            <tr style="background-color: #e9e9e9;">
+                            <tr style="background-color: #c8d3da;">
                                 <td colspan="6" style="text-align: left; font-weight: bold; padding-left: 10px;">{{ $loteNome }}</td>
                             </tr>
                         @endif
@@ -701,8 +669,8 @@
     $primeiroAssinante = $assinantes[0]; // Pega o segundo item
     @endphp
 
-    <div style="margin-top: 40px; text-align: center;">
-        <div class="signature-block" style="display: inline-block; margin: 0 40px;">
+    <div style="text-align: center;">
+        <div class="signature-block" style="display: inline-block; margin-left: 40px; margin-right: 40px;">
             ___________________________________<br>
             <p style="line-height: 1.2;">
                 {{ $primeiroAssinante['responsavel'] }} <br>
@@ -712,22 +680,13 @@
     </div>
     @else
     {{-- Bloco Padrão (Fallback) --}}
-    <div class="signature-block" style="margin-top: 40px; text-align: center;">
+    <div class="signature-block">
         ___________________________________<br>
         <p style="line-height: 1.2;">
             {{ $processo->prefeitura->autoridade_competente }} <br>
             <span style="color: red;">[Pregoeira/Agente de Contratação]</span>
         </p>
     </div>
-    @endif
-    @php
-        $hasSelectedAssinantes = isset($assinantes) && count($assinantes) > 0;
-    @endphp
-
-    @if ($hasSelectedAssinantes)
-        @php
-            $primeiroAssinante = $assinantes[0];
-        @endphp
     @endif
 
 </body>

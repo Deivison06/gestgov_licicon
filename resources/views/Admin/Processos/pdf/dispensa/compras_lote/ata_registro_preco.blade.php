@@ -5,18 +5,6 @@
     <meta charset="UTF-8">
     <title>EDITAL - Processo {{ $processo->numero_processo ?? $processo->id }}</title>
     <style type="text/css">
-        @font-face {
-            font-family: 'Aptos';
-            src: url('{{ public_path('storage/fonts/Aptos.ttf') }}') format('truetype');
-            font-style: normal;
-        }
-
-        @font-face {
-            font-family: 'AptosExtraBold';
-            src: url('{{ public_path('storage/fonts/Aptos-ExtraBold.ttf') }}') format('truetype');
-            font-style: normal;
-        }
-
         @page {
             margin: 0;
             size: A4;
@@ -25,8 +13,8 @@
         body {
             margin: 0;
             padding: 4cm 2cm;
-            font-size: 11pt;
-            font-family: 'Aptos', sans-serif;
+            font-size: 10pt;
+            font-family: Arial, Helvetica, sans-serif;
             /* Adiciona o timbre como background */
             background-image: url('{{ public_path($prefeitura->timbre) }}');
             background-repeat: no-repeat;
@@ -35,134 +23,13 @@
 
             text-align: justify;
             text-justify: inter-word;
-            line-height: 1;
+            line-height: normal;
         }
 
         /* CLASSE PARA FORÇAR QUEBRA DE PÁGINA (ESSENCIAL PARA PDF) */
         .page-break {
             page-break-after: always;
         }
-
-        /* ---------------------------------- */
-        /* ESTILOS - CAPA DO DOCUMENTO (PÁGINA 0) */
-        /* ---------------------------------- */
-        #cover-page {
-            /* Define a área de referência como a página inteira */
-            height: 100vh;
-            width: 100%;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-        }
-
-        .cover-image {
-            /* Tamanho da imagem */
-            width: 300px;
-            height: 300px;
-            margin-bottom: 30px;
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .cover-title {
-            width: 60%;
-            font-size: 18pt;
-            font-weight: 900;
-            border: 2px solid #000;
-            display: inline-block;
-            line-height: 0.9;
-            padding: 10px 50px;
-            font-family: 'AptosExtraBold', sans-serif;
-        }
-
-        .footer-signature {
-            margin-top: 60px;
-            text-align: right;
-        }
-
-        .signature-block {
-            margin-top: 60px;
-            text-align: center;
-        }
-
-        /* Estilos opcionais para simular as linhas da imagem */
-        .line {
-            border-top: 2px solid black;
-            margin: 10px 0;
-            /* Espaçamento entre as linhas */
-        }
-
-        .content {
-            /* Centraliza o texto como na imagem */
-            margin: 40px 0;
-            /* Espaçamento acima e abaixo do conteúdo principal */
-        }
-
-        strong {
-            line-height: 1.5;
-            /* Melhora a leitura do texto em várias linhas */
-            display: block;
-            /* Garante que o strong ocupe a largura total */
-        }
-
-        /* ---------------------------------- */
-        /* ESTILOS - CONTEÚDO PRINCIPAL */
-        /* ---------------------------------- */
-        .container {
-            position: relative;
-            width: 100%;
-            height: 100%;
-        }
-
-        .conteudo-all {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 100%;
-            transform: translate(-50%, -50%);
-            text-align: left;
-        }
-
-        .title {
-            margin-left: -85px;
-            font-weight: bold;
-            font-size: 20pt;
-            background: #bebebe;
-            border: 1px solid #7a7a7a;
-            padding: 5px 50px;
-            display: inline-block;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .section {
-            margin-bottom: 15px;
-        }
-
-        .justify {
-            margin-top: 20px;
-            text-indent: 30px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        td.icon {
-            width: 80px;
-            text-align: center;
-            vertical-align: middle;
-        }
-
-        td.content {
-            vertical-align: middle;
-            padding-left: 10px;
-        }
-
     </style>
 </head>
 
@@ -206,8 +73,8 @@
             máximas de cada item, fornecedor(es) e as demais condições ofertadas na(s)
             proposta(s) são as que seguem:
         </p>
-        <table border="1" cellspacing="0" cellpadding="6" style="border-collapse: collapse; width: 100%; font-size: 9pt; border-color: #444;">
-            <tr style="background-color: #f2f2f2;">
+        <table border="1" cellspacing="0" cellpadding="6" style="border-collapse: collapse; width: 100%; font-size: 10pt; border-color: #444;">
+            <tr style="background-color: #c8d3da;">
                 <td colspan="6" style="font-weight: bold; text-align: center;">INFORMAÇÕES DA EMPRESA</td>
             </tr>
             <tr>
@@ -235,10 +102,10 @@
                 <td></td>
             </tr>
 
-            <tr style="background-color: #f2f2f2;">
+            <tr style="background-color: #c8d3da;">
                 <td colspan="6" style="font-weight: bold; text-align: center;">ITENS REGISTRADOS</td>
             </tr>
-            <tr style="background-color: #e9e9e9; text-align: center;">
+            <tr style="background-color: #f0f0f0; text-align: center;">
                 <th style="width: 8%;">ITEM</th>
                 <th style="width: 32%;">DESCRIÇÃO</th>
                 <th style="width: 15%;">UND.</th>

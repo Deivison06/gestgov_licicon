@@ -57,44 +57,24 @@
 
         .cover-title {
             width: 60%;
-            font-size: 18pt;
+            font-size: 16pt;
             font-weight: 900;
             border: 2px solid #000;
             display: inline-block;
             line-height: 0.9;
-            padding: 10px 50px;
+            padding: 8px 40px;
             font-family: Arial, Helvetica, sans-serif;
         }
 
         .footer-signature {
-            margin-top: 60px;
+            margin-top: 24px;
             text-align: right;
         }
 
         .signature-block {
-            margin-top: 60px;
+            margin-top: 24px;
             text-align: center;
-        }
-
-        /* Estilos opcionais para simular as linhas da imagem */
-        .line {
-            border-top: 2px solid black;
-            margin: 10px 0;
-            /* Espaçamento entre as linhas */
-        }
-
-        .content {
-            text-align: center;
-            /* Centraliza o texto como na imagem */
-            margin: 40px 0;
-            /* Espaçamento acima e abaixo do conteúdo principal */
-        }
-
-        strong {
-            line-height: 1.5;
-            /* Melhora a leitura do texto em várias linhas */
-            display: block;
-            /* Garante que o strong ocupe a largura total */
+            page-break-inside: avoid;
         }
 
     </style>
@@ -122,10 +102,10 @@
     <div id="declaracao-compatibilidade">
         <p style="text-align: center; font-weight: bold;">DECLARAÇÃO DE COMPATIBILIDADE DA PREVISÃO DE RECURSOS
             ORÇAMENTÁRIOS</p>
-        <table style="border-collapse: collapse; width: 100%; text-align: left; border: 1px solid black; margin-top: 20px;">
+        <table style="border-collapse: collapse; width: 100%; text-align: left; border: 1px solid black; margin-top: 10px;">
             <thead>
                 <tr>
-                    <td colspan="2" style="border: 1px solid black; text-align: center; font-weight: bold; padding: 5px;">
+                    <td colspan="2" style="border: 1px solid black; text-align: center; font-weight: bold; padding: 5px; background-color: #c8d3da;">
                         RESUMO DOS DADOS DO PROCESSO
                     </td>
                 </tr>
@@ -232,8 +212,8 @@
         $primeiroAssinante = $assinantes[0]; // Pega o segundo item
         @endphp
 
-        <div style="margin-top: 40px; text-align: center;">
-            <div class="signature-block" style="display: inline-block; margin: 0 40px;">
+        <div style="text-align: center;">
+            <div class="signature-block" style="display: inline-block; margin-left: 40px; margin-right: 40px;">
                 ___________________________________<br>
                 <p style="line-height: 1.2;">
                     {{ $primeiroAssinante['responsavel'] }} <br>
@@ -243,7 +223,7 @@
         </div>
         @else
         {{-- Bloco Padrão (Fallback) --}}
-        <div class="signature-block" style="margin-top: 40px; text-align: center;">
+        <div class="signature-block">
             ___________________________________<br>
             <p style="line-height: 1.2;">
                 {{ $processo->prefeitura->autoridade_competente }} <br>

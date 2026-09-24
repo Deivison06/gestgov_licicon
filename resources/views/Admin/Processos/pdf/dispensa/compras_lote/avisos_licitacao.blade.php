@@ -5,19 +5,6 @@
     <meta charset="UTF-8">
     <title>Avisos - Processo {{ $processo->numero_processo ?? $processo->id }}</title>
     <style type="text/css">
-        @font-face {
-            font-family: 'Aptos';
-            src: url('{{ public_path('storage/fonts/Aptos.ttf') }}') format('truetype');
-            font-style: normal;
-        }
-
-        @font-face {
-            font-family: 'AptosExtraBold';
-            src: url('{{ public_path('storage/fonts/Aptos-ExtraBold.ttf') }}') format('truetype');
-            font-style: normal;
-        }
-
-
         @page {
             margin: 0;
             size: A4;
@@ -26,8 +13,8 @@
         body {
             margin: 0;
             padding: 4cm 2cm;
-            font-size: 11pt;
-            font-family: 'Aptos', sans-serif;
+            font-size: 10pt;
+            font-family: Arial, Helvetica, sans-serif;
             /* Adiciona o timbre como background */
             background-image: url('{{ public_path($prefeitura->timbre) }}');
             background-repeat: no-repeat;
@@ -36,7 +23,7 @@
 
             text-align: justify;
             text-justify: inter-word;
-            line-height: 1;
+            line-height: normal;
         }
 
         /* CLASSE PARA FORÇAR QUEBRA DE PÁGINA (ESSENCIAL PARA PDF) */
@@ -70,44 +57,24 @@
 
         .cover-title {
             width: 60%;
-            font-size: 18pt;
+            font-size: 16pt;
             font-weight: 900;
             border: 2px solid #000;
             display: inline-block;
             line-height: 0.9;
-            padding: 10px 50px;
-            font-family: 'AptosExtraBold', sans-serif;
+            padding: 8px 40px;
+            font-family: Arial, Helvetica, sans-serif;
         }
 
         .footer-signature {
-            margin-top: 60px;
+            margin-top: 24px;
             text-align: right;
         }
 
         .signature-block {
-            margin-top: 60px;
+            margin-top: 24px;
             text-align: center;
-        }
-
-        /* Estilos opcionais para simular as linhas da imagem */
-        .line {
-            border-top: 2px solid black;
-            margin: 10px 0;
-            /* Espaçamento entre as linhas */
-        }
-
-        .content {
-            text-align: center;
-            /* Centraliza o texto como na imagem */
-            margin: 40px 0;
-            /* Espaçamento acima e abaixo do conteúdo principal */
-        }
-
-        strong {
-            line-height: 1.5;
-            /* Melhora a leitura do texto em várias linhas */
-            display: block;
-            /* Garante que o strong ocupe a largura total */
+            page-break-inside: avoid;
         }
 
     </style>
@@ -148,7 +115,7 @@
             DISPENSA DE LICITAÇÃO {{ $processo->numero_procedimento }}<br>
             PROCESSO ADMINISTRATIVO {{ $processo->numero_processo }}
         </p>
-        <p style="text-align: justify; text-justify: inter-word; line-height: 1; margin: 0;">
+        <p style="text-align: justify; text-justify: inter-word;">
             O Município de {{ $processo->prefeitura->cidade }},em atendimento ao § 3o e com fulcro no {{ optional($detalhe ?? null)->is_oriundo_fracassado ? 'Art. 75, Inciso III, alínea "a",' : 'Art. 75, Inc. II,' }} da
             Lei 14.133/21, torna público para conhecimento dos interessados, o presente aviso de
             Contratação Direta por DISPENSA DE LICITAÇÃO No {{ $processo->numero_procedimento }}, TIPO MENOR PREÇO
@@ -182,8 +149,8 @@
 
     @if ($hasSelectedAssinantes)
     {{-- Renderiza apenas o primeiro assinante --}}
-    <div style="margin-top:40px; text-align:center;">
-        <div class="signature-block" style="display:inline-block; margin:0 40px;">
+    <div style="text-align:center;">
+        <div class="signature-block" style="display:inline-block; margin-left:40px; margin-right:40px;">
             ___________________________________<br>
             <p style="font-size:10pt; line-height:1.2; margin:0;">
                 {{ $primeiroAssinante['responsavel'] }}<br>
@@ -193,7 +160,7 @@
     </div>
     @else
     {{-- Fallback (sem assinantes selecionados) --}}
-    <div class="signature-block" style="margin-top:40px; text-align:center;">
+    <div class="signature-block">
         ___________________________________<br>
         <p style="font-size:10pt; line-height:1.2; margin:0;">
             {{ $processo->prefeitura->autoridade_competente ?? '____________________' }}<br>
@@ -212,7 +179,7 @@
         <p style="text-align: center; font-weight: bold; font-size: 14pt;">
             RESUMO DE LICITAÇÃO
         </p>
-        <p style="text-align: justify; text-justify: inter-word; line-height: 1; margin: 0;">
+        <p style="text-align: justify; text-justify: inter-word;">
             O Município de {{ $processo->prefeitura->cidade }}, através de seu Agente de Contratação / Pregoeiro e equipe de Apoio instituída pela Portaria nº {{ $primeiroAssinante['numero_portaria'] }}, de {{ !empty($primeiroAssinante['data_portaria'])
             ? \Carbon\Carbon::parse($primeiroAssinante['data_portaria'])->translatedFormat('d \d\e F \d\e Y')
             : '____________________' }}, torna público, para conhecimento dos interessados que realizará procedimento licitatório na modalidade
