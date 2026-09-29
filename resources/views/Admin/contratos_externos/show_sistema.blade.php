@@ -238,12 +238,14 @@
                                         </div>
                                         <div class="flex items-center gap-2">
                                             <span class="px-2 py-1 text-[10px] font-bold text-[#009496] bg-[#009496]/10 rounded-full">
-                                                Aditivo
+                                                Aditivo {{ $incidente->ehExterno() ? 'Externo' : '' }}
                                             </span>
-                                            <a href="{{ route('admin.incidentes.documentos', ['contrato_id' => $processo->contrato->id, 'incidente_id' => $incidente->id]) }}"
+                                            <a href="{{ $incidente->ehExterno()
+                                                    ? route('admin.incidentes.externo', ['contrato_id' => $processo->contrato->id, 'incidente_id' => $incidente->id])
+                                                    : route('admin.incidentes.documentos', ['contrato_id' => $processo->contrato->id, 'incidente_id' => $incidente->id]) }}"
                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#009496] bg-[#009496]/10 border border-[#009496]/20 rounded-md hover:bg-[#009496] hover:text-white transition-colors"
-                                               title="Gerenciar Documentos do Aditivo">
-                                                <i class="fas fa-file-alt"></i> Documentos
+                                               title="{{ $incidente->ehExterno() ? 'Ver Aditivo Externo' : 'Gerenciar Documentos do Aditivo' }}">
+                                                <i class="fas fa-file-alt"></i> {{ $incidente->ehExterno() ? 'Ver Aditivo' : 'Documentos' }}
                                             </a>
                                         </div>
                                     </div>

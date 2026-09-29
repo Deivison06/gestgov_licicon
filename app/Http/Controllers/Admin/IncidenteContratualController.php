@@ -9,6 +9,7 @@ use App\Models\ContratoManual;
 use App\Models\Documento;
 use App\Models\DocumentoSelecaoAssinantes;
 use App\Models\IncidenteContratual;
+use App\Models\LoteContratado;
 use App\Services\IncidenteContratualService;
 
 /**
@@ -71,6 +72,7 @@ class IncidenteContratualController extends Controller
         $validated = $request->validate([
             'tipo' => 'required|in:prazo,valor,prazo_valor',
             'categoria' => 'required|in:compras_servicos,obras',
+            'origem' => 'nullable|in:interno,externo',
         ]);
 
         $incidente = IncidenteContratual::create([
@@ -78,12 +80,107 @@ class IncidenteContratualController extends Controller
             'contratavel_type' => get_class($contrato),
             'tipo' => $validated['tipo'],
             'categoria' => $validated['categoria'],
+            'origem' => $validated['origem'] ?? 'interno',
+            // Snapshot do estado do contrato ANTES do efeito deste aditivo — usado
+            // depois para aplicar/reverter prazo e valor de forma absoluta (idempotente).
+            'data_finalizacao_base' => $contrato->data_finalizacao,
+            'valor_total_base' => $contrato instanceof ContratoManual ? $contrato->valor_total : null,
         ]);
+
+        if (($validated['origem'] ?? 'interno') === 'externo') {
+            return redirect()->route($this->routeName('externo'), [
+                'contrato_id' => $contrato->id,
+                'incidente_id' => $incidente->id,
+            ])->with('success', 'Rascunho de aditivo externo criado. Preencha as informações e anexe o PDF.');
+        }
 
         return redirect()->route($this->routeName('documentos'), [
             'contrato_id' => $contrato->id,
             'incidente_id' => $incidente->id
         ])->with('success', 'Rascunho de aditivo criado. Preencha os campos para finalizar.');
+    }
+
+    /**
+     * GET: formulário do aditivo externo (feito fora do sistema).
+     */
+    public function externo($contrato_id, $incidente_id)
+    {
+        $contrato = $this->resolverContrato($contrato_id);
+        $incidente = $this->buscarIncidente($contrato, $incidente_id);
+
+        $lotesContratados = $contrato instanceof Contrato
+            ? LoteContratado::where('contrato_id', $contrato->id)->with('lote')->get()
+            : collect();
+
+        $itensAtuais = $incidente->itens()->get()->keyBy('lote_contratado_id');
+
+        $urlVoltar = $contrato instanceof ContratoManual
+            ? route('admin.contratos.show.manual', $contrato->id)
+            : route('admin.processos.show', $contrato->processo_id);
+
+        return view('Admin.IncidentesContratuais.externo', [
+            'contrato' => $contrato,
+            'incidente' => $incidente,
+            'ehManual' => $contrato instanceof ContratoManual,
+            'lotesContratados' => $lotesContratados,
+            'itensAtuais' => $itensAtuais,
+            'urlVoltar' => $urlVoltar,
+            'rotaSalvar' => $this->routeName('externo.atualizar'),
+        ]);
+    }
+
+    /**
+     * POST: salva o aditivo externo e aplica o efeito no contrato (prazo/valor/itens).
+     */
+    public function atualizarExterno(Request $request, $contrato_id, $incidente_id)
+    {
+        $contrato = $this->resolverContrato($contrato_id);
+        $incidente = $this->buscarIncidente($contrato, $incidente_id);
+
+        $rules = [
+            'data_aditivo' => 'required|date',
+            'justificativa' => 'nullable|string',
+            'arquivo_aditivo_externo' => $incidente->arquivo_aditivo_externo_path
+                ? 'nullable|file|mimes:pdf|max:20480'
+                : 'required|file|mimes:pdf|max:20480',
+        ];
+
+        if (in_array($incidente->tipo, ['prazo', 'prazo_valor'])) {
+            $rules['meses_prorrogacao'] = 'required|integer|min:1';
+        }
+
+        if (in_array($incidente->tipo, ['valor', 'prazo_valor'])) {
+            if ($contrato instanceof ContratoManual) {
+                $rules['valor_acrescido'] = 'required|numeric|min:0.01';
+            } else {
+                $rules['itens'] = 'required|array|min:1';
+                $rules['itens.*.lote_contratado_id'] = 'required|exists:lote_contratados,id';
+                $rules['itens.*.quantidade_aditivada'] = 'required|numeric|min:0.0001';
+            }
+        }
+
+        $validated = $request->validate($rules);
+
+        // Sem vencimento cadastrado, não há data-base para calcular a prorrogação —
+        // melhor recusar com uma mensagem clara do que aplicar silenciosamente nada.
+        if (in_array($incidente->tipo, ['prazo', 'prazo_valor']) && !$contrato->data_finalizacao) {
+            return back()->withErrors([
+                'meses_prorrogacao' => 'Este contrato não tem uma data de vencimento cadastrada — cadastre-a antes de registrar um aditivo de prazo.',
+            ])->withInput();
+        }
+
+        if ($request->hasFile('arquivo_aditivo_externo')) {
+            $validated['arquivo_aditivo_externo_path'] = $request->file('arquivo_aditivo_externo')
+                ->store('incidentes/externos', 'public');
+        }
+
+        $this->incidenteService->atualizarAditivoExterno($incidente, $contrato, $validated);
+
+        $urlVoltar = $contrato instanceof ContratoManual
+            ? route('admin.contratos.show.manual', $contrato->id)
+            : route('admin.processos.show', $contrato->processo_id);
+
+        return redirect($urlVoltar)->with('success', 'Aditivo externo registrado com sucesso.');
     }
 
     public function atualizarCampos(Request $request, $contrato_id, $incidente_id)
@@ -417,6 +514,9 @@ class IncidenteContratualController extends Controller
     {
         $contrato = $this->resolverContrato($contrato_id);
         $incidente = $this->buscarIncidente($contrato, $incidente_id);
+
+        // Desfaz o efeito deste aditivo no contrato (prazo/valor) antes de excluir.
+        $this->incidenteService->reverterEfeitosNoContrato($incidente, $contrato);
 
         // Excluir os itens vinculados e documentos associados a esse incidente
         $incidente->itens()->delete();

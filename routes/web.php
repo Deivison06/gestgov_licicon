@@ -348,6 +348,10 @@ Route::prefix('admin')
                 ->name('incidentes.documentos.salvar-campo');
             Route::get('/contratos/{contrato_id}/incidentes/{incidente_id}/pdf/{tipo}', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'gerarDocumentoPdf'])
                 ->name('incidentes.pdf');
+            Route::get('/contratos/{contrato_id}/incidentes/{incidente_id}/externo', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'externo'])
+                ->name('incidentes.externo');
+            Route::post('/contratos/{contrato_id}/incidentes/{incidente_id}/externo', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'atualizarExterno'])
+                ->name('incidentes.externo.atualizar');
             Route::delete('/contratos/{contrato_id}/incidentes/{incidente_id}', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'destroy'])
                 ->name('incidentes.destroy');
         });
@@ -365,6 +369,10 @@ Route::prefix('admin')
                 ->name('incidentes-manual.documentos.salvar-campo');
             Route::get('/contratos-manuais/{contrato_id}/incidentes/{incidente_id}/pdf/{tipo}', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'gerarDocumentoPdf'])
                 ->name('incidentes-manual.pdf');
+            Route::get('/contratos-manuais/{contrato_id}/incidentes/{incidente_id}/externo', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'externo'])
+                ->name('incidentes-manual.externo');
+            Route::post('/contratos-manuais/{contrato_id}/incidentes/{incidente_id}/externo', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'atualizarExterno'])
+                ->name('incidentes-manual.externo.atualizar');
             Route::delete('/contratos-manuais/{contrato_id}/incidentes/{incidente_id}', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'destroy'])
                 ->name('incidentes-manual.destroy');
         });

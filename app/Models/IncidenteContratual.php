@@ -13,17 +13,33 @@ class IncidenteContratual extends Model
         'contratavel_type',
         'tipo',
         'categoria',
+        'origem',
+        'data_aditivo',
+        'data_finalizacao_base',
+        'valor_total_base',
         'meses_prorrogacao',
         'percentual_valor',
         'justificativa',
         'status',
         'arquivo_solicitacao_path',
         'arquivo_orcamento_obra_path',
+        'arquivo_aditivo_externo_path',
         'nome_solicitante',
         'cargo_solicitante',
         'nome_parecerista',
         'oab_parecerista'
     ];
+
+    protected $casts = [
+        'data_aditivo' => 'date',
+        'data_finalizacao_base' => 'date',
+        'valor_total_base' => 'decimal:2',
+    ];
+
+    public function ehExterno(): bool
+    {
+        return $this->origem === 'externo';
+    }
 
     /**
      * O contrato ao qual este aditivo pertence — pode ser um Contrato do Sistema

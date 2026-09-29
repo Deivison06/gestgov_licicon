@@ -1001,12 +1001,14 @@
                                                                     </div>
                                                                     <div class="flex items-center gap-2">
                                                                         <span class="px-2 py-1 text-[10px] font-bold text-[#009496] bg-[#009496]/10 rounded-full">
-                                                                            Aditivo
+                                                                            Aditivo {{ $incidente->ehExterno() ? 'Externo' : '' }}
                                                                         </span>
-                                                                        <a href="{{ route('admin.incidentes.documentos', ['contrato_id' => $contratoItem->id, 'incidente_id' => $incidente->id]) }}"
+                                                                        <a href="{{ $incidente->ehExterno()
+                                                                                ? route('admin.incidentes.externo', ['contrato_id' => $contratoItem->id, 'incidente_id' => $incidente->id])
+                                                                                : route('admin.incidentes.documentos', ['contrato_id' => $contratoItem->id, 'incidente_id' => $incidente->id]) }}"
                                                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#009496] bg-[#009496]/10 border border-[#009496]/20 rounded-md hover:bg-[#009496] hover:text-white transition-colors"
-                                                                           title="Gerenciar Documentos do Aditivo">
-                                                                            <i class="fas fa-file-alt"></i> Documentos
+                                                                           title="{{ $incidente->ehExterno() ? 'Ver Aditivo Externo' : 'Gerenciar Documentos do Aditivo' }}">
+                                                                            <i class="fas fa-file-alt"></i> {{ $incidente->ehExterno() ? 'Ver Aditivo' : 'Documentos' }}
                                                                         </a>
                                                                     </div>
                                                                 </div>
@@ -2604,6 +2606,19 @@
                                             <option value="compras_servicos">Compras e Serviços</option>
                                             <option value="obras">Obras</option>
                                         </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Origem do Aditivo <span class="text-red-500">*</span></label>
+                                        <div class="flex gap-4 mt-1">
+                                            <label class="inline-flex items-center gap-1.5 text-sm text-gray-700">
+                                                <input type="radio" name="origem" value="interno" checked class="text-[#009496] focus:ring-[#009496]">
+                                                Interno (gera documentos)
+                                            </label>
+                                            <label class="inline-flex items-center gap-1.5 text-sm text-gray-700">
+                                                <input type="radio" name="origem" value="externo" class="text-[#009496] focus:ring-[#009496]">
+                                                Externo (feito fora do sistema)
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

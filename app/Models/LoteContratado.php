@@ -50,6 +50,15 @@ class LoteContratado extends Model
         return $this->belongsTo(Contrato::class);
     }
 
+    /**
+     * Itens de aditivo (internos ou externos) que incidem sobre este lote —
+     * somados à quantidade contratada para refletir no Almoxarifado.
+     */
+    public function incidenteItens()
+    {
+        return $this->hasMany(IncidenteContratualItem::class, 'lote_contratado_id');
+    }
+
     public function estoque(): BelongsTo
     {
         return $this->belongsTo(EstoqueLote::class, 'lote_id', 'lote_id')

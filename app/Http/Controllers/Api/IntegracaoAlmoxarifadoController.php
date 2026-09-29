@@ -18,7 +18,7 @@ class IntegracaoAlmoxarifadoController extends Controller
             'detalhe',
             'lotesContratados' => function($q) {
                 $q->where('status', 'CONTRATADO')->orWhereNotNull('contrato_id');
-                $q->with(['lote', 'vencedor']);
+                $q->with(['lote', 'vencedor', 'incidenteItens']);
             },
         ])
         ->latest()
@@ -86,11 +86,15 @@ class IntegracaoAlmoxarifadoController extends Controller
                             $numeroLote = $itemContratado->lote->lote ?? $itemContratado->lote->numero_lote ?? 1;
                         }
 
+                        // Soma a quantidade aditivada (aditivos internos ou externos) à
+                        // contratada, para o Almoxarifado refletir o total real disponível.
+                        $quantidadeAditivada = $itemContratado->incidenteItens->sum('quantidade_aditivada');
+
                         return [
                             'lote_numero' => $numeroLote,
                             'descricao' => $itemContratado->lote->descricao,
                             'unidade' => $itemContratado->lote->unidade ?? 'UND',
-                            'quantidade' => (float) $itemContratado->quantidade_contratada,
+                            'quantidade' => (float) $itemContratado->quantidade_contratada + (float) $quantidadeAditivada,
                             'valor_unitario' => (float) $itemContratado->valor_unitario,
                             'valor_total' => (float) $itemContratado->valor_total,
                         ];
