@@ -82,6 +82,14 @@
 
         <!-- Tabela de Processos (mostrada apenas quando há filtro de prefeitura) -->
         @if(request('prefeitura_id'))
+            @php
+                // Indica se o usuário efetivamente submeteu o formulário de filtros (mesmo que
+                // todos os campos estejam vazios, ex: "Todos os Status"). Não usar hasAny() nos
+                // campos individuais aqui: a paginação preserva a query string, mas o middleware
+                // ConvertEmptyStringsToNull remove da URL os campos que estiverem vazios, então
+                // um hasAny() baseado neles quebra ao navegar para a página 2 em diante.
+                $filtrosAplicados = request()->has('filtros_aplicados');
+            @endphp
             <!-- FILTRO AVANÇADO MELHORADO -->
             <div class="mb-6 bg-white border border-gray-200 rounded-2xl shadow-sm">
                 <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
@@ -91,8 +99,9 @@
 
                 <form action="{{ route('admin.processos.index') }}" method="GET" class="p-6">
                     <input type="hidden" name="prefeitura_id" value="{{ request('prefeitura_id') }}">
+                    <input type="hidden" name="filtros_aplicados" value="1">
 
-                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-5">
                         <!-- Busca unificada: nº do processo/procedimento ou objeto -->
                         <div class="md:col-span-2">
                             <label for="search" class="block mb-2 text-sm font-medium text-gray-700">
@@ -143,8 +152,7 @@
                                            focus:ring-2 focus:ring-[#009496] focus:border-transparent text-sm
                                            transition-all duration-200">
                                 @php
-                                    $filtersSubmitted = request()->hasAny(['search','modalidade','status','data_inicio','data_fim','responsavel']);
-                                    $defaultStatus = $filtersSubmitted ? request('status') : 'EM_ANDAMENTO';
+                                    $defaultStatus = $filtrosAplicados ? request('status') : 'EM_ANDAMENTO';
                                 @endphp
                                 <option value="" {{ $defaultStatus === '' ? 'selected' : '' }}>Todos os Status</option>
                                 @foreach(\App\Enums\ProcessoStatusEnum::cases() as $status)
@@ -153,6 +161,21 @@
                                         {{ $status->label() }}
                                     </option>
                                 @endforeach
+                            </select>
+                        </div>
+
+                        <!-- Filtro por republicação (independente do status real) -->
+                        <div>
+                            <label for="republicado" class="block mb-2 text-sm font-medium text-gray-700">
+                                <i class="fas fa-redo mr-1"></i> Republicado
+                            </label>
+                            <select name="republicado" id="republicado"
+                                    class="w-full px-3 py-2.5 border border-gray-300 rounded-lg
+                                           focus:ring-2 focus:ring-[#009496] focus:border-transparent text-sm
+                                           transition-all duration-200">
+                                <option value="" {{ request('republicado') === null || request('republicado') === '' ? 'selected' : '' }}>Todos</option>
+                                <option value="1" {{ request('republicado') === '1' ? 'selected' : '' }}>Somente republicados</option>
+                                <option value="0" {{ request('republicado') === '0' ? 'selected' : '' }}>Não republicados</option>
                             </select>
                         </div>
                     </div>
@@ -207,7 +230,7 @@
                                 Aplicar Filtros
                             </button>
 
-                            @if(request()->hasAny(['search','modalidade', 'status', 'data_inicio', 'data_fim', 'responsavel']))
+                            @if($filtrosAplicados)
                                 <a href="{{ route('admin.processos.index', ['prefeitura_id' => request('prefeitura_id')]) }}"
                                    class="px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg
                                           hover:bg-gray-200 transition-all duration-200
@@ -221,7 +244,7 @@
                     </div>
 
                     <!-- Mostrar filtros ativos -->
-                    @if(request()->hasAny(['search','modalidade', 'status', 'data_inicio', 'data_fim', 'responsavel']))
+                    @if($filtrosAplicados)
                         <div class="mt-4 pt-4 border-t border-gray-200">
                             <div class="flex flex-wrap items-center gap-2">
                                 <span class="text-sm font-medium text-gray-700">Filtros ativos:</span>
@@ -270,6 +293,18 @@
                                     <span class="px-3 py-1 text-xs font-medium bg-pink-100 text-pink-800 rounded-full flex items-center">
                                         <i class="mr-1 fas fa-user"></i>
                                         Responsável: {{ request('responsavel') }}
+                                    </span>
+                                @endif
+
+                                @if(request('republicado') === '1')
+                                    <span class="px-3 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded-full flex items-center">
+                                        <i class="mr-1 fas fa-redo"></i>
+                                        Somente republicados
+                                    </span>
+                                @elseif(request('republicado') === '0')
+                                    <span class="px-3 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded-full flex items-center">
+                                        <i class="mr-1 fas fa-redo"></i>
+                                        Não republicados
                                     </span>
                                 @endif
                             </div>
@@ -424,7 +459,8 @@
                                         <div class="mt-1 text-xs text-orange-600">
                                             <i class="mr-1 fas fa-clock"></i>Adiado para {{ $processo->data_adiamento ? \Carbon\Carbon::parse($processo->data_adiamento)->format('d/m/Y') : 'N/A' }}@if($processo->justificativa_adiamento) — {{ $processo->justificativa_adiamento }}@endif
                                         </div>
-                                    @elseif($status->value === 'REPUBLICADO')
+                                    @endif
+                                    @if($processo->foi_republicado)
                                         <div class="mt-1 text-xs text-purple-600">
                                             <i class="mr-1 fas fa-redo"></i>Republicado @if($processo->processo_original_id) — Original: {{ $processo->processoOriginal->numero_processo ?? 'N/A' }}@endif
                                         </div>
@@ -564,7 +600,7 @@
                                         <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
                                             <i class="text-gray-400 text-2xl fas fa-clipboard-list"></i>
                                         </div>
-                                        @if(request()->hasAny(['search','modalidade', 'status']))
+                                        @if($filtrosAplicados)
                                             <div>
                                                 <p class="text-sm font-medium text-gray-700">Nenhum processo encontrado com os filtros aplicados.</p>
                                                 <p class="mt-1 text-sm text-gray-500">Tente ajustar os critérios de busca.</p>
@@ -854,7 +890,7 @@
                                     </label>
 
                                     <div class="space-y-2">
-                                        @foreach(\App\Enums\ProcessoStatusEnum::cases() as $status)
+                                        @foreach(\App\Enums\ProcessoStatusEnum::atribuiveis() as $status)
                                             <div class="flex items-center">
                                                 <input type="radio"
                                                        name="status"

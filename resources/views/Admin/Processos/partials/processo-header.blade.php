@@ -121,6 +121,13 @@
                 {{ $status->label() }}
             </span>
 
+            @if($processo->foi_republicado)
+                <span class="inline-flex items-center px-3 py-1 text-xs font-semibold text-purple-800 bg-purple-100 border border-purple-200 rounded-full"
+                      title="Este processo é fruto de uma republicação">
+                    <i class="mr-1.5 fas fa-redo"></i>Republicado
+                </span>
+            @endif
+
             {{-- Menu de ações raras (kebab) — só na Inicialização --}}
             @if($temKebab)
                 <div class="relative inline-block text-left" x-data="{ open: false }" @click.outside="open = false">

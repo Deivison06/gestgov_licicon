@@ -106,4 +106,16 @@ enum ProcessoStatusEnum: string
             self::ADIADO,
         ];
     }
+
+    /**
+     * Status que podem ser atribuídos manualmente a um processo (ex: no modal
+     * de "Alterar Status"). REPUBLICADO não faz mais parte do ciclo de vida —
+     * republicar passou a ser um indicador próprio (`Processo::foi_republicado`),
+     * não um status. O case é mantido no enum só para compatibilidade de leitura
+     * com registros antigos que ainda têm esse valor gravado no banco.
+     */
+    public static function atribuiveis(): array
+    {
+        return array_filter(self::cases(), fn($case) => $case !== self::REPUBLICADO);
+    }
 }

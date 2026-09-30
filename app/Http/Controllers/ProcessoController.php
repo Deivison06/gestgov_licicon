@@ -86,13 +86,14 @@ class ProcessoController extends AbstractController
         }
 
         // Filtro por status
-        // Se o usuário enviou o formulário (qualquer parâmetro de filtro presente),
-        // respeitar a escolha dele (inclusive vazio = todos).
+        // Se o usuário enviou o formulário de filtros (marcado pelo campo oculto
+        // "filtros_aplicados"), respeitar a escolha dele (inclusive vazio = todos).
+        // Não usar hasAny() nos campos individuais: a paginação preserva a query
+        // string, mas campos vazios são removidos dela pelo middleware
+        // ConvertEmptyStringsToNull, então um hasAny() baseado neles quebra ao
+        // navegar para a página 2 em diante.
         // Se nenhum filtro foi enviado (acesso direto à página), mostrar apenas Em Andamento.
-        $filtersSubmitted = $request->hasAny([
-            'search', 'modalidade', 'status',
-            'data_inicio', 'data_fim', 'responsavel'
-        ]);
+        $filtersSubmitted = $request->has('filtros_aplicados');
 
         if ($filtersSubmitted) {
             // usuário escolheu um status específico
@@ -101,8 +102,15 @@ class ProcessoController extends AbstractController
             }
             // se status vazio ("Todos os Status"), não aplicar nenhum filtro de status
         } else {
-            // acesso direto sem filtros — mostrar somente Em Andamento
-            $query->where('status', ProcessoStatusEnum::EM_ANDAMENTO->value);
+            // acesso direto sem filtros — mostrar os status "ativos" (Em Andamento e,
+            // por compatibilidade com registros antigos, Republicado).
+            $query->whereIn('status', array_column(ProcessoStatusEnum::ativos(), 'value'));
+        }
+
+        // Filtro por "foi republicado" — independente do status real, já que a
+        // republicação deixou de ser um status e passou a ser um indicador próprio.
+        if ($request->filled('republicado')) {
+            $query->foiRepublicado($request->republicado === '1');
         }
 
         // Ordenação
@@ -244,7 +252,7 @@ class ProcessoController extends AbstractController
     public function updateStatus(Request $request, Processo $processo)
     {
         $request->validate([
-            'status' => 'required|string|in:' . implode(',', ProcessoStatusEnum::values()),
+            'status' => 'required|string|in:' . implode(',', array_column(ProcessoStatusEnum::atribuiveis(), 'value')),
         ]);
 
         try {
@@ -606,10 +614,6 @@ class ProcessoController extends AbstractController
                 'gerado_em' => now(),
             ]);
 
-            // Atualizar status do processo
-            $processo->status = ProcessoStatusEnum::REPUBLICADO;
-            $processo->save();
-
             // Limpar arquivos temporários
             if (file_exists($caminhoMinuta)) {
                 unlink($caminhoMinuta);
@@ -773,8 +777,7 @@ class ProcessoController extends AbstractController
                 'status' => ProcessoStatusEnum::EM_ANDAMENTO,
             ]);
 
-            // Marcar como republicado e referenciar original
-            $novoProcesso->status = ProcessoStatusEnum::REPUBLICADO;
+            // Referenciar o processo original (o status já vem correto de duplicarProcesso)
             $novoProcesso->processo_original_id = $processo->id;
 
             // Aqui está a correção: Não tente atualizar data_publicacao no ProcessoDetalhe

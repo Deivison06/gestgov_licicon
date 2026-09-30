@@ -72,8 +72,9 @@
             </button>
             <div x-show="open" x-cloak x-transition
                  class="absolute left-0 z-30 py-1 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg w-44">
-                @foreach(\App\Enums\ProcessoStatusEnum::cases() as $st)
+                @foreach(\App\Enums\ProcessoStatusEnum::atribuiveis() as $st)
                     <button type="button"
+                            data-status-option="{{ $st->value }}"
                             @click="open = false; alterarStatusProcesso('{{ route('admin.processos.status.update', $processo) }}', '{{ $st->value }}', {{ $processo->id }})"
                             class="flex items-center w-full px-3 py-1.5 text-xs text-left text-gray-700 hover:bg-gray-50 {{ $procStatus->value === $st->value ? 'font-semibold text-gray-900' : '' }}">
                         {{ $st->label() }}
@@ -276,7 +277,6 @@
             EM_ANDAMENTO: 'bg-blue-100 text-blue-800',
             FINALIZADO:   'bg-green-100 text-green-800',
             CANCELADO:    'bg-red-100 text-red-800',
-            REPUBLICADO:  'bg-purple-100 text-purple-800',
             ADIADO:       'bg-orange-100 text-orange-800',
         };
         const todasCores = ('bg-blue-100 text-blue-800 bg-green-100 text-green-800 bg-red-100 text-red-800 '
@@ -293,8 +293,11 @@
             });
             const data = await resp.json().catch(() => ({}));
             if (resp.ok && data.success) {
-                const card = document.querySelector('[data-id="' + processoId + '"]');
-                if (card) {
+                // A mesma tela renderiza o card duas vezes no DOM (versão mobile e
+                // versão desktop, cada uma escondida por CSS conforme o breakpoint),
+                // então é preciso atualizar TODAS as ocorrências, não só a primeira.
+                const cards = document.querySelectorAll('[data-id="' + processoId + '"]');
+                cards.forEach(card => {
                     const label = card.querySelector('[data-proc-status-label]');
                     if (label) label.textContent = data.data.status_label;
                     const btn = card.querySelector('[data-proc-status-btn]');
@@ -302,7 +305,12 @@
                         todasCores.forEach(c => btn.classList.remove(c));
                         (cores[status] || 'bg-gray-100 text-gray-800').split(' ').forEach(c => btn.classList.add(c));
                     }
-                }
+                    // Atualiza qual opção do dropdown fica marcada como "atual"
+                    card.querySelectorAll('[data-status-option]').forEach(opt => {
+                        opt.classList.toggle('font-semibold', opt.dataset.statusOption === status);
+                        opt.classList.toggle('text-gray-900', opt.dataset.statusOption === status);
+                    });
+                });
             } else {
                 alert(data.message || 'Erro ao atualizar status do processo.');
             }

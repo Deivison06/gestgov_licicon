@@ -45,6 +45,12 @@
                     <span class="inline-flex px-2.5 py-0.5 text-xs font-semibold rounded-full border {{ $statusClasses }}">
                         {{ $statusLabel }}
                     </span>
+                    @if($processo->foi_republicado)
+                        <span class="inline-flex px-2.5 py-0.5 text-xs font-semibold rounded-full border bg-purple-100 text-purple-700 border-purple-200"
+                              title="Este processo é fruto de uma republicação">
+                            Republicado
+                        </span>
+                    @endif
                 </div>
             </div>
         </div>

@@ -487,6 +487,12 @@ class ProcessoService extends AbstractService
             // Duplicar vencedores
             $this->duplicarVencedores($processoOriginal, $novoProcesso);
 
+            // Transferir o ETP vinculado ao processo original para o novo processo
+            $this->transferirEtp($processoOriginal, $novoProcesso);
+
+            // Duplicar itens de pesquisa de preço (Cesta de Preços e PNCP)
+            $this->duplicarPesquisaPrecoItens($processoOriginal, $novoProcesso);
+
             DB::commit();
 
             return $novoProcesso;
@@ -499,6 +505,45 @@ class ProcessoService extends AbstractService
                 'trace' => $e->getTraceAsString()
             ]);
             throw $e;
+        }
+    }
+
+    /**
+     * Transfere o ETP vinculado ao processo original para o novo processo
+     * republicado (não duplica o ETP — é o mesmo estudo técnico, só muda
+     * qual processo o utiliza).
+     */
+    private function transferirEtp(Processo $processoOriginal, Processo $novoProcesso): void
+    {
+        $etp = $processoOriginal->etp;
+
+        if (!$etp) {
+            return;
+        }
+
+        $etp->update(['processo_id' => $novoProcesso->id]);
+
+        \Log::info('ETP transferido na republicação de processo', [
+            'etp_id' => $etp->id,
+            'processo_original_id' => $processoOriginal->id,
+            'novo_processo_id' => $novoProcesso->id,
+        ]);
+    }
+
+    /**
+     * Duplica os itens de pesquisa de preço (Cesta de Preços e PNCP) do processo
+     * original para o novo processo republicado. TCE e Fornecedor Local não
+     * precisam de tratamento aqui: já são copiados junto com `ProcessoDetalhe`,
+     * pois ficam guardados em colunas JSON desse registro.
+     */
+    private function duplicarPesquisaPrecoItens(Processo $processoOriginal, Processo $novoProcesso): void
+    {
+        foreach ($processoOriginal->pesquisaPrecoItens as $item) {
+            $novoItem = $item->replicate();
+            $novoItem->processo_id = $novoProcesso->id;
+            $novoItem->created_at = now();
+            $novoItem->updated_at = now();
+            $novoItem->save();
         }
     }
 

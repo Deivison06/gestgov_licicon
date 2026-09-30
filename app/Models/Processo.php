@@ -200,8 +200,10 @@ class Processo extends Model
     public function republicacoes()
     {
         return $this->hasMany(Documento::class)
-            ->where('tipo_documento', 'like', '%republicacao%')
-            ->orWhere('tipo_documento', 'like', '%adiado%')
+            ->where(function ($query) {
+                $query->where('tipo_documento', 'like', '%republicacao%')
+                    ->orWhere('tipo_documento', 'like', '%adiado%');
+            })
             ->orderBy('gerado_em', 'desc');
     }
 
@@ -209,6 +211,24 @@ class Processo extends Model
     {
         return $this->hasMany(Documento::class)
             ->where('tipo_documento', 'like', '%cancelamento%');
+    }
+
+    /**
+     * Scope para filtrar processos pelo indicador "foi republicado"
+     * (independente do status real de andamento). Usa a mesma condição
+     * da relação `republicacoes()`.
+     */
+    public function scopeFoiRepublicado($query, bool $republicado = true)
+    {
+        if ($republicado) {
+            return $query->where(function ($q) {
+                $q->whereNotNull('processo_original_id')
+                    ->orWhereHas('republicacoes');
+            });
+        }
+
+        return $query->whereNull('processo_original_id')
+            ->whereDoesntHave('republicacoes');
     }
 
     public function etp()
@@ -243,6 +263,17 @@ class Processo extends Model
         return $this->republicacoes()
             ->where('tipo_documento', 'like', '%adiado%')
             ->exists();
+    }
+
+    /**
+     * Verificar se este processo é fruto de uma republicação (duplicação de outro
+     * processo) ou já teve o edital republicado no próprio registro. Indicador
+     * independente do campo `status`.
+     */
+    public function getFoiRepublicadoAttribute(): bool
+    {
+        return $this->processo_original_id !== null
+            || $this->republicacoes()->exists();
     }
 
     /**
