@@ -4,27 +4,16 @@
     <meta charset="UTF-8">
     <title>Declaração de Manutenção - Fracassada</title>
     <style type="text/css">
-        @font-face {
-            font-family: 'Aptos';
-            src: url('{{ public_path('storage/fonts/Aptos.ttf') }}') format('truetype');
-            font-style: normal;
-        }
-        @font-face {
-            font-family: 'AptosExtraBold';
-            src: url('{{ public_path('storage/fonts/Aptos-ExtraBold.ttf') }}') format('truetype');
-            font-style: normal;
-        }
-
         @page { margin: 0; size: A4; }
         body {
-            margin: 0; padding: 4cm 2cm; font-size: 11pt; font-family: 'Aptos', sans-serif;
+            margin: 0; padding: 4cm 2cm; font-size: 10pt; font-family: Arial, Helvetica, sans-serif;
             background-image: url('{{ public_path($prefeitura->timbre) }}'); background-repeat: no-repeat;
             background-position: top left; background-size: cover; text-align: justify;
             text-justify: inter-word; line-height: 1.2;
         }
-        .signature-block { margin-top: 60px; text-align: center; }
+        .signature-block { margin-top: 24px; text-align: center; page-break-inside: avoid; }
         p { margin-bottom: 15px; }
-        h4, h3 { text-align: center; font-weight: bold; margin-bottom: 20px; font-family: 'AptosExtraBold', sans-serif;}
+        h4, h3 { text-align: center; font-weight: bold; margin-bottom: 20px; font-family: Arial, Helvetica, sans-serif;}
     </style>
 </head>
 <body>
@@ -65,12 +54,12 @@
     
     <p>5. A presente declaração integra os autos do Processo de Dispensa de Licitação para fins de atendimento ao requisito objetivo previsto na parte final do <em>caput</em> do inciso III do Art. 75 da Lei nº 14.133/2021.</p>
     
-    <div style="text-align: center; margin-top: 60px;">
+    <div style="text-align: center; margin-top: 24px;">
         {{ $prefeitura->cidade }} – PI, {{ $dataFormatada }}.
     </div>
 
     @if ($hasSelectedAssinantes)
-        <div style="margin-top: 40px; text-align: center;">
+        <div style="text-align: center;">
             <div class="signature-block" style="display: inline-block;">
                 ___________________________________<br>
                 <p style="line-height: 1.2; margin: 0;">
@@ -80,7 +69,7 @@
             </div>
         </div>
     @else
-        <div class="signature-block" style="margin-top: 40px;">
+        <div class="signature-block">
             ___________________________________<br>
             <p style="line-height: 1.2; margin: 0;">
                 (Nome e Cargo do Responsável Técnico/Setor Requisitante)<br>

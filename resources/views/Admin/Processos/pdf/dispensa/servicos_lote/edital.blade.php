@@ -5,17 +5,6 @@
     <meta charset="UTF-8">
     <title>EDITAL - Processo {{ $processo->numero_processo ?? $processo->id }}</title>
     <style type="text/css">
-        @font-face {
-            font-family: 'Aptos';
-            src: url('{{ public_path('storage/fonts/Aptos.ttf') }}') format('truetype');
-            font-style: normal;
-        }
-        @font-face {
-            font-family: 'AptosExtraBold';
-            src: url('{{ public_path('storage/fonts/Aptos-ExtraBold.ttf') }}') format('truetype');
-            font-style: normal;
-        }
-
         @page {
             margin: 0;
             size: A4;
@@ -23,8 +12,8 @@
         body {
             margin: 0;
             padding: 4cm 2cm;
-            font-size: 11pt;
-            font-family: 'Aptos', sans-serif;
+            font-size: 10pt;
+            font-family: Arial, Helvetica, sans-serif;
             /* Adiciona o timbre como background */
             background-image: url('{{ public_path($prefeitura->timbre) }}');
             background-repeat: no-repeat;
@@ -32,7 +21,7 @@
             background-size: cover;
             text-align: justify;
             text-justify: inter-word;
-            line-height: 1;
+            line-height: normal;
         }
 
         /* CLASSE PARA FORÇAR QUEBRA DE PÁGINA (ESSENCIAL PARA PDF) */
@@ -41,25 +30,14 @@
         }
 
         .footer-signature {
-            margin-top: 60px;
+            margin-top: 24px;
             text-align: right;
         }
 
         .signature-block {
-            margin-top: 60px;
+            margin-top: 24px;
             text-align: center;
-        }
-
-        /* ---------------------------------- */
-        /* ESTILOS - CONTEÚDO PRINCIPAL */
-        /* ---------------------------------- */
-        .capa-background {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
+            page-break-inside: avoid;
         }
     </style>
 </head>
@@ -95,7 +73,7 @@
             <p style="text-align: justify;">
                 1.2. A contratação ocorrerá conforme tabela abaixo.
             </p>
-            <table border="1" cellspacing="0" cellpadding="4" style="border-collapse: collapse; width: 100%; text-align: center; font-size: 8pt;">
+            <table border="1" cellspacing="0" cellpadding="4" style="border-collapse: collapse; width: 100%; text-align: center; font-size: 10pt;">
                 <thead>
                     <tr>
                         <th style="width: 6%;">ITEM</th>
@@ -116,7 +94,7 @@
                     @if ($itens && count($itens) > 0)
                         @foreach ($itensAgrupados as $loteNome => $itensDoLote)
                             @if ($loteNome !== 'Sem Lote')
-                                <tr style="background-color: #e9e9e9;">
+                                <tr style="background-color: #c8d3da;">
                                     <td colspan="6" style="text-align: left; font-weight: bold; padding-left: 10px;">{{ $loteNome }}</td>
                                 </tr>
                             @endif
@@ -451,8 +429,8 @@
         $primeiroAssinante = $assinantes[0]; // Pega o segundo item
         @endphp
 
-        <div style="margin-top: 40px; text-align: center;">
-            <div class="signature-block" style="display: inline-block; margin: 0 40px;">
+        <div style="text-align: center;">
+            <div class="signature-block" style="display: inline-block; margin-left: 40px; margin-right: 40px;">
                 ___________________________________<br>
                 <p style="line-height: 1.2;">
                     {{ $primeiroAssinante['responsavel'] }} <br>
@@ -462,7 +440,7 @@
         </div>
         @else
         {{-- Bloco Padrão (Fallback) --}}
-        <div class="signature-block" style="margin-top: 40px; text-align: center;">
+        <div class="signature-block">
             ___________________________________<br>
             <p style="line-height: 1.2;">
                 {{ $processo->prefeitura->autoridade_competente }} <br>
