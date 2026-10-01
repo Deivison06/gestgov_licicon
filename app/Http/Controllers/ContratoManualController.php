@@ -463,6 +463,34 @@ class ContratoManualController extends Controller
             }
         }
 
+        // Agrupa por modalidade (ordem fixa: CC, DL, IL, PE) e calcula subtotais
+        $processosAgrupados = $processos->groupBy(function ($p) {
+            return $p->modalidade?->getDisplayName() ?? 'Sem Modalidade';
+        });
+
+        // Ordena os grupos pela ordem definida no enum
+        $ordemModalidades = collect(\App\Enums\ModalidadeEnum::cases())
+            ->mapWithKeys(fn ($m) => [$m->getDisplayName() => $m->value]);
+
+        $processosAgrupados = $processosAgrupados->sortBy(
+            fn ($_, $nome) => $ordemModalidades->get($nome, 999)
+        );
+
+        // Subtotal por modalidade (mesmo parser de valor)
+        $subtotaisPorModalidade = $processosAgrupados->map(function ($grupo) {
+            return $grupo->sum(function ($processo) {
+                return $this->extrairValorNumerico(
+                    $processo->contrato->homologacao?->valor_total
+                    ?? ($processo->vencedores->sum('valor_total') ?: null)
+                    ?? $processo->finalizacao?->valor_total
+                    ?? $processo->finalizacao?->valor_melhor_proposta
+                    ?? $processo->detalhe?->valor_total
+                    ?? $processo->detalhe?->valor_estimado
+                    ?? 0
+                );
+            });
+        });
+
         $prefeituraNome = null;
         if ($isPrefeituraUser) {
             $prefeituraNome = auth()->user()->prefeitura?->nome;
@@ -484,6 +512,8 @@ class ContratoManualController extends Controller
 
         $pdf = Pdf::loadView('Admin.contratos_externos.pdf.relatorio-sistema', compact(
             'processos',
+            'processosAgrupados',
+            'subtotaisPorModalidade',
             'totalContratos',
             'valorGlobal',
             'dataAssinaturaMin',

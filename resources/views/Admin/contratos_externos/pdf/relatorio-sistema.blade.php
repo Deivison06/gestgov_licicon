@@ -288,135 +288,159 @@
     {{-- SEÇÃO 3 — RELAÇÃO DE CONTRATOS --}}
     {{-- ════════════════════════════════════════ --}}
     <div class="section">
-        <div class="section-title">3. Relação dos Contratos</div>
+        <div class="section-title">3. Relação dos Contratos por Modalidade</div>
 
         @if($processos->isEmpty())
             <p style="color:#888; font-style:italic; text-align:center; padding:20px 0;">
                 Nenhum contrato encontrado com os filtros aplicados.
             </p>
         @else
-            <table class="contratos-table">
-                <thead>
+            @php $numGlobal = 0; @endphp
+
+            @foreach($processosAgrupados as $nomeModalidade => $grupo)
+                {{-- ── Cabeçalho da modalidade ── --}}
+                <table style="width:100%; border-collapse:collapse; margin-top:14px; margin-bottom:0;">
                     <tr>
-                        <th style="width:4%">Nº</th>
-                        <th style="width:12%">Processo</th>
-                        <th style="width:12%">Modalidade</th>
-                        <th style="width:16%">Contrato</th>
-                        <th style="width:25%">Contratada</th>
-                        <th style="width:13%" class="text-center">Vigência</th>
-                        <th style="width:11%" class="text-right">Valor Total</th>
-                        <th style="width:8%" class="text-center">Situação</th>
+                        <td style="background:#1a3a4a; color:#fff; font-size:10px; font-weight:bold;
+                                   padding:6px 10px; letter-spacing:0.5px; text-transform:uppercase;">
+                            {{ $nomeModalidade }}
+                            <span style="font-weight:normal; font-size:9px; opacity:0.85;">
+                                — {{ $grupo->count() }} {{ $grupo->count() === 1 ? 'contrato' : 'contratos' }}
+                            </span>
+                        </td>
                     </tr>
-                </thead>
-                <tbody>
-                    @foreach($processos as $i => $processo)
-                        @php
-                            $bgClass = $i % 2 === 0 ? 'bg-odd' : 'bg-even';
+                </table>
 
-                            // A contratada é gravada em locais diferentes conforme a modalidade:
-                            //  - Pregão            -> homologação / vencedores
-                            //  - Concorrência e
-                            //    Dispensa          -> finalização do processo
-                            //  - Inexigibilidade   -> detalhe do processo (contratação direta)
-                            $contratada = $processo->contrato->homologacao?->razao_social
-                                ?: $processo->vencedores->first()?->razao_social
-                                ?: $processo->finalizacao?->razao_social
-                                ?: $processo->detalhe?->razao_social;
+                <table class="contratos-table" style="margin-top:0;">
+                    <thead>
+                        <tr>
+                            <th style="width:4%">Nº</th>
+                            <th style="width:14%">Processo</th>
+                            <th style="width:17%">Contrato</th>
+                            <th style="width:28%">Contratada</th>
+                            <th style="width:14%" class="text-center">Vigência</th>
+                            <th style="width:13%" class="text-right">Valor Total</th>
+                            <th style="width:10%" class="text-center">Situação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($grupo as $i => $processo)
+                            @php
+                                $numGlobal++;
+                                $bgClass = $i % 2 === 0 ? 'bg-odd' : 'bg-even';
 
-                            $contratadaCnpj = $processo->contrato->homologacao?->cnpj_empresa_vencedora
-                                ?: $processo->vencedores->first()?->cnpj_formatado
-                                ?: $processo->finalizacao?->cnpj_empresa_vencedora
-                                ?: $processo->detalhe?->cnpj_empresa_vencedora;
+                                // Contratada — localização varia por modalidade
+                                $contratada = $processo->contrato->homologacao?->razao_social
+                                    ?: $processo->vencedores->first()?->razao_social
+                                    ?: $processo->finalizacao?->razao_social
+                                    ?: $processo->detalhe?->razao_social;
 
-                            // Pregão: valor vem da homologação ou soma dos vencedores (já float)
-                            // Concorrência / Dispensa: valor vem da finalização (texto: "R$ 602.687,55 (...)")
-                            // Inexigibilidade: valor vem do detalhe (valor_estimado, também texto)
-                            $valorRaw = $processo->contrato->homologacao?->valor_total
-                                ?? ($processo->vencedores->sum('valor_total') ?: null)
-                                ?? $processo->finalizacao?->valor_total
-                                ?? $processo->finalizacao?->valor_melhor_proposta
-                                ?? $processo->detalhe?->valor_total
-                                ?? $processo->detalhe?->valor_estimado
-                                ?? 0;
+                                $contratadaCnpj = $processo->contrato->homologacao?->cnpj_empresa_vencedora
+                                    ?: $processo->vencedores->first()?->cnpj_formatado
+                                    ?: $processo->finalizacao?->cnpj_empresa_vencedora
+                                    ?: $processo->detalhe?->cnpj_empresa_vencedora;
 
-                            // Parseia strings monetárias brasileiras para float
-                            if (is_numeric($valorRaw)) {
-                                $valor = (float) $valorRaw;
-                            } else {
-                                $v = preg_replace('/\(.*$/u', '', (string) $valorRaw); // remove parte por extenso
-                                $v = preg_replace('/R\$|\s|\xc2\xa0/u', '', $v);       // remove R$, espaços
-                                if (preg_match('/^[\d.]+,\d{1,2}$/', trim($v))) {
-                                    $v = str_replace('.', '', $v);   // milhar
-                                    $v = str_replace(',', '.', $v);  // decimal
+                                // Valor — parser de strings monetárias brasileiras
+                                $valorRaw = $processo->contrato->homologacao?->valor_total
+                                    ?? ($processo->vencedores->sum('valor_total') ?: null)
+                                    ?? $processo->finalizacao?->valor_total
+                                    ?? $processo->finalizacao?->valor_melhor_proposta
+                                    ?? $processo->detalhe?->valor_total
+                                    ?? $processo->detalhe?->valor_estimado
+                                    ?? 0;
+
+                                if (is_numeric($valorRaw)) {
+                                    $valor = (float) $valorRaw;
                                 } else {
-                                    $v = str_replace(',', '', $v);
+                                    $v = preg_replace('/\(.*$/u', '', (string) $valorRaw);
+                                    $v = preg_replace('/R\$|\s|\xc2\xa0/u', '', $v);
+                                    if (preg_match('/^[\d.]+,\d{1,2}$/', trim($v))) {
+                                        $v = str_replace('.', '', $v);
+                                        $v = str_replace(',', '.', $v);
+                                    } else {
+                                        $v = str_replace(',', '', $v);
+                                    }
+                                    $valor = is_numeric(trim($v)) ? (float) trim($v) : 0.0;
                                 }
-                                $valor = is_numeric(trim($v)) ? (float) trim($v) : 0.0;
-                            }
 
-                            // Vigência: prazo contratado + período calculado a partir da assinatura.
-                            $vigenciaTexto = $processo->detalhe?->prazo_vigencia_texto;
-                            $vigenciaInicio = $processo->contrato->data_assinatura_contrato;
-                            $vigenciaFim = $processo->detalhe?->calcularFimVigencia($vigenciaInicio);
-                        @endphp
+                                $vigenciaTexto = $processo->detalhe?->prazo_vigencia_texto;
+                                $vigenciaInicio = $processo->contrato->data_assinatura_contrato;
+                                $vigenciaFim = $processo->detalhe?->calcularFimVigencia($vigenciaInicio);
+                            @endphp
 
-                        <tr class="{{ $bgClass }} border-no-bottom">
-                            <td class="text-center">{{ $i + 1 }}</td>
-                            <td>
-                                {{ $processo->numero_processo }}
-                                @if($processo->numero_procedimento)
-                                    <br><span style="font-size:7.5px;color:#888;">Proc: {{ $processo->numero_procedimento }}</span>
-                                @endif
+                            <tr class="{{ $bgClass }} border-no-bottom">
+                                <td class="text-center">{{ $numGlobal }}</td>
+                                <td>
+                                    {{ $processo->numero_processo }}
+                                    @if($processo->numero_procedimento)
+                                        <br><span style="font-size:7.5px;color:#888;">Proc: {{ $processo->numero_procedimento }}</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    {{ $processo->contrato->numero_contrato ?? '—' }}
+                                    @if($processo->contrato->data_assinatura_contrato)
+                                        <br><span style="font-size:7.5px;color:#888;">Assinatura: {{ $processo->contrato->data_assinatura_contrato->format('d/m/Y') }}</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    {{ $contratada ?? '—' }}
+                                    @if($contratadaCnpj)
+                                        <br><span style="font-size:7.5px;color:#888;">{{ $contratadaCnpj }}</span>
+                                    @endif
+                                </td>
+                                <td class="text-center">
+                                    {{ $vigenciaTexto ?: '—' }}
+                                    @if($vigenciaInicio && $vigenciaFim)
+                                        <br><span style="font-size:7.5px;color:#888;">
+                                            {{ $vigenciaInicio->format('d/m/Y') }} a {{ $vigenciaFim->format('d/m/Y') }}
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="text-right">
+                                    R$ {{ number_format((float) $valor, 2, ',', '.') }}
+                                </td>
+                                <td class="text-center">
+                                    @if($processo->contrato)
+                                        @php $sit = $processo->contrato->situacao; @endphp
+                                        <span class="badge badge-{{ strtolower($sit) }}">
+                                            {{ $sit }}
+                                        </span>
+                                    @else
+                                        —
+                                    @endif
+                                </td>
+                            </tr>
+                            <tr class="{{ $bgClass }} linha-objeto">
+                                <td colspan="7">
+                                    <strong>Objeto:</strong> {{ trim(html_entity_decode(strip_tags($processo->objeto ?? ''))) }}
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                    <tfoot>
+                        <tr style="background:#dce8f0;">
+                            <td colspan="5" class="text-right" style="font-size:9px; font-weight:bold; color:#1a3a4a;">
+                                Subtotal {{ $nomeModalidade }}:
                             </td>
-                            <td>{{ $processo->modalidade?->getDisplayName() ?? '—' }}</td>
-                            <td>
-                                {{ $processo->contrato->numero_contrato ?? '—' }}
-                                @if($processo->contrato->data_assinatura_contrato)
-                                    <br><span style="font-size:7.5px;color:#888;">Assinatura: {{ $processo->contrato->data_assinatura_contrato->format('d/m/Y') }}</span>
-                                @endif
+                            <td class="text-right" style="font-size:9px; font-weight:bold; color:#1a3a4a;">
+                                R$ {{ number_format($subtotaisPorModalidade[$nomeModalidade] ?? 0, 2, ',', '.') }}
                             </td>
-                            <td>
-                                {{ $contratada ?? '—' }}
-                                @if($contratadaCnpj)
-                                    <br><span style="font-size:7.5px;color:#888;">{{ $contratadaCnpj }}</span>
-                                @endif
-                            </td>
-                            <td class="text-center">
-                                {{ $vigenciaTexto ?: '—' }}
-                                @if($vigenciaInicio && $vigenciaFim)
-                                    <br><span style="font-size:7.5px;color:#888;">
-                                        {{ $vigenciaInicio->format('d/m/Y') }} a {{ $vigenciaFim->format('d/m/Y') }}
-                                    </span>
-                                @endif
-                            </td>
-                            <td class="text-right">
-                                R$ {{ number_format((float) $valor, 2, ',', '.') }}
-                            </td>
-                            <td class="text-center">
-                                @if($processo->contrato)
-                                    @php $sit = $processo->contrato->situacao; @endphp
-                                    <span class="badge badge-{{ strtolower($sit) }}">
-                                        {{ $sit }}
-                                    </span>
-                                @else
-                                    —
-                                @endif
-                            </td>
+                            <td></td>
                         </tr>
-                        <tr class="{{ $bgClass }} linha-objeto">
-                            <td colspan="8">
-                                <strong>Objeto:</strong> {{ trim(html_entity_decode(strip_tags($processo->objeto ?? ''))) }}
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <td colspan="7" class="text-right">Total geral:</td>
-                        <td class="text-right">R$ {{ number_format($valorGlobal, 2, ',', '.') }}</td>
-                        <td></td>
-                    </tr>
-                </tfoot>
+                    </tfoot>
+                </table>
+            @endforeach
+
+            {{-- ── Total geral ── --}}
+            <table style="width:100%; border-collapse:collapse; margin-top:12px;">
+                <tr style="background:#1a3a4a; color:#fff;">
+                    <td style="padding:8px 10px; font-size:10px; font-weight:bold; text-align:right; width:85%;">
+                        TOTAL GERAL ({{ $totalContratos }} {{ $totalContratos === 1 ? 'contrato' : 'contratos' }}):
+                    </td>
+                    <td style="padding:8px 10px; font-size:11px; font-weight:bold; text-align:right; width:15%;">
+                        R$ {{ number_format($valorGlobal, 2, ',', '.') }}
+                    </td>
+                </tr>
             </table>
         @endif
     </div>
