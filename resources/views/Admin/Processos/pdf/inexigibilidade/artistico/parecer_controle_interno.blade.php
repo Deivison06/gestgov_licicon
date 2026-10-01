@@ -5,18 +5,6 @@
     <meta charset="UTF-8">
     <title>PARECER DO CONTROLE INTERNO{{ $processo->numero_processo ?? $processo->id }}</title>
     <style type="text/css">
-        @font-face {
-            font-family: 'Aptos';
-            src: url('{{ public_path('storage/fonts/Aptos.ttf') }}') format('truetype');
-            font-style: normal;
-        }
-
-        @font-face {
-            font-family: 'AptosExtraBold';
-            src: url('{{ public_path('storage/fonts/Aptos-ExtraBold.ttf') }}') format('truetype');
-            font-style: normal;
-        }
-
         @page {
             margin: 0;
             size: A4;
@@ -25,8 +13,8 @@
         body {
             margin: 0;
             padding: 4cm 2cm;
-            font-size: 11pt;
-            font-family: 'Aptos', sans-serif;
+            font-size: 10pt;
+            font-family: Arial, Helvetica, sans-serif;
             /* Adiciona o timbre como background */
             background-image: url('{{ public_path($prefeitura->timbre) }}');
             background-repeat: no-repeat;
@@ -35,7 +23,7 @@
 
             text-align: justify;
             text-justify: inter-word;
-            line-height: 1;
+            line-height: normal;
         }
 
         /* CLASSE PARA FORÇAR QUEBRA DE PÁGINA (ESSENCIAL PARA PDF) */
@@ -69,98 +57,24 @@
 
         .cover-title {
             width: 60%;
-            font-size: 18pt;
+            font-size: 16pt;
             font-weight: 900;
             border: 2px solid #000;
             display: inline-block;
             line-height: 0.9;
-            padding: 10px 50px;
-            font-family: 'AptosExtraBold', sans-serif;
+            padding: 8px 40px;
+            font-family: Arial, Helvetica, sans-serif;
         }
 
         .footer-signature {
-            margin-top: 60px;
+            margin-top: 24px;
             text-align: right;
         }
 
         .signature-block {
-            margin-top: 60px;
+            margin-top: 24px;
             text-align: center;
-        }
-
-        /* Estilos opcionais para simular as linhas da imagem */
-        .line {
-            border-top: 2px solid black;
-            margin: 10px 0;
-            /* Espaçamento entre as linhas */
-        }
-
-        .content {
-            /* Centraliza o texto como na imagem */
-            margin: 40px 0;
-            /* Espaçamento acima e abaixo do conteúdo principal */
-        }
-
-        strong {
-            line-height: 1.5;
-            /* Melhora a leitura do texto em várias linhas */
-            display: block;
-            /* Garante que o strong ocupe a largura total */
-        }
-
-        /* ---------------------------------- */
-        /* ESTILOS - CONTEÚDO PRINCIPAL */
-        /* ---------------------------------- */
-        .container {
-            position: relative;
-            width: 100%;
-            height: 100%;
-        }
-
-        .conteudo-all {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 100%;
-            transform: translate(-50%, -50%);
-            text-align: left;
-        }
-
-        .title {
-            margin-left: -85px;
-            font-weight: bold;
-            font-size: 20pt;
-            background: #bebebe;
-            border: 1px solid #7a7a7a;
-            padding: 5px 50px;
-            display: inline-block;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .section {
-            margin-bottom: 15px;
-        }
-
-        .justify {
-            margin-top: 20px;
-            text-indent: 30px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        td.icon {
-            width: 80px;
-            text-align: center;
-            vertical-align: middle;
-        }
-
-        td.content {
-            vertical-align: middle;
-            padding-left: 10px;
+            page-break-inside: avoid;
         }
 
     </style>
@@ -293,8 +207,8 @@
             $primeiroAssinante = $assinantes[0]; // Pega o primeiro item
         @endphp
 
-        <div style="margin-top: 40px; text-align: center;">
-            <div class="signature-block" style="display: inline-block; margin: 0 40px;">
+        <div style="text-align: center;">
+            <div class="signature-block" style="display: inline-block; margin-left: 40px; margin-right: 40px;">
                 ___________________________________<br>
                 <p style="line-height: 1.2;">
                     {{ $primeiroAssinante['responsavel'] }} <br>
@@ -304,7 +218,7 @@
         </div>
     @else
         {{-- Bloco Padrão (Fallback) --}}
-        <div class="signature-block" style="margin-top: 40px; text-align: center;">
+        <div class="signature-block">
             ___________________________________<br>
             <p style="line-height: 1.2;">
                 {{ $processo->prefeitura->autoridade_competente }} <br>
