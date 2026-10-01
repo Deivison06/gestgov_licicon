@@ -5,19 +5,6 @@
     <meta charset="UTF-8">
     <title>Estudo Técnico Preliminar - Processo {{ $processo->numero_processo ?? $processo->id }}</title>
     <style type="text/css">
-        @font-face {
-            font-family: 'Aptos';
-            src: url('{{ public_path('storage/fonts/Aptos.ttf') }}') format('truetype');
-            font-style: normal;
-        }
-
-        @font-face {
-            font-family: 'AptosExtraBold';
-            src: url('{{ public_path('storage/fonts/Aptos-ExtraBold.ttf') }}') format('truetype');
-            font-style: normal;
-        }
-
-
         @page {
             margin: 0;
             size: A4;
@@ -27,7 +14,7 @@
             margin: 0;
             padding: 4cm 2cm;
             font-size: 10pt;
-            font-family: 'Aptos', sans-serif;
+            font-family: Arial, Helvetica, sans-serif;
             /* Adiciona o timbre como background */
             background-image: url('{{ public_path($prefeitura->timbre) }}');
             background-repeat: no-repeat;
@@ -36,7 +23,7 @@
 
             text-align: justify;
             text-justify: inter-word;
-            line-height: 1;
+            line-height: normal;
         }
 
         /* CLASSE PARA FORÇAR QUEBRA DE PÁGINA (ESSENCIAL PARA PDF) */
@@ -69,13 +56,14 @@
         }
 
         .cover-title {
-            font-size: 18pt;
+            width: 60%;
+            font-size: 16pt;
             font-weight: 900;
             border: 2px solid #000;
             display: inline-block;
             line-height: 0.9;
-            padding: 10px 50px;
-            font-family: 'AptosExtraBold', sans-serif;
+            padding: 8px 40px;
+            font-family: Arial, Helvetica, sans-serif;
         }
 
         /* ---------------------------------- */
@@ -101,14 +89,13 @@
         } */
 
         .title {
-            margin-left: -85px;
             font-weight: bold;
-            font-size: 20pt;
-            background: #bebebe;
-            border: 1px solid #7a7a7a;
+            font-size: 15pt;
+            background: #c8d3da;
+            border: 1px solid #607d8b;
             padding: 5px 10px;
             display: inline-block;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
 
         .section {
@@ -148,8 +135,8 @@
         .section-title {
             font-weight: bold;
 
-            background: #e0e0e0;
-            border: 1px solid #7a7a7a;
+            background: #c8d3da;
+            border: 1px solid #607d8b;
             padding: 8px 15px;
             margin-bottom: 15px;
         }
@@ -171,13 +158,14 @@
         }
 
         .footer-signature {
-            margin-top: 60px;
+            margin-top: 24px;
             text-align: right;
         }
 
         .signature-block {
-            margin-top: 60px;
+            margin-top: 24px;
             text-align: center;
+            page-break-inside: avoid;
         }
     </style>
 </head>
@@ -202,7 +190,7 @@
     {{-- ====================================================================== --}}
     <div class="container">
         <div class="conteudo-all">
-            <div style="margin: 30px 0 0;">
+            <div style="margin: 30px 0 0; text-align: center;">
                 <div class="title">ESTUDO TÉCNICO PRELIMINAR – ETP</div>
             </div>
             <div class="conteudo">
@@ -537,7 +525,7 @@
                 @if ($itens && count($itens) > 0)
                     @foreach ($itensAgrupados as $loteNome => $itensDoLote)
                         @if ($loteNome !== 'Sem Lote')
-                            <tr style="background-color: #e9e9e9;">
+                            <tr style="background-color: #f0f0f0;">
                                 <td colspan="4" style="text-align: left; font-weight: bold; padding-left: 10px;">{{ $loteNome }}</td>
                             </tr>
                         @endif
@@ -790,8 +778,8 @@
                     $primeiroAssinante = $assinantes[0]; // Pega o primeiro item
                 @endphp
 
-                <div style="margin-top: 40px; text-align: center;">
-                    <div class="signature-block" style="display: inline-block; margin: 0 40px;">
+                <div style="text-align: center;">
+                    <div class="signature-block" style="display: inline-block; margin-left: 40px; margin-right: 40px;">
                         ___________________________________<br>
                         <p style="line-height: 1.2;">
                             {{ $primeiroAssinante['responsavel'] }} <br>
@@ -801,7 +789,7 @@
                 </div>
             @else
                 {{-- Bloco Padrão (Fallback) --}}
-                <div class="signature-block" style="margin-top: 40px; text-align: center;">
+                <div class="signature-block">
                     ___________________________________<br>
                     <p style="line-height: 1.2;">
                         {{ $processo->prefeitura->autoridade_competente }} <br>
@@ -1842,8 +1830,8 @@
 
         @if ($hasSelectedAssinantes)
             {{-- Renderiza apenas o primeiro assinante --}}
-            <div style="margin-top:40px; text-align:center;">
-                <div class="signature-block" style="display:inline-block; margin:0 40px;">
+            <div style="text-align:center;">
+                <div class="signature-block" style="display:inline-block; margin-left:40px; margin-right:40px;">
                     ___________________________________<br>
                     <p style="font-size:10pt; line-height:1.2; margin:0;">
                         {{ $primeiroAssinante['responsavel'] }}<br>
@@ -1853,7 +1841,7 @@
             </div>
         @else
             {{-- Fallback (sem assinantes selecionados) --}}
-            <div class="signature-block" style="margin-top:40px; text-align:center;">
+            <div class="signature-block">
                 ___________________________________<br>
                 <p style="font-size:10pt; line-height:1.2; margin:0;">
                     {{ $processo->prefeitura->autoridade_competente ?? '____________________' }}<br>
@@ -1944,8 +1932,8 @@
                     $primeiroAssinante = $assinantes[0]; // Pega o primeiro item
                 @endphp
 
-                <div style="margin-top: 40px; text-align: center;">
-                    <div class="signature-block" style="display: inline-block; margin: 0 40px;">
+                <div style="text-align: center;">
+                    <div class="signature-block" style="display: inline-block; margin-left: 40px; margin-right: 40px;">
                         ___________________________________<br>
                         <p style="line-height: 1.2;">
                             {{ $primeiroAssinante['responsavel'] }} <br>
@@ -1955,7 +1943,7 @@
                 </div>
             @else
                 {{-- Bloco Padrão (Fallback) --}}
-                <div class="signature-block" style="margin-top: 40px; text-align: center;">
+                <div class="signature-block">
                     ___________________________________<br>
                     <p style="line-height: 1.2;">
                         {{ $processo->prefeitura->autoridade_competente }} <br>
@@ -2094,8 +2082,8 @@
                 $primeiroAssinante = $assinantes[1]; // Pega o segundo item
             @endphp
 
-            <div style="margin-top: 40px; text-align: center;">
-                <div class="signature-block" style="display: inline-block; margin: 0 40px;">
+            <div style="text-align: center;">
+                <div class="signature-block" style="display: inline-block; margin-left: 40px; margin-right: 40px;">
                     ___________________________________<br>
                     <p style="line-height: 1.2;">
                         {{ $primeiroAssinante['responsavel'] }} <br>
@@ -2105,7 +2093,7 @@
             </div>
         @else
             {{-- Bloco Padrão (Fallback) --}}
-            <div class="signature-block" style="margin-top: 40px; text-align: center;">
+            <div class="signature-block">
                 ___________________________________<br>
                 <p style="line-height: 1.2;">
                     {{ $processo->prefeitura->autoridade_competente }} <br>

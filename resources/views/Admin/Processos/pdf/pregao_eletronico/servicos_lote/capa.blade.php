@@ -5,20 +5,13 @@
     <meta charset="UTF-8">
     <title>Capa do Processo - {{ $processo->numero_processo }}</title>
     <style type="text/css">
-        @font-face {
-            font-family: 'Aptos';
-            src: url('{{ public_path('storage/fonts/Aptos-ExtraBold.ttf') }}') format('truetype');
-            font-weight: 900;
-            font-style: normal;
-        }
-
         @page {
             margin: 0;
             padding: 0;
         }
 
         body {
-            font-family: 'Aptos', sans-serif;
+            font-family: Arial, Helvetica, sans-serif;
             font-size: 18pt;
             font-weight: 900;
             text-transform: uppercase;

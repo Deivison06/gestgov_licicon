@@ -4,16 +4,6 @@
     <meta charset="UTF-8">
     <title>RELATÓRIO DE COTAÇÃO - {{ $processo->numero_processo ?? $processo->id }}</title>
     <style type="text/css">
-        @font-face {
-            font-family: 'Aptos';
-            src: url('{{ public_path('storage/fonts/Aptos.ttf') }}') format('truetype');
-            font-style: normal;
-        }
-        @font-face {
-            font-family: 'AptosExtraBold';
-            src: url('{{ public_path('storage/fonts/Aptos-ExtraBold.ttf') }}') format('truetype');
-            font-style: normal;
-        }
         @page {
             margin: 0;
             size: A4;
@@ -21,8 +11,8 @@
         body {
             margin: 0;
             padding: 4cm 2cm 2cm;
-            font-size: 11pt;
-            font-family: 'Aptos', sans-serif;
+            font-size: 10pt;
+            font-family: Arial, Helvetica, sans-serif;
             background-image: url('{{ public_path($prefeitura->timbre) }}');
             background-repeat: no-repeat;
             background-position: top left;
@@ -38,7 +28,7 @@
             font-weight: bold;
             font-size: 11pt;
             margin-bottom: 2pt;
-            font-family: 'AptosExtraBold', sans-serif;
+            font-family: Arial, Helvetica, sans-serif;
         }
         .subtitulo-pesquisa {
             text-align: center;
@@ -57,7 +47,7 @@
         table {
             border-collapse: collapse;
             width: 100%;
-            font-size: 8pt;
+            font-size: 10pt;
             margin-bottom: 8pt;
         }
         table th, table td {
@@ -67,8 +57,8 @@
         }
         table td.left, table th.left { text-align: left; }
 
-        .footer-signature { margin-top: 50px; text-align: right; }
-        .signature-block  { margin-top: 50px; text-align: center; }
+        .footer-signature { margin-top: 24px; text-align: right; }
+        .signature-block  { margin-top: 24px; text-align: center; page-break-inside: avoid; }
 
         /* ── CAPA ── */
         #cover-page {
@@ -88,13 +78,13 @@
         }
         .cover-title {
             width: 60%;
-            font-size: 18pt;
+            font-size: 16pt;
             font-weight: 900;
             border: 2px solid #000;
             display: inline-block;
             line-height: 0.9;
-            padding: 10px 50px;
-            font-family: 'AptosExtraBold', sans-serif;
+            padding: 8px 40px;
+            font-family: Arial, Helvetica, sans-serif;
         }
     </style>
 </head>
@@ -433,8 +423,8 @@
 @php $hasSelectedAssinantes = isset($assinantes) && count($assinantes) > 0; @endphp
 @if($hasSelectedAssinantes)
     @php $primeiroAssinante = $assinantes[0]; @endphp
-    <div style="margin-top: 40px; text-align: center;">
-        <div class="signature-block" style="display: inline-block; margin: 0 40px;">
+    <div style="text-align: center;">
+        <div class="signature-block" style="display: inline-block; margin-left: 40px; margin-right: 40px;">
             ___________________________________<br>
             <p style="line-height: 1.2;">
                 {{ $primeiroAssinante['responsavel'] }}<br>
@@ -443,7 +433,7 @@
         </div>
     </div>
 @else
-    <div class="signature-block" style="margin-top: 40px; text-align: center;">
+    <div class="signature-block">
         ___________________________________<br>
         <p style="line-height: 1.2;">
             {{ $processo->prefeitura->autoridade_competente }}
