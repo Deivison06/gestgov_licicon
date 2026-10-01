@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Processo;
 use App\Models\Prefeitura;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 use App\Services\AtaService;
 use App\Services\AtaDocumentoService;
 use App\Services\AtaContratacaoService;
@@ -50,6 +51,48 @@ class AtaController extends AbstractController
         $processos = $this->ataService->getProcessosFiltrados($prefeituraId, $processoId, $search);
 
         return view('Admin.Atas.index', compact('prefeituras', 'processos', 'prefeituraId', 'processoId', 'search'));
+    }
+
+    public function relatorioIndex(Request $request)
+    {
+        $user = auth()->user();
+        $prefeituraId = $request->get('prefeitura_id');
+
+        if ($user->prefeitura_id) {
+            $prefeituraId = $user->prefeitura_id;
+        }
+
+        $processoId = $request->get('processo_id');
+        $search = $request->get('search');
+
+        $dadosRelatorio = $this->ataService->obterDadosRelatorio($prefeituraId, $processoId, $search);
+
+        $prefeituraNome = null;
+        if ($prefeituraId) {
+            $pref = Prefeitura::find($prefeituraId);
+            $prefeituraNome = $pref ? ($pref->nome ?? ($pref->cidade . ' - ' . $pref->uf)) : null;
+        }
+
+        $processoNome = null;
+        if ($processoId) {
+            $proc = Processo::find($processoId);
+            $processoNome = $proc ? $proc->numero_processo : null;
+        }
+
+        $filtros = [
+            'pesquisa_livre' => $search,
+            'prefeitura' => $prefeituraNome,
+            'processo' => $processoNome,
+        ];
+
+        $pdf = Pdf::loadView('Admin.Atas.pdf.relatorio', [
+            'processos' => $dadosRelatorio['processos'],
+            'totais' => $dadosRelatorio['totais'],
+            'filtros' => $filtros,
+            'prefeituraNome' => $prefeituraNome,
+        ])->setPaper('a4', 'landscape');
+
+        return $pdf->stream('relatorio-atas-' . now()->format('Y-m-d') . '.pdf');
     }
 
     public function show(Processo $processo)

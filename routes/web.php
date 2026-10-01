@@ -716,6 +716,7 @@ Route::prefix('admin')
 
         Route::prefix('atas')->name('atas.')->middleware('can:atas e contratacoes')->group(function () {
             Route::get('/', [AtaController::class, 'index'])->name('index');
+            Route::get('/relatorio-pdf', [AtaController::class, 'relatorioIndex'])->name('relatorio-pdf');
             Route::get('/dashboard', [AtaController::class, 'dashboard'])->name('dashboard');
             Route::get('/{processo}', [AtaController::class, 'show'])->name('show');
             Route::post('/{processo}/gerar', [AtaController::class, 'gerarESalvarAta'])->name('gerar');

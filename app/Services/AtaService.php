@@ -17,6 +17,48 @@ class AtaService extends AbstractService
         return $this->repo->processosFiltrados($prefeituraId, $processoId, $search);
     }
 
+    public function obterDadosRelatorio($prefeituraId = null, $processoId = null, $search = null): array
+    {
+        $processos = $this->getProcessosFiltrados($prefeituraId, $processoId, $search);
+
+        $processosFormatados = $processos->map(function (Processo $processo) {
+            $valorLicitado = (float) $processo->lotes->sum(function ($lote) {
+                return (float) $lote->quantidade * (float) $lote->vl_unit;
+            });
+
+            $valorContratado = (float) $processo->lotesContratados
+                ->where('status', 'CONTRATADO')
+                ->sum('valor_total');
+
+            $valorPendente = (float) $processo->lotesContratados
+                ->where('status', 'PENDENTE')
+                ->sum('valor_total');
+
+            $saldoAContratar = $valorLicitado - $valorContratado;
+
+            return [
+                'processo' => $processo,
+                'valor_licitado' => $valorLicitado,
+                'valor_contratado' => $valorContratado,
+                'valor_pendente' => $valorPendente,
+                'saldo_a_contratar' => $saldoAContratar,
+            ];
+        });
+
+        $totais = [
+            'total_processos' => $processos->count(),
+            'valor_licitado' => $processosFormatados->sum('valor_licitado'),
+            'valor_contratado' => $processosFormatados->sum('valor_contratado'),
+            'valor_pendente' => $processosFormatados->sum('valor_pendente'),
+            'saldo_a_contratar' => $processosFormatados->sum('saldo_a_contratar'),
+        ];
+
+        return [
+            'processos' => $processosFormatados,
+            'totais' => $totais,
+        ];
+    }
+
 
     public function prepararDadosParaExibicao(Processo $processo): array
     {
