@@ -1686,8 +1686,8 @@
 
     @if ($hasSelectedAssinantes)
         {{-- Renderiza apenas o primeiro assinante --}}
-        <div style="margin-top:40px; text-align:center;">
-            <div class="signature-block" style="display:inline-block; margin:0 40px;">
+        <div style="text-align:center;">
+            <div class="signature-block" style="display:inline-block; margin-left:40px; margin-right:40px;">
                 ___________________________________<br>
                 <p style="font-size:10pt; line-height:1.2; margin:0;">
                     {{ $primeiroAssinante['responsavel'] }}<br>
@@ -1697,7 +1697,7 @@
         </div>
     @else
         {{-- Fallback (sem assinantes selecionados) --}}
-        <div class="signature-block" style="margin-top:40px; text-align:center;">
+        <div class="signature-block">
             ___________________________________<br>
             <p style="font-size:10pt; line-height:1.2; margin:0;">
                 {{ $processo->prefeitura->autoridade_competente ?? '____________________' }}<br>
@@ -1947,8 +1947,8 @@
             $primeiroAssinante = $assinantes[1]; // Pega o segundo item
         @endphp
 
-        <div style="margin-top: 40px; text-align: center;">
-            <div class="signature-block" style="display: inline-block; margin: 0 40px;">
+        <div style="text-align: center;">
+            <div class="signature-block" style="display: inline-block; margin-left: 40px; margin-right: 40px;">
                 ___________________________________<br>
                 <p style="line-height: 1.2;">
                     {{ $primeiroAssinante['responsavel'] }} <br>
@@ -1958,7 +1958,7 @@
         </div>
     @else
         {{-- Bloco Padrão (Fallback) --}}
-        <div class="signature-block" style="margin-top: 40px; text-align: center;">
+        <div class="signature-block">
             ___________________________________<br>
             <p style="line-height: 1.2;">
                 {{ $processo->prefeitura->autoridade_competente }} <br>
