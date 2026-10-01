@@ -5,17 +5,6 @@
     <meta charset="UTF-8">
     <title>Capa do Processo - {{ $processo->numero_processo }}</title>
     <style type="text/css">
-        @font-face {
-            font-family: 'Aptos';
-            src: url('{{ public_path('storage/fonts/Aptos.ttf') }}') format('truetype');
-            font-style: normal;
-        }
-        @font-face {
-            font-family: 'AptosExtraBold';
-            src: url('{{ public_path('storage/fonts/Aptos-ExtraBold.ttf') }}') format('truetype');
-            font-style: normal;
-        }
-
         @page {
             margin: 0;
             size: A4;
@@ -23,11 +12,11 @@
         body {
             margin: 0;
             padding: 4cm 2cm;
-            font-size: 11pt;
-            font-family: 'Aptos', sans-serif;
+            font-size: 10pt;
+            font-family: Arial, Helvetica, sans-serif;
             text-align: justify;
             text-justify: inter-word;
-            line-height: 1;
+            line-height: normal;
         }
         /* TIMBRE PARA TODAS AS PÁGINAS, MENOS A PRIMEIRA */
         body.timbre {
@@ -41,21 +30,6 @@
             background-position: top left;
             background-size: cover;
             z-index: -1;
-        }
-
-        /* CLASSE PARA FORÇAR QUEBRA DE PÁGINA (ESSENCIAL PARA PDF) */
-        .page-break {
-            page-break-after: always;
-        }
-
-        .footer-signature {
-            margin-top: 60px;
-            text-align: right;
-        }
-
-        .signature-block {
-            margin-top: 60px;
-            text-align: center;
         }
 
         /* ---------------------------------- */
