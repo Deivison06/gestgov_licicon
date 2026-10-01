@@ -439,8 +439,18 @@ class ContratoManualController extends Controller
         $dataAssinaturaMax = null;
 
         foreach ($processos as $processo) {
-            $valorGlobal += $processo->contrato->homologacao?->valor_total
-                ?? $processo->vencedores->sum('valor_total');
+            // Pregaão: valor vem da homologação ou soma dos vencedores (já são float)
+            // Concorrência / Dispensa: valor vem da finalização (texto descritivo, ex: "R$ 602.687,55 (...)")
+            // Inexigibilidade: valor vem do detalhe (valor_estimado, também texto descritivo)
+            $valorGlobal += $this->extrairValorNumerico(
+                $processo->contrato->homologacao?->valor_total
+                ?? ($processo->vencedores->sum('valor_total') ?: null)
+                ?? $processo->finalizacao?->valor_total
+                ?? $processo->finalizacao?->valor_melhor_proposta
+                ?? $processo->detalhe?->valor_total
+                ?? $processo->detalhe?->valor_estimado
+                ?? 0
+            );
 
             $dataAssinatura = $processo->contrato->data_assinatura_contrato;
             if ($dataAssinatura) {
@@ -483,6 +493,44 @@ class ContratoManualController extends Controller
         ))->setPaper('a4', 'landscape');
 
         return $pdf->stream('relatorio-contratos-sistema-' . now()->format('Y-m-d') . '.pdf');
+    }
+
+    /**
+     * Extrai o valor numérico de uma string monetária no formato brasileiro.
+     * Suporta formatos como:
+     *   - "R$ 602.687,55 (seiscentos e dois mil...)"
+     *   - "803.583,49 (oitocentos e três mil...)"
+     *   - "120000.00" (já numérico)
+     *   - 120000.00 (float/int)
+     */
+    private function extrairValorNumerico(mixed $valor): float
+    {
+        if (is_null($valor)) {
+            return 0.0;
+        }
+
+        // Já é numérico (float ou int): retorna direto
+        if (is_numeric($valor)) {
+            return (float) $valor;
+        }
+
+        // Remove tudo após o primeiro parêntese (porção descritiva por extenso)
+        $str = preg_replace('/\(.*$/u', '', (string) $valor);
+
+        // Remove símbolos: R$, espaços, \xc2\xa0 (non-breaking space)
+        $str = preg_replace('/R\$|\s|\xc2\xa0/u', '', $str);
+
+        // Formato brasileiro: pontos como milhar, vírgula como decimal
+        // Ex: "602.687,55" -> "602687.55"
+        if (preg_match('/^[\d.]+,\d{1,2}$/', $str)) {
+            $str = str_replace('.', '', $str); // remove separador de milhar
+            $str = str_replace(',', '.', $str); // vírgula -> ponto decimal
+        } else {
+            // Já está no formato anglo-saxão ou sem separadores
+            $str = str_replace(',', '', $str);
+        }
+
+        return is_numeric($str) ? (float) $str : 0.0;
     }
 
     // Método para visualizar detalhes do contrato manual

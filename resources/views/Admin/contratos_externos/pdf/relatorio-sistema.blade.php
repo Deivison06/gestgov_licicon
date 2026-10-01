@@ -328,8 +328,31 @@
                                 ?: $processo->finalizacao?->cnpj_empresa_vencedora
                                 ?: $processo->detalhe?->cnpj_empresa_vencedora;
 
-                            $valor = $processo->contrato->homologacao?->valor_total
-                                ?? $processo->vencedores->sum('valor_total');
+                            // Pregão: valor vem da homologação ou soma dos vencedores (já float)
+                            // Concorrência / Dispensa: valor vem da finalização (texto: "R$ 602.687,55 (...)")
+                            // Inexigibilidade: valor vem do detalhe (valor_estimado, também texto)
+                            $valorRaw = $processo->contrato->homologacao?->valor_total
+                                ?? ($processo->vencedores->sum('valor_total') ?: null)
+                                ?? $processo->finalizacao?->valor_total
+                                ?? $processo->finalizacao?->valor_melhor_proposta
+                                ?? $processo->detalhe?->valor_total
+                                ?? $processo->detalhe?->valor_estimado
+                                ?? 0;
+
+                            // Parseia strings monetárias brasileiras para float
+                            if (is_numeric($valorRaw)) {
+                                $valor = (float) $valorRaw;
+                            } else {
+                                $v = preg_replace('/\(.*$/u', '', (string) $valorRaw); // remove parte por extenso
+                                $v = preg_replace('/R\$|\s|\xc2\xa0/u', '', $v);       // remove R$, espaços
+                                if (preg_match('/^[\d.]+,\d{1,2}$/', trim($v))) {
+                                    $v = str_replace('.', '', $v);   // milhar
+                                    $v = str_replace(',', '.', $v);  // decimal
+                                } else {
+                                    $v = str_replace(',', '', $v);
+                                }
+                                $valor = is_numeric(trim($v)) ? (float) trim($v) : 0.0;
+                            }
 
                             // Vigência: prazo contratado + período calculado a partir da assinatura.
                             $vigenciaTexto = $processo->detalhe?->prazo_vigencia_texto;
@@ -367,7 +390,7 @@
                                 @endif
                             </td>
                             <td class="text-right">
-                                R$ {{ number_format($valor, 2, ',', '.') }}
+                                R$ {{ number_format((float) $valor, 2, ',', '.') }}
                             </td>
                             <td class="text-center">
                                 @if($processo->contrato)
