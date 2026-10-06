@@ -30,6 +30,11 @@
                     <div class="text-sm font-bold text-gray-800">
                         {{ $contrato->numero_processo }}
                     </div>
+                    @if($contrato->numero_procedimento)
+                        <div class="text-xs text-gray-500 mt-0.5">
+                            Proc: {{ $contrato->numero_procedimento }}
+                        </div>
+                    @endif
                 </td>
 
                 <td class="px-4 py-3">

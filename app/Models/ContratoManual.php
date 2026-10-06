@@ -18,6 +18,7 @@ class ContratoManual extends Model
         'prefeitura_id',
         'unidade_id',    // Vínculo com o contratante
         'numero_processo',
+        'numero_procedimento',
         'numero_contrato',
         'modalidade',
         'tipo_contrato',    // 'Fornecimento' ou 'Serviço'

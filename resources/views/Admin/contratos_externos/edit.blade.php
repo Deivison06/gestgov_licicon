@@ -59,13 +59,14 @@
         </div>
 
         {{-- Linha 2: Identificação Básica --}}
-        <div class="grid grid-cols-1 gap-6 md:grid-cols-3 mb-6">
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-4 mb-6">
             <div>
                 <label class="block mb-2 text-sm font-medium text-gray-700">Tipo de Contrato *</label>
                 <select name="tipo_contrato" required class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496]">
                     <option value="">Selecione</option>
                     <option value="Compras" {{ $contrato->tipo_contrato == 'Compras' ? 'selected' : '' }}>Compras</option>
                     <option value="Serviço" {{ $contrato->tipo_contrato == 'Serviço' ? 'selected' : '' }}>Serviço</option>
+                    <option value="Obra" {{ $contrato->tipo_contrato == 'Obra' ? 'selected' : '' }}>Obra</option>
                 </select>
                 @error('tipo_contrato')
                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -76,6 +77,14 @@
                 <input type="text" name="numero_processo" value="{{ $contrato->numero_processo }}" required
                         class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496]">
                 @error('numero_processo')
+                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+            <div>
+                <label class="block mb-2 text-sm font-medium text-gray-700">Nº Procedimento</label>
+                <input type="text" name="numero_procedimento" value="{{ $contrato->numero_procedimento }}"
+                        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496]">
+                @error('numero_procedimento')
                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror
             </div>

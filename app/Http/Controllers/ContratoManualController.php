@@ -640,9 +640,10 @@ class ContratoManualController extends Controller
             // Dados do Contrato
             'prefeitura_id'     => 'required|exists:prefeituras,id',
             'numero_processo'   => 'required|string',
+            'numero_procedimento' => 'nullable|string',
             'numero_contrato'   => 'nullable|string',
             'modalidade'        => 'nullable|string',
-            'tipo_contrato'     => 'required|in:Compras,Serviço',
+            'tipo_contrato'     => 'required|in:Compras,Serviço,Obra',
             'unidade_id'        => 'required|exists:unidades,id',
             'objeto'            => 'required|string',
 
@@ -801,6 +802,7 @@ class ContratoManualController extends Controller
                 'prefeitura_id'    => $prefeituraId,
                 'unidade_id'       => $unidadeId,
                 'numero_processo'  => $request->input('numero_processo'),
+                'numero_procedimento' => $request->input('numero_procedimento'),
                 'numero_contrato'  => $request->input('numero_contrato'),
                 'modalidade'       => $request->input('modalidade'),
                 'tipo_contrato'    => $request->input('tipo_contrato'),
@@ -933,6 +935,8 @@ class ContratoManualController extends Controller
         $request->validate([
             'prefeitura_id'     => 'required|exists:prefeituras,id',
             'numero_processo'   => 'required|string',
+            'numero_procedimento' => 'nullable|string',
+            'tipo_contrato'     => 'nullable|in:Compras,Serviço,Obra',
             'data_finalizacao'  => 'required|date',
             'valor_total'       => 'required',
             'unidade_id'        => 'required|exists:unidades,id',
@@ -971,6 +975,7 @@ class ContratoManualController extends Controller
             $dadosAtualizar = [
                 'prefeitura_id'     => $prefeituraId,
                 'numero_processo'   => $request->input('numero_processo'),
+                'numero_procedimento' => $request->input('numero_procedimento'),
                 'numero_contrato'   => $request->input('numero_contrato'),
                 'modalidade'        => $request->input('modalidade'),
                 'tipo_contrato'     => $request->input('tipo_contrato'),

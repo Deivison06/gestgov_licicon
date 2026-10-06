@@ -74,6 +74,11 @@
                             </div>
 
                             <div>
+                                <label class="block text-sm font-medium text-gray-500">Número do Procedimento</label>
+                                <p class="mt-1 text-sm text-gray-900">{{ $contrato->numero_procedimento ?? '-' }}</p>
+                            </div>
+
+                            <div>
                                 <label class="block text-sm font-medium text-gray-500">Número do Contrato</label>
                                 <p class="mt-1 text-sm text-gray-900">{{ $contrato->numero_contrato ?? '-' }}</p>
                             </div>
@@ -92,7 +97,14 @@
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-500">Tipo de Contrato</label>
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $contrato->tipo_contrato == 'Serviço' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800' }}">
+                                @php
+                                    $tipoContratoCores = [
+                                        'Serviço' => 'bg-purple-100 text-purple-800',
+                                        'Obra' => 'bg-orange-100 text-orange-800',
+                                    ];
+                                    $corTipoContrato = $tipoContratoCores[$contrato->tipo_contrato] ?? 'bg-blue-100 text-blue-800';
+                                @endphp
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $corTipoContrato }}">
                                 {{ $contrato->tipo_contrato }}
                             </span>
                             </div>

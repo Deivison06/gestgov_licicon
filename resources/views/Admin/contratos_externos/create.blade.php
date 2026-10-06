@@ -96,18 +96,32 @@
             </div>
 
             {{-- Linha 1: Identificação --}}
-            <div class="grid grid-cols-1 gap-6 mt-6 md:grid-cols-2">
+            <div class="grid grid-cols-1 gap-6 mt-6 md:grid-cols-3">
                 <div>
                     <label class="block mb-2 text-sm font-medium text-gray-700">
                         <span class="text-red-500">*</span> Nº Processo
                     </label>
-                    <input required 
+                    <input required
                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496] transition-colors"
-                           type="text" 
-                           name="numero_processo" 
-                           value="{{ old('numero_processo') }}" 
+                           type="text"
+                           name="numero_processo"
+                           value="{{ old('numero_processo') }}"
                            placeholder="Ex: 123/2024">
                     @error('numero_processo')
+                        <p class="mt-1 text-sm text-red-600">
+                            <i class="mr-1 fas fa-exclamation-circle"></i>{{ $message }}
+                        </p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label class="block mb-2 text-sm font-medium text-gray-700">Nº Procedimento</label>
+                    <input class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496] transition-colors"
+                           type="text"
+                           name="numero_procedimento"
+                           value="{{ old('numero_procedimento') }}"
+                           placeholder="Ex: 001/2024">
+                    @error('numero_procedimento')
                         <p class="mt-1 text-sm text-red-600">
                             <i class="mr-1 fas fa-exclamation-circle"></i>{{ $message }}
                         </p>
@@ -195,6 +209,7 @@
                     <option value="">Selecione</option>
                     <option value="Compras" {{ old('tipo_contrato') == 'Compras' ? 'selected' : '' }}>Compras</option>
                     <option value="Serviço" {{ old('tipo_contrato') == 'Serviço' ? 'selected' : '' }}>Serviço</option>
+                    <option value="Obra" {{ old('tipo_contrato') == 'Obra' ? 'selected' : '' }}>Obra</option>
                 </select>
                 @error('tipo_contrato')
                     <p class="mt-1 text-sm text-red-600">
