@@ -433,17 +433,17 @@
                                     <div class="font-mono text-sm font-semibold text-gray-900 whitespace-nowrap">
                                         {{ $processo->numero_processo }}
                                     </div>
-                                    <div class="mt-0.5 text-sm text-gray-700 max-w-md line-clamp-2" title="{{ strip_tags($processo->objeto) }}">
+                                    <div class="mt-0.5 text-sm text-gray-700 max-w-md line-clamp-2" title="{{ html_entity_decode(strip_tags($processo->objeto), ENT_QUOTES, 'UTF-8') }}">
                                         @if(request('search') && $processo->objeto)
                                             @php
-                                                $objeto = strip_tags($processo->objeto);
+                                                $objeto = html_entity_decode(strip_tags($processo->objeto), ENT_QUOTES, 'UTF-8');
                                                 $termoEscapado = preg_quote(request('search'), '/');
                                                 $objetoSeguro = htmlspecialchars($objeto);
                                                 $highlighted = preg_replace("/({$termoEscapado})/iu", '<span class="bg-yellow-200 px-1 rounded">$1</span>', $objetoSeguro);
                                             @endphp
                                             {!! $highlighted !!}
                                         @else
-                                            {!! strip_tags($processo->objeto) ?: '<span class="italic text-gray-400">Sem objeto</span>' !!}
+                                            {!! html_entity_decode(strip_tags($processo->objeto), ENT_QUOTES, 'UTF-8') ?: '<span class="italic text-gray-400">Sem objeto</span>' !!}
                                         @endif
                                     </div>
                                     <div class="mt-1 text-xs text-gray-400">
