@@ -202,6 +202,10 @@
                     @endif
                 </div>
 
+                @php
+                    $podeAbrirAditivoSistema = auth()->user()->can('fiscalizar contratos')
+                        || auth()->user()->hasRole(['prefeitura', 'Prefeitura - Personalizado']);
+                @endphp
                 @if($processo->contrato)
                     {{-- Incidentes Contratuais (Aditivos) --}}
                     <div class="mt-8 pt-8 border-t border-gray-100">
@@ -210,14 +214,14 @@
                                 <i class="fas fa-file-contract text-blue-600"></i>
                                 Incidentes Contratuais (Aditivos)
                             </h3>
-                            @can('fiscalizar contratos')
+                            @if($podeAbrirAditivoSistema)
                                 <button type="button"
                                         onclick="document.getElementById('modalNovoAditivoSistema').classList.remove('hidden')"
                                         class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
                                     <i class="fas fa-plus mr-2"></i>
                                     Registrar Incidente Contratual
                                 </button>
-                            @endcan
+                            @endif
                         </div>
 
                         {{-- Lista de Aditivos --}}
@@ -259,7 +263,7 @@
                     </div>
 
                     {{-- Modal: Iniciar Novo Aditivo --}}
-                    @can('fiscalizar contratos')
+                    @if($podeAbrirAditivoSistema)
                         <div id="modalNovoAditivoSistema" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title-aditivo-sistema" role="dialog" aria-modal="true">
                             <div class="flex items-end justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
                                 <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" aria-hidden="true"
@@ -295,6 +299,13 @@
                                                                 <option value="obras">Obras</option>
                                                             </select>
                                                         </div>
+                                                        @if(auth()->user()->hasRole(['prefeitura', 'Prefeitura - Personalizado']))
+                                                            <input type="hidden" name="origem" value="externo">
+                                                            <p class="text-xs text-gray-500">
+                                                                <i class="fas fa-circle-info"></i> Este aditivo será registrado como <strong>Externo</strong>.
+                                                                Para corrigir ou cancelar um aditivo depois de criado, entre em contato com a equipe Licicon.
+                                                            </p>
+                                                        @endif
                                                     </div>
                                                 </div>
                                             </div>
@@ -311,7 +322,7 @@
                                 </div>
                             </div>
                         </div>
-                    @endcan
+                    @endif
 
                     {{-- Acompanhamento da Execução Contratual --}}
                     <div class="mt-8 pt-8 border-t border-gray-100">

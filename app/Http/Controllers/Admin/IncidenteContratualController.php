@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Contrato;
 use App\Models\ContratoManual;
 use App\Models\Documento;
@@ -11,6 +10,7 @@ use App\Models\DocumentoSelecaoAssinantes;
 use App\Models\IncidenteContratual;
 use App\Models\LoteContratado;
 use App\Services\IncidenteContratualService;
+use Illuminate\Http\Request;
 
 /**
  * Gerencia o fluxo de Aditivo (IncidenteContratual), que pode pertencer tanto a um
@@ -41,10 +41,38 @@ class IncidenteContratualController extends Controller
     private function resolverContrato($contrato_id): Contrato|ContratoManual
     {
         if (request()->routeIs('admin.incidentes-manual.*')) {
-            return ContratoManual::findOrFail($contrato_id);
+            $contrato = ContratoManual::findOrFail($contrato_id);
+        } else {
+            $contrato = Contrato::with('processo')->findOrFail($contrato_id);
         }
 
-        return Contrato::findOrFail($contrato_id);
+        $this->autorizarAcessoPrefeitura($contrato);
+
+        return $contrato;
+    }
+
+    /**
+     * Usuários de prefeitura só têm acesso ao fluxo de aditivo externo (liberado via
+     * middleware de rota); aqui garantimos que, além disso, só mexam em contratos da
+     * própria prefeitura. ContratoManual já é filtrado por um global scope
+     * (PrefeituraScope), mas Contrato (sistema) não tem proteção nenhuma hoje — a
+     * titularidade só existe indiretamente via Processo.
+     */
+    private function autorizarAcessoPrefeitura(Contrato|ContratoManual $contrato): void
+    {
+        $user = auth()->user();
+
+        if (! $user->hasRole(['prefeitura', 'Prefeitura - Personalizado'])) {
+            return;
+        }
+
+        $prefeituraIdDoContrato = $contrato instanceof ContratoManual
+            ? $contrato->prefeitura_id
+            : $contrato->processo?->prefeitura_id;
+
+        if ($prefeituraIdDoContrato != $user->prefeitura_id) {
+            abort(403, 'Acesso não autorizado.');
+        }
     }
 
     /**
@@ -65,6 +93,18 @@ class IncidenteContratualController extends Controller
             ->findOrFail($incidente_id);
     }
 
+    /**
+     * Usuário de prefeitura só pode mexer na tela de aditivo externo de um incidente
+     * que foi, de fato, criado como externo (evita acessar o fluxo de um incidente
+     * interno por adivinhação de id).
+     */
+    private function autorizarAditivoExternoPrefeitura(IncidenteContratual $incidente): void
+    {
+        if (auth()->user()->hasRole(['prefeitura', 'Prefeitura - Personalizado']) && ! $incidente->ehExterno()) {
+            abort(403, 'Acesso não autorizado.');
+        }
+    }
+
     public function store(Request $request, $contrato_id)
     {
         $contrato = $this->resolverContrato($contrato_id);
@@ -74,6 +114,12 @@ class IncidenteContratualController extends Controller
             'categoria' => 'required|in:compras_servicos,obras',
             'origem' => 'nullable|in:interno,externo',
         ]);
+
+        // Usuários de prefeitura só podem criar aditivo externo — nunca confiar no
+        // campo vindo do request para esse perfil, mesmo que a UI já force isso.
+        if (auth()->user()->hasRole(['prefeitura', 'Prefeitura - Personalizado'])) {
+            $validated['origem'] = 'externo';
+        }
 
         $incidente = IncidenteContratual::create([
             'contratavel_id' => $contrato->id,
@@ -96,7 +142,7 @@ class IncidenteContratualController extends Controller
 
         return redirect()->route($this->routeName('documentos'), [
             'contrato_id' => $contrato->id,
-            'incidente_id' => $incidente->id
+            'incidente_id' => $incidente->id,
         ])->with('success', 'Rascunho de aditivo criado. Preencha os campos para finalizar.');
     }
 
@@ -107,6 +153,7 @@ class IncidenteContratualController extends Controller
     {
         $contrato = $this->resolverContrato($contrato_id);
         $incidente = $this->buscarIncidente($contrato, $incidente_id);
+        $this->autorizarAditivoExternoPrefeitura($incidente);
 
         $lotesContratados = $contrato instanceof Contrato
             ? LoteContratado::where('contrato_id', $contrato->id)->with('lote')->get()
@@ -136,6 +183,7 @@ class IncidenteContratualController extends Controller
     {
         $contrato = $this->resolverContrato($contrato_id);
         $incidente = $this->buscarIncidente($contrato, $incidente_id);
+        $this->autorizarAditivoExternoPrefeitura($incidente);
 
         $rules = [
             'data_aditivo' => 'required|date',
@@ -163,7 +211,7 @@ class IncidenteContratualController extends Controller
 
         // Sem vencimento cadastrado, não há data-base para calcular a prorrogação —
         // melhor recusar com uma mensagem clara do que aplicar silenciosamente nada.
-        if (in_array($incidente->tipo, ['prazo', 'prazo_valor']) && !$contrato->data_finalizacao) {
+        if (in_array($incidente->tipo, ['prazo', 'prazo_valor']) && ! $contrato->data_finalizacao) {
             return back()->withErrors([
                 'meses_prorrogacao' => 'Este contrato não tem uma data de vencimento cadastrada — cadastre-a antes de registrar um aditivo de prazo.',
             ])->withInput();
@@ -254,7 +302,7 @@ class IncidenteContratualController extends Controller
             'capa_aditivo' => [
                 'titulo' => 'Capa',
                 'cor' => '#9333ea', // roxo
-                'campos' => []
+                'campos' => [],
             ],
             'solicitacao_aditivo' => [
                 'titulo' => 'Solicitação do Aditivo',
@@ -274,8 +322,8 @@ class IncidenteContratualController extends Controller
                         'label' => 'Anexar PDF da solicitação de aditivo',
                         'tipo' => 'file',
                         'value' => $incidente->arquivo_solicitacao_path,
-                    ]
-                ]
+                    ],
+                ],
             ],
             'parecer_juridico_aditivo' => [
                 'titulo' => 'Parecer Jurídico',
@@ -283,20 +331,20 @@ class IncidenteContratualController extends Controller
                 'requer_assinatura' => $temAssinaturaEletronica,
                 'campos' => [
 
-                ]
+                ],
             ],
             'autorizacao_prefeito_aditivo' => [
                 'titulo' => 'Autorização do Prefeito',
                 'cor' => '#ea580c', // laranja
                 'requer_assinatura' => $temAssinaturaEletronica,
-                'campos' => []
+                'campos' => [],
             ],
             'termo_aditivo' => [
                 'titulo' => 'Termo Aditivo ao Contrato',
                 'cor' => '#0284c7', // azul
                 'requer_assinatura' => $temAssinaturaEletronica,
-                'campos' => []
-            ]
+                'campos' => [],
+            ],
         ];
 
         // Conditional fields for Termo Aditivo based on type and category
@@ -356,7 +404,7 @@ class IncidenteContratualController extends Controller
                     ],
                     [
                         'data_selecionada' => $valor,
-                        'caminho' => 'gerado_dinamicamente'
+                        'caminho' => 'gerado_dinamicamente',
                     ]
                 );
             }
@@ -439,19 +487,19 @@ class IncidenteContratualController extends Controller
         switch ($tipo) {
             case 'capa_aditivo':
                 $viewName = 'Admin.Processos.pdf.aditivos.capa';
-                $tituloArquivo = 'Capa_Aditivo_' . $numContratoSafe;
+                $tituloArquivo = 'Capa_Aditivo_'.$numContratoSafe;
                 break;
             case 'solicitacao_aditivo':
                 $viewName = 'Admin.Processos.pdf.aditivos.solicitacao';
-                $tituloArquivo = 'Solicitacao_Aditivo_' . $numContratoSafe;
+                $tituloArquivo = 'Solicitacao_Aditivo_'.$numContratoSafe;
                 break;
             case 'parecer_juridico_aditivo':
                 $viewName = 'Admin.Processos.pdf.aditivos.parecer';
-                $tituloArquivo = 'Parecer_Juridico_Aditivo_' . $numContratoSafe;
+                $tituloArquivo = 'Parecer_Juridico_Aditivo_'.$numContratoSafe;
                 break;
             case 'autorizacao_prefeito_aditivo':
                 $viewName = 'Admin.Processos.pdf.aditivos.autorizacao';
-                $tituloArquivo = 'Autorizacao_Aditivo_' . $numContratoSafe;
+                $tituloArquivo = 'Autorizacao_Aditivo_'.$numContratoSafe;
                 break;
             case 'termo_aditivo':
                 if ($incidente->categoria === 'obras') {
@@ -459,7 +507,7 @@ class IncidenteContratualController extends Controller
                 } else {
                     $viewName = 'Admin.Processos.pdf.aditivos.termo_compras';
                 }
-                $tituloArquivo = 'Termo_Aditivo_' . $numContratoSafe;
+                $tituloArquivo = 'Termo_Aditivo_'.$numContratoSafe;
                 break;
             default:
                 abort(404, 'Documento não encontrado.');
@@ -468,8 +516,8 @@ class IncidenteContratualController extends Controller
         // Recupera o documento para pegar a data, se houver (identificado por
         // incidente_id + tipo_documento — processo_id pode ser nulo para manuais)
         $documento = Documento::where('incidente_id', $incidente->id)
-                                          ->where('tipo_documento', $tipo)
-                                          ->first();
+            ->where('tipo_documento', $tipo)
+            ->first();
 
         $data_selecionada = $documento ? $documento->data_selecionada : null;
 
@@ -507,7 +555,7 @@ class IncidenteContratualController extends Controller
             'documentoSelecao'
         ))->setPaper('a4', 'portrait');
 
-        return $pdf->stream($tituloArquivo . '.pdf');
+        return $pdf->stream($tituloArquivo.'.pdf');
     }
 
     public function destroy($contrato_id, $incidente_id)

@@ -337,9 +337,19 @@ Route::prefix('admin')
 
         // Incidentes Contratuais (Aditivos) — Contratos do Sistema (App\Models\Contrato,
         // vinculado a um Processo licitatório).
-        Route::middleware('role:diretor_licicon|gerente_licicon|colaborador_licicon')->group(function () {
+        // Fluxo do aditivo externo: também liberado para usuários de prefeitura (o
+        // controller força origem=externo e valida a titularidade do contrato para esse perfil).
+        Route::middleware('role:diretor_licicon|gerente_licicon|colaborador_licicon|prefeitura|Prefeitura - Personalizado')->group(function () {
             Route::post('/contratos/{contrato_id}/incidentes', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'store'])
                 ->name('incidentes.store');
+            Route::get('/contratos/{contrato_id}/incidentes/{incidente_id}/externo', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'externo'])
+                ->name('incidentes.externo');
+            Route::post('/contratos/{contrato_id}/incidentes/{incidente_id}/externo', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'atualizarExterno'])
+                ->name('incidentes.externo.atualizar');
+        });
+
+        // Fluxo interno (geração de documentos/assinatura) e exclusão — exclusivo da equipe Licicon.
+        Route::middleware('role:diretor_licicon|gerente_licicon|colaborador_licicon')->group(function () {
             Route::post('/contratos/{contrato_id}/incidentes/{incidente_id}/atualizar-campos', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'atualizarCampos'])
                 ->name('incidentes.atualizar-campos');
             Route::get('/contratos/{contrato_id}/incidentes/{incidente_id}/documentos', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'documentos'])
@@ -348,19 +358,22 @@ Route::prefix('admin')
                 ->name('incidentes.documentos.salvar-campo');
             Route::get('/contratos/{contrato_id}/incidentes/{incidente_id}/pdf/{tipo}', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'gerarDocumentoPdf'])
                 ->name('incidentes.pdf');
-            Route::get('/contratos/{contrato_id}/incidentes/{incidente_id}/externo', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'externo'])
-                ->name('incidentes.externo');
-            Route::post('/contratos/{contrato_id}/incidentes/{incidente_id}/externo', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'atualizarExterno'])
-                ->name('incidentes.externo.atualizar');
             Route::delete('/contratos/{contrato_id}/incidentes/{incidente_id}', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'destroy'])
                 ->name('incidentes.destroy');
         });
 
         // Incidentes Contratuais (Aditivos) — Contratos Manuais/Externos (App\Models\ContratoManual,
         // sem Processo). Mesmos métodos do controller acima; o tipo é resolvido pelo nome da rota.
-        Route::middleware('role:diretor_licicon|gerente_licicon|colaborador_licicon')->group(function () {
+        Route::middleware('role:diretor_licicon|gerente_licicon|colaborador_licicon|prefeitura|Prefeitura - Personalizado')->group(function () {
             Route::post('/contratos-manuais/{contrato_id}/incidentes', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'store'])
                 ->name('incidentes-manual.store');
+            Route::get('/contratos-manuais/{contrato_id}/incidentes/{incidente_id}/externo', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'externo'])
+                ->name('incidentes-manual.externo');
+            Route::post('/contratos-manuais/{contrato_id}/incidentes/{incidente_id}/externo', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'atualizarExterno'])
+                ->name('incidentes-manual.externo.atualizar');
+        });
+
+        Route::middleware('role:diretor_licicon|gerente_licicon|colaborador_licicon')->group(function () {
             Route::post('/contratos-manuais/{contrato_id}/incidentes/{incidente_id}/atualizar-campos', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'atualizarCampos'])
                 ->name('incidentes-manual.atualizar-campos');
             Route::get('/contratos-manuais/{contrato_id}/incidentes/{incidente_id}/documentos', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'documentos'])
@@ -369,10 +382,6 @@ Route::prefix('admin')
                 ->name('incidentes-manual.documentos.salvar-campo');
             Route::get('/contratos-manuais/{contrato_id}/incidentes/{incidente_id}/pdf/{tipo}', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'gerarDocumentoPdf'])
                 ->name('incidentes-manual.pdf');
-            Route::get('/contratos-manuais/{contrato_id}/incidentes/{incidente_id}/externo', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'externo'])
-                ->name('incidentes-manual.externo');
-            Route::post('/contratos-manuais/{contrato_id}/incidentes/{incidente_id}/externo', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'atualizarExterno'])
-                ->name('incidentes-manual.externo.atualizar');
             Route::delete('/contratos-manuais/{contrato_id}/incidentes/{incidente_id}', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'destroy'])
                 ->name('incidentes-manual.destroy');
         });

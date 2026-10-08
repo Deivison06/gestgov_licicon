@@ -196,20 +196,24 @@
                 </div>
 
                 {{-- Incidentes Contratuais (Aditivos) --}}
+                @php
+                    $podeAbrirAditivoManual = auth()->user()->can('fiscalizar contratos')
+                        || auth()->user()->hasRole(['prefeitura', 'Prefeitura - Personalizado']);
+                @endphp
                 <div class="mt-8 pt-8 border-t border-gray-100">
                     <div class="flex items-center justify-between mb-6">
                         <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
                             <i class="fas fa-file-contract text-blue-600"></i>
                             Incidentes Contratuais (Aditivos)
                         </h3>
-                        @can('fiscalizar contratos')
+                        @if($podeAbrirAditivoManual)
                             <button type="button"
                                     onclick="document.getElementById('modalNovoAditivoManual').classList.remove('hidden')"
                                     class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
                                 <i class="fas fa-plus mr-2"></i>
                                 Registrar Incidente Contratual
                             </button>
-                        @endcan
+                        @endif
                     </div>
 
                     @if($contrato->incidentes && $contrato->incidentes->isNotEmpty())
@@ -250,7 +254,7 @@
                 </div>
 
                 {{-- Modal: Iniciar Novo Aditivo (Contrato Manual) --}}
-                @can('fiscalizar contratos')
+                @if($podeAbrirAditivoManual)
                     <div id="modalNovoAditivoManual" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title-aditivo-manual" role="dialog" aria-modal="true">
                         <div class="flex items-end justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
                             <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" aria-hidden="true"
@@ -289,19 +293,27 @@
                                                             <option value="obras">Obras</option>
                                                         </select>
                                                     </div>
-                                                    <div>
-                                                        <label class="block text-sm font-medium text-gray-700">Origem do Aditivo <span class="text-red-500">*</span></label>
-                                                        <div class="flex gap-4 mt-1">
-                                                            <label class="inline-flex items-center gap-1.5 text-sm text-gray-700">
-                                                                <input type="radio" name="origem" value="interno" checked class="text-[#009496] focus:ring-[#009496]">
-                                                                Interno (gera documentos)
-                                                            </label>
-                                                            <label class="inline-flex items-center gap-1.5 text-sm text-gray-700">
-                                                                <input type="radio" name="origem" value="externo" class="text-[#009496] focus:ring-[#009496]">
-                                                                Externo (feito fora do sistema)
-                                                            </label>
+                                                    @if(auth()->user()->hasRole(['prefeitura', 'Prefeitura - Personalizado']))
+                                                        <input type="hidden" name="origem" value="externo">
+                                                        <p class="text-xs text-gray-500">
+                                                            <i class="fas fa-circle-info"></i> Este aditivo será registrado como <strong>Externo</strong>.
+                                                            Para corrigir ou cancelar um aditivo depois de criado, entre em contato com a equipe Licicon.
+                                                        </p>
+                                                    @else
+                                                        <div>
+                                                            <label class="block text-sm font-medium text-gray-700">Origem do Aditivo <span class="text-red-500">*</span></label>
+                                                            <div class="flex gap-4 mt-1">
+                                                                <label class="inline-flex items-center gap-1.5 text-sm text-gray-700">
+                                                                    <input type="radio" name="origem" value="interno" checked class="text-[#009496] focus:ring-[#009496]">
+                                                                    Interno (gera documentos)
+                                                                </label>
+                                                                <label class="inline-flex items-center gap-1.5 text-sm text-gray-700">
+                                                                    <input type="radio" name="origem" value="externo" class="text-[#009496] focus:ring-[#009496]">
+                                                                    Externo (feito fora do sistema)
+                                                                </label>
+                                                            </div>
                                                         </div>
-                                                    </div>
+                                                    @endif
                                                 </div>
                                             </div>
                                         </div>
@@ -318,7 +330,7 @@
                             </div>
                         </div>
                     </div>
-                @endcan
+                @endif
 
                 {{-- Acompanhamento da Execução Contratual --}}
                 <div class="mt-8 pt-8 border-t border-gray-100">
