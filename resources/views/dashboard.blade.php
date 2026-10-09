@@ -260,6 +260,22 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Novo footer: Precisa de ajuda? -->
+        <div class="mt-8 bg-[#06302d] rounded-[20px] p-6 flex flex-col sm:flex-row items-center justify-between gap-6 slide-in shadow-[0_8px_24px_rgba(5,30,28,.25)]">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center shrink-0">
+                    <i class="fas fa-question text-[#2DC197] text-xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-white font-semibold text-lg">Precisa de ajuda?</h3>
+                    <p class="text-white/70 text-sm">Nossa equipe de suporte está pronta para ajudar você com qualquer dúvida sobre o sistema.</p>
+                </div>
+            </div>
+            <a href="https://wa.me/5589981007240" class="inline-flex items-center justify-center px-6 py-2.5 bg-[#2DC197] hover:bg-[#25a580] text-[#06302d] font-bold rounded-lg transition-colors whitespace-nowrap">
+                Falar com o suporte
+            </a>
+        </div>
     </div>
 
     <style>

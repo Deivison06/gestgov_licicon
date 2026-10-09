@@ -34,7 +34,7 @@ class EtpRepository
     }
 
     /**
-     * Lista ETPs de todas as prefeituras, para uso pelos admins da LiciCon
+     * Lista ETPs de todas as prefeituras, para uso pelos admins da Licicon
      * (que não estão vinculados a uma única prefeitura).
      */
     public function getAllWithOptionalPrefeitura($filters = [], $perPage = 15)

@@ -1,99 +1,67 @@
 <x-guest-layout>
-    <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
-    <form method="POST" action="{{ route('login') }}" class="w-full space-y-5">
+    <form method="POST" action="{{ route('login') }}" class="flex flex-col gap-4 px-8 pb-8 pt-7">
         @csrf
 
-        <!-- INPUT EMAIL -->
-        <div class="relative">
-            <input type="email"
-                    name="email"
-                    required
-                    placeholder="EMAIL"
-                    class="w-full px-4 py-3.5 rounded-lg bg-white/95 text-sm outline-none border-2 border-transparent focus:border-[#05322A]/30 focus:bg-white shadow-md transition-all duration-300">
+        <div>
+          <h1 class="mb-1 text-center text-2xl font-extrabold tracking-tight">Entrar</h1>
+          <p class="text-center text-[13px] text-slate-600">Acesse sua conta para continuar.</p>
         </div>
 
-        <!-- INPUT SENHA COM OLHINHO -->
-        <div class="relative">
-            <input type="password"
-                    id="password"
-                    name="password"
-                    required
-                    placeholder="SENHA"
-                    class="w-full px-4 py-3.5 pr-12 rounded-lg bg-white/95 text-sm outline-none border-2 border-transparent focus:border-[#05322A]/30 focus:bg-white shadow-md transition-all duration-300">
-            
-            <!-- Botão para mostrar/ocultar senha -->
-            <button type="button"
-                    id="togglePassword"
-                    class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-[#05322A] transition-colors focus:outline-none">
-                <!-- Ícone de olho fechado (padrão) -->
-                <svg id="eyeClosed" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                </svg>
-                <!-- Ícone de olho aberto (inicialmente oculto) -->
-                <svg id="eyeOpen" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L6.59 6.59m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
-                </svg>
+        <div>
+          <label for="email" class="mb-1.5 block text-[12.5px] font-semibold text-slate-700">E-mail</label>
+          <div class="flex h-[46px] items-center gap-2.5 rounded-xl border border-[#d5e0de] bg-[#f8fafa] pl-3.5 pr-2 text-slate-500 transition focus-within:border-[#2DC197] focus-within:bg-white focus-within:shadow-[0_0_0_3px_rgba(45,193,151,.28)]">
+            <svg class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+            <input id="email" name="email" type="email" autocomplete="username" required placeholder="voce@exemplo.com.br" value="{{ old('email') }}"
+                   class="h-full min-w-0 flex-1 border-0 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-500 focus:ring-0 [&:-webkit-autofill]:shadow-[inset_0_0_0px_1000px_#f8fafa] focus:[&:-webkit-autofill]:shadow-[inset_0_0_0px_1000px_#ffffff]">
+          </div>
+          <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        </div>
+
+        <div>
+          <label for="senha" class="mb-1.5 block text-[12.5px] font-semibold text-slate-700">Senha</label>
+          <div class="flex h-[46px] items-center gap-2.5 rounded-xl border border-[#d5e0de] bg-[#f8fafa] pl-3.5 pr-2 text-slate-500 transition focus-within:border-[#2DC197] focus-within:bg-white focus-within:shadow-[0_0_0_3px_rgba(45,193,151,.28)]">
+            <svg class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input id="senha" name="password" type="password" autocomplete="current-password" required placeholder="••••••••"
+                   class="h-full min-w-0 flex-1 border-0 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-500 focus:ring-0 [&:-webkit-autofill]:shadow-[inset_0_0_0px_1000px_#f8fafa] focus:[&:-webkit-autofill]:shadow-[inset_0_0_0px_1000px_#ffffff]">
+            <button id="toggle-senha" type="button" aria-label="Mostrar senha" title="Mostrar senha"
+                    class="flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] text-slate-500 transition hover:bg-[#e6efed] hover:text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700">
+              <svg data-eye-on class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.88 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.88 0"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg data-eye-off class="hidden h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/></svg>
             </button>
+          </div>
+          <x-input-error :messages="$errors->get('password')" class="mt-2" />
         </div>
 
-        <!-- LEMBRAR-ME -->
-        <label class="flex items-center text-xs text-[#05322A] mt-2 select-none cursor-pointer group">
-            <div class="relative mr-2">
-                <input type="checkbox"
-                    name="remember"
-                    class="appearance-none w-4 h-4 rounded-full border-2 border-[#05322A] checked:bg-[#05322A] checked:border-[#05322A] transition-all cursor-pointer group-hover:border-[#052323]">
-                <svg class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-2 h-2 text-white opacity-0 checked:opacity-100 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
-                </svg>
-            </div>
-            <span class="font-medium group-hover:text-[#052323] transition-colors">LEMBRAR-ME</span>
+        <label class="flex min-h-11 cursor-pointer items-center gap-2.5 text-[13.5px] font-medium text-slate-700 w-fit">
+          <input type="checkbox" name="remember" class="m-0 h-[18px] w-[18px] accent-teal-700 focus:ring-0">
+          Lembrar-me
         </label>
 
-        <!-- BOTÃO ENTRAR -->
         <button type="submit"
-            class="w-full bg-[#052323] hover:bg-[#03201E] text-white py-3.5 rounded-lg text-sm font-bold tracking-wide transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 shadow-lg hover:shadow-xl mt-6">
-            ENTRAR
+                class="flex h-[46px] w-full items-center justify-center gap-2.5 rounded-xl bg-[#2DC197] text-sm font-bold tracking-[.02em] text-[#06302d] shadow-[0_10px_22px_rgba(45,193,151,.35)] transition hover:bg-[#4bd2aa] active:translate-y-px focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 mt-2">
+          Entrar
+          <svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
         </button>
-
-        <!-- ESQUECI MINHA SENHA -->
-        @if (Route::has('password.request'))
-        <div class="text-center mt-4">
-            <a href="{{ route('password.request') }}"
-                class="text-xs text-[#05322A] hover:text-[#052323] font-medium hover:underline transition-colors">
-                ESQUECI MINHA SENHA
-            </a>
-        </div>
-        @endif
     </form>
 
-    <!-- Script para alternar visibilidade da senha -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const togglePassword = document.getElementById('togglePassword');
-            const passwordInput = document.getElementById('password');
-            const eyeClosed = document.getElementById('eyeClosed');
-            const eyeOpen = document.getElementById('eyeOpen');
+    (function () {
+      var input = document.getElementById('senha');
+      var btn = document.getElementById('toggle-senha');
+      var eyeOn = btn.querySelector('[data-eye-on]');
+      var eyeOff = btn.querySelector('[data-eye-off]');
 
-            togglePassword.addEventListener('click', function() {
-                // Alterna o tipo do input
-                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-                passwordInput.setAttribute('type', type);
-                
-                // Alterna a visibilidade dos ícones
-                eyeClosed.classList.toggle('hidden');
-                eyeOpen.classList.toggle('hidden');
-            });
-
-            // Opcional: Adiciona tecla Enter para alternar
-            togglePassword.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    togglePassword.click();
-                }
-            });
-        });
+      btn.addEventListener('click', function () {
+        var show = input.type === 'password';
+        input.type = show ? 'text' : 'password';
+        var label = show ? 'Ocultar senha' : 'Mostrar senha';
+        btn.setAttribute('aria-label', label);
+        btn.setAttribute('title', label);
+        eyeOn.classList.toggle('hidden', show);
+        eyeOff.classList.toggle('hidden', !show);
+      });
+    })();
     </script>
 </x-guest-layout>

@@ -3,141 +3,72 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>GestGov - Login</title>
-    
+    <title>{{ config('app.name', 'Licicon — Login') }}</title>
+    <link rel="icon" href="{{ asset('logo/minilogo-g-app-escuro-1024.png') }}">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    
+
     <style>
         body {
-            background: 
-                /* Gradiente suave base */
-                linear-gradient(135deg, #f8fafc 0%, #f1f5f9 25%, #e2e8f0 100%),
-                /* Padrão geométrico sutil */
-                repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(5, 35, 35, 0.03) 10px, rgba(5, 35, 35, 0.03) 20px),
-                repeating-linear-gradient(-45deg, transparent, transparent 10px, rgba(45, 193, 151, 0.03) 10px, rgba(45, 193, 151, 0.03) 20px);
-            
-            /* Efeito de partículas/bolhas no fundo */
-            background-image: 
-                radial-gradient(circle at 10% 20%, rgba(45, 193, 151, 0.08) 0%, transparent 20%),
-                radial-gradient(circle at 90% 80%, rgba(5, 35, 35, 0.08) 0%, transparent 20%),
-                radial-gradient(circle at 50% 50%, rgba(5, 50, 42, 0.05) 0%, transparent 30%);
-            
-            background-attachment: fixed;
-            background-size: cover;
-            position: relative;
-            overflow-x: hidden;
-        }
-        
-        /* Adicionando elementos decorativos no fundo */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: 
-                /* Linhas diagonais sutis */
-                linear-gradient(45deg, transparent 49.5%, rgba(5, 35, 35, 0.02) 49.5%, rgba(5, 35, 35, 0.02) 50.5%, transparent 50.5%),
-                linear-gradient(-45deg, transparent 49.5%, rgba(45, 193, 151, 0.02) 49.5%, rgba(45, 193, 151, 0.02) 50.5%, transparent 50.5%);
-            background-size: 60px 60px;
-            pointer-events: none;
-            z-index: -1;
-        }
-        
-        body::after {
-            content: '';
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 80vw;
-            height: 80vh;
-            background: radial-gradient(circle, rgba(45, 193, 151, 0.04) 0%, transparent 70%);
-            filter: blur(40px);
-            pointer-events: none;
-            z-index: -1;
-        }
-        
-        /* Animações sutis para o fundo */
-        @keyframes float {
-            0%, 100% { transform: translate(0, 0) rotate(0deg); }
-            33% { transform: translate(10px, -10px) rotate(1deg); }
-            66% { transform: translate(-5px, 5px) rotate(-1deg); }
-        }
-        
-        .bg-float-element {
-            position: fixed;
-            border: 1px solid rgba(5, 35, 35, 0.1);
-            border-radius: 20px;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(5px);
-            animation: float 20s ease-in-out infinite;
-            z-index: -1;
-        }
-        
-        /* Sombra mais destacada no container */
-        .shadow-xl {
-            box-shadow: 
-                0 20px 60px rgba(5, 35, 35, 0.15),
-                0 0 0 1px rgba(255, 255, 255, 0.9);
+            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
         }
     </style>
 </head>
+<body class="bg-[#051e1c] font-sans antialiased">
 
-<body class="min-h-screen flex items-center justify-center">
+<div class="relative flex min-h-screen flex-col items-center gap-6 overflow-hidden bg-[linear-gradient(160deg,#0b3b37_0%,#072926_55%,#051e1c_100%)] px-6 pb-6 pt-8 text-white">
 
-    <!-- Elementos decorativos flutuantes no fundo -->
-    <div class="bg-float-element w-40 h-40 top-1/4 left-10 opacity-20" style="animation-delay: -5s;"></div>
-    <div class="bg-float-element w-64 h-64 bottom-1/4 right-10 opacity-10" style="animation-delay: -10s;"></div>
-    <div class="bg-float-element w-32 h-32 top-10 right-1/4 opacity-15" style="animation-delay: -15s;"></div>
-    <div class="bg-float-element w-48 h-48 bottom-10 left-1/4 opacity-10" style="animation-delay: -7s;"></div>
+  <!-- Decoração de fundo -->
+  <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(720px_520px_at_50%_48%,rgba(45,193,151,.16),rgba(45,193,151,0)_70%)]"></div>
+  <div class="pointer-events-none absolute inset-x-0 top-0 h-[42%] bg-[radial-gradient(rgba(45,193,151,.4)_1.4px,rgba(45,193,151,0)_1.8px)] bg-[length:24px_24px] [-webkit-mask-image:linear-gradient(to_bottom,#000_0%,transparent_100%)] [mask-image:linear-gradient(to_bottom,#000_0%,transparent_100%)]"></div>
 
-    <!-- Container principal com duas colunas (MANTIDO IGUAL) -->
-    <div class="w-full max-w-5xl h-[550px] bg-white shadow-xl grid grid-cols-2 rounded-lg overflow-hidden">
+  <!-- ===================== MODAL ===================== -->
+  <main class="relative flex w-full flex-1 flex-col items-center justify-center">
+    <div class="w-full max-w-[400px] flex flex-col rounded-[20px] text-slate-900 shadow-[0_30px_80px_rgba(0,0,0,.45)]">
 
-        <!-- ============================
-             COLUNA ESQUERDA (fundo escuro) - MANTIDO IGUAL
-        ============================= -->
-        <div class="flex flex-col items-center justify-center relative px-10 bg-[#052323]"
-            style="background-image: url('{{ asset('Pattern-Login-GestGov.png') }}');
-                    background-size: cover;
-                    background-position: center;
-                    background-repeat: no-repeat;">
-            
-            <!-- LOGO -->
-            <img src="{{ url('logo/logo_gestgov_login.png') }}"
-                class="h-24 mb-8 select-none"
-                alt="GestGov">
+      <!-- Cabeçalho com a logo do sistema -->
+      <div class="flex items-center justify-center rounded-t-[20px] bg-[#0b3b37] px-8 py-1">
+        <img id="logo-sig"
+             src="{{ asset('logo/licicon-horizontal-colorida-para-fundo-escuro.png') }}"
+             alt="Licicon"
+             class="block h-auto w-full max-w-[280px]">
+      </div>
 
-            <!-- TEXTO DESCRITIVO -->
-            <div class="bg-[#003333] text-white text-[10px] px-4 py-2 rounded-md text-center w-70">
-                DESENVOLVEMOS SISTEMAS QUE ORGANIZAM,<br>
-                MODERNIZAM E TORNAM A GESTÃO PÚBLICA <br>
-                MAIS EFICIENTE.
-            </div>
-        </div>
+      <div class="rounded-b-[20px] bg-white">
+        {{ $slot }}
+      </div>
 
-        <!-- ============================
-             COLUNA DIREITA (fundo verde) - MANTIDO IGUAL
-        ============================= -->
-        <div class="bg-[#2DC197] flex flex-col items-center justify-center px-14 relative">
-
-            <!-- TÍTULO ENTRAR -->
-            <h2 class="text-3xl text-[#05322A] mb-6 tracking-wide" style="font-weight: 900">
-                ENTRAR
-            </h2>
-
-            <!-- FORMULÁRIO -->
-            {{ $slot }}
-
-            <!-- RODAPÉ -->
-            <div class="absolute bottom-6 text-center text-[10px] text-[#05322A]">
-                PRECISA DE AJUDA?<br>
-                <a href="#" class="font-bold hover:underline">FALE COM A GENTE</a>
-            </div>
-        </div>
     </div>
+  </main>
+  <!-- =================== FIM DO MODAL =================== -->
+
+  <!-- Rodapé: empresa e ajuda -->
+  <footer class="relative flex w-full max-w-[1200px] flex-wrap items-center justify-between gap-x-6 gap-y-4 border-t border-white/10 pt-5 z-10">
+    <div class="flex max-w-[380px] flex-col gap-3">
+      <div class="flex items-center gap-3.5">
+        <span class="whitespace-nowrap text-[11px] font-bold uppercase tracking-[.1em] text-white/60">Desenvolvido por</span>
+        <span class="h-5 w-px shrink-0 bg-white/20"></span>
+        <img id="logo-empresa"
+             src="{{ asset('logo/logo_gestcloud.png') }}"
+             alt="GestCloud"
+             class="block h-6 w-auto">
+      </div>
+      <p class="text-xs leading-relaxed text-white/70">Desenvolvemos sistemas que organizam, modernizam e tornam a gestão pública mais eficiente.</p>
+    </div>
+
+    <a href="https://wa.me/5589981007240" target="_blank" rel="noopener noreferrer"
+       class="inline-flex items-center gap-2.5 rounded-full bg-white py-1.5 pl-4 pr-1.5 text-[12.5px] font-medium text-slate-900 shadow-[0_4px_14px_rgba(0,0,0,.25)] transition hover:shadow-[0_6px_20px_rgba(0,0,0,.35)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#5eead4]">
+      Dificuldade no acesso? Fale conosco.
+      <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#2DC197] text-[#06302d]">
+        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+      </span>
+    </a>
+  </footer>
+</div>
 
 </body>
 </html>
