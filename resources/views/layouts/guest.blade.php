@@ -60,7 +60,7 @@
       <p class="text-xs leading-relaxed text-white/70">Desenvolvemos sistemas que organizam, modernizam e tornam a gestão pública mais eficiente.</p>
     </div>
 
-    <a href="https://wa.me/5589981007240" target="_blank" rel="noopener noreferrer"
+    <a href="https://wa.me/558988060983" target="_blank" rel="noopener noreferrer"
        class="inline-flex items-center gap-2.5 rounded-full bg-white py-1.5 pl-4 pr-1.5 text-[12.5px] font-medium text-slate-900 shadow-[0_4px_14px_rgba(0,0,0,.25)] transition hover:shadow-[0_6px_20px_rgba(0,0,0,.35)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#5eead4]">
       Dificuldade no acesso? Fale conosco.
       <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#2DC197] text-[#06302d]">

@@ -272,7 +272,7 @@
                     <p class="text-white/70 text-sm">Nossa equipe de suporte está pronta para ajudar você com qualquer dúvida sobre o sistema.</p>
                 </div>
             </div>
-            <a href="https://wa.me/5589981007240" class="inline-flex items-center justify-center px-6 py-2.5 bg-[#2DC197] hover:bg-[#25a580] text-[#06302d] font-bold rounded-lg transition-colors whitespace-nowrap">
+            <a href="https://wa.me/558988060983" class="inline-flex items-center justify-center px-6 py-2.5 bg-[#2DC197] hover:bg-[#25a580] text-[#06302d] font-bold rounded-lg transition-colors whitespace-nowrap">
                 Falar com o suporte
             </a>
         </div>

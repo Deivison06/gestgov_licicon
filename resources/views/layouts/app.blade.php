@@ -178,12 +178,20 @@
                                 <svg class="{{ request()->routeIs('admin.atas.*') ? $iconAtivo : $iconInativo }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 12h-5"/><path d="M15 8h-5"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"/></svg>
                                 <span class="flex-1 whitespace-nowrap group-[.is-collapsed]/sb:hidden">Atas e Contratações</span>
                             </a>
+                        @else
+                            <a href="#" data-locked="Módulo de Atas e Contratações bloqueado no seu plano" data-tip="1"
+                               class="{{ $navItemBase }} text-white/40 cursor-not-allowed hover:bg-transparent hover:text-white/40">
+                                <svg class="h-5 w-5 shrink-0 text-white/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 12h-5"/><path d="M15 8h-5"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"/></svg>
+                                <span class="flex-1 whitespace-nowrap group-[.is-collapsed]/sb:hidden">Atas e Contratações</span>
+                                <div class="ml-auto inline-flex items-center justify-center group-[.is-collapsed]/sb:hidden"><i class="fas fa-lock text-xs text-white/30"></i></div>
+                            </a>
                         @endcan
 
                         @if(auth()->user()->hasAnyRole(['diretor_licicon', 'gerente_licicon', 'colaborador_licicon', 'prefeitura']))
                             @php
                                 $etpMenuActive = request()->routeIs('admin.etps.*') || request()->routeIs('admin.etps_recebidos.*') || request()->routeIs('admin.etp_itens.*');
                             @endphp
+                        @can('etp inteligente')
                             <div x-data="{ open: {{ $etpMenuActive ? 'true' : 'false' }} }" class="group/lk relative flex flex-col">
                                 <button type="button"
                                         @click="if (collapsed && isDesktop) { collapsed = false; sigSetSidebarCollapsed(false) }; open = !open"
@@ -214,6 +222,14 @@
                                     @endif
                                 </div>
                             </div>
+                        @else
+                            <a href="#" data-locked="Módulo de ETP Inteligente bloqueado no seu plano" data-tip="1"
+                               class="{{ $navItemBase }} text-white/40 cursor-not-allowed hover:bg-transparent hover:text-white/40">
+                                <svg class="h-5 w-5 shrink-0 text-white/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/></svg>
+                                <span class="flex-1 whitespace-nowrap group-[.is-collapsed]/sb:hidden">ETP Inteligente</span>
+                                <div class="ml-auto inline-flex items-center justify-center group-[.is-collapsed]/sb:hidden"><i class="fas fa-lock text-xs text-white/30"></i></div>
+                            </a>
+                        @endcan
                         @endif
 
                         <a href="{{ route('admin.solicitacoes.index') }}" title="Solicitações"
@@ -223,19 +239,37 @@
                             <span class="flex-1 whitespace-nowrap group-[.is-collapsed]/sb:hidden">Solicitações</span>
                         </a>
 
-                        <a href="{{ route('admin.pcas.index') }}" title="PCA"
-                           @if(request()->routeIs('admin.pcas.*')) aria-current="page" @endif
-                           class="{{ $navItemBase }} {{ request()->routeIs('admin.pcas.*') ? $navItemActive : $navItemInactive }}">
-                            <svg class="{{ request()->routeIs('admin.pcas.*') ? $iconAtivo : $iconInativo }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-                            <span class="flex-1 whitespace-nowrap group-[.is-collapsed]/sb:hidden">PCA</span>
-                        </a>
+                        @can('pca')
+                            <a href="{{ route('admin.pcas.index') }}" title="PCA"
+                               @if(request()->routeIs('admin.pcas.*')) aria-current="page" @endif
+                               class="{{ $navItemBase }} {{ request()->routeIs('admin.pcas.*') ? $navItemActive : $navItemInactive }}">
+                                <svg class="{{ request()->routeIs('admin.pcas.*') ? $iconAtivo : $iconInativo }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                                <span class="flex-1 whitespace-nowrap group-[.is-collapsed]/sb:hidden">PCA</span>
+                            </a>
+                        @else
+                            <a href="#" data-locked="Módulo de PCA bloqueado no seu plano" data-tip="1"
+                               class="{{ $navItemBase }} text-white/40 cursor-not-allowed hover:bg-transparent hover:text-white/40">
+                                <svg class="h-5 w-5 shrink-0 text-white/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                                <span class="flex-1 whitespace-nowrap group-[.is-collapsed]/sb:hidden">PCA</span>
+                                <div class="ml-auto inline-flex items-center justify-center group-[.is-collapsed]/sb:hidden"><i class="fas fa-lock text-xs text-white/30"></i></div>
+                            </a>
+                        @endcan
 
-                        <a href="{{ route('admin.contratos.index') }}" title="Contratos"
-                           @if(request()->routeIs('admin.contratos.*')) aria-current="page" @endif
-                           class="{{ $navItemBase }} {{ request()->routeIs('admin.contratos.*') ? $navItemActive : $navItemInactive }}">
-                            <svg class="{{ request()->routeIs('admin.contratos.*') ? $iconAtivo : $iconInativo }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
-                            <span class="flex-1 whitespace-nowrap group-[.is-collapsed]/sb:hidden">Contratos</span>
-                        </a>
+                        @can('contratos')
+                            <a href="{{ route('admin.contratos.index') }}" title="Contratos"
+                               @if(request()->routeIs('admin.contratos.*')) aria-current="page" @endif
+                               class="{{ $navItemBase }} {{ request()->routeIs('admin.contratos.*') ? $navItemActive : $navItemInactive }}">
+                                <svg class="{{ request()->routeIs('admin.contratos.*') ? $iconAtivo : $iconInativo }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+                                <span class="flex-1 whitespace-nowrap group-[.is-collapsed]/sb:hidden">Contratos</span>
+                            </a>
+                        @else
+                            <a href="#" data-locked="Módulo de Contratos bloqueado no seu plano" data-tip="1"
+                               class="{{ $navItemBase }} text-white/40 cursor-not-allowed hover:bg-transparent hover:text-white/40">
+                                <svg class="h-5 w-5 shrink-0 text-white/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+                                <span class="flex-1 whitespace-nowrap group-[.is-collapsed]/sb:hidden">Contratos</span>
+                                <div class="ml-auto inline-flex items-center justify-center group-[.is-collapsed]/sb:hidden"><i class="fas fa-lock text-xs text-white/30"></i></div>
+                            </a>
+                        @endcan
 
                         @can('fiscalizar contratos')
                             <a href="{{ route('admin.fiscalizacoes.index') }}" title="Fiscalização"
@@ -243,6 +277,13 @@
                                class="{{ $navItemBase }} {{ request()->routeIs('admin.fiscalizacoes.*') ? $navItemActive : $navItemInactive }}">
                                 <svg class="{{ request()->routeIs('admin.fiscalizacoes.*') ? $iconAtivo : $iconInativo }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="m9 14 2 2 4-4"/></svg>
                                 <span class="flex-1 whitespace-nowrap group-[.is-collapsed]/sb:hidden">Fiscalização</span>
+                            </a>
+                        @else
+                            <a href="#" data-locked="Módulo de Fiscalização bloqueado no seu plano" data-tip="1"
+                               class="{{ $navItemBase }} text-white/40 cursor-not-allowed hover:bg-transparent hover:text-white/40">
+                                <svg class="h-5 w-5 shrink-0 text-white/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="m9 14 2 2 4-4"/></svg>
+                                <span class="flex-1 whitespace-nowrap group-[.is-collapsed]/sb:hidden">Fiscalização</span>
+                                <div class="ml-auto inline-flex items-center justify-center group-[.is-collapsed]/sb:hidden"><i class="fas fa-lock text-xs text-white/30"></i></div>
                             </a>
                         @endcan
                     </div>
