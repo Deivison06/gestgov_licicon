@@ -517,6 +517,12 @@ Route::prefix('admin')
             Route::post('/pesquisa-preco-tce', [ProcessoController::class, 'salvarTcePrecos'])
                 ->name('processos.pesquisa_preco_tce.store');
 
+            Route::get('/pesquisa-preco-memoria-calculo', [ProcessoController::class, 'pesquisaPrecoMemoriaCalculo'])
+                ->name('processos.pesquisa_preco_memoria_calculo');
+
+            Route::post('/pesquisa-preco-memoria-calculo', [ProcessoController::class, 'importarMemoriaCalculo'])
+                ->name('processos.pesquisa_preco_memoria_calculo.store');
+
             Route::get('/cota-reservada', [ProcessoController::class, 'cotaReservada'])
                 ->name('processos.cota_reservada');
 

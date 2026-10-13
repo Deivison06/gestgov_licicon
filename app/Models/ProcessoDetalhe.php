@@ -52,6 +52,8 @@ class ProcessoDetalhe extends Model
         'tipo_relatorio_analise_mercado',
         'fornecedor_local_precos',
         'anexo_pdf_analise_mercado',
+        'fontes_consultadas',
+        'analise_precos_coletados',
 
         'encaminhamento_elaborar_editais',
         'encaminhamento_parecer_juridico',

@@ -400,7 +400,7 @@ class ProcessoPdfService extends AbstractService
 
     public function prepararDadosPdf(Processo $processo, array $validatedData): array
     {
-        $processo->load(['detalhe', 'prefeitura', 'etp.itens', 'etp.lotes.itens', 'pesquisaPrecoItens']);
+        $processo->load(['detalhe', 'prefeitura', 'etp.itens', 'etp.lotes.itens', 'pesquisaPrecoItens', 'pesquisaPrecoMemoriaItens']);
 
         // Se houver um ETP vinculado, priorizamos os dados dinâmicos do ETP para as tabelas de itens
         if ($processo->etp) {
@@ -1440,6 +1440,12 @@ class ProcessoPdfService extends AbstractService
                 $avg = count($vals) > 0 ? array_sum($vals) / count($vals) : 0;
                 if ($avg > 0) {
                     $precoMapId[(int) $p['etp_item_id']] = $avg;
+                }
+            }
+        } elseif ($tipoRelatorio === 'ia_claude') {
+            foreach ($processo->pesquisaPrecoMemoriaItens as $memoriaItem) {
+                if ($memoriaItem->etp_item_id) {
+                    $precoMapId[(int) $memoriaItem->etp_item_id] = (float) $memoriaItem->valor_adotado;
                 }
             }
         } else {

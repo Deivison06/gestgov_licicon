@@ -697,8 +697,8 @@
                 Salvo
             </span>
         </div>
-        <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            @foreach(['tce' => 'Painel TCE', 'fornecedor_local' => 'Fornecedor Local', 'cesta_preco' => 'Cesta de Preços', 'pncp' => 'PNCP'] as $valor => $label)
+        <div class="grid grid-cols-2 gap-2 sm:grid-cols-5">
+            @foreach(['tce' => 'Painel TCE', 'fornecedor_local' => 'Fornecedor Local', 'cesta_preco' => 'Cesta de Preços', 'pncp' => 'PNCP', 'ia_claude' => 'Pesquisa via IA'] as $valor => $label)
             <label class="flex items-center gap-2 p-3 border rounded-lg cursor-pointer transition-colors"
                    :class="tipo_relatorio_analise_mercado === '{{ $valor }}' ? 'bg-blue-50 border-blue-400 text-blue-800' : 'bg-white border-gray-200 hover:bg-gray-50'">
                 <input type="radio"
@@ -762,6 +762,33 @@
             <span class="ml-2 inline-flex items-center gap-1 px-2.5 py-1 bg-green-50 text-green-700 text-xs font-bold rounded-full border border-green-200">
                 <i class="fas fa-check-circle"></i> {{ $countPesq }} {{ Str::plural('referência', $countPesq) }} PNCP
             </span>
+            @endif
+        </div>
+
+        {{-- Bloco do relatório via IA (Claude): campos livres + importação da Memória de Cálculo --}}
+        <div x-show="tipo_relatorio_analise_mercado === 'ia_claude'" x-cloak class="mt-2 space-y-3">
+            @if(!$processo->etp)
+            <div class="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800">
+                <i class="fas fa-exclamation-triangle mr-1"></i>
+                Este tipo de relatório exige um ETP Inteligente vinculado ao processo (os itens e o objeto são herdados do ETP).
+            </div>
+            @else
+                <div>
+                    <a href="{{ route('admin.processos.pesquisa_preco_memoria_calculo', $processo->id) }}"
+                       target="_blank"
+                       class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100 transition-all">
+                        <i class="fas fa-calculator mr-1"></i> Importar Memória de Cálculo
+                    </a>
+                    @php $countMemoria = $processo->pesquisaPrecoMemoriaItens()->count(); @endphp
+                    @if($countMemoria > 0)
+                    <span class="ml-2 inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-50 text-indigo-700 text-xs font-bold rounded-full border border-indigo-200">
+                        <i class="fas fa-check-circle"></i> {{ $countMemoria }} {{ Str::plural('item', $countMemoria) }} importado{{ $countMemoria > 1 ? 's' : '' }}
+                    </span>
+                    @endif
+                </div>
+
+                <x-form-field name="fontes_consultadas" label="Fontes Consultadas (Seção 6 do relatório)" type="textarea" rows="4" />
+                <x-form-field name="analise_precos_coletados" label="Análise dos Preços Coletados (Seção 7 do relatório)" type="textarea" rows="4" />
             @endif
         </div>
 

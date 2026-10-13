@@ -4,27 +4,33 @@ namespace App\Http\Controllers;
 
 use App\Enums\ProcessoStatusEnum;
 use App\Http\Requests\ProcessoRequest;
+use App\Imports\MemoriaCalculoImport;
 use App\Models\Documento;
 use App\Models\Prefeitura;
 use App\Models\Processo;
 use App\Services\CotaReservadaService;
+use App\Services\MemoriaCalculoImportService;
 use App\Services\ProcessoBncExportService;
 use App\Services\ProcessoDocumentoService;
 use App\Services\ProcessoPdfService;
 use App\Services\ProcessoService;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class ProcessoController extends AbstractController
 {
     protected ProcessoService $processoService;
+
     protected ProcessoPdfService $pdfService;
+
     protected ProcessoDocumentoService $documentoService;
+
     protected ProcessoBncExportService $bncExportService;
+
     protected CotaReservadaService $cotaReservadaService;
 
     public function __construct(
@@ -59,8 +65,8 @@ class ProcessoController extends AbstractController
             $termo = $this->prepararTermoBusca($request->search);
             $query->where(function ($q) use ($termo) {
                 $q->where('objeto', 'like', "%{$termo}%")
-                  ->orWhere('numero_processo', 'like', "%{$termo}%")
-                  ->orWhere('numero_procedimento', 'like', "%{$termo}%");
+                    ->orWhere('numero_processo', 'like', "%{$termo}%")
+                    ->orWhere('numero_procedimento', 'like', "%{$termo}%");
             });
         }
 
@@ -120,7 +126,7 @@ class ProcessoController extends AbstractController
 
         // Preparar dados para a view
         foreach ($processos as $processo) {
-            if (!$processo->status instanceof ProcessoStatusEnum) {
+            if (! $processo->status instanceof ProcessoStatusEnum) {
                 $processo->status = ProcessoStatusEnum::tryFrom($processo->status) ?? ProcessoStatusEnum::EM_ANDAMENTO;
             }
         }
@@ -160,7 +166,7 @@ class ProcessoController extends AbstractController
 
         // Campos de "dispensa oriunda de certame fracassado" pertencem ao ProcessoDetalhe,
         // não ao Processo — se ficarem em $dados são silenciosamente ignorados no create().
-        $isOriundoFracassado  = (bool) ($dados['is_oriundo_fracassado'] ?? false);
+        $isOriundoFracassado = (bool) ($dados['is_oriundo_fracassado'] ?? false);
         $processoFracassadoId = $dados['processo_fracassado_id'] ?? null;
         unset($dados['is_oriundo_fracassado'], $dados['processo_fracassado_id']);
 
@@ -169,7 +175,7 @@ class ProcessoController extends AbstractController
 
         // Gerar número automático se estiver vazio
         if (empty($dados['numero_processo'])) {
-            $dados['numero_processo'] = $this->processoService->gerarProximoNumeroProcesso((int)$dados['prefeitura_id']);
+            $dados['numero_processo'] = $this->processoService->gerarProximoNumeroProcesso((int) $dados['prefeitura_id']);
         }
 
         $etp = null;
@@ -190,7 +196,7 @@ class ProcessoController extends AbstractController
             if ($isOriundoFracassado && $processoFracassadoId) {
                 $detalhe = $processo->detalhe ?? $processo->detalhe()->create([]);
                 $detalhe->update([
-                    'is_oriundo_fracassado'  => true,
+                    'is_oriundo_fracassado' => true,
                     'processo_fracassado_id' => $processoFracassadoId,
                 ]);
             }
@@ -201,7 +207,7 @@ class ProcessoController extends AbstractController
                     'status' => 'em_processo',
                 ]);
 
-                if (!empty($etp->dotacao_orcamentaria)) {
+                if (! empty($etp->dotacao_orcamentaria)) {
                     $detalhe = $processo->detalhe ?? $processo->detalhe()->create([]);
                     if (empty($detalhe->dotacao_orcamentaria)) {
                         $detalhe->update(['dotacao_orcamentaria' => $etp->dotacao_orcamentaria]);
@@ -216,7 +222,8 @@ class ProcessoController extends AbstractController
                 'etp_id' => $request->input('etp_id'),
                 'erro' => $e->getMessage(),
             ]);
-            return redirect()->back()->withInput()->with('error', 'Erro ao criar processo: ' . $e->getMessage());
+
+            return redirect()->back()->withInput()->with('error', 'Erro ao criar processo: '.$e->getMessage());
         }
 
         return redirect()
@@ -234,52 +241,55 @@ class ProcessoController extends AbstractController
     public function edit(Processo $processo)
     {
         $prefeituras = Prefeitura::with('unidades')->get();
+
         return view('Admin.Processos.edit', compact('processo', 'prefeituras'));
     }
 
     public function update(ProcessoRequest $request, Processo $processo)
     {
         $this->processoService->update($processo, $request->validated());
+
         return redirect()->route('admin.processos.index')->with('success', 'Processo atualizado com sucesso.');
     }
 
     public function destroy(Processo $processo)
     {
         $this->processoService->delete($processo);
+
         return redirect()->route('admin.processos.index')->with('success', 'Processo removido com sucesso.');
     }
 
     public function updateStatus(Request $request, Processo $processo)
     {
         $request->validate([
-            'status' => 'required|string|in:' . implode(',', array_column(ProcessoStatusEnum::atribuiveis(), 'value')),
+            'status' => 'required|string|in:'.implode(',', array_column(ProcessoStatusEnum::atribuiveis(), 'value')),
         ]);
 
         try {
             $novoStatus = ProcessoStatusEnum::tryFrom($request->status);
 
-            if (!$novoStatus) {
+            if (! $novoStatus) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Status inválido.'
+                    'message' => 'Status inválido.',
                 ], 400);
             }
 
             $processo->update([
-                'status' => $novoStatus
+                'status' => $novoStatus,
             ]);
 
             // Se for cancelado, pode adicionar data de cancelamento
-            if ($novoStatus === ProcessoStatusEnum::CANCELADO && !$processo->data_cancelamento) {
+            if ($novoStatus === ProcessoStatusEnum::CANCELADO && ! $processo->data_cancelamento) {
                 $processo->update([
-                    'data_cancelamento' => now()
+                    'data_cancelamento' => now(),
                 ]);
             }
 
             // Se for adiado, pode adicionar data de adiamento
-            if ($novoStatus === ProcessoStatusEnum::ADIADO && !$processo->data_adiamento) {
+            if ($novoStatus === ProcessoStatusEnum::ADIADO && ! $processo->data_adiamento) {
                 $processo->update([
-                    'data_adiamento' => now()
+                    'data_adiamento' => now(),
                 ]);
             }
 
@@ -289,14 +299,14 @@ class ProcessoController extends AbstractController
                 'data' => [
                     'status' => $processo->status->value,
                     'status_label' => $processo->status->label(),
-                    'status_color' => $processo->status->color()
-                ]
+                    'status_color' => $processo->status->color(),
+                ],
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erro ao atualizar status: ' . $e->getMessage()
+                'message' => 'Erro ao atualizar status: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -306,36 +316,36 @@ class ProcessoController extends AbstractController
         $prefeituraId = $request->get('prefeitura_id');
         $busca = $request->get('q'); // Termo enviado pela busca do frontend
 
-        if (!$prefeituraId) {
+        if (! $prefeituraId) {
             return response()->json([]);
         }
 
         $query = Processo::where('prefeitura_id', $prefeituraId);
 
-        /* 
-        * 1. AJUSTE DE STATUS: 
+        /*
+        * 1. AJUSTE DE STATUS:
         * Verifique quais status no seu Enum/Banco realmente identificam certames que fracassaram.
         * Se você tiver um flag ou outro status, adicione aqui. Se quiser listar todos para seleção, remova o filtro de status.
         */
         $query->whereIn('status', [
-            ProcessoStatusEnum::FINALIZADO, 
+            ProcessoStatusEnum::FINALIZADO,
             ProcessoStatusEnum::CANCELADO,
             // ProcessoStatusEnum::FRACASSADO, // Adicione outros status se existirem no Enum
         ]);
 
         // 2. BUSCA POR TERMO
-        if (!empty($busca)) {
+        if (! empty($busca)) {
             $query->where(function ($q) use ($busca) {
                 $q->where('numero_processo', 'like', "%{$busca}%")
-                ->orWhere('numero_procedimento', 'like', "%{$busca}%")
-                ->orWhere('nome_resumido', 'like', "%{$busca}%")
-                ->orWhere('objeto', 'like', "%{$busca}%");
+                    ->orWhere('numero_procedimento', 'like', "%{$busca}%")
+                    ->orWhere('nome_resumido', 'like', "%{$busca}%")
+                    ->orWhere('objeto', 'like', "%{$busca}%");
             });
         }
 
         // 3. LIMITE DINÂMICO
         // Se o usuário está digitando, expandimos o limite para 50. Se for a carga inicial, trazemos os 30 mais recentes.
-        $limite = !empty($busca) ? 50 : 30;
+        $limite = ! empty($busca) ? 50 : 30;
 
         $processos = $query->latest()
             ->limit($limite)
@@ -358,7 +368,7 @@ class ProcessoController extends AbstractController
         $processo->loadMissing('documentos');
 
         // Garantir que o status seja uma instância do Enum
-        if (!$processo->status instanceof ProcessoStatusEnum) {
+        if (! $processo->status instanceof ProcessoStatusEnum) {
             $processo->status = ProcessoStatusEnum::tryFrom($processo->status) ?? ProcessoStatusEnum::EM_ANDAMENTO;
         }
 
@@ -381,18 +391,18 @@ class ProcessoController extends AbstractController
 
             return response()->json([
                 'success' => true,
-                'data' => $detalhe->toArray()
+                'data' => $detalhe->toArray(),
             ]);
         } catch (\Exception $e) {
             Log::error('Erro ao salvar detalhe do processo', [
                 'processo_id' => $processo->id,
                 'erro' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Erro ao salvar os dados: ' . $e->getMessage()
+                'message' => 'Erro ao salvar os dados: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -405,18 +415,18 @@ class ProcessoController extends AbstractController
             return response()->json([
                 'success' => true,
                 'message' => '✅ PDF gerado com sucesso! Clique em "Download" para visualizar o arquivo.',
-                'documento' => $request->query('documento')
+                'documento' => $request->query('documento'),
             ]);
         } catch (\Exception $e) {
             Log::error('Erro ao gerar PDF', [
                 'processo_id' => $processo->id,
                 'erro' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => '❌ Ocorreu um erro inesperado ao gerar o PDF: ' . $e->getMessage(),
+                'message' => '❌ Ocorreu um erro inesperado ao gerar o PDF: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -433,7 +443,7 @@ class ProcessoController extends AbstractController
         }
 
         $writer = new Xlsx($spreadsheet);
-        $filename = 'BNC-' . str_replace('/', '-', $processo->numero_processo) . '.xlsx';
+        $filename = 'BNC-'.str_replace('/', '-', $processo->numero_processo).'.xlsx';
 
         Log::info('Planilha BNC exportada', [
             'processo_id' => $processo->id,
@@ -499,7 +509,7 @@ class ProcessoController extends AbstractController
     {
         $statusInfo = \Illuminate\Support\Facades\Cache::get("doc_status_{$token}");
 
-        if (!$statusInfo) {
+        if (! $statusInfo) {
             return response()->json(['status' => 'processando']); // default se o Job ainda n gravou
         }
 
@@ -510,7 +520,7 @@ class ProcessoController extends AbstractController
     {
         $statusInfo = \Illuminate\Support\Facades\Cache::get("doc_status_{$token}");
 
-        if (!$statusInfo || $statusInfo['status'] !== 'pronto' || empty($statusInfo['caminho'])) {
+        if (! $statusInfo || $statusInfo['status'] !== 'pronto' || empty($statusInfo['caminho'])) {
             abort(404, 'Arquivo não encontrado ou expirado.');
         }
 
@@ -541,7 +551,7 @@ class ProcessoController extends AbstractController
                 ->where('tipo_documento', 'edital')
                 ->first();
 
-            if (!$editalExistente) {
+            if (! $editalExistente) {
                 throw new \Exception('Edital original não encontrado.');
             }
 
@@ -565,19 +575,19 @@ class ProcessoController extends AbstractController
                 'processo_id' => $processo->id,
                 'modalidade' => $processo->modalidade?->name,
                 'procedimento' => $processo->tipo_procedimento?->name,
-                'contratacao' => $processo->tipo_contratacao?->name
+                'contratacao' => $processo->tipo_contratacao?->name,
             ]);
 
             $pdfMinuta = Pdf::loadView($viewMinuta, $dataMinuta)
                 ->setPaper('a4', 'portrait');
 
-            $caminhoMinuta = storage_path('app/temp_minuta_republicacao_' . uniqid() . '.pdf');
+            $caminhoMinuta = storage_path('app/temp_minuta_republicacao_'.uniqid().'.pdf');
             $pdfMinuta->save($caminhoMinuta);
 
             // Caminho para o edital original
             $caminhoEditalOriginal = public_path($editalExistente->caminho);
 
-            if (!file_exists($caminhoEditalOriginal)) {
+            if (! file_exists($caminhoEditalOriginal)) {
                 throw new \Exception('Arquivo do edital original não encontrado.');
             }
 
@@ -586,11 +596,11 @@ class ProcessoController extends AbstractController
             $subpasta = $this->pdfService->gerarSubpasta($processo, 'republicacao_edital');
             $diretorio = public_path("uploads/documentos/{$subpasta}");
 
-            if (!file_exists($diretorio)) {
+            if (! file_exists($diretorio)) {
                 mkdir($diretorio, 0777, true);
             }
 
-            $nomeArquivo = "processo_{$numeroProcessoLimpo}_republicacao_edital_" . now()->format('Ymd_His') . '.pdf';
+            $nomeArquivo = "processo_{$numeroProcessoLimpo}_republicacao_edital_".now()->format('Ymd_His').'.pdf';
             $caminhoRelativo = "uploads/documentos/{$subpasta}/{$nomeArquivo}";
             $caminhoCompleto = "{$diretorio}/{$nomeArquivo}";
 
@@ -600,7 +610,7 @@ class ProcessoController extends AbstractController
                 $caminhoCompleto
             );
 
-            if (!$sucesso || !file_exists($caminhoCompleto)) {
+            if (! $sucesso || ! file_exists($caminhoCompleto)) {
                 throw new \Exception('Erro ao mesclar minuta com edital original.');
             }
 
@@ -624,14 +634,14 @@ class ProcessoController extends AbstractController
             Log::info('Edital republicado com sucesso', [
                 'processo_id' => $processo->id,
                 'documento_id' => $novoEdital->id,
-                'view_usada' => $viewMinuta
+                'view_usada' => $viewMinuta,
             ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Edital republicado com sucesso!',
                 'documento_id' => $novoEdital->id,
-                'documento_nome' => $nomeArquivo
+                'documento_nome' => $nomeArquivo,
             ]);
 
         } catch (\Exception $e) {
@@ -639,12 +649,12 @@ class ProcessoController extends AbstractController
             Log::error('Erro ao republicar edital', [
                 'processo_id' => $processo->id,
                 'erro' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Erro ao republicar edital: ' . $e->getMessage()
+                'message' => 'Erro ao republicar edital: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -658,11 +668,11 @@ class ProcessoController extends AbstractController
         try {
             if (
                 $documento->processo_id != $processo->id ||
-                !in_array($documento->tipo_documento, ['republicacao_edital', 'edital_adiado'], true)
+                ! in_array($documento->tipo_documento, ['republicacao_edital', 'edital_adiado'], true)
             ) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Documento inválido ou não é uma republicação deste processo.'
+                    'message' => 'Documento inválido ou não é uma republicação deste processo.',
                 ], 422);
             }
 
@@ -683,7 +693,7 @@ class ProcessoController extends AbstractController
 
             return response()->json([
                 'success' => true,
-                'message' => 'Republicação excluída com sucesso.'
+                'message' => 'Republicação excluída com sucesso.',
             ]);
         } catch (\Exception $e) {
             Log::error('Erro ao excluir republicação', [
@@ -694,7 +704,7 @@ class ProcessoController extends AbstractController
 
             return response()->json([
                 'success' => false,
-                'message' => 'Erro ao excluir republicação: ' . $e->getMessage()
+                'message' => 'Erro ao excluir republicação: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -718,7 +728,7 @@ class ProcessoController extends AbstractController
             $pdfCapa = Pdf::loadView('Admin.Processos.pdf.capa_republicacao', $dataCapa)
                 ->setPaper('a4', 'portrait');
 
-            $caminhoCapa = storage_path('app/temp_capa_republicacao_' . uniqid() . '.pdf');
+            $caminhoCapa = storage_path('app/temp_capa_republicacao_'.uniqid().'.pdf');
             $pdfCapa->save($caminhoCapa);
 
             // Caminho para o arquivo final com capa
@@ -736,8 +746,9 @@ class ProcessoController extends AbstractController
             if (file_exists($caminhoFinal) && filesize($caminhoFinal) > 0) {
                 Log::info('Edital com capa criado com sucesso', [
                     'caminho_final' => $caminhoFinal,
-                    'tamanho' => filesize($caminhoFinal)
+                    'tamanho' => filesize($caminhoFinal),
                 ]);
+
                 return $caminhoFinal;
             }
 
@@ -747,8 +758,9 @@ class ProcessoController extends AbstractController
             Log::error('Erro ao criar edital com capa', [
                 'caminho_edital' => $caminhoEdital,
                 'erro' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
+
             return null;
         }
     }
@@ -797,7 +809,7 @@ class ProcessoController extends AbstractController
                 'success' => true,
                 'message' => 'Processo republicado com sucesso!',
                 'processo_id' => $novoProcesso->id,
-                'redirect_url' => route('admin.processos.iniciar', $novoProcesso->id)
+                'redirect_url' => route('admin.processos.iniciar', $novoProcesso->id),
             ]);
 
         } catch (\Exception $e) {
@@ -805,12 +817,12 @@ class ProcessoController extends AbstractController
             Log::error('Erro ao republicar processo', [
                 'processo_id' => $processo->id,
                 'erro' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Erro ao republicar processo: ' . $e->getMessage()
+                'message' => 'Erro ao republicar processo: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -831,7 +843,7 @@ class ProcessoController extends AbstractController
             DB::beginTransaction();
 
             $modeloPath = resource_path('views/Admin/Processos/pdf/cancelamento.blade.php');
-            if (!file_exists($modeloPath)) {
+            if (! file_exists($modeloPath)) {
                 throw new \Exception('Modelo de cancelamento não encontrado.');
             }
 
@@ -848,13 +860,13 @@ class ProcessoController extends AbstractController
             $pdf = Pdf::loadView('Admin.Processos.pdf.cancelamento', $data)->setPaper('a4', 'portrait');
 
             $numeroProcessoLimpo = str_replace(['/', '\\'], '_', $processo->numero_processo);
-            $diretorio = public_path("uploads/documentos/cancelamentos");
+            $diretorio = public_path('uploads/documentos/cancelamentos');
 
-            if (!file_exists($diretorio)) {
+            if (! file_exists($diretorio)) {
                 mkdir($diretorio, 0777, true);
             }
 
-            $nomeArquivo = "processo_{$numeroProcessoLimpo}_cancelamento_" . now()->format('Ymd_His') . '.pdf';
+            $nomeArquivo = "processo_{$numeroProcessoLimpo}_cancelamento_".now()->format('Ymd_His').'.pdf';
             $caminhoRelativo = "uploads/documentos/cancelamentos/{$nomeArquivo}";
             $caminhoCompleto = "{$diretorio}/{$nomeArquivo}";
 
@@ -880,19 +892,19 @@ class ProcessoController extends AbstractController
             return response()->json([
                 'success' => true,
                 'message' => 'Licitação cancelada com sucesso! Documento gerado.',
-                'documento_nome' => $nomeArquivo
+                'documento_nome' => $nomeArquivo,
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Erro ao cancelar licitação', [
                 'processo_id' => $processo->id,
                 'erro' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Erro ao cancelar licitação: ' . $e->getMessage()
+                'message' => 'Erro ao cancelar licitação: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -909,7 +921,7 @@ class ProcessoController extends AbstractController
             if ($processo->status !== ProcessoStatusEnum::CANCELADO) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Este processo não está cancelado.'
+                    'message' => 'Este processo não está cancelado.',
                 ], 400);
             }
 
@@ -945,8 +957,8 @@ class ProcessoController extends AbstractController
                 'data' => [
                     'status' => $processo->status->value,
                     'status_label' => $processo->status->label(),
-                    'status_color' => $processo->status->color()
-                ]
+                    'status_color' => $processo->status->color(),
+                ],
             ]);
 
         } catch (\Exception $e) {
@@ -954,12 +966,12 @@ class ProcessoController extends AbstractController
             Log::error('Erro ao reverter cancelamento', [
                 'processo_id' => $processo->id,
                 'erro' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Erro ao reverter cancelamento: ' . $e->getMessage()
+                'message' => 'Erro ao reverter cancelamento: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -979,7 +991,7 @@ class ProcessoController extends AbstractController
 
             $dataHoraAnterior = $processo->detalhe?->data_hora_limite_edital;
 
-            $dataHoraNova = $request->nova_data . ' ' . $request->novo_horario . ':00';
+            $dataHoraNova = $request->nova_data.' '.$request->novo_horario.':00';
 
             if ($processo->detalhe) {
                 $processo->detalhe->data_hora_limite_edital = $dataHoraNova;
@@ -1009,11 +1021,11 @@ class ProcessoController extends AbstractController
                 $subpasta = $this->pdfService->gerarSubpasta($processo, 'edital_adiado');
                 $diretorio = public_path("uploads/documentos/{$subpasta}");
 
-                if (!file_exists($diretorio)) {
+                if (! file_exists($diretorio)) {
                     mkdir($diretorio, 0777, true);
                 }
 
-                $nomeArquivo = "processo_{$numeroProcessoLimpo}_edital_adiado_" . now()->format('Ymd_His') . '.pdf';
+                $nomeArquivo = "processo_{$numeroProcessoLimpo}_edital_adiado_".now()->format('Ymd_His').'.pdf';
                 $caminhoRelativo = "uploads/documentos/{$subpasta}/{$nomeArquivo}";
                 $caminhoCompleto = "{$diretorio}/{$nomeArquivo}";
 
@@ -1039,19 +1051,19 @@ class ProcessoController extends AbstractController
             return response()->json([
                 'success' => true,
                 'message' => 'Licitação adiada com sucesso! Novo edital gerado.',
-                'documento_nome' => $nomeArquivo ?? null
+                'documento_nome' => $nomeArquivo ?? null,
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Erro ao adiar licitação', [
                 'processo_id' => $processo->id,
                 'erro' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Erro ao adiar licitação: ' . $e->getMessage()
+                'message' => 'Erro ao adiar licitação: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -1069,7 +1081,7 @@ class ProcessoController extends AbstractController
             ];
 
             $pdfCapa = Pdf::loadView('Admin.Processos.pdf.capa_republicacao', $data)->setPaper('a4', 'portrait');
-            $caminhoCapa = storage_path('app/temp_capa_republicacao_' . uniqid() . '.pdf');
+            $caminhoCapa = storage_path('app/temp_capa_republicacao_'.uniqid().'.pdf');
             $pdfCapa->save($caminhoCapa);
 
             // Mesclar capa com edital
@@ -1084,7 +1096,7 @@ class ProcessoController extends AbstractController
             Log::error('Erro ao adicionar capa de republicação', [
                 'caminho_pdf' => $caminhoPdf,
                 'erro' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
         }
     }
@@ -1130,14 +1142,14 @@ class ProcessoController extends AbstractController
             $subpasta = $this->pdfService->gerarSubpasta($processo, $tipo);
             $diretorio = public_path("uploads/documentos/{$subpasta}");
 
-            if (!file_exists($diretorio)) {
+            if (! file_exists($diretorio)) {
                 mkdir($diretorio, 0777, true);
             }
 
-            $nomeArquivo = "processo_{$numeroProcessoLimpo}_{$tipo}_" . now()->format('Ymd_His') . '.pdf';
+            $nomeArquivo = "processo_{$numeroProcessoLimpo}_{$tipo}_".now()->format('Ymd_His').'.pdf';
             $caminhoRelativo = "uploads/documentos/{$subpasta}/{$nomeArquivo}";
 
-            $pdf->save($diretorio . '/' . $nomeArquivo);
+            $pdf->save($diretorio.'/'.$nomeArquivo);
 
             // Atualizar registro no banco
             Documento::updateOrCreate(
@@ -1156,7 +1168,7 @@ class ProcessoController extends AbstractController
             Log::warning("Erro ao regenerar documento {$tipo}", [
                 'processo_id' => $processo->id,
                 'erro' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
         }
     }
@@ -1166,7 +1178,7 @@ class ProcessoController extends AbstractController
         $prefeituraId = $request->input('prefeitura_id');
         $processos = Processo::where('prefeitura_id', $prefeituraId)
             ->where('modalidade', \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO)
-            ->whereHas('detalhe', function($q) {
+            ->whereHas('detalhe', function ($q) {
                 $q->where('tipo_srp', 'sim');
             })
             ->get();
@@ -1179,10 +1191,10 @@ class ProcessoController extends AbstractController
         try {
             $etp = $processo->etp;
 
-            if (!$etp) {
+            if (! $etp) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Não há ETP vinculado a este processo.'
+                    'message' => 'Não há ETP vinculado a este processo.',
                 ], 404);
             }
 
@@ -1190,25 +1202,25 @@ class ProcessoController extends AbstractController
 
             $etp->update([
                 'processo_id' => null,
-                'status' => 'aprovado'
+                'status' => 'aprovado',
             ]);
 
             DB::commit();
 
             return response()->json([
                 'success' => true,
-                'message' => 'ETP desvinculado com sucesso! O upload de arquivos agora está disponível.'
+                'message' => 'ETP desvinculado com sucesso! O upload de arquivos agora está disponível.',
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Erro ao desvincular ETP', [
                 'processo_id' => $processo->id,
-                'erro' => $e->getMessage()
+                'erro' => $e->getMessage(),
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Erro ao desvincular ETP: ' . $e->getMessage()
+                'message' => 'Erro ao desvincular ETP: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -1228,18 +1240,18 @@ class ProcessoController extends AbstractController
 
             return response()->json([
                 'success' => true,
-                'message' => 'Anexo removido. O PDF do ETP vinculado será usado novamente.'
+                'message' => 'Anexo removido. O PDF do ETP vinculado será usado novamente.',
             ]);
         } catch (\Exception $e) {
             Log::error('Erro ao remover anexo manual do processo', [
                 'processo_id' => $processo->id,
                 'campo' => $request->input('campo'),
-                'erro' => $e->getMessage()
+                'erro' => $e->getMessage(),
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Erro ao remover anexo: ' . $e->getMessage()
+                'message' => 'Erro ao remover anexo: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -1263,7 +1275,7 @@ class ProcessoController extends AbstractController
     public function vincularEtp(Request $request, Processo $processo)
     {
         $request->validate([
-            'etp_id' => 'required|exists:etps,id'
+            'etp_id' => 'required|exists:etps,id',
         ]);
 
         try {
@@ -1272,7 +1284,7 @@ class ProcessoController extends AbstractController
             if ($etp->status !== 'aprovado') {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Apenas ETPs aprovados podem ser vinculados.'
+                    'message' => 'Apenas ETPs aprovados podem ser vinculados.',
                 ], 400);
             }
 
@@ -1282,19 +1294,19 @@ class ProcessoController extends AbstractController
             if ($processo->etp) {
                 $processo->etp->update([
                     'processo_id' => null,
-                    'status' => 'aprovado'
+                    'status' => 'aprovado',
                 ]);
             }
 
             // Realizar o novo vínculo
             $etp->update([
                 'processo_id' => $processo->id,
-                'status' => 'em_processo'
+                'status' => 'em_processo',
             ]);
 
             // Pré-preencher dotacao_orcamentaria do processo com o valor do ETP,
             // mas apenas se o campo ainda estiver vazio no processo.
-            if (!empty($etp->dotacao_orcamentaria)) {
+            if (! empty($etp->dotacao_orcamentaria)) {
                 $detalhe = $processo->detalhe ?? $processo->detalhe()->create([]);
                 if (empty($detalhe->dotacao_orcamentaria)) {
                     $detalhe->update(['dotacao_orcamentaria' => $etp->dotacao_orcamentaria]);
@@ -1305,19 +1317,19 @@ class ProcessoController extends AbstractController
 
             return response()->json([
                 'success' => true,
-                'message' => 'ETP vinculado com sucesso!'
+                'message' => 'ETP vinculado com sucesso!',
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Erro ao vincular ETP', [
                 'processo_id' => $processo->id,
                 'etp_id' => $request->etp_id,
-                'erro' => $e->getMessage()
+                'erro' => $e->getMessage(),
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Erro ao vincular ETP: ' . $e->getMessage()
+                'message' => 'Erro ao vincular ETP: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -1334,23 +1346,23 @@ class ProcessoController extends AbstractController
                 ->map(function ($etp) {
                     return [
                         'id' => $etp->id,
-                        'identificador' => "ETP-" . str_pad($etp->id, 4, '0', STR_PAD_LEFT) . "/" . $etp->created_at->format('Y'),
+                        'identificador' => 'ETP-'.str_pad($etp->id, 4, '0', STR_PAD_LEFT).'/'.$etp->created_at->format('Y'),
                         'secretaria' => $etp->secretaria->nome ?? 'N/A',
                         'objeto' => \Illuminate\Support\Str::limit($etp->objeto_licitacao, 100),
                         'data' => $etp->created_at->format('d/m/Y'),
                         'tipo' => ucfirst($etp->tipo_contratacao),
-                        'qtd_itens' => $etp->usaLotes() ? $etp->lotes->count() : $etp->itens->count()
+                        'qtd_itens' => $etp->usaLotes() ? $etp->lotes->count() : $etp->itens->count(),
                     ];
                 });
 
             return response()->json([
                 'success' => true,
-                'data' => $etps
+                'data' => $etps,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erro ao carregar ETPs: ' . $e->getMessage()
+                'message' => 'Erro ao carregar ETPs: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -1367,12 +1379,12 @@ class ProcessoController extends AbstractController
         }
 
         $valorFormatado = number_format($total, 2, ',', '.');
-        $extenso        = \App\Helpers\ValorPorExtenso::escrever($total);
+        $extenso = \App\Helpers\ValorPorExtenso::escrever($total);
 
         return response()->json([
             'success' => true,
-            'valor'   => $total,
-            'texto'   => "{$valorFormatado} ({$extenso})",
+            'valor' => $total,
+            'texto' => "{$valorFormatado} ({$extenso})",
         ]);
     }
 
@@ -1384,14 +1396,14 @@ class ProcessoController extends AbstractController
 
         // Agrupa as referências já coletadas
         $coletas = $processo->pesquisaPrecoItens;
-        
+
         // Mapeia coletas por ID de item do ETP (para maior precisão)
         $coletasPorId = $coletas->whereNotNull('etp_item_id')
             ->groupBy('etp_item_id')
             ->map->count();
 
         // Mapeia coletas por descrição (fallback para itens de XLS ou legados)
-        $coletasPorDescricao = $coletas->groupBy(fn($i) => strtolower(trim($i->descricao)))
+        $coletasPorDescricao = $coletas->groupBy(fn ($i) => strtolower(trim($i->descricao)))
             ->map->count();
 
         if ($processo->etp) {
@@ -1400,10 +1412,10 @@ class ProcessoController extends AbstractController
             $etpInfo = $etp;
 
             if ($etp->usaLotes()) {
-                $lotes = $etp->lotes()->with('itens')->get()->map(function($lote) use ($coletasPorId, $coletasPorDescricao) {
+                $lotes = $etp->lotes()->with('itens')->get()->map(function ($lote) use ($coletasPorId, $coletasPorDescricao) {
                     return [
                         'nome' => $lote->nome,
-                        'itens' => $lote->itens->map(function($item) use ($coletasPorId, $coletasPorDescricao) {
+                        'itens' => $lote->itens->map(function ($item) use ($coletasPorId, $coletasPorDescricao) {
                             // Tenta pelo ID, se não tiver nada tenta pela descrição
                             $count = $coletasPorId[$item->id] ?? null;
                             if ($count === null) {
@@ -1411,27 +1423,27 @@ class ProcessoController extends AbstractController
                             }
 
                             return [
-                                'id'         => $item->id,
-                                'descricao'  => $item->descricao_item,
-                                'unidade'    => $item->pivot->unidade,
+                                'id' => $item->id,
+                                'descricao' => $item->descricao_item,
+                                'unidade' => $item->pivot->unidade,
                                 'quantidade' => $item->pivot->quantidade,
                                 'refs_count' => $count,
                             ];
-                        })
+                        }),
                     ];
                 });
-                $itens = $lotes->flatMap(fn($l) => $l['itens']);
+                $itens = $lotes->flatMap(fn ($l) => $l['itens']);
             } else {
-                $itens = $etp->itens->map(function($item) use ($coletasPorId, $coletasPorDescricao) {
+                $itens = $etp->itens->map(function ($item) use ($coletasPorId, $coletasPorDescricao) {
                     $count = $coletasPorId[$item->id] ?? null;
                     if ($count === null) {
                         $count = $coletasPorDescricao[strtolower(trim($item->descricao_item))] ?? 0;
                     }
 
                     return [
-                        'id'         => $item->id,
-                        'descricao'  => $item->descricao_item,
-                        'unidade'    => $item->pivot->unidade,
+                        'id' => $item->id,
+                        'descricao' => $item->descricao_item,
+                        'unidade' => $item->pivot->unidade,
                         'quantidade' => $item->pivot->quantidade,
                         'refs_count' => $count,
                     ];
@@ -1440,9 +1452,9 @@ class ProcessoController extends AbstractController
         } else {
             $raw = $processo->detalhe->descricao_e_quantitativos_itens_xml ?? [];
             $itens = is_array($raw)
-                ? collect($raw)->map(fn($item) => [
-                    'descricao'  => $item['descricao'],
-                    'unidade'    => $item['und'] ?? null,
+                ? collect($raw)->map(fn ($item) => [
+                    'descricao' => $item['descricao'],
+                    'unidade' => $item['und'] ?? null,
                     'quantidade' => $item['quantidade'],
                     'refs_count' => $coletasPorDescricao[strtolower(trim($item['descricao']))] ?? 0,
                 ])
@@ -1461,25 +1473,25 @@ class ProcessoController extends AbstractController
             $etp = $processo->etp;
             if ($etp->usaLotes()) {
                 $itens = $etp->lotes()->with('itens')->get()
-                    ->flatMap(fn($lote) => $lote->itens->map(fn($item) => [
-                        'id'        => $item->id,
+                    ->flatMap(fn ($lote) => $lote->itens->map(fn ($item) => [
+                        'id' => $item->id,
                         'descricao' => $item->descricao_item,
-                        'unidade'   => $item->pivot->unidade,
+                        'unidade' => $item->pivot->unidade,
                     ]));
             } else {
-                $itens = $etp->itens->map(fn($item) => [
-                    'id'        => $item->id,
+                $itens = $etp->itens->map(fn ($item) => [
+                    'id' => $item->id,
                     'descricao' => $item->descricao_item,
-                    'unidade'   => $item->pivot->unidade,
+                    'unidade' => $item->pivot->unidade,
                 ]);
             }
         } else {
             $raw = $processo->detalhe->descricao_e_quantitativos_itens_xml ?? [];
             $itens = is_array($raw)
-                ? collect($raw)->map(fn($item) => [
-                    'id'        => null,
+                ? collect($raw)->map(fn ($item) => [
+                    'id' => null,
                     'descricao' => $item['descricao'],
-                    'unidade'   => $item['und'] ?? null,
+                    'unidade' => $item['und'] ?? null,
                 ])
                 : collect([]);
         }
@@ -1493,15 +1505,15 @@ class ProcessoController extends AbstractController
     {
         $request->validate(['itens' => 'required|array']);
 
-        $precos = collect($request->input('itens'))->map(fn($item) => [
+        $precos = collect($request->input('itens'))->map(fn ($item) => [
             'etp_item_id' => $item['etp_item_id'] ?? null,
-            'descricao'   => $item['descricao'] ?? '',
-            'f1_nome'     => $item['f1_nome'] ?? null,
-            'f1_preco'    => $item['f1_preco'] !== '' && $item['f1_preco'] !== null ? (float) $item['f1_preco'] : null,
-            'f2_nome'     => $item['f2_nome'] ?? null,
-            'f2_preco'    => $item['f2_preco'] !== '' && $item['f2_preco'] !== null ? (float) $item['f2_preco'] : null,
-            'f3_nome'     => $item['f3_nome'] ?? null,
-            'f3_preco'    => $item['f3_preco'] !== '' && $item['f3_preco'] !== null ? (float) $item['f3_preco'] : null,
+            'descricao' => $item['descricao'] ?? '',
+            'f1_nome' => $item['f1_nome'] ?? null,
+            'f1_preco' => $item['f1_preco'] !== '' && $item['f1_preco'] !== null ? (float) $item['f1_preco'] : null,
+            'f2_nome' => $item['f2_nome'] ?? null,
+            'f2_preco' => $item['f2_preco'] !== '' && $item['f2_preco'] !== null ? (float) $item['f2_preco'] : null,
+            'f3_nome' => $item['f3_nome'] ?? null,
+            'f3_preco' => $item['f3_preco'] !== '' && $item['f3_preco'] !== null ? (float) $item['f3_preco'] : null,
         ])->values()->all();
 
         $processo->detalhe()->updateOrCreate(
@@ -1520,16 +1532,16 @@ class ProcessoController extends AbstractController
             $etp = $processo->etp;
             if ($etp->usaLotes()) {
                 $itens = $etp->lotes()->with('itens')->get()
-                    ->flatMap(fn($lote) => $lote->itens->map(fn($item) => [
-                        'id'        => $item->id,
+                    ->flatMap(fn ($lote) => $lote->itens->map(fn ($item) => [
+                        'id' => $item->id,
                         'descricao' => $item->descricao_item,
-                        'unidade'   => $item->pivot->unidade,
+                        'unidade' => $item->pivot->unidade,
                     ]));
             } else {
-                $itens = $etp->itens->map(fn($item) => [
-                    'id'        => $item->id,
+                $itens = $etp->itens->map(fn ($item) => [
+                    'id' => $item->id,
                     'descricao' => $item->descricao_item,
-                    'unidade'   => $item->pivot->unidade,
+                    'unidade' => $item->pivot->unidade,
                 ]);
             }
         }
@@ -1550,17 +1562,17 @@ class ProcessoController extends AbstractController
             $vLocalRaw = $item['fornecedor_local_preco'] ?? '';
             $vLocal = $vLocalRaw !== '' && $vLocalRaw !== null ? (float) $vLocalRaw : null;
 
-            $vals  = array_filter([$v1, $v2, $v3, $vLocal], fn($v) => $v !== null);
+            $vals = array_filter([$v1, $v2, $v3, $vLocal], fn ($v) => $v !== null);
             $media = count($vals) > 0 ? array_sum($vals) / count($vals) : null;
 
             return [
-                'etp_item_id' => !empty($item['etp_item_id']) ? (int) $item['etp_item_id'] : null,
-                'item'        => $item['descricao'] ?? '',
+                'etp_item_id' => ! empty($item['etp_item_id']) ? (int) $item['etp_item_id'] : null,
+                'item' => $item['descricao'] ?? '',
                 'valor_tce_1' => $v1 !== null ? number_format($v1, 2, ',', '.') : '',
                 'valor_tce_2' => $v2 !== null ? number_format($v2, 2, ',', '.') : '',
                 'valor_tce_3' => $v3 !== null ? number_format($v3, 2, ',', '.') : '',
                 'fornecedor_local_preco' => $vLocal !== null ? number_format($vLocal, 2, ',', '.') : '',
-                'media'       => $media !== null ? number_format($media, 2, ',', '.') : '',
+                'media' => $media !== null ? number_format($media, 2, ',', '.') : '',
             ];
         })->values()->all();
 
@@ -1570,6 +1582,69 @@ class ProcessoController extends AbstractController
         );
 
         return response()->json(['success' => true, 'message' => 'Preços TCE salvos com sucesso.']);
+    }
+
+    public function pesquisaPrecoMemoriaCalculo(Processo $processo)
+    {
+        if (! $processo->etp) {
+            return redirect()
+                ->route('admin.processos.iniciar', $processo->id)
+                ->with('error', 'Vincule um ETP Inteligente ao processo antes de importar a Memória de Cálculo.');
+        }
+
+        $etpItens = $processo->etp->all_itens->values();
+        $memoriaItens = $processo->pesquisaPrecoMemoriaItens()->with('etpItem')->get();
+
+        return view('Admin.Processos.pesquisa_preco_memoria_calculo', compact('processo', 'etpItens', 'memoriaItens'));
+    }
+
+    public function importarMemoriaCalculo(Request $request, Processo $processo, MemoriaCalculoImportService $service)
+    {
+        $request->validate([
+            'memoria_calculo_excel' => 'required|file|mimes:xlsx,xls',
+        ]);
+
+        if (! $processo->etp) {
+            return back()->with('error', 'Vincule um ETP Inteligente ao processo antes de importar a Memória de Cálculo.');
+        }
+
+        try {
+            $import = new MemoriaCalculoImport;
+            $dados = Excel::toArray($import, $request->file('memoria_calculo_excel'));
+            $linhas = collect($dados[0] ?? []);
+
+            $itensParseados = $service->parse($linhas);
+
+            $etpItensIds = $processo->etp->all_itens->values()->pluck('id')->all();
+
+            if (count($itensParseados) !== count($etpItensIds)) {
+                throw new \RuntimeException(sprintf(
+                    'A planilha tem %d item(ns), mas o ETP vinculado tem %d. Ajuste a planilha ou o ETP antes de importar.',
+                    count($itensParseados),
+                    count($etpItensIds)
+                ));
+            }
+
+            DB::transaction(function () use ($processo, $itensParseados, $etpItensIds) {
+                $processo->pesquisaPrecoMemoriaItens()->delete();
+
+                foreach ($itensParseados as $index => $item) {
+                    $processo->pesquisaPrecoMemoriaItens()->create([
+                        'etp_item_id' => $etpItensIds[$index] ?? null,
+                        'ordem' => $item['ordem'],
+                        'titulo' => $item['titulo'],
+                        'valor_adotado' => $item['valor_adotado'],
+                        'fontes' => $item['fontes'],
+                    ]);
+                }
+            });
+
+            return back()->with('success', count($itensParseados).' item(ns) importado(s) da Memória de Cálculo com sucesso.');
+        } catch (\Throwable $e) {
+            Log::error('Erro ao importar Memória de Cálculo', ['processo_id' => $processo->id, 'erro' => $e->getMessage()]);
+
+            return back()->with('error', 'Não foi possível importar a planilha: '.$e->getMessage());
+        }
     }
 
     /**
@@ -1642,15 +1717,15 @@ class ProcessoController extends AbstractController
     {
         $prefeituraId = $request->input('prefeitura_id');
 
-        if (!$prefeituraId) {
+        if (! $prefeituraId) {
             return response()->json(['error' => 'Prefeitura não informada.'], 400);
         }
 
-        $proximoNumeroProcesso = $this->processoService->gerarProximoNumeroProcesso((int)$prefeituraId);
+        $proximoNumeroProcesso = $this->processoService->gerarProximoNumeroProcesso((int) $prefeituraId);
 
         return response()->json([
             'success' => true,
-            'numero_processo' => $proximoNumeroProcesso
+            'numero_processo' => $proximoNumeroProcesso,
         ]);
     }
 }

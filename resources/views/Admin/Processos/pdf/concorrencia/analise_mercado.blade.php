@@ -411,6 +411,8 @@
 <p style="text-align:center;">Nenhuma referência de preço coletada no PNCP.</p>
 @endforelse
 
+@elseif($tipoRelatorio === 'ia_claude')
+@include('Admin.Processos.pdf.partials.analise_mercado_ia_claude')
 @endif
 {{-- /fim tabelas --}}
 

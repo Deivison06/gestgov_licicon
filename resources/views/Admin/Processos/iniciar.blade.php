@@ -1236,7 +1236,11 @@
 
     <script>
         document.addEventListener('alpine:init', () => {
+            const camposTextoSimples = ['fontes_consultadas', 'analise_precos_coletados'];
             document.querySelectorAll('textarea[x-ref$="_editor"]').forEach(textarea => {
+                if (camposTextoSimples.includes(textarea.id)) {
+                    return;
+                }
                 tinymce.init({
                     selector: '#' + textarea.id,
                     plugins: 'advlist lists link table code charmap emoticons',
@@ -1346,6 +1350,8 @@
                 tipo_relatorio_analise_mercado: existing?.tipo_relatorio_analise_mercado ?? 'tce',
                 painel_preco_tce: existing?.painel_preco_tce ?? '',
                 anexo_pdf_analise_mercado: existing?.anexo_pdf_analise_mercado ?? '',
+                fontes_consultadas: existing?.fontes_consultadas ?? '',
+                analise_precos_coletados: existing?.analise_precos_coletados ?? '',
                 encaminhamento_elaborar_editais: existing?.encaminhamento_elaborar_editais ?? '',
                 encaminhamento_elaborar_projeto_basico: existing?.encaminhamento_elaborar_projeto_basico ?? '',
                 encaminhamento_parecer_juridico: existing?.encaminhamento_parecer_juridico ?? '',

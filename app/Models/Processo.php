@@ -6,9 +6,9 @@ use App\Enums\ModalidadeEnum;
 use App\Enums\ProcessoStatusEnum;
 use App\Enums\TipoContratacaoEnum;
 use App\Enums\TipoProcedimentoEnum;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Processo extends Model
@@ -133,6 +133,11 @@ class Processo extends Model
     public function pesquisaPrecoItens(): HasMany
     {
         return $this->hasMany(PesquisaPrecoItem::class)->orderBy('id');
+    }
+
+    public function pesquisaPrecoMemoriaItens(): HasMany
+    {
+        return $this->hasMany(PesquisaPrecoMemoriaItem::class)->orderBy('ordem');
     }
 
     public function getTipoContratacaoNomeAttribute(): string
@@ -321,6 +326,7 @@ class Processo extends Model
             $this->update([
                 'status' => $novoStatus,
             ]);
+
             return true;
         }
 
@@ -344,6 +350,7 @@ class Processo extends Model
                 $contagem++;
             }
         }
+
         return $data;
     }
 
