@@ -100,6 +100,13 @@ class ContratoManualController extends Controller
                         default    => null,
                     };
                 });
+            } else {
+                // Por padrão, mostra apenas vigentes e vencidos. Nos contratos do sistema, um
+                // data_finalizacao nulo é exibido como VIGENTE (ver Contrato::getSituacaoAttribute),
+                // então aqui só precisamos excluir os concluídos — não existe estado "pendente" aqui.
+                $query->whereHas('contrato', function ($q) {
+                    $q->where('concluido', false);
+                });
             }
 
             // Vencimento (vencidos / próximos 30-60-90 dias) — pela data_finalizacao do contrato.
@@ -175,6 +182,9 @@ class ContratoManualController extends Controller
                     'pendente' => $query->where('concluido', false)->whereNull('data_finalizacao'),
                     default    => null,
                 };
+            } else {
+                // Por padrão, mostra apenas vigentes e vencidos — concluídos e pendentes só aparecem se o usuário filtrar por eles.
+                $query->where('concluido', false)->whereNotNull('data_finalizacao');
             }
 
             // Vencimento (vencidos / próximos 30-60-90 dias).
