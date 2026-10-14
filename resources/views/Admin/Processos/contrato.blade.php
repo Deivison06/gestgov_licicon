@@ -58,9 +58,8 @@
     {{-- Fim JSON --}}
 
     <div class="py-6 md:py-8">
-        <div class="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
 
-            <!-- Cabeçalho da Página -->
+        <!-- Cabeçalho da Página -->
             <div class="mb-6 md:mb-8">
                 <div class="flex flex-col justify-between md:flex-row md:items-center">
                     <div>
@@ -82,17 +81,17 @@
             <div class="space-y-6 md:space-y-8">
 
                 <!-- Painel 1: Resumo do Processo -->
-                <div class="bg-white border border-gray-200 shadow-sm rounded-xl">
-                    <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-blue-100">
+                <div class="bg-[#10201e] border border-[#24403c] shadow-sm rounded-xl overflow-hidden">
+                    <div class="px-6 py-4 border-b border-[#24403c] bg-[#0d1b19]">
                         <div class="flex items-center">
-                            <div class="flex items-center justify-center w-10 h-10 mr-3 bg-white rounded-lg shadow-sm">
-                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="flex items-center justify-center w-10 h-10 mr-3 bg-[#142825] border border-[#24403c] rounded-lg shadow-sm">
+                                <svg class="w-5 h-5 text-[#2DC197]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                 </svg>
                             </div>
                             <div>
-                                <h2 class="text-lg font-semibold text-gray-800">Resumo do Processo</h2>
-                                <p class="text-sm text-gray-600">Informações básicas do processo licitatório</p>
+                                <h2 class="text-lg font-semibold text-[#e6f0ee]">Resumo do Processo</h2>
+                                <p class="text-sm text-[#7ea29c]">Informações básicas do processo licitatório</p>
                             </div>
                         </div>
                     </div>
@@ -213,18 +212,18 @@
                     )
                     && $processo->tipo_procedimento !== \App\Enums\TipoProcedimentoEnum::OBRA
                 )
-                    <div class="bg-white border border-gray-200 shadow-sm rounded-xl">
-                        <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-purple-100">
+                    <div class="bg-[#10201e] border border-[#24403c] shadow-sm rounded-xl overflow-hidden">
+                        <div class="px-6 py-4 border-b border-[#24403c] bg-[#0d1b19]">
                             <div class="flex flex-col justify-between md:flex-row md:items-center">
                                 <div class="flex items-center">
-                                    <div class="flex items-center justify-center w-10 h-10 mr-3 bg-white rounded-lg shadow-sm">
-                                        <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <div class="flex items-center justify-center w-10 h-10 mr-3 bg-[#142825] border border-[#24403c] rounded-lg shadow-sm">
+                                        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
                                         </svg>
                                     </div>
                                     <div>
-                                        <h2 class="text-lg font-semibold text-gray-800">Contratação de Itens</h2>
-                                        <p class="text-sm text-gray-600">Gerencie os itens a serem contratados</p>
+                                        <h2 class="text-lg font-semibold text-[#e6f0ee]">Contratação de Itens</h2>
+                                        <p class="text-sm text-[#7ea29c]">Gerencie os itens a serem contratados</p>
                                     </div>
                                 </div>
                                 <button type="button"
@@ -501,17 +500,17 @@
                     </div>
                 @endif
                 <!-- Painel 3: Geração de Contrato -->
-                <div class="bg-white border border-gray-200 shadow-sm rounded-xl">
-                    <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-green-50 to-green-100">
+                <div class="bg-[#10201e] border border-[#24403c] shadow-sm rounded-xl overflow-hidden">
+                    <div class="px-6 py-4 border-b border-[#24403c] bg-[#0d1b19]">
                         <div class="flex items-center">
-                            <div class="flex items-center justify-center w-10 h-10 mr-3 bg-white rounded-lg shadow-sm">
-                                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="flex items-center justify-center w-10 h-10 mr-3 bg-[#142825] border border-[#24403c] rounded-lg shadow-sm">
+                                <svg class="w-5 h-5 text-[#2DC197]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                 </svg>
                             </div>
                             <div>
-                                <h2 class="text-lg font-semibold text-gray-800">Gerar Contrato</h2>
-                                <p class="text-sm text-gray-600">Gere os documentos necessários para o processo</p>
+                                <h2 class="text-lg font-semibold text-[#e6f0ee]">Gerar Contrato</h2>
+                                <p class="text-sm text-[#7ea29c]">Gere os documentos necessários para o processo</p>
                             </div>
                         </div>
                     </div>
@@ -616,7 +615,7 @@
                                                 <div class="flex space-x-2">
                                                     <button type="button"
                                                             onclick="gerarContrato('{{ $processo->id }}', document.getElementById('data_contrato_{{ $tipo }}').value, event, '{{ $tipo }}')"
-                                                            class="flex items-center px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                                            class="flex items-center px-4 py-2 text-sm font-bold text-[#041d1a] bg-[#2DC197] rounded-lg hover:bg-[#26aa84] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2DC197] transition-colors">
                                                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                                         </svg>
@@ -1263,7 +1262,6 @@
                 </form>
             </div>
         </div>
-    </div>
 
     <script>
         // Funções para acordeão
@@ -2625,7 +2623,7 @@
                         </div>
                     </div>
                     <div class="px-4 py-3 bg-gray-50 sm:px-6 sm:flex sm:flex-row-reverse">
-                        <button type="submit" class="inline-flex justify-center w-full px-4 py-2 text-base font-medium text-white bg-[#009496] border border-transparent rounded-md shadow-sm hover:bg-[#007779] focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
+                        <button type="submit" class="inline-flex justify-center w-full px-4 py-2 text-base font-bold text-[#041d1a] bg-[#2DC197] border border-transparent rounded-md shadow-sm hover:bg-[#26aa84] focus:outline-none sm:ml-3 sm:w-auto sm:text-sm transition-colors">
                             Iniciar Aditivo
                         </button>
                         <button type="button" onclick="fecharModalAditivo()" class="inline-flex justify-center w-full px-4 py-2 mt-3 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">

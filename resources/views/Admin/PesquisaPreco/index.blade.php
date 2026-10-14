@@ -9,25 +9,25 @@
     {{-- ── BANNER CONTEXTUAL (só aparece quando vinculado a um processo) ── --}}
     @if($processo)
     <div id="pp_banner_processo"
-        class="mb-4 flex items-center justify-between gap-4 px-4 py-3 bg-blue-600 text-white rounded-xl shadow-md">
+        class="mb-4 flex items-center justify-between gap-4 px-4 py-3 bg-[#0d1b19] border border-[#24403c] text-[#e6f0ee] rounded-xl shadow-md">
         <div class="flex items-center gap-3">
-            <svg class="w-5 h-5 flex-shrink-0 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5 flex-shrink-0 text-[#2DC197]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
             </svg>
             <div>
-                <p class="text-xs font-bold uppercase tracking-wider opacity-75">Vinculado ao Processo</p>
-                <p class="text-sm font-bold">{{ $processo->numero_processo }}</p>
+                <p class="text-xs font-bold uppercase tracking-wider text-[#7ea29c]">Vinculado ao Processo</p>
+                <p class="text-sm font-bold text-[#e6f0ee]">{{ $processo->numero_processo }}</p>
             </div>
-            <div class="ml-2 pl-3 border-l border-white/30">
-                <p class="text-xs opacity-75">Itens adicionados ao relatório</p>
-                <p class="text-lg font-extrabold leading-none">
+            <div class="ml-2 pl-3 border-l border-[#24403c]">
+                <p class="text-xs text-[#7ea29c]">Itens adicionados ao relatório</p>
+                <p class="text-lg font-extrabold leading-none text-[#2DC197]">
                     <span id="pp_contador_itens">{{ $processo->pesquisaPrecoItens()->count() }}</span>
                 </p>
             </div>
         </div>
         <a href="{{ route('admin.processos.pesquisa_preco_itens', $processo->id) }}"
-            class="flex-shrink-0 px-4 py-2 bg-white/20 hover:bg-white/30 text-white text-xs font-bold rounded-lg border border-white/30 transition-all">
+            class="flex-shrink-0 px-4 py-2 bg-[#142825] hover:bg-[#1a332f] text-[#2DC197] text-xs font-bold rounded-lg border border-[#24403c] transition-all">
             ← Voltar ao Processo
         </a>
     </div>
@@ -36,13 +36,13 @@
     {{-- ── CABEÇALHO ────────────────────────────────────────────────── --}}
     <div class="flex items-center justify-between mb-5">
         <div>
-            <h1 class="text-2xl font-bold text-gray-800">Análise de Mercado</h1>
-            <p class="text-sm text-gray-500 mt-0.5">Pesquisa de Preços via PNCP — Portal Nacional de Contratações Públicas</p>
+            <h1 class="text-2xl font-bold text-[#e6f0ee]">Análise de Mercado</h1>
+            <p class="text-sm text-[#7ea29c] mt-0.5">Pesquisa de Preços via PNCP — Portal Nacional de Contratações Públicas</p>
         </div>
         <div class="flex items-center gap-2">
             <span id="pp_badge_cache" class="hidden inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-full border transition-all"></span>
-            <span class="inline-flex items-center gap-2 px-3 py-1.5 bg-green-50 text-green-700 text-xs font-bold rounded-full border border-green-200">
-                <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+            <span class="inline-flex items-center gap-2 px-3 py-1.5 bg-[#0d2a23] text-[#2DC197] text-xs font-bold rounded-full border border-[#184e40]">
+                <span class="w-2 h-2 bg-[#2DC197] rounded-full animate-pulse"></span>
                 API PNCP Conectada
             </span>
         </div>

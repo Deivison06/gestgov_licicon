@@ -454,8 +454,7 @@
         </p>
 
         <p style="text-align: justify;">
-            2.1 Para uma contratação mais segura e eficaz, sugerimos como técnica de averiguação,
-            e controle, as seguintes exigências mínimas:
+            2.1. Constituem requisitos da contratação:
         </p>
         <p style="text-align: justify;">
             2.1.1. Os Serviços deverão ser executados de forma parcelada, de acordo com as
@@ -474,26 +473,26 @@
             de Serviço;
         </p>
         <p style="text-align: justify;">
-            2.1.4 A nota fiscal deverá ser apresentada no ato da entrega informado o número do
+            2.1.4. A nota fiscal deverá ser apresentada no ato da entrega informado o número do
             Contrato correspondente no campo “Dados Adicionais”.
         </p>
         <p style="text-align: justify;">
-            2.1.6. A Contratada deverá arcar com as despesas de alimentação, deslocamento e
+            2.1.5. A Contratada deverá arcar com as despesas de alimentação, deslocamento e
             demais despesas referentes às prestações dos serviços.
         </p>
         <p style="text-align: justify;">
-            2.1.7. Serão exigidas comprovações de localização da sede da empresa, com
+            2.1.6. Serão exigidas comprovações de localização da sede da empresa, com
             apresentação de fotos da infraestrutura interna, com objetivo precípuo de averiguar a
             veracidade sobre a real existência da empresa, evitando a contratação de empresas
             fantasmas ou de caráter inidôneo.
         </p>
         <p style="text-align: justify;">
-            2.1.8. Serão exigidas composições de custos que reflitam a realidade econômica da
+            2.1.7. Serão exigidas composições de custos que reflitam a realidade econômica da
             empresa licitante, a ser definido no próprio edital, que estabelecem critérios de custos com
             despesas diretas e indiretas;
         </p>
         <p style="text-align: justify;">
-            2.1.9. Também será exigido garantia de proposta, nos termos do art. 96 e seguintes,
+            2.1.8. Também será exigido garantia de proposta, nos termos do art. 96 e seguintes,
             visando estabelecer a segurança do preço ofertado pelo licitante, garantindo assim, o
             seguro do custeio realizado pela Administração no momento da abertura do certame;
         </p>
@@ -520,7 +519,7 @@
             secretaria competente.
         </p>
         <p style="text-align: justify;">
-            3.5. O prazo de garantia é aquele estabelecido na Lei nº 8.078, de 11 de setembro de 1990 (Código
+            3.4. O prazo de garantia é aquele estabelecido na Lei nº 8.078, de 11 de setembro de 1990 (Código
             de Defesa do Consumidor)
         </p>
     </div>
@@ -680,12 +679,12 @@
             remanescente, sempre que este ocorrer.
         </p>
         <p style="text-align: justify;">
-            6.7. Caso o índice estabelecido para reajustamento venha a ser extinto ou de qualquer forma não possa mais ser utilizado,
+            6.6. Caso o índice estabelecido para reajustamento venha a ser extinto ou de qualquer forma não possa mais ser utilizado,
             será adotado, em substituição, o que vier a ser determinado pela legislação então em vigor, levando em consideração a
             natureza do objeto que terá o preço reajustado.
         </p>
         <p style="text-align: justify;">
-            6.8. Na ausência de previsão legal quanto ao índice substituto, as partes elegerão novo índice oficial, para reajustamento do
+            6.7. Na ausência de previsão legal quanto ao índice substituto, as partes elegerão novo índice oficial, para reajustamento do
             preço do valor remanescente, por meio de termo aditivo.;
         </p>
     </div>

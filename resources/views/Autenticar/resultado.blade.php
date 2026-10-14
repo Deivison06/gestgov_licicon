@@ -16,18 +16,18 @@
             $naoAssinado = $resultado['status'] === 'autentico_nao_assinado';
             $superada = $naoAssinado && !empty($resultado['versao_superada']);
         @endphp
-        <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+        <div class="bg-[#10201e] border border-[#24403c] rounded-2xl shadow-sm overflow-hidden">
             {{-- Header --}}
-            <div class="bg-gradient-to-r {{ $naoAssinado ? 'from-amber-500 to-amber-600' : 'from-emerald-500 to-emerald-600' }} px-8 py-6 text-white">
+            <div class="bg-gradient-to-r {{ $naoAssinado ? 'from-amber-600 to-amber-700' : 'from-[#0b3b37] to-[#124e47]' }} px-8 py-6 text-white border-b border-[#24403c]">
                 <div class="flex items-center gap-4">
-                    <div class="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center">
-                        <i class="fas {{ $naoAssinado ? 'fa-hourglass-half' : 'fa-check-circle' }} text-3xl"></i>
+                    <div class="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center">
+                        <i class="fas {{ $naoAssinado ? 'fa-hourglass-half text-amber-300' : 'fa-check-circle text-[#2DC197]' }} text-3xl"></i>
                     </div>
                     <div>
-                        <h2 class="text-2xl font-bold">
+                        <h2 class="text-2xl font-bold text-[#e6f0ee]">
                             {{ $naoAssinado ? 'Documento autêntico — aguardando assinatura' : 'Documento autêntico' }}
                         </h2>
-                        <p class="text-sm {{ $naoAssinado ? 'text-amber-100' : 'text-emerald-100' }}">
+                        <p class="text-sm {{ $naoAssinado ? 'text-amber-200' : 'text-[#7ea29c]' }}">
                             Verificado em {{ now()->format('d/m/Y \à\s H:i') }}
                         </p>
                     </div>
@@ -35,7 +35,7 @@
             </div>
 
             @if ($superada)
-                <div class="px-8 py-4 bg-red-50 border-b border-red-200 text-sm text-red-900 flex items-start gap-3">
+                <div class="px-8 py-4 bg-[#2a1315] border-b border-[#5a2328] text-sm text-[#ff7b72] flex items-start gap-3">
                     <i class="fas fa-triangle-exclamation mt-0.5"></i>
                     <div>
                         <strong>Esta é uma versão desatualizada.</strong>
@@ -183,41 +183,41 @@
         {{-- FALHA — código não encontrado                --}}
         {{-- ========================================== --}}
         <div class="max-w-xl mx-auto">
-            <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
-                <div class="bg-gradient-to-r from-red-500 to-red-600 px-8 py-6 text-white">
+            <div class="bg-[#10201e] border border-[#24403c] rounded-2xl shadow-sm overflow-hidden">
+                <div class="bg-gradient-to-r from-red-600 to-red-700 px-8 py-6 text-white border-b border-[#24403c]">
                     <div class="flex items-center gap-4">
-                        <div class="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center">
-                            <i class="fas fa-times-circle text-3xl"></i>
+                        <div class="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center">
+                            <i class="fas fa-times-circle text-3xl text-red-300"></i>
                         </div>
                         <div>
-                            <h2 class="text-2xl font-bold">Código não encontrado</h2>
-                            <p class="text-sm text-red-100">Verifique se digitou corretamente</p>
+                            <h2 class="text-2xl font-bold text-[#e6f0ee]">Código não encontrado</h2>
+                            <p class="text-sm text-red-200">Verifique se digitou corretamente</p>
                         </div>
                     </div>
                 </div>
 
                 <div class="p-8">
-                    <p class="text-sm text-slate-700 mb-4">
-                        O código <code class="px-2 py-0.5 bg-slate-100 rounded font-mono text-xs">{{ $codigo }}</code>
+                    <p class="text-sm text-[#a2b9b5] mb-4">
+                        O código <code class="px-2 py-0.5 bg-[#0d1b19] border border-[#24403c] rounded font-mono text-xs text-[#ff7b72]">{{ $codigo }}</code>
                         não corresponde a nenhuma assinatura registrada no sistema.
                     </p>
 
-                    <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
-                        <h4 class="text-sm font-semibold text-amber-900 mb-2">
+                    <div class="bg-[#0d1b19] border border-[#24403c] rounded-lg p-4 mb-6">
+                        <h4 class="text-sm font-semibold text-amber-300 mb-2">
                             <i class="fas fa-triangle-exclamation mr-1"></i>
                             Possíveis causas
                         </h4>
-                        <ul class="text-xs text-amber-900 list-disc list-inside space-y-1">
+                        <ul class="text-xs text-[#a2b9b5] list-disc list-inside space-y-1">
                             <li>O código foi digitado com erro</li>
                             <li>O documento não foi assinado por este sistema</li>
                             <li>O documento foi assinado mas a versão foi cancelada/recusada</li>
-                            <li>O documento pode ter sido <strong>adulterado</strong> e o código não confere</li>
+                            <li>O documento pode ter sido <strong class="text-[#e6f0ee]">adulterado</strong> e o código não confere</li>
                         </ul>
                     </div>
 
                     <div class="flex justify-end gap-3">
                         <a href="{{ route('autenticar.formulario') }}"
-                           class="px-5 py-2 text-sm font-semibold text-white bg-[#009496] rounded-md hover:bg-[#007779]">
+                           class="px-5 py-2 text-sm font-semibold text-[#041d1a] bg-[#2DC197] rounded-md hover:bg-[#26aa84] transition">
                             Tentar outro código
                         </a>
                     </div>

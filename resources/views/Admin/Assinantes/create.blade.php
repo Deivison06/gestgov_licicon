@@ -4,12 +4,12 @@
 @section('page-subtitle', 'Cadastrar usuário com permissão de assinatura digital')
 
 @section('content')
-    <div class="max-w-4xl mx-auto">
+    <div class="py-6">
 
         @if ($errors->any())
-            <div class="p-4 mb-6 rounded-lg bg-red-50 border border-red-200">
-                <p class="font-medium text-red-800 mb-2">Corrija os erros abaixo:</p>
-                <ul class="text-sm text-red-700 list-disc list-inside">
+            <div class="p-4 mb-6 rounded-xl bg-red-950/60 border border-red-500/30">
+                <p class="font-medium text-red-300 mb-2">Corrija os erros abaixo:</p>
+                <ul class="text-sm text-red-400 list-disc list-inside">
                     @foreach ($errors->all() as $e)
                         <li>{{ $e }}</li>
                     @endforeach
@@ -17,119 +17,127 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('admin.assinantes.store') }}"
-              class="p-8 bg-white rounded-xl shadow-sm space-y-6">
-            @csrf
-
-            <h3 class="pb-3 mb-2 text-lg font-semibold text-gray-800 border-b border-gray-200">
-                Dados pessoais
-            </h3>
-
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div>
-                    <label class="block mb-1 text-sm font-medium text-gray-700">
-                        Nome completo <span class="text-red-500">*</span>
-                    </label>
-                    <input type="text" name="name" value="{{ old('name') }}" required
-                           class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#009496] focus:border-[#009496]">
-                </div>
-
-                <div>
-                    <label class="block mb-1 text-sm font-medium text-gray-700">
-                        E-mail <span class="text-red-500">*</span>
-                    </label>
-                    <input type="email" name="email" value="{{ old('email') }}" required
-                           class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#009496] focus:border-[#009496]">
-                </div>
-
-                <div>
-                    <label class="block mb-1 text-sm font-medium text-gray-700">CPF</label>
-                    <input type="text" name="cpf" value="{{ old('cpf') }}" maxlength="18"
-                           placeholder="000.000.000-00"
-                           class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#009496]">
-                </div>
-
-                <div></div>
-
-                <div>
-                    <label class="block mb-1 text-sm font-medium text-gray-700">
-                        Senha <span class="text-red-500">*</span>
-                    </label>
-                    <input type="password" name="password" required minlength="8"
-                           class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#009496]">
-                    <p class="mt-1 text-xs text-gray-500">Mínimo 8 caracteres.</p>
-                </div>
-
-                <div>
-                    <label class="block mb-1 text-sm font-medium text-gray-700">
-                        Confirmar senha <span class="text-red-500">*</span>
-                    </label>
-                    <input type="password" name="password_confirmation" required minlength="8"
-                           class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#009496]">
-                </div>
+        <div class="card !rounded-2xl overflow-hidden">
+            <div class="card-h">
+                <h3 class="text-lg font-bold text-[#e6f0ee]">
+                    <i class="fas fa-user-plus mr-2 text-[#2DC197]"></i> Novo Assinante
+                </h3>
             </div>
 
-            <h3 class="pt-6 pb-3 mb-2 text-lg font-semibold text-gray-800 border-b border-gray-200">
-                Vínculo institucional
-            </h3>
+            <form method="POST" action="{{ route('admin.assinantes.store') }}"
+                  class="p-8 space-y-6">
+                @csrf
 
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div>
-                    <label class="block mb-1 text-sm font-medium text-gray-700">
-                        Prefeitura <span class="text-red-500">*</span>
-                    </label>
-                    <select name="prefeitura_id" required
-                            class="block w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#009496]">
-                        <option value="">Selecione...</option>
-                        @foreach ($prefeituras as $p)
-                            <option value="{{ $p->id }}" {{ old('prefeitura_id') == $p->id ? 'selected' : '' }}>
-                                {{ $p->nome ?? $p->cidade }}
-                            </option>
-                        @endforeach
-                    </select>
+                <h3 class="pb-3 mb-2 text-lg font-semibold text-[#e6f0ee] border-b border-[#24403c] flex items-center gap-2">
+                    <i class="fas fa-id-card text-[#2DC197]"></i> Dados pessoais
+                </h3>
+
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div>
+                        <label class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">
+                            Nome completo <span class="text-red-400">*</span>
+                        </label>
+                        <input type="text" name="name" value="{{ old('name') }}" required
+                               class="block w-full px-4 py-2.5 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] placeholder:text-[#a2b9b5]/40 transition-colors">
+                    </div>
+
+                    <div>
+                        <label class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">
+                            E-mail <span class="text-red-400">*</span>
+                        </label>
+                        <input type="email" name="email" value="{{ old('email') }}" required
+                               class="block w-full px-4 py-2.5 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] placeholder:text-[#a2b9b5]/40 transition-colors">
+                    </div>
+
+                    <div>
+                        <label class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">CPF</label>
+                        <input type="text" name="cpf" value="{{ old('cpf') }}" maxlength="18"
+                               placeholder="000.000.000-00"
+                               class="block w-full px-4 py-2.5 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] placeholder:text-[#a2b9b5]/40 transition-colors">
+                    </div>
+
+                    <div></div>
+
+                    <div>
+                        <label class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">
+                            Senha <span class="text-red-400">*</span>
+                        </label>
+                        <input type="password" name="password" required minlength="8"
+                               class="block w-full px-4 py-2.5 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors">
+                        <p class="mt-1 text-xs text-[#a2b9b5]">Mínimo 8 caracteres.</p>
+                    </div>
+
+                    <div>
+                        <label class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">
+                            Confirmar senha <span class="text-red-400">*</span>
+                        </label>
+                        <input type="password" name="password_confirmation" required minlength="8"
+                               class="block w-full px-4 py-2.5 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors">
+                    </div>
                 </div>
 
-                <div>
-                    <label class="block mb-1 text-sm font-medium text-gray-700">Unidade / Setor</label>
-                    <select name="unidade_id"
-                            class="block w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#009496]">
-                        <option value="">— Nenhuma —</option>
-                        @foreach ($unidades as $u)
-                            <option value="{{ $u->id }}"
-                                    data-prefeitura="{{ $u->prefeitura_id }}"
-                                    {{ old('unidade_id') == $u->id ? 'selected' : '' }}>
-                                {{ $u->nome }}
-                            </option>
-                        @endforeach
-                    </select>
-                    <p class="mt-1 text-xs text-gray-500">Opcional — pode ficar vazio.</p>
+                <h3 class="pt-6 pb-3 mb-2 text-lg font-semibold text-[#e6f0ee] border-b border-[#24403c] flex items-center gap-2">
+                    <i class="fas fa-building text-[#2DC197]"></i> Vínculo institucional
+                </h3>
+
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div>
+                        <label class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">
+                            Prefeitura <span class="text-red-400">*</span>
+                        </label>
+                        <select name="prefeitura_id" required
+                                class="block w-full px-4 py-2.5 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors">
+                            <option value="">Selecione...</option>
+                            @foreach ($prefeituras as $p)
+                                <option value="{{ $p->id }}" {{ old('prefeitura_id') == $p->id ? 'selected' : '' }}>
+                                    {{ $p->nome ?? $p->cidade }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">Unidade / Setor</label>
+                        <select name="unidade_id"
+                                class="block w-full px-4 py-2.5 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors">
+                            <option value="">— Nenhuma —</option>
+                            @foreach ($unidades as $u)
+                                <option value="{{ $u->id }}"
+                                        data-prefeitura="{{ $u->prefeitura_id }}"
+                                        {{ old('unidade_id') == $u->id ? 'selected' : '' }}>
+                                    {{ $u->nome }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <p class="mt-1 text-xs text-[#a2b9b5]">Opcional — pode ficar vazio.</p>
+                    </div>
+
+                    <div>
+                        <label class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">Número da Portaria</label>
+                        <input type="text" name="numero_portaria" value="{{ old('numero_portaria') }}" maxlength="50"
+                               placeholder="Ex.: 002/2025"
+                               class="block w-full px-4 py-2.5 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] placeholder:text-[#a2b9b5]/40 transition-colors">
+                    </div>
+
+                    <div>
+                        <label class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">Data da Portaria</label>
+                        <input type="date" name="data_portaria" value="{{ old('data_portaria') }}"
+                               class="block w-full px-4 py-2.5 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors">
+                    </div>
                 </div>
 
-                <div>
-                    <label class="block mb-1 text-sm font-medium text-gray-700">Número da Portaria</label>
-                    <input type="text" name="numero_portaria" value="{{ old('numero_portaria') }}" maxlength="50"
-                           placeholder="Ex.: 002/2025"
-                           class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#009496]">
+                <div class="flex justify-end gap-3 pt-6 border-t border-[#24403c]">
+                    <a href="{{ route('admin.assinantes.index') }}"
+                       class="px-5 py-2.5 text-sm font-semibold text-[#e6f0ee] bg-[#10201e] border border-[#24403c] rounded-xl hover:bg-[#142825] hover:text-[#2DC197] transition-colors shadow-sm">
+                        Cancelar
+                    </a>
+                    <button type="submit"
+                            class="px-6 py-2.5 text-sm font-bold text-[#041d1a] bg-[#2DC197] rounded-xl hover:bg-[#26aa84] transition-all shadow-sm hover:scale-105">
+                        <i class="fas fa-save mr-1.5"></i> Salvar
+                    </button>
                 </div>
-
-                <div>
-                    <label class="block mb-1 text-sm font-medium text-gray-700">Data da Portaria</label>
-                    <input type="date" name="data_portaria" value="{{ old('data_portaria') }}"
-                           class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#009496]">
-                </div>
-            </div>
-
-            <div class="flex justify-end gap-3 pt-6 border-t border-gray-200">
-                <a href="{{ route('admin.assinantes.index') }}"
-                   class="px-5 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200">
-                    Cancelar
-                </a>
-                <button type="submit"
-                        class="px-6 py-2 text-sm font-semibold text-white bg-[#009496] rounded-md hover:bg-[#007779]">
-                    Salvar
-                </button>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 
     {{-- Filtro dinâmico de unidades por prefeitura --}}

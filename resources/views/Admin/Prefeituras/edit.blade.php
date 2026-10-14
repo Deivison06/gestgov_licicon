@@ -4,205 +4,220 @@
 
 @section('content')
     <div class="py-6">
-        <div class="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
 
-            @if (session('success'))
-                <div class="p-4 mb-6 rounded-lg bg-green-50">
-                    <p class="text-sm font-medium text-green-800">{{ session('success') }}</p>
+        @if (session('success'))
+            <div class="p-4 mb-6 rounded-lg bg-emerald-950/60 border border-emerald-500/30">
+                <p class="text-sm font-medium text-emerald-300">{{ session('success') }}</p>
+            </div>
+        @endif
+
+        <form action="{{ route('admin.prefeituras.update', $prefeitura->id) }}" method="POST"
+            enctype="multipart/form-data">
+            @csrf
+            @method('PUT')
+
+            <div class="card !rounded-2xl overflow-hidden">
+                <div class="card-h">
+                    <h3 class="text-lg font-bold text-[#e6f0ee] flex items-center gap-2">
+                        <i class="fas fa-building text-[#2DC197]"></i> Informações da Prefeitura
+                    </h3>
                 </div>
-            @endif
+                <div class="p-8">
+                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
 
-            <form action="{{ route('admin.prefeituras.update', $prefeitura->id) }}" method="POST"
-                enctype="multipart/form-data">
-                @csrf
-                @method('PUT')
+                        {{-- Nome --}}
+                        <div>
+                            <label for="nome" class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">Nome <span class="text-red-400">*</span></label>
+                            <input type="text" name="nome" id="nome"
+                                value="{{ old('nome', $prefeitura->nome) }}" required
+                                class="block w-full px-4 py-2.5 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors">
+                            @error('nome')
+                                <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+                            @enderror
+                        </div>
 
-                <div class="overflow-hidden bg-white shadow-sm rounded-xl">
-                    <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
-                        <h3 class="text-lg font-medium text-gray-700">Informações da Prefeitura</h3>
-                    </div>
-                    <div class="p-6">
-                        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                        {{-- CNPJ --}}
+                        <div>
+                            <label for="cnpj" class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">CNPJ <span class="text-red-400">*</span></label>
+                            <input type="text" name="cnpj" id="cnpj"
+                                value="{{ old('cnpj', $prefeitura->cnpj) }}" required
+                                class="block w-full px-4 py-2.5 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors">
+                            @error('cnpj')
+                                <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+                            @enderror
+                        </div>
 
-                            {{-- Nome --}}
-                            <div>
-                                <label for="nome" class="block text-sm font-medium text-gray-700">Nome</label>
-                                <input type="text" name="nome" id="nome"
-                                    value="{{ old('nome', $prefeitura->nome) }}"
-                                    class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">
-                                @error('nome')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
+                        {{-- Endereço --}}
+                        <div>
+                            <label for="endereco" class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">Endereço</label>
+                            <input type="text" name="endereco" id="endereco"
+                                value="{{ old('endereco', $prefeitura->endereco) }}"
+                                class="block w-full px-4 py-2.5 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors">
+                            @error('endereco')
+                                <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+                            @enderror
+                        </div>
 
-                            {{-- CNPJ --}}
-                            <div>
-                                <label for="cnpj" class="block text-sm font-medium text-gray-700">CNPJ</label>
-                                <input type="text" name="cnpj" id="cnpj"
-                                    value="{{ old('cnpj', $prefeitura->cnpj) }}"
-                                    class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">
-                                @error('cnpj')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
+                        {{-- Cidade --}}
+                        <div>
+                            <label for="cidade" class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">Nome da Cidade <span class="text-red-400">*</span></label>
+                            <input type="text" name="cidade" id="cidade"
+                                value="{{ old('cidade', $prefeitura->cidade) }}" required
+                                class="block w-full px-4 py-2.5 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors">
+                            @error('cidade')
+                                <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+                            @enderror
+                        </div>
 
-                            {{-- Endereço --}}
-                            <div>
-                                <label for="endereco" class="block text-sm font-medium text-gray-700">Endereço</label>
-                                <input type="text" name="endereco" id="endereco"
-                                    value="{{ old('endereco', $prefeitura->endereco) }}"
-                                    class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">
-                                @error('endereco')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
+                        {{-- Telefone --}}
+                        <div>
+                            <label for="telefone" class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">Telefone</label>
+                            <input type="text" name="telefone" id="telefone"
+                                value="{{ old('telefone', $prefeitura->telefone) }}"
+                                class="block w-full px-4 py-2.5 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors">
+                            @error('telefone')
+                                <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+                            @enderror
+                        </div>
 
-                            {{-- Cidade --}}
-                            <div>
-                                <label for="cidade" class="block text-sm font-medium text-gray-700">Nome da Cidade</label>
-                                <input type="text" name="cidade" id="cidade"
-                                    value="{{ old('cidade', $prefeitura->cidade) }}"
-                                    class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">
-                                @error('cidade')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
+                        {{-- Email --}}
+                        <div>
+                            <label for="email" class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">Email</label>
+                            <input type="email" name="email" id="email"
+                                value="{{ old('email', $prefeitura->email) }}"
+                                class="block w-full px-4 py-2.5 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors">
+                            @error('email')
+                                <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+                            @enderror
+                        </div>
 
-                            {{-- Telefone --}}
-                            <div>
-                                <label for="telefone" class="block text-sm font-medium text-gray-700">Telefone</label>
-                                <input type="text" name="telefone" id="telefone"
-                                    value="{{ old('telefone', $prefeitura->telefone) }}"
-                                    class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">
-                                @error('telefone')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
+                        {{-- Autoridade Competente --}}
+                        <div>
+                            <label for="autoridade_competente"
+                                class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">Autoridade Competente</label>
+                            <input type="text" name="autoridade_competente" id="autoridade_competente"
+                                value="{{ old('autoridade_competente', $prefeitura->autoridade_competente) }}"
+                                class="block w-full px-4 py-2.5 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors">
+                            @error('autoridade_competente')
+                                <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+                            @enderror
+                        </div>
 
-                            {{-- Email --}}
-                            <div>
-                                <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-                                <input type="email" name="email" id="email"
-                                    value="{{ old('email', $prefeitura->email) }}"
-                                    class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">
-                                @error('email')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            {{-- Autoridade Competente --}}
-                            <div>
-                                <label for="autoridade_competente"
-                                    class="block text-sm font-medium text-gray-700">Autoridade Competente</label>
-                                <input type="text" name="autoridade_competente" id="autoridade_competente"
-                                    value="{{ old('autoridade_competente', $prefeitura->autoridade_competente) }}"
-                                    class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">
-                                @error('autoridade_competente')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            {{-- Capa --}}
-                            <div>
-                                <label for="capa" class="block text-sm font-medium text-gray-700">Capa</label>
-                                <input type="file" name="capa" id="capa"
-                                    class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">
-                                @if ($prefeitura->capa)
+                        {{-- Capa --}}
+                        <div>
+                            <label for="capa" class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">Capa</label>
+                            <input type="file" name="capa" id="capa"
+                                class="block w-full text-sm text-[#a2b9b5]
+                                       file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0
+                                       file:text-sm file:font-bold
+                                       file:bg-[#2DC197] file:text-[#041d1a] hover:file:bg-[#26aa84]
+                                       file:cursor-pointer transition-colors">
+                            @if ($prefeitura->capa)
+                                <div class="mt-3 p-2 bg-[#0a1514] border border-[#24403c] rounded-xl inline-block">
                                     <img src="{{ asset($prefeitura->capa) }}" alt="Capa atual"
-                                        class="h-16 mt-2 rounded shadow">
-                                @endif
-                                @error('capa')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            {{-- Timbre --}}
-                            <div>
-                                <label for="timbre" class="block text-sm font-medium text-gray-700">Timbre</label>
-                                <input type="file" name="timbre" id="timbre"
-                                    class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">
-                                @if ($prefeitura->timbre)
-                                    <img src="{{ asset($prefeitura->timbre) }}" alt="Timbre atual"
-                                        class="h-16 mt-2 rounded shadow">
-                                @endif
-                                @error('timbre')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-                            {{-- Capa Edital --}}
-                            <div>
-                                <label for="capa_edital" class="block text-sm font-medium text-gray-700">Capa Edital</label>
-                                <input type="file" name="capa_edital" id="capa_edital"
-                                    class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">
-                                @if ($prefeitura->capa_edital)
-                                    <img src="{{ asset($prefeitura->capa_edital) }}" alt="capa_edital atual"
-                                        class="h-16 mt-2 rounded shadow">
-                                @endif
-                                @error('capa_edital')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-
+                                        class="h-16 rounded-lg object-contain">
+                                </div>
+                            @endif
+                            @error('capa')
+                                <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+                            @enderror
                         </div>
 
-                        <div class="flex justify-end mt-6 space-x-4">
-                            <a href="{{ route('admin.prefeituras.index') }}"
-                                class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#009496]">
-                                Cancelar
-                            </a>
-                            <button type="submit"
-                                class="px-4 py-2 text-sm font-medium text-white bg-[#009496] rounded-md hover:bg-[#244853] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#009496]">
-                                Atualizar Prefeitura
-                            </button>
+                        {{-- Timbre --}}
+                        <div>
+                            <label for="timbre" class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">Timbre</label>
+                            <input type="file" name="timbre" id="timbre"
+                                class="block w-full text-sm text-[#a2b9b5]
+                                       file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0
+                                       file:text-sm file:font-bold
+                                       file:bg-[#2DC197] file:text-[#041d1a] hover:file:bg-[#26aa84]
+                                       file:cursor-pointer transition-colors">
+                            @if ($prefeitura->timbre)
+                                <div class="mt-3 p-2 bg-[#0a1514] border border-[#24403c] rounded-xl inline-block">
+                                    <img src="{{ asset($prefeitura->timbre) }}" alt="Timbre atual"
+                                        class="h-16 rounded-lg object-contain">
+                                </div>
+                            @endif
+                            @error('timbre')
+                                <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        {{-- Capa Edital --}}
+                        <div>
+                            <label for="capa_edital" class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">Capa Edital</label>
+                            <input type="file" name="capa_edital" id="capa_edital"
+                                class="block w-full text-sm text-[#a2b9b5]
+                                       file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0
+                                       file:text-sm file:font-bold
+                                       file:bg-[#2DC197] file:text-[#041d1a] hover:file:bg-[#26aa84]
+                                       file:cursor-pointer transition-colors">
+                            @if ($prefeitura->capa_edital)
+                                <div class="mt-3 p-2 bg-[#0a1514] border border-[#24403c] rounded-xl inline-block">
+                                    <img src="{{ asset($prefeitura->capa_edital) }}" alt="Capa edital atual"
+                                        class="h-16 rounded-lg object-contain">
+                                </div>
+                            @endif
+                            @error('capa_edital')
+                                <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+                            @enderror
                         </div>
                     </div>
+
+                    <div class="flex justify-end gap-3 pt-6 mt-8 border-t border-[#24403c]">
+                        <a href="{{ route('admin.prefeituras.index') }}"
+                            class="px-5 py-2.5 text-sm font-semibold text-[#e6f0ee] bg-[#10201e] border border-[#24403c] rounded-xl hover:bg-[#142825] hover:text-[#2DC197] transition-colors shadow-sm">
+                            Cancelar
+                        </a>
+                        <button type="submit"
+                            class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-[#041d1a] bg-[#2DC197] rounded-xl hover:bg-[#26aa84] transition-all shadow-sm hover:scale-105">
+                            <i class="fas fa-save"></i>
+                            Atualizar Prefeitura
+                        </button>
+                    </div>
                 </div>
+            </div>
             </form>
 
 
             <!-- Seção para Unidades/Setores/Departamentos -->
-            <div class="mt-6 overflow-hidden bg-white shadow-sm rounded-xl">
-                <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
+            <div class="mt-6 overflow-hidden bg-[#10201e] border border-[#24403c] shadow-sm rounded-xl">
+                <div class="px-6 py-4 border-b border-[#24403c] bg-[#0d1b19]">
                     <div class="flex items-center justify-between">
-                        <h3 class="text-lg font-medium text-gray-700">Unidades/Setores/Departamentos</h3>
+                        <h3 class="text-lg font-semibold text-white">Unidades/Setores/Departamentos</h3>
                         <button type="button" id="btn-add-unidade"
-                            class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-[#009496] rounded-lg hover:bg-[#244853] transition-colors shadow-sm">
+                            class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-[#041d1a] bg-[#2DC197] rounded-lg hover:bg-[#26a883] transition-colors shadow-sm">
                             Adicionar Unidade
                         </button>
                     </div>
                 </div>
                 <div class="p-6">
                     @if ($prefeitura->unidades->count() > 0)
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
+                        <div class="overflow-x-auto border border-[#24403c] rounded-lg">
+                            <table class="min-w-full divide-y divide-[#24403c]">
+                                <thead class="bg-[#0a1514]">
                                     <tr>
-                                        <th class="px-6 py-3 text-xs font-medium text-left text-gray-500 uppercase">Nome
-                                        </th>
-                                        <th class="px-6 py-3 text-xs font-medium text-left text-gray-500 uppercase">Servidor
-                                            Responsável</th>
-                                        <th class="px-6 py-3 text-xs font-medium text-left text-gray-500 uppercase">Nº
-                                            Portaria</th>
-                                        <th class="px-6 py-3 text-xs font-medium text-left text-gray-500 uppercase">Data da
-                                            Portaria</th>
-                                        <th class="px-6 py-3 text-xs font-medium text-center text-gray-500 uppercase">Ações
-                                        </th>
+                                        <th class="px-6 py-3 text-xs font-semibold text-left text-[#a2b9b5] uppercase">Nome</th>
+                                        <th class="px-6 py-3 text-xs font-semibold text-left text-[#a2b9b5] uppercase">Servidor Responsável</th>
+                                        <th class="px-6 py-3 text-xs font-semibold text-left text-[#a2b9b5] uppercase">Nº Portaria</th>
+                                        <th class="px-6 py-3 text-xs font-semibold text-left text-[#a2b9b5] uppercase">Data da Portaria</th>
+                                        <th class="px-6 py-3 text-xs font-semibold text-center text-[#a2b9b5] uppercase">Ações</th>
                                     </tr>
                                 </thead>
-                                <tbody class="bg-white divide-y divide-gray-200" id="unidades-table-body">
+                                <tbody class="bg-[#10201e] divide-y divide-[#24403c]" id="unidades-table-body">
                                     @foreach ($prefeitura->unidades as $unidade)
-                                        <tr id="unidade-row-{{ $unidade->id }}">
-                                            <td class="px-6 py-4">{{ $unidade->nome }}</td>
-                                            <td class="px-6 py-4">{{ $unidade->servidor_responsavel }}</td>
-                                            <td class="px-6 py-4">{{ $unidade->numero_portaria ?? '—' }}</td>
-                                            <td class="px-6 py-4">
+                                        <tr id="unidade-row-{{ $unidade->id }}" class="hover:bg-[#142825] transition-colors">
+                                            <td class="px-6 py-4 text-white font-medium">{{ $unidade->nome }}</td>
+                                            <td class="px-6 py-4 text-[#e6f0ee]">{{ $unidade->servidor_responsavel }}</td>
+                                            <td class="px-6 py-4 text-[#a2b9b5]">{{ $unidade->numero_portaria ?? '—' }}</td>
+                                            <td class="px-6 py-4 text-[#a2b9b5]">
                                                 {{ $unidade->data_portaria ? \Carbon\Carbon::parse($unidade->data_portaria)->format('d/m/Y') : '—' }}
                                             </td>
-                                            <td class="px-6 py-4 text-center">
+                                            <td class="px-6 py-4 text-center space-x-2">
                                                 <button type="button"
-                                                    class="text-yellow-600 hover:underline edit-unidade"
+                                                    class="text-amber-400 hover:text-amber-300 font-medium edit-unidade"
                                                     data-id="{{ $unidade->id }}">Editar</button>
-                                                <button type="button" class="text-red-600 hover:underline delete-unidade"
+                                                <button type="button" class="text-red-400 hover:text-red-300 font-medium delete-unidade"
                                                     data-id="{{ $unidade->id }}">Excluir</button>
                                             </td>
                                         </tr>
@@ -212,12 +227,10 @@
                             </table>
                         </div>
                     @else
-                        <p class="text-sm text-gray-500">Nenhuma unidade cadastrada.</p>
+                        <p class="text-sm text-[#a2b9b5]">Nenhuma unidade cadastrada.</p>
                     @endif
-                </div>
             </div>
         </div>
-    </div>
 
     <!-- Modal para Adicionar/Editar Unidade -->
     <div id="unidade-modal" class="fixed inset-0 z-50 hidden overflow-y-auto transition-opacity duration-300 ease-in-out">
@@ -232,14 +245,14 @@
 
             <!-- Conteúdo do Modal -->
             <div
-                class="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl sm:align-middle">
+                class="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-[#10201e] border border-[#24403c] shadow-2xl rounded-2xl sm:align-middle">
                 <!-- Header do Modal -->
-                <div class="flex items-center justify-between pb-4 border-b border-gray-100">
-                    <h3 class="text-xl font-semibold text-gray-800" id="modal-title">
-                        <span class="text-[#009496]">+</span> Adicionar Unidade
+                <div class="flex items-center justify-between pb-4 border-b border-[#24403c]">
+                    <h3 class="text-xl font-semibold text-[#e6f0ee]" id="modal-title">
+                        <span class="text-[#2DC197]">+</span> Adicionar Unidade
                     </h3>
                     <button type="button" id="btn-close-modal"
-                        class="text-gray-400 transition-colors duration-200 hover:text-gray-600">
+                        class="text-[#a2b9b5] transition-colors duration-200 hover:text-white">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M6 18L18 6M6 6l12 12"></path>
@@ -254,12 +267,12 @@
 
                     <!-- Campo Nome -->
                     <div class="space-y-2">
-                        <label for="unidade-nome" class="block text-sm font-medium text-gray-700">
-                            <span class="text-[#009496]">*</span> Nome da Unidade
+                        <label for="unidade-nome" class="block text-sm font-medium text-[#a2b9b5]">
+                            <span class="text-[#2DC197]">*</span> Nome da Unidade
                         </label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor"
+                                <svg class="w-5 h-5 text-[#527771]" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-6 0H5m2 0h4M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
@@ -267,64 +280,64 @@
                                 </svg>
                             </div>
                             <input type="text" name="nome" id="unidade-nome"
-                                class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#009496] focus:border-transparent transition-all duration-200"
+                                class="block w-full pl-10 pr-3 py-3 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-lg shadow-sm placeholder-[#527771] focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-transparent transition-all duration-200"
                                 placeholder="Ex: Secretaria de Educação">
                         </div>
-                        <p id="unidade-nome-error" class="hidden text-sm text-red-600 animate-pulse"></p>
+                        <p id="unidade-nome-error" class="hidden text-sm text-red-400 animate-pulse"></p>
                     </div>
 
                     <!-- Campo Servidor Responsável -->
                     <div class="space-y-2">
-                        <label for="unidade-servidor" class="block text-sm font-medium text-gray-700">
-                            <span class="text-[#009496]">*</span> Servidor Responsável
+                        <label for="unidade-servidor" class="block text-sm font-medium text-[#a2b9b5]">
+                            <span class="text-[#2DC197]">*</span> Servidor Responsável
                         </label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor"
+                                <svg class="w-5 h-5 text-[#527771]" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                                 </svg>
                             </div>
                             <input type="text" name="servidor_responsavel" id="unidade-servidor"
-                                class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#009496] focus:border-transparent transition-all duration-200"
+                                class="block w-full pl-10 pr-3 py-3 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-lg shadow-sm placeholder-[#527771] focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-transparent transition-all duration-200"
                                 placeholder="Ex: João da Silva">
                         </div>
-                        <p id="unidade-servidor-error" class="hidden text-sm text-red-600 animate-pulse"></p>
+                        <p id="unidade-servidor-error" class="hidden text-sm text-red-400 animate-pulse"></p>
                     </div>
 
                     {{-- Nº PORTARIA --}}
                     <div>
-                        <label for="numero_portaria" class="block text-sm font-medium text-gray-700">Nº da
+                        <label for="numero_portaria" class="block text-sm font-medium text-[#a2b9b5]">Nº da
                             Portaria</label>
                         <input type="text" name="numero_portaria" id="numero_portaria"
                             value="{{ old('numero_portaria') }}"
-                            class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">
+                            class="block w-full mt-1 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-md shadow-sm focus:ring-[#2DC197] focus:border-[#2DC197]">
                         @error('numero_portaria')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                         @enderror
                     </div>
 
                     {{-- DATA DA PORTARIA --}}
                     <div>
-                        <label for="data_portaria" class="block text-sm font-medium text-gray-700">Data da
+                        <label for="data_portaria" class="block text-sm font-medium text-[#a2b9b5]">Data da
                             Portaria</label>
                         <input type="date" name="data_portaria" id="data_portaria"
                             value="{{ old('data_portaria') }}"
-                            class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">
+                            class="block w-full mt-1 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-md shadow-sm focus:ring-[#2DC197] focus:border-[#2DC197]">
                         @error('data_portaria')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <!-- Footer do Modal -->
-                    <div class="flex items-center justify-end pt-6 space-x-3 border-t border-gray-100">
+                    <div class="flex items-center justify-end pt-6 space-x-3 border-t border-[#24403c]">
                         <button type="button" id="btn-cancel-modal"
-                            class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-200 transform hover:-translate-y-0.5">
+                            class="px-6 py-2.5 text-sm font-medium text-[#a2b9b5] bg-[#142825] border border-[#24403c] rounded-lg shadow-sm hover:bg-[#1c3834] hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#24403c] transition-all duration-200">
                             Cancelar
                         </button>
                         <button type="submit"
-                            class="px-6 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-[#062F43] to-[#244853] rounded-lg shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#009496] transition-all duration-200 transform hover:-translate-y-0.5 hover:scale-105">
+                            class="px-6 py-2.5 text-sm font-bold text-[#041d1a] bg-[#2DC197] rounded-lg shadow-sm hover:bg-[#26aa84] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2DC197] transition-all duration-200 transform hover:-translate-y-0.5 hover:scale-105">
                             <span class="flex items-center">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

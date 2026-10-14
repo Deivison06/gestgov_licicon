@@ -28,17 +28,17 @@
 
   <!-- ===================== MODAL ===================== -->
   <main class="relative flex w-full flex-1 flex-col items-center justify-center">
-    <div class="w-full max-w-[400px] flex flex-col rounded-[20px] text-slate-900 shadow-[0_30px_80px_rgba(0,0,0,.45)]">
+    <div class="w-full max-w-[400px] flex flex-col rounded-[20px] text-[#e6f0ee] shadow-[0_30px_80px_rgba(0,0,0,.65)] border border-[#24403c] overflow-hidden">
 
       <!-- Cabeçalho com a logo do sistema -->
-      <div class="flex items-center justify-center rounded-t-[20px] bg-[#0b3b37] px-8 py-1">
+      <div class="flex items-center justify-center bg-[#0b3b37] px-8 py-2 border-b border-[#24403c]">
         <img id="logo-sig"
              src="{{ asset('logo/licicon-horizontal-colorida-para-fundo-escuro.png') }}"
              alt="Licicon"
              class="block h-auto w-full max-w-[280px]">
       </div>
 
-      <div class="rounded-b-[20px] bg-white">
+      <div class="bg-[#10201e]">
         {{ $slot }}
       </div>
 

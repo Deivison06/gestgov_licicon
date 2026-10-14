@@ -15,7 +15,7 @@
         </div>
         @can('fiscalizar contratos')
             <a href="{{ route('admin.ocorrencias.selecionar-contrato') }}"
-                class="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white transition-colors bg-[#009496] rounded-lg hover:bg-[#244853] shadow-sm">
+                class="flex items-center gap-2 px-4 py-2.5 text-sm font-bold text-[#041d1a] transition-all duration-200 bg-[#2DC197] rounded-lg hover:bg-[#26aa84] shadow-sm">
                 <i class="fas fa-plus"></i> Registrar Ocorrência
             </a>
         @endcan

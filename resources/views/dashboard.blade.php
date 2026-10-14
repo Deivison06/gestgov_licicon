@@ -1,297 +1,238 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard - GestGov')
+@section('title', 'Dashboard - GestGov Licicon')
 
 @section('content')
-    <div class="py-6">
+    <div class="py-2 space-y-8">
         <!-- Cabeçalho com Filtro de Cidade -->
-        <div class="mb-8">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h2 class="text-2xl font-bold text-gray-800">
-                        @if($prefeitura)
-                            Painel da GestGov - {{ $prefeitura->nome }}
-                        @else
-                            Painel Geral da GestGov
-                        @endif
-                    </h2>
-                    <p class="mt-1 text-sm text-gray-500">Visão geral dos processos - {{ now()->format('d/m/Y') }}</p>
-                </div>
-
-                @if(auth()->user()->hasAnyRole(['diretor_licicon', 'gerente_licicon', 'colaborador_licicon']))
-                <!-- Filtro de Cidade -->
-                <div class="w-full md:w-64">
-                    <form action="{{ route('admin.dashboard') }}" method="GET">
-                        <select name="cidade" onchange="this.form.submit()"
-                                class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#0596A2] focus:border-transparent">
-                            <option value="">Todas as Cidades</option>
-                            @foreach($prefeituras as $pref)
-                                <option value="{{ $pref->id }}" {{ $prefeitura && $prefeitura->id == $pref->id ? 'selected' : '' }}>
-                                    {{ $pref->nome }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </form>
-                </div>
-                @endif
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+                <h2 class="text-2xl font-extrabold tracking-tight text-[#e6f0ee]">
+                    @if($prefeitura)
+                        Painel da GestGov — {{ $prefeitura->nome }}
+                    @else
+                        Painel Geral da GestGov
+                    @endif
+                </h2>
+                <p class="mt-1 text-sm font-medium text-[#8aa29d]">Visão consolidada dos processos · {{ now()->format('d/m/Y') }}</p>
             </div>
+
+            @if(auth()->user()->hasAnyRole(['diretor_licicon', 'gerente_licicon', 'colaborador_licicon']))
+            <!-- Filtro de Cidade -->
+            <div class="w-full md:w-72">
+                <form action="{{ route('admin.dashboard') }}" method="GET">
+                    <label for="filtro-cidade" class="sr-only">Filtrar por cidade</label>
+                    <select id="filtro-cidade" name="cidade" onchange="this.form.submit()"
+                            class="in !h-11 !rounded-xl !bg-[#0d1b19] !border-[#24403c] !text-[#e6f0ee] focus:!border-[#2DC197] focus:!ring-[#2DC197]/25 text-sm font-medium shadow-sm">
+                        <option value="">Todas as Cidades</option>
+                        @foreach($prefeituras as $pref)
+                            <option value="{{ $pref->id }}" {{ $prefeitura && $prefeitura->id == $pref->id ? 'selected' : '' }}>
+                                {{ $pref->nome }}
+                            </option>
+                        @endforeach
+                    </select>
+                </form>
+            </div>
+            @endif
         </div>
 
-        <!-- Cartões de Estatísticas de Processos -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Grade de Indicadores (KPI Cards no formato do SIT) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
             <!-- Cartão Pregões -->
-            <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-medium text-gray-700">Pregões</h3>
-                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                        <i class="fas fa-gavel text-blue-600"></i>
-                    </div>
+            <div class="card kpi">
+                <div class="top">
+                    <span class="ic bg-[#132a4a] text-[#93c5fd]">
+                        <i class="fas fa-gavel text-base"></i>
+                    </span>
+                    <span class="lab">Pregões</span>
                 </div>
-                <div class="text-center">
-                    <p class="text-3xl font-bold text-gray-800 mb-1">{{ $pregoes }}</p>
-                    <p class="text-sm text-gray-500">Total de pregões</p>
-                </div>
+                <div class="num">{{ $pregoes }}</div>
+                <div class="desc">Total de pregões</div>
             </div>
 
             <!-- Cartão Dispensas -->
-            <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-medium text-gray-700">Dispensas</h3>
-                    <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                        <i class="fas fa-file-signature text-green-600"></i>
-                    </div>
+            <div class="card kpi">
+                <div class="top">
+                    <span class="ic bg-[#12352a] text-[#86efac]">
+                        <i class="fas fa-file-signature text-base"></i>
+                    </span>
+                    <span class="lab">Dispensas</span>
                 </div>
-                <div class="text-center">
-                    <p class="text-3xl font-bold text-gray-800 mb-1">{{ $dispensas }}</p>
-                    <p class="text-sm text-gray-500">Total de dispensas</p>
-                </div>
+                <div class="num text-[#86efac]">{{ $dispensas }}</div>
+                <div class="desc">Total de dispensas</div>
             </div>
 
             <!-- Cartão Inexigibilidades -->
-            <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-medium text-gray-700">Inexigibilidades</h3>
-                    <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
-                        <i class="fas fa-ban text-purple-600"></i>
-                    </div>
+            <div class="card kpi">
+                <div class="top">
+                    <span class="ic bg-[#2a1f4a] text-[#c4b5fd]">
+                        <i class="fas fa-ban text-base"></i>
+                    </span>
+                    <span class="lab">Inexigibilidades</span>
                 </div>
-                <div class="text-center">
-                    <p class="text-3xl font-bold text-gray-800 mb-1">{{ $inexigibilidades }}</p>
-                    <p class="text-sm text-gray-500">Total de inexigibilidades</p>
-                </div>
+                <div class="num text-[#c4b5fd]">{{ $inexigibilidades }}</div>
+                <div class="desc">Inexigibilidades ativas</div>
             </div>
 
             <!-- Cartão Concorrências -->
-            <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-medium text-gray-700">Concorrências</h3>
-                    <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-                        <i class="fas fa-balance-scale text-orange-600"></i>
-                    </div>
+            <div class="card kpi">
+                <div class="top">
+                    <span class="ic bg-[#3b2310] text-[#fdba74]">
+                        <i class="fas fa-balance-scale text-base"></i>
+                    </span>
+                    <span class="lab">Concorrências</span>
                 </div>
-                <div class="text-center">
-                    <p class="text-3xl font-bold text-gray-800 mb-1">{{ $concorrencia }}</p>
-                    <p class="text-sm text-gray-500">Total de concorrências</p>
-                </div>
+                <div class="num text-[#fdba74]">{{ $concorrencia }}</div>
+                <div class="desc">Concorrências públicas</div>
             </div>
 
             <!-- Cartão Em Andamento -->
-            <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-medium text-gray-700">Em Andamento</h3>
-                    <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center">
-                        <i class="fas fa-spinner text-yellow-600"></i>
-                    </div>
+            <div class="card kpi">
+                <div class="top">
+                    <span class="ic bg-[#3a2c0b] text-[#fcd34d]">
+                        <i class="fas fa-spinner text-base"></i>
+                    </span>
+                    <span class="lab">Em Andamento</span>
                 </div>
-                <div class="text-center">
-                    <p class="text-3xl font-bold text-gray-800 mb-1">{{ $emAndamento }}</p>
-                    <p class="text-sm text-gray-500">Processos em análise</p>
-                </div>
+                <div class="num text-[#fcd34d]">{{ $emAndamento }}</div>
+                <div class="desc">Em fase de análise</div>
             </div>
 
-            <!-- Cartão Concluídos -->
-            <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-medium text-gray-700">Concluídos</h3>
-                    <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                        <i class="fas fa-check-circle text-green-600"></i>
-                    </div>
+            <!-- Cartão Concluídos (SIT KPI Dark Variant com Mint) -->
+            <div class="card kpi dark">
+                <div class="top">
+                    <span class="ic bg-white/10 text-[#2DC197]">
+                        <i class="fas fa-check-circle text-base"></i>
+                    </span>
+                    <span class="lab">Concluídos</span>
                 </div>
-                <div class="text-center">
-                    <p class="text-3xl font-bold text-gray-800 mb-1">{{ $finalizadosTotal }}</p>
-                    <p class="text-sm text-gray-500">Processos finalizados</p>
-                </div>
-            </div>
-
-           {{-- <!-- Cartão Concluídos -->
-            <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-medium text-gray-700">Concluídos</h3>
-                    <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                        <i class="fas fa-check-circle text-green-600"></i>
-                    </div>
-                </div>
-                <div class="text-center">
-                    <p class="text-3xl font-bold text-gray-800 mb-1">{{ $cancelado }}</p>
-                    <p class="text-sm text-gray-500">Processos finalizados</p>
-                </div>
-            </div> --}}
-
-            <!-- Cartão Total de Processos -->
-            <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-medium text-gray-700">Total Processos</h3>
-                    <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
-                        <i class="fas fa-clipboard-list text-gray-600"></i>
-                    </div>
-                </div>
-                <div class="text-center">
-                    <p class="text-3xl font-bold text-gray-800 mb-1">{{ $totalProcessos }}</p>
-                    <p class="text-sm text-gray-500">Todos os processos</p>
-                </div>
+                <div class="num text-[#2DC197]">{{ $finalizadosTotal }}</div>
+                <div class="desc">Processos concluídos</div>
             </div>
         </div>
 
-        <!-- Lista de Processos -->
-        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-lg font-medium text-gray-700">
+        <!-- Lista de Processos Recentes -->
+        <div class="card">
+            <div class="card-h">
+                <div>
+                    <h2>
                         @if($prefeitura)
-                            Processos - {{ $prefeitura->nome }}
+                            Processos Recentes — {{ $prefeitura->nome }}
                         @else
-                            Processos Recentes
+                            Processos Recentes do Sistema
                         @endif
-                    </h3>
-                    <div class="flex items-center space-x-2">
-                        <span class="text-sm text-gray-500">Total: {{ $processos->count() }}</span>
-                        @if(!$prefeitura)
-                            <i class="fas fa-building text-gray-400"></i>
-                        @endif
-                    </div>
+                    </h2>
+                    <div class="sub">Acompanhamento das últimas movimentações e despachos</div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="pill p-gray">Total: {{ $processos->count() }}</span>
+                    @if(!$prefeitura)
+                        <span class="text-[#8aa29d]"><i class="fas fa-building ml-1"></i></span>
+                    @endif
                 </div>
             </div>
 
-            <div class="divide-y divide-gray-100">
+            <div class="divide-y divide-[#1a302d]">
                 @forelse ($processos->sortByDesc('created_at')->take(10) as $processo)
-                    <div class="px-6 py-4 transition-colors hover:bg-gray-50">
+                    <div class="px-6 py-4 transition-colors hover:bg-[#142825]">
                         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                            <div class="flex-1">
-                                <div class="flex items-center gap-3 mb-2">
-                                    <p class="font-medium text-gray-800">
+                            <div class="flex-1 min-w-0">
+                                <div class="flex flex-wrap items-center gap-2.5 mb-2">
+                                    <span class="font-bold text-sm text-[#e6f0ee] tracking-tight">
                                         Processo #{{ $processo->numero_processo }}
-                                    </p>
+                                    </span>
 
                                     <!-- Badge da Modalidade -->
                                     @php
-                                        $modalidadeClasses = match($processo->modalidade->value ?? $processo->modalidade) {
-                                            1 => 'bg-orange-100 text-orange-800',
-                                            2 => 'bg-green-100 text-green-800',
-                                            3 => 'bg-purple-100 text-purple-800',
-                                            4 => 'bg-blue-100 text-blue-800',
-                                            default => 'bg-gray-100 text-gray-800'
+                                        $modClasse = match($processo->modalidade->value ?? $processo->modalidade) {
+                                            1 => 'p-warn',
+                                            2 => 'p-ok',
+                                            3 => 'p-vio',
+                                            4 => 'p-info',
+                                            default => 'p-gray'
                                         };
                                     @endphp
-                                    <span class="px-2 py-1 text-xs font-medium rounded-full {{ $modalidadeClasses }}">
+                                    <span class="pill {{ $modClasse }}">
                                         {{ $processo->modalidade->getDisplayName() ?? 'Modalidade' }}
                                     </span>
 
                                     <!-- Badge do Status -->
                                     @php
-                                        $statusClasses = match($processo->status->value ?? $processo->status) {
-                                            'EM_ANDAMENTO' => 'bg-yellow-100 text-yellow-800',
-                                            'FINALIZADO' => 'bg-green-100 text-green-800',
-                                            'CANCELADO' => 'bg-red-100 text-red-800',
-                                            'REPUBLICADO' => 'bg-purple-100 text-purple-800',
-                                            'ADIADO' => 'bg-orange-100 text-orange-800',
-                                            default => 'bg-gray-100 text-gray-800'
+                                        $stClasse = match($processo->status->value ?? $processo->status) {
+                                            'EM_ANDAMENTO' => 'p-warn',
+                                            'FINALIZADO' => 'p-ok',
+                                            'CANCELADO' => 'p-bad',
+                                            'REPUBLICADO' => 'p-vio',
+                                            'ADIADO' => 'p-warn',
+                                            default => 'p-gray'
                                         };
                                     @endphp
-                                    <span class="px-2 py-1 text-xs font-medium rounded-full {{ $statusClasses }}">
+                                    <span class="pill {{ $stClasse }}">
                                         {{ $processo->status->label() ?? $processo->status }}
                                     </span>
                                 </div>
-                                <div class="text-sm text-gray-600 space-y-1">
-                                    <p>
-                                        <i class="fas fa-building mr-2 text-gray-400"></i>
-                                        {{ $processo->prefeitura->nome ?? 'Prefeitura não vinculada' }}
+                                <div class="text-[13px] text-[#a8bdb9] space-y-1.5">
+                                    <p class="flex items-center gap-2">
+                                        <i class="fas fa-building text-[#8aa29d] text-xs"></i>
+                                        <span>{{ $processo->prefeitura->nome ?? 'Prefeitura não vinculada' }}</span>
                                     </p>
-                                    <p>
-                                        <i class="fas fa-tag mr-2 text-gray-400"></i>
-                                        Objeto: {!! strip_tags($processo->objeto) !!}
+                                    <p class="flex items-start gap-2 line-clamp-2">
+                                        <i class="fas fa-tag text-[#8aa29d] text-xs mt-1"></i>
+                                        <span><b>Objeto:</b> {!! strip_tags($processo->objeto) !!}</span>
                                     </p>
-                                    <div class="flex items-center gap-4 mt-2">
-                                        <span class="flex items-center text-xs text-gray-500">
-                                            <i class="far fa-clock mr-1"></i>
-                                            Criado: {{ $processo->created_at->format('d/m/Y') }}
+                                    <div class="flex items-center gap-4 pt-1">
+                                        <span class="flex items-center text-xs text-[#8aa29d]">
+                                            <i class="far fa-clock mr-1.5"></i>
+                                            Criado em {{ $processo->created_at->format('d/m/Y') }}
                                         </span>
                                     </div>
                                 </div>
                             </div>
-                            <div class="md:text-right">
+                            <div class="md:text-right shrink-0">
                                 <a href="{{ route('admin.processos.iniciar', $processo->id) }}"
-                                   class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-[#0596A2] rounded-lg hover:bg-[#047a85] transition-colors">
-                                    <i class="fas fa-eye mr-2"></i>
-                                    Ver Detalhes
+                                   class="btn sm pri">
+                                    <i class="fas fa-eye text-xs"></i>
+                                    <span>Ver Detalhes</span>
                                 </a>
                             </div>
                         </div>
                     </div>
                 @empty
-                    <div class="px-6 py-8 text-center">
-                        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-                            <i class="fas fa-clipboard-list text-gray-400 text-2xl"></i>
+                    <div class="px-6 py-12 text-center text-[#8aa29d]">
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[#0d1b19] border border-[#24403c] flex items-center justify-center text-[#8aa29d]">
+                            <i class="fas fa-clipboard-list text-2xl"></i>
                         </div>
-                        <p class="text-gray-500 mb-2">Nenhum processo encontrado.</p>
+                        <b class="block text-base text-[#e6f0ee] mb-1">Nenhum processo encontrado</b>
+                        <p class="text-sm">Não há registros para os filtros selecionados.</p>
                     </div>
                 @endforelse
             </div>
 
-            <div class="px-6 py-4 border-t border-gray-100 bg-gray-50">
-                <div class="flex items-center justify-between">
-                    <div class="text-sm text-gray-500">
-                        Mostrando {{ min(10, $processos->count()) }} de {{ $processos->count() }} processos
-                    </div>
-                    <a href="{{ route('admin.processos.index') }}"
-                       class="inline-flex items-center text-sm font-medium text-[#0596A2] hover:text-[#047a85] transition-colors">
-                        Ver todos os processos
-                        <i class="ml-2 text-xs fas fa-arrow-right"></i>
-                    </a>
+            <div class="px-6 py-4 border-t border-[#1a302d] bg-[#0d1b19] flex items-center justify-between">
+                <div class="text-xs text-[#8aa29d]">
+                    Mostrando {{ min(10, $processos->count()) }} de {{ $processos->count() }} processos
                 </div>
+                <a href="{{ route('admin.processos.index') }}"
+                   class="inline-flex items-center text-xs font-bold text-[#5eead4] hover:text-[#2DC197] transition-colors">
+                    Ver todos os processos
+                    <i class="ml-1.5 fas fa-arrow-right text-[10px]"></i>
+                </a>
             </div>
         </div>
-        
-        <!-- Novo footer: Precisa de ajuda? -->
-        <div class="mt-8 bg-[#06302d] rounded-[20px] p-6 flex flex-col sm:flex-row items-center justify-between gap-6 slide-in shadow-[0_8px_24px_rgba(5,30,28,.25)]">
-            <div class="flex items-center gap-4">
-                <div class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center shrink-0">
-                    <i class="fas fa-question text-[#2DC197] text-xl"></i>
-                </div>
-                <div>
-                    <h3 class="text-white font-semibold text-lg">Precisa de ajuda?</h3>
-                    <p class="text-white/70 text-sm">Nossa equipe de suporte está pronta para ajudar você com qualquer dúvida sobre o sistema.</p>
-                </div>
+
+        <!-- Seção de Suporte (Formato do SIT .help) -->
+        <section class="help">
+            <div class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center shrink-0">
+                <i class="fas fa-question text-[#2DC197] text-xl"></i>
             </div>
-            <a href="https://wa.me/558988060983" class="inline-flex items-center justify-center px-6 py-2.5 bg-[#2DC197] hover:bg-[#25a580] text-[#06302d] font-bold rounded-lg transition-colors whitespace-nowrap">
+            <div class="flex-1 min-w-[220px]">
+                <b class="text-base font-bold text-white block">Precisa de ajuda com o Licicon?</b>
+                <p class="text-sm text-white/75">Nossa equipe de suporte técnico e jurídico está pronta para auxiliar nas suas demandas.</p>
+            </div>
+            <a href="https://wa.me/558988060983" target="_blank" rel="noopener noreferrer"
+               class="btn pri !h-11 !px-6 !text-sm">
                 Falar com o suporte
             </a>
-        </div>
+        </section>
     </div>
-
-    <style>
-        .bg-white {
-            animation: fadeInUp 0.5s ease-out;
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-    </style>
 @endsection

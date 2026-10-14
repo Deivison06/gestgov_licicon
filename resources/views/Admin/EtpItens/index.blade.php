@@ -5,11 +5,11 @@
 @section('content')
 <div class="py-8">
     <div class="flex justify-end mb-8 space-x-3">
-        <button type="button" onclick="openModalPncp('main')" class="inline-flex items-center gap-3 px-6 py-3 text-sm font-semibold text-[#009496] transition-all duration-200 bg-[#009496]/10 rounded-xl hover:bg-[#009496]/20 hover:scale-105">
+        <button type="button" onclick="openModalPncp('main')" class="inline-flex items-center gap-3 px-6 py-3 text-sm font-semibold text-[#2DC197] transition-all duration-200 bg-[#142825] border border-[#24403c] rounded-xl hover:bg-[#1a332f] hover:scale-105">
             <i class="fas fa-search text-lg"></i>
             Buscar no PNCP
         </button>
-        <button type="button" onclick="openModalCreate(true)" class="inline-flex items-center gap-3 px-6 py-3 text-sm font-semibold text-white transition-all duration-200 bg-gradient-to-r from-[#052323] to-[#052323] rounded-xl hover:shadow-lg hover:scale-105">
+        <button type="button" onclick="openModalCreate(true)" class="inline-flex items-center gap-3 px-6 py-3 text-sm font-bold text-[#041d1a] transition-all duration-200 bg-[#2DC197] rounded-xl hover:bg-[#26aa84] hover:shadow-lg hover:scale-105">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
             </svg>
@@ -18,28 +18,28 @@
     </div>
 
     @if (session('success'))
-    <div class="p-4 mb-8 border border-green-200 shadow-sm rounded-2xl bg-gradient-to-r from-green-50 to-emerald-50">
+    <div class="p-4 mb-8 border border-[#184e40] shadow-sm rounded-2xl bg-[#0d2a23] text-[#2DC197]">
         <div class="flex items-center">
-            <svg class="w-5 h-5 mr-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5 mr-3 text-[#2DC197]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
             </svg>
-            <p class="text-sm font-medium text-green-800">{{ session('success') }}</p>
+            <p class="text-sm font-medium">{{ session('success') }}</p>
         </div>
     </div>
     @endif
     @if (session('error'))
-    <div class="p-4 mb-8 border border-red-200 shadow-sm rounded-2xl bg-gradient-to-r from-red-50 to-red-100">
+    <div class="p-4 mb-8 border border-[#5a2328] shadow-sm rounded-2xl bg-[#2a1315] text-[#ff7b72]">
         <div class="flex items-center">
-            <svg class="w-5 h-5 mr-3 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5 mr-3 text-[#ff7b72]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
-            <p class="text-sm font-medium text-red-800">{{ session('error') }}</p>
+            <p class="text-sm font-medium">{{ session('error') }}</p>
         </div>
     </div>
     @endif
     @if ($errors->any())
-        <div class="p-4 mb-8 border border-red-200 shadow-sm rounded-2xl bg-gradient-to-r from-red-50 to-red-100">
-            <ul class="ml-8 list-disc text-sm text-red-700">
+        <div class="p-4 mb-8 border border-[#5a2328] shadow-sm rounded-2xl bg-[#2a1315] text-[#ff7b72]">
+            <ul class="ml-8 list-disc text-sm">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
@@ -73,9 +73,9 @@
         </form>
     </div>
 
-    <div class="overflow-hidden transition-all duration-300 bg-white border border-gray-100 shadow-sm rounded-2xl flex flex-col items-start justify-between">
-        <div class="w-full px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
-            <h3 class="text-xl font-semibold text-gray-800">Catálogo de Itens</h3>
+    <div class="overflow-hidden transition-all duration-300 card !rounded-2xl flex flex-col items-start justify-between">
+        <div class="card-h w-full">
+            <h3 class="text-xl font-bold text-[#e6f0ee]">Catálogo de Itens</h3>
         </div>
 
         <div class="w-full overflow-x-auto">

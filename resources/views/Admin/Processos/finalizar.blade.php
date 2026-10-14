@@ -119,9 +119,10 @@
 
         {{-- ====== BLOCO 1: Documentos do Processo (atos da sessão, propostas, habilitação) ====== --}}
         @if ($documentosProcessoCount > 0)
-            <div class="mb-8 overflow-hidden bg-white border border-gray-200 shadow-sm rounded-2xl">
-                <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
-                    <h3 class="text-lg font-semibold text-gray-800">Documentos do Processo</h3>
+            <div class="mb-8 overflow-hidden card !rounded-2xl">
+                <div class="card-h">
+                    <div>
+                        <h3 class="text-lg font-bold text-[#e6f0ee]">Documentos do Processo</h3>
                     <p class="mt-1 text-xs text-gray-500">
                         @if ($ehHomologacaoUnica)
                             Todos os documentos do processo (sessão pública, propostas, habilitação, termo de homologação, publicações).
@@ -373,7 +374,7 @@
                             <button type="button"
                                     id="btn-gerar-nova-homologacao"
                                     onclick="gerarNovaHomologacao('{{ $processo->id }}')"
-                                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-emerald-600 rounded-md shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
+                                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold text-[#041d1a] bg-[#2DC197] rounded-md shadow-sm hover:bg-[#26aa84] focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:ring-offset-2 transition-colors">
                                 @if (!$temHomologacao)
                                     ➕ Gerar Primeira Homologação
                                 @else
@@ -474,11 +475,10 @@
         )
             <!-- Seção de Vencedores -->
             <div class="mb-8">
-                <div class="overflow-hidden bg-white border border-gray-100 shadow-sm rounded-2xl">
+                <div class="overflow-hidden card !rounded-2xl">
                     <!-- Header -->
-                    <div class="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
-                        <div class="flex flex-col items-start justify-between lg:flex-row lg:items-center">
-                            <h3 class="text-xl font-semibold text-gray-800">Vencedores do Processo</h3>
+                    <div class="card-h w-full flex-col lg:flex-row lg:items-center lg:justify-between">
+                        <h3 class="text-xl font-bold text-[#e6f0ee]">Vencedores do Processo</h3>
                             <button type="button"
                                     onclick="abrirModalVencedor()"
                                     class="px-4 py-2 mt-2 text-sm font-medium text-white bg-green-600 rounded-md lg:mt-0 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
@@ -808,11 +808,10 @@
 
             <!-- Seção de Reservas -->
             <div class="mb-8">
-                <div class="overflow-hidden bg-white border border-gray-100 shadow-sm rounded-2xl">
+                <div class="overflow-hidden card !rounded-2xl">
                     <!-- Header -->
-                    <div class="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-yellow-50 to-yellow-100">
-                        <div class="flex flex-col items-start justify-between lg:flex-row lg:items-center">
-                            <h3 class="text-xl font-semibold text-gray-800">Empresas Reservas do Processo</h3>
+                    <div class="card-h w-full flex-col lg:flex-row lg:items-center lg:justify-between">
+                        <h3 class="text-xl font-bold text-[#e6f0ee]">Empresas Reservas do Processo</h3>
                             <button type="button"
                                     onclick="abrirModalReserva()"
                                     class="px-4 py-2 mt-2 text-sm font-medium text-white bg-yellow-600 rounded-md lg:mt-0 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2">

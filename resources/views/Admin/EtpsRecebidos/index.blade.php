@@ -168,10 +168,10 @@
 
 
     <!-- TABELA -->
-    <div class="overflow-hidden bg-white border border-gray-100 shadow-sm rounded-2xl">
+    <div class="overflow-hidden card !rounded-2xl">
 
-        <div class="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
-            <h3 class="text-xl font-semibold text-gray-800">
+        <div class="card-h">
+            <h3 class="text-xl font-bold text-[#e6f0ee]">
                 Lista Global de ETPs
             </h3>
         </div>

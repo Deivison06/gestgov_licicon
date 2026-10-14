@@ -6,9 +6,9 @@
 @section('content')
 
 @if ($errors->any())
-    <div class="p-4 mb-6 rounded-lg bg-red-50">
-        <p class="text-sm font-medium text-red-800">Atenção aos erros:</p>
-        <ul class="mt-2 text-sm text-red-600 list-disc list-inside">
+    <div class="p-4 mb-6 rounded-xl bg-[#2a1315] border border-[#5a2328]">
+        <p class="text-sm font-semibold text-[#ff7b72]">Atenção aos erros:</p>
+        <ul class="mt-2 text-sm text-[#ff9b9b] list-disc list-inside">
             @foreach ($errors->all() as $error)
                 <li>{{ $error }}</li>
             @endforeach
@@ -17,14 +17,14 @@
 @endif
 
 @if (session('success'))
-    <div class="p-4 mb-6 rounded-lg bg-green-50 text-green-800">{{ session('success') }}</div>
+    <div class="p-4 mb-6 rounded-xl bg-[#132d27] border border-[#24403c] text-[#2DC197] font-semibold">{{ session('success') }}</div>
 @endif
 
 {{-- ================= SEÇÃO DE DADOS DO CONTRATO ================= --}}
-<div class="mb-6 bg-white shadow-sm rounded-xl overflow-hidden">
-    <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
-        <h3 class="flex items-center gap-2 text-lg font-medium text-gray-700">
-            <i class="fas fa-file-signature text-[#009496]"></i> Dados do Contrato
+<div class="mb-6 card !rounded-2xl overflow-hidden">
+    <div class="px-6 py-4 border-b border-[#24403c]">
+        <h3 class="flex items-center gap-2 text-lg font-bold text-[#e6f0ee]">
+            <i class="fas fa-file-signature text-[#2DC197]"></i> Dados do Contrato
         </h3>
     </div>
 
@@ -38,16 +38,16 @@
                 $isPrefeituraUser = auth()->user()->hasRole('prefeitura') && auth()->user()->prefeitura_id;
             @endphp
 
-            <label class="block mb-2 text-sm font-medium text-gray-700">Prefeitura</label>
+            <label class="block mb-2 text-sm font-semibold text-[#a2b9b5]">Prefeitura</label>
             @if($isPrefeituraUser)
                 <input type="hidden" name="prefeitura_id" value="{{ auth()->user()->prefeitura_id }}">
-                <select disabled class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496] bg-gray-50">
+                <select disabled class="w-full px-4 py-2.5 bg-[#0a1514] border border-[#24403c] rounded-xl text-[#a2b9b5] cursor-not-allowed">
                     <option value="{{ $contrato->prefeitura_id }}" selected>
                         {{ $contrato->prefeitura->nome }}
                     </option>
                 </select>
             @else
-                <select name="prefeitura_id" id="prefeitura_id" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496]">
+                <select name="prefeitura_id" id="prefeitura_id" class="w-full px-4 py-2.5 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors">
                     <option value="">Selecione a prefeitura</option>
                     @foreach ($prefeituras as $prefeitura)
                     <option value="{{ $prefeitura->id }}" {{ $contrato->prefeitura_id == $prefeitura->id ? 'selected' : '' }}>
@@ -61,39 +61,39 @@
         {{-- Linha 2: Identificação Básica --}}
         <div class="grid grid-cols-1 gap-6 md:grid-cols-4 mb-6">
             <div>
-                <label class="block mb-2 text-sm font-medium text-gray-700">Tipo de Contrato *</label>
-                <select name="tipo_contrato" required class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496]">
+                <label class="block mb-2 text-sm font-semibold text-[#a2b9b5]">Tipo de Contrato <span class="text-[#2DC197]">*</span></label>
+                <select name="tipo_contrato" required class="w-full px-4 py-2.5 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors">
                     <option value="">Selecione</option>
                     <option value="Compras" {{ $contrato->tipo_contrato == 'Compras' ? 'selected' : '' }}>Compras</option>
                     <option value="Serviço" {{ $contrato->tipo_contrato == 'Serviço' ? 'selected' : '' }}>Serviço</option>
                     <option value="Obra" {{ $contrato->tipo_contrato == 'Obra' ? 'selected' : '' }}>Obra</option>
                 </select>
                 @error('tipo_contrato')
-                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                <p class="mt-1 text-xs text-[#ff7b72]">{{ $message }}</p>
                 @enderror
             </div>
             <div>
-                <label class="block mb-2 text-sm font-medium text-gray-700">Nº Processo *</label>
+                <label class="block mb-2 text-sm font-semibold text-[#a2b9b5]">Nº Processo <span class="text-[#2DC197]">*</span></label>
                 <input type="text" name="numero_processo" value="{{ $contrato->numero_processo }}" required
-                        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496]">
+                        class="w-full px-4 py-2.5 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] placeholder:text-[#a2b9b5]/40 transition-colors">
                 @error('numero_processo')
-                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                <p class="mt-1 text-xs text-[#ff7b72]">{{ $message }}</p>
                 @enderror
             </div>
             <div>
-                <label class="block mb-2 text-sm font-medium text-gray-700">Nº Procedimento</label>
+                <label class="block mb-2 text-sm font-semibold text-[#a2b9b5]">Nº Procedimento</label>
                 <input type="text" name="numero_procedimento" value="{{ $contrato->numero_procedimento }}"
-                        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496]">
+                        class="w-full px-4 py-2.5 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] placeholder:text-[#a2b9b5]/40 transition-colors">
                 @error('numero_procedimento')
-                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                <p class="mt-1 text-xs text-[#ff7b72]">{{ $message }}</p>
                 @enderror
             </div>
             <div>
-                <label class="block mb-2 text-sm font-medium text-gray-700">Nº Contrato</label>
+                <label class="block mb-2 text-sm font-semibold text-[#a2b9b5]">Nº Contrato</label>
                 <input type="text" name="numero_contrato" value="{{ $contrato->numero_contrato }}"
-                        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496]">
+                        class="w-full px-4 py-2.5 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] placeholder:text-[#a2b9b5]/40 transition-colors">
                 @error('numero_contrato')
-                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                <p class="mt-1 text-xs text-[#ff7b72]">{{ $message }}</p>
                 @enderror
             </div>
         </div>
@@ -101,8 +101,8 @@
         {{-- Linha 3: Modalidade e Contratante --}}
         <div class="grid grid-cols-1 gap-6 md:grid-cols-2 mb-6">
             <div>
-                <label for="modalidade" class="block text-sm font-medium text-gray-700">Modalidade</label>
-                <select name="modalidade" id="modalidade" class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">
+                <label for="modalidade" class="block mb-2 text-sm font-semibold text-[#a2b9b5]">Modalidade</label>
+                <select name="modalidade" id="modalidade" class="w-full px-4 py-2.5 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors">
                     <option value="">Selecione a modalidade</option>
                     @foreach (\App\Enums\ModalidadeEnum::cases() as $modalidade)
                         <option value="{{ $modalidade->value }}" {{ old('modalidade', $contrato->modalidade?->value ?? $contrato->modalidade) == $modalidade->value ? 'selected' : '' }}>
@@ -111,47 +111,47 @@
                     @endforeach
                 </select>
                 @error('modalidade')
-                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                <p class="mt-1 text-xs text-[#ff7b72]">{{ $message }}</p>
                 @enderror
             </div>
             <div>
-                <label class="block mb-2 text-sm font-medium text-gray-700">Secretaria / Órgão Contratante *</label>
-                <select name="unidade_id" id="unidade_id" required class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496]">
+                <label class="block mb-2 text-sm font-semibold text-[#a2b9b5]">Secretaria / Órgão Contratante <span class="text-[#2DC197]">*</span></label>
+                <select name="unidade_id" id="unidade_id" required class="w-full px-4 py-2.5 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors">
                     <option value="">@if($isPrefeituraUser) Selecione a secretaria @else Primeiro selecione a prefeitura @endif</option>
                     {{-- As opções serão carregadas via JavaScript --}}
                 </select>
                 @error('unidade_id')
-                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                <p class="mt-1 text-xs text-[#ff7b72]">{{ $message }}</p>
                 @enderror
             </div>
         </div>
 
         {{-- Linha 4: Vigência e Valores --}}
-        <div class="p-4 bg-gray-50 rounded-lg border border-gray-100 mb-6">
-            <h4 class="text-sm font-semibold text-gray-600 mb-4">Vigência e Valores</h4>
+        <div class="p-5 bg-[#0a1514] rounded-xl border border-[#24403c] mb-6">
+            <h4 class="text-sm font-bold text-[#e6f0ee] mb-4">Vigência e Valores</h4>
             <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
                 <div>
-                    <label class="block mb-2 text-sm font-medium text-gray-700">Valor Total (R$) *</label>
+                    <label class="block mb-2 text-sm font-semibold text-[#a2b9b5]">Valor Total (R$) <span class="text-[#2DC197]">*</span></label>
                     <input type="text" name="valor_total" value="R$ {{ number_format($contrato->valor_total, 2, ',', '.') }}" required
-                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496] money-mask">
+                            class="w-full px-4 py-2.5 bg-[#10201e] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors money-mask">
                     @error('valor_total')
-                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    <p class="mt-1 text-xs text-[#ff7b72]">{{ $message }}</p>
                     @enderror
                 </div>
                 <div>
-                    <label class="block mb-2 text-sm font-medium text-gray-700">Data Início</label>
+                    <label class="block mb-2 text-sm font-semibold text-[#a2b9b5]">Data Início</label>
                     <input type="date" name="data_inicio" value="{{ $contrato->data_inicio ? $contrato->data_inicio->format('Y-m-d') : '' }}"
-                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496]">
+                            class="w-full px-4 py-2.5 bg-[#10201e] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors">
                     @error('data_inicio')
-                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    <p class="mt-1 text-xs text-[#ff7b72]">{{ $message }}</p>
                     @enderror
                 </div>
                 <div>
-                    <label class="block mb-2 text-sm font-medium text-gray-700">Data Finalização *</label>
+                    <label class="block mb-2 text-sm font-semibold text-[#a2b9b5]">Data Finalização <span class="text-[#2DC197]">*</span></label>
                     <input type="date" name="data_finalizacao" required value="{{ $contrato->data_finalizacao ? $contrato->data_finalizacao->format('Y-m-d') : '' }}"
-                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496] border-l-4 border-l-[#009496]">
+                            class="w-full px-4 py-2.5 bg-[#10201e] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] border-l-4 border-l-[#2DC197] transition-colors">
                     @error('data_finalizacao')
-                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    <p class="mt-1 text-xs text-[#ff7b72]">{{ $message }}</p>
                     @enderror
                 </div>
             </div>
@@ -159,80 +159,80 @@
 
         {{-- Objeto e Arquivo --}}
         <div class="mb-6">
-            <label class="block mb-2 text-sm font-medium text-gray-700">Objeto do Contrato *</label>
-            <textarea name="objeto" rows="3" required class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496]">{{ $contrato->objeto }}</textarea>
+            <label class="block mb-2 text-sm font-semibold text-[#a2b9b5]">Objeto do Contrato <span class="text-[#2DC197]">*</span></label>
+            <textarea name="objeto" rows="3" required class="w-full px-4 py-2.5 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] placeholder:text-[#a2b9b5]/40 transition-colors">{{ $contrato->objeto }}</textarea>
             @error('objeto')
-            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+            <p class="mt-1 text-xs text-[#ff7b72]">{{ $message }}</p>
             @enderror
         </div>
 
         {{-- Upload do Arquivo PDF do Contrato --}}
-        <div class="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-100">
-            <h4 class="text-sm font-semibold text-blue-800 mb-3 flex items-center gap-2">
-                <i class="fas fa-file-pdf"></i> Arquivo do Contrato
+        <div class="mb-6 p-5 bg-[#0a1514] rounded-xl border border-[#24403c]">
+            <h4 class="text-sm font-bold text-[#e6f0ee] mb-3 flex items-center gap-2">
+                <i class="fas fa-file-pdf text-[#2DC197]"></i> Arquivo do Contrato
             </h4>
 
             @if($contrato->arquivo_contrato)
                 <div class="mb-4">
-                    <p class="text-sm text-gray-600 mb-2">Arquivo atual:</p>
+                    <p class="text-xs font-semibold text-[#a2b9b5] mb-2">Arquivo atual:</p>
                     <a href="{{ url($contrato->arquivo_contrato) }}"
                        target="_blank"
                        class="block group">
-                        <div class="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition-colors cursor-pointer">
+                        <div class="flex items-center gap-3 p-3 bg-[#10201e] rounded-xl border border-[#24403c] hover:bg-[#142825] hover:border-[#2DC197]/40 transition-colors cursor-pointer">
                             <div class="flex-shrink-0">
-                                <div class="p-2 bg-red-50 rounded-lg">
-                                    <i class="fas fa-file-pdf text-red-500 text-xl"></i>
+                                <div class="p-2 bg-[#2a1315] border border-[#5a2328] rounded-lg">
+                                    <i class="fas fa-file-pdf text-[#ff7b72] text-xl"></i>
                                 </div>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <p class="text-sm font-medium text-gray-800 truncate group-hover:text-blue-700">
+                                <p class="text-sm font-semibold text-[#e6f0ee] truncate group-hover:text-[#2DC197]">
                                     {{ basename($contrato->arquivo_contrato) }}
                                 </p>
-                                <p class="text-xs text-gray-500 mt-1">
-                                    <i class="fas fa-external-link-alt mr-1"></i> Clique para abrir o PDF
+                                <p class="text-xs text-[#a2b9b5] mt-1">
+                                    <i class="fas fa-external-link-alt mr-1 text-[#2DC197]"></i> Clique para abrir o PDF
                                 </p>
                             </div>
                             <div class="flex-shrink-0">
-                                <i class="fas fa-external-link-alt text-gray-400 group-hover:text-blue-500"></i>
+                                <i class="fas fa-external-link-alt text-[#a2b9b5] group-hover:text-[#2DC197]"></i>
                             </div>
                         </div>
                     </a>
                 </div>
 
-                <div class="flex items-center gap-3 mb-3">
-                    <div class="flex-1 h-px bg-gray-200"></div>
-                    <span class="text-xs text-gray-500">ou</span>
-                    <div class="flex-1 h-px bg-gray-200"></div>
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="flex-1 h-px bg-[#24403c]"></div>
+                    <span class="text-xs text-[#a2b9b5]">ou</span>
+                    <div class="flex-1 h-px bg-[#24403c]"></div>
                 </div>
             @endif
 
             <div>
-                <label class="block mb-2 text-sm font-medium text-gray-700">
+                <label class="block mb-2 text-sm font-semibold text-[#a2b9b5]">
                     {{ $contrato->arquivo_contrato ? 'Substituir arquivo' : 'Enviar arquivo' }} (PDF)
                 </label>
                 <input type="file" name="arquivo_contrato" id="arquivo_contrato"
-                       class="block w-full px-3 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 transition-colors cursor-pointer focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                       class="block w-full px-3 py-2 text-sm text-[#a2b9b5] bg-[#10201e] border border-[#24403c] rounded-xl file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-[#2DC197] file:text-[#041d1a] hover:file:bg-[#26aa84] transition-colors cursor-pointer focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197]"
                        accept=".pdf">
-                <p class="mt-2 text-xs text-gray-500">
+                <p class="mt-2 text-xs text-[#a2b9b5]">
                     Apenas arquivos PDF, tamanho máximo: 5MB
                 </p>
                 @if($contrato->arquivo_contrato)
-                    <p class="mt-1 text-xs text-gray-600">
+                    <p class="mt-1 text-xs text-[#a2b9b5]/80">
                         Deixe em branco para manter o arquivo atual.
                     </p>
                 @endif
                 @error('arquivo_contrato')
-                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                <p class="mt-1 text-xs text-[#ff7b72]">{{ $message }}</p>
                 @enderror
             </div>
         </div>
 
-        <div class="flex justify-end gap-3 mt-6">
+        <div class="flex justify-end gap-3 mt-6 pt-6 border-t border-[#24403c]">
             <a href="{{ route('admin.contratos.index') }}"
-                class="px-4 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors shadow-sm">
+                class="px-4 py-2.5 text-sm font-semibold text-[#e6f0ee] bg-[#10201e] border border-[#24403c] rounded-xl hover:bg-[#142825] hover:text-[#2DC197] transition-colors shadow-sm">
                 Cancelar
             </a>
-            <button type="submit" class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-[#009496] rounded-lg hover:bg-[#244853] transition-colors shadow-sm">
+            <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-[#041d1a] bg-[#2DC197] rounded-xl hover:bg-[#26aa84] transition-all shadow-sm hover:scale-105">
                 <i class="fas fa-save"></i>
                 Salvar Alterações
             </button>
@@ -241,10 +241,10 @@
 </div>
 
 {{-- ================= SEÇÃO DA EMPRESA (AJAX) ================= --}}
-<div class="bg-white shadow-sm rounded-xl overflow-hidden mb-10">
-    <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
-        <h3 class="flex items-center gap-2 text-lg font-medium text-gray-700">
-            <i class="fas fa-building text-[#009496]"></i> Informações da Empresa
+<div class="card !rounded-2xl overflow-hidden mb-10">
+    <div class="px-6 py-4 border-b border-[#24403c]">
+        <h3 class="flex items-center gap-2 text-lg font-bold text-[#e6f0ee]">
+            <i class="fas fa-building text-[#2DC197]"></i> Informações da Empresa
         </h3>
     </div>
 
@@ -254,31 +254,31 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Razão Social *</label>
+                <label class="block text-sm font-semibold text-[#a2b9b5] mb-2">Razão Social <span class="text-[#2DC197]">*</span></label>
                 <input type="text" name="razao_social" value="{{ $contrato->empresa->razao_social }}" required
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496]">
+                        class="w-full px-4 py-2.5 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] placeholder:text-[#a2b9b5]/40 transition-colors">
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">CNPJ *</label>
+                <label class="block text-sm font-semibold text-[#a2b9b5] mb-2">CNPJ <span class="text-[#2DC197]">*</span></label>
                 <input type="text" name="cnpj" id="cnpj" value="{{ $contrato->empresa->cnpj_formatado }}" required
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496]">
+                        class="w-full px-4 py-2.5 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] placeholder:text-[#a2b9b5]/40 transition-colors">
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Representante</label>
+                <label class="block text-sm font-semibold text-[#a2b9b5] mb-2">Representante</label>
                 <input type="text" name="representante" value="{{ $contrato->empresa->representante }}"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496]">
+                        class="w-full px-4 py-2.5 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] placeholder:text-[#a2b9b5]/40 transition-colors">
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Endereço *</label>
+                <label class="block text-sm font-semibold text-[#a2b9b5] mb-2">Endereço <span class="text-[#2DC197]">*</span></label>
                 <input type="text" name="endereco" value="{{ $contrato->empresa->endereco }}" required
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496]">
+                        class="w-full px-4 py-2.5 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] placeholder:text-[#a2b9b5]/40 transition-colors">
             </div>
         </div>
 
-        <div class="mt-6 pt-4 border-t border-gray-100 flex justify-end">
-            <button type="submit" class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-gray-700 rounded-lg hover:bg-gray-800 transition-colors shadow-sm">
+        <div class="mt-6 pt-6 border-t border-[#24403c] flex justify-end">
+            <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-[#041d1a] bg-[#2DC197] rounded-xl hover:bg-[#26aa84] transition-all shadow-sm hover:scale-105">
                 <i class="fas fa-save"></i>
                 Atualizar Apenas Empresa
             </button>

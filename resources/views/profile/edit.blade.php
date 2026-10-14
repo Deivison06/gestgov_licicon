@@ -4,11 +4,10 @@
 
 @section('content')
 <div class="py-6">
-    <div class="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
-        <div class="mb-6">
-            <h2 class="text-2xl font-bold text-gray-800">Meu Perfil</h2>
-            <p class="mt-1 text-sm text-gray-500">Gerencie suas informações de perfil e segurança</p>
-        </div>
+    <div class="mb-6">
+        <h2 class="text-2xl font-bold text-[#e6f0ee]">Meu Perfil</h2>
+        <p class="mt-1 text-sm text-[#a2b9b5]">Gerencie suas informações de perfil e segurança</p>
+    </div>
 
         <div class="space-y-6">
             <!-- Atualizar Informações do Perfil -->
@@ -33,13 +32,15 @@
 
             {{-- Dados de Assinatura (read-only) — só para users com is_assinante=true --}}
             @if (auth()->user()->is_assinante)
-                <div class="overflow-hidden bg-white shadow-sm rounded-xl border-l-4 border-l-[#009496]">
-                    <div class="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-teal-50 to-white">
-                        <h3 class="text-lg font-medium text-gray-700">Dados de Assinatura</h3>
-                        <p class="mt-1 text-xs text-gray-500">
-                            Informações usadas no carimbo das suas assinaturas digitais.
-                            Para alterar, contate o administrador da prefeitura.
-                        </p>
+                <div class="overflow-hidden card !rounded-2xl border-l-4 border-l-[#2DC197]">
+                    <div class="card-h">
+                        <div>
+                            <h3 class="text-lg font-bold text-[#e6f0ee]">Dados de Assinatura</h3>
+                            <p class="mt-1 text-xs text-[#8aa29d]">
+                                Informações usadas no carimbo das suas assinaturas digitais.
+                                Para alterar, contate o administrador da prefeitura.
+                            </p>
+                        </div>
                     </div>
                     <div class="p-6">
                         <dl class="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -89,5 +90,4 @@
             @endunless
         </div>
     </div>
-</div>
 @endsection

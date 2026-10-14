@@ -28,25 +28,25 @@
     {{-- BARRA DE AÇÕES --}}
     <div class="flex items-center justify-between mb-8">
         <div>
-            <h2 class="text-2xl font-bold text-gray-800">Fiscalização {{ $fiscalizacao->numero_fiscalizacao }}</h2>
+            <h2 class="text-2xl font-bold text-[#e6f0ee]">Fiscalização {{ $fiscalizacao->numero_fiscalizacao }}</h2>
         </div>
         <div class="flex flex-wrap items-center gap-3">
             
-            <a href="{{ route('admin.fiscalizacoes.index') }}" class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-700 transition-colors bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0596A2] shadow-sm">
+            <a href="{{ route('admin.fiscalizacoes.index') }}" class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-[#e6f0ee] transition-colors bg-[#10201e] border border-[#24403c] rounded-xl hover:bg-[#142825] hover:text-[#2DC197] shadow-sm">
                 <i class="fas fa-arrow-left"></i> Voltar
             </a>
 
-            <a href="{{ route('admin.fiscalizacoes.edit', $fiscalizacao->id) }}" class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-700 transition-colors bg-gray-100 border border-gray-200 rounded-lg hover:bg-gray-200 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 shadow-sm">
-                <i class="fas fa-edit text-amber-500"></i> Editar Dados
+            <a href="{{ route('admin.fiscalizacoes.edit', $fiscalizacao->id) }}" class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-[#e6f0ee] transition-colors bg-[#142825] border border-[#24403c] rounded-xl hover:bg-[#1a3531] hover:text-[#2DC197] shadow-sm">
+                <i class="fas fa-edit text-[#e3b341]"></i> Editar Dados
             </a>
 
-            <div class="hidden md:block w-px h-8 bg-gray-300 mx-1"></div> {{-- Separador visual --}}
+            <div class="hidden md:block w-px h-8 bg-[#24403c] mx-1"></div>
 
-            <a href="{{ route('admin.fiscalizacoes.relatorio-tecnico', $fiscalizacao->id) }}" class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white transition-colors bg-[#009496] rounded-lg hover:bg-[#062F43] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#009496] shadow-sm" target="_blank">
+            <a href="{{ route('admin.fiscalizacoes.relatorio-tecnico', $fiscalizacao->id) }}" class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-[#041d1a] transition-all bg-[#2DC197] rounded-xl hover:bg-[#26aa84] hover:scale-105 shadow-sm" target="_blank">
                 <i class="fas fa-file-contract"></i> Relatório Técnico
             </a>
 
-            <a href="{{ route('admin.fiscalizacoes.notificacoes', $fiscalizacao->id) }}" class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white transition-colors bg-red-600 rounded-lg hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 shadow-sm" target="_blank">
+            <a href="{{ route('admin.fiscalizacoes.notificacoes', $fiscalizacao->id) }}" class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-[#ff7b72] transition-colors bg-[#2a1315] border border-[#5a2328] rounded-xl hover:bg-[#3d1a1e] shadow-sm" target="_blank">
                 <i class="fas fa-exclamation-triangle"></i> Notificações e Recomendações
             </a>
             
@@ -56,72 +56,72 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="lg:col-span-1 space-y-6">
 
-            <div class="bg-white border border-gray-100 shadow-sm rounded-2xl overflow-hidden">
-                <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
-                    <h3 class="text-lg font-semibold text-gray-800">Dados do Relatório</h3>
+            <div class="card !rounded-2xl overflow-hidden">
+                <div class="px-6 py-4 border-b border-[#24403c] bg-[#0d1b19]">
+                    <h3 class="text-lg font-bold text-[#e6f0ee]">Dados do Relatório</h3>
                 </div>
                 <div class="p-6">
                     <dl class="space-y-4">
                         <div class="grid grid-cols-3 gap-4">
-                            <dt class="text-sm font-medium text-gray-500 col-span-1">Resultado</dt>
-                            <dd class="text-sm text-gray-900 col-span-2">
+                            <dt class="text-sm font-semibold text-[#a2b9b5] col-span-1">Resultado</dt>
+                            <dd class="text-sm text-[#e6f0ee] col-span-2">
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold {{ $fiscalizacao->conclusao_badge_class }}">
                                     {{ $fiscalizacao->conclusao_texto }}
                                 </span>
                             </dd>
                         </div>
-                        <div class="grid grid-cols-3 gap-4 border-t border-gray-50 pt-3">
-                            <dt class="text-sm font-medium text-gray-500 col-span-1">Data</dt>
-                            <dd class="text-sm text-gray-900 col-span-2">{{ $fiscalizacao->data_fiscalizacao?->format('d/m/Y') }}</dd>
+                        <div class="grid grid-cols-3 gap-4 border-t border-[#24403c] pt-3">
+                            <dt class="text-sm font-semibold text-[#a2b9b5] col-span-1">Data</dt>
+                            <dd class="text-sm text-[#e6f0ee] col-span-2">{{ $fiscalizacao->data_fiscalizacao?->format('d/m/Y') }}</dd>
                         </div>
-                        <div class="grid grid-cols-3 gap-4 border-t border-gray-50 pt-3">
-                            <dt class="text-sm font-medium text-gray-500 col-span-1">Tipo</dt>
-                            <dd class="text-sm text-gray-900 col-span-2">{{ $fiscalizacao->tipo_contrato?->getDisplayName() ?? 'N/I' }}</dd>
+                        <div class="grid grid-cols-3 gap-4 border-t border-[#24403c] pt-3">
+                            <dt class="text-sm font-semibold text-[#a2b9b5] col-span-1">Tipo</dt>
+                            <dd class="text-sm text-[#e6f0ee] col-span-2">{{ $fiscalizacao->tipo_contrato?->getDisplayName() ?? 'N/I' }}</dd>
                         </div>
-                        <div class="grid grid-cols-3 gap-4 border-t border-gray-50 pt-3">
-                            <dt class="text-sm font-medium text-gray-500 col-span-1">Fiscal</dt>
-                            <dd class="text-sm text-gray-900 col-span-2 font-medium">{{ $fiscalizacao->user->name ?? 'Sistema' }}</dd>
+                        <div class="grid grid-cols-3 gap-4 border-t border-[#24403c] pt-3">
+                            <dt class="text-sm font-semibold text-[#a2b9b5] col-span-1">Fiscal</dt>
+                            <dd class="text-sm text-[#e6f0ee] col-span-2 font-medium">{{ $fiscalizacao->user->name ?? 'Sistema' }}</dd>
                         </div>
-                        <div class="grid grid-cols-3 gap-4 border-t border-gray-50 pt-3">
-                            <dt class="text-sm font-medium text-gray-500 col-span-1">Criado em</dt>
-                            <dd class="text-sm text-gray-900 col-span-2">{{ $fiscalizacao->created_at->format('d/m/Y H:i') }}</dd>
+                        <div class="grid grid-cols-3 gap-4 border-t border-[#24403c] pt-3">
+                            <dt class="text-sm font-semibold text-[#a2b9b5] col-span-1">Criado em</dt>
+                            <dd class="text-sm text-[#e6f0ee] col-span-2">{{ $fiscalizacao->created_at->format('d/m/Y H:i') }}</dd>
                         </div>
                     </dl>
                 </div>
             </div>
 
-            <div class="bg-white border border-gray-100 shadow-sm rounded-2xl overflow-hidden">
-                <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
-                    <h3 class="text-lg font-semibold text-gray-800">Contrato Vinculado</h3>
+            <div class="card !rounded-2xl overflow-hidden">
+                <div class="px-6 py-4 border-b border-[#24403c] bg-[#0d1b19]">
+                    <h3 class="text-lg font-bold text-[#e6f0ee]">Contrato Vinculado</h3>
                 </div>
                 <div class="p-6">
                     <dl class="space-y-4">
                         <div>
-                            <dt class="text-xs font-medium text-gray-400 uppercase tracking-wider">Empresa Contratada</dt>
-                            <dd class="text-sm font-bold text-gray-900 mt-1">{{ $info['razao_social'] }}</dd>
-                            <dd class="text-xs text-gray-500">{{ $info['cnpj'] }}</dd>
+                            <dt class="text-xs font-semibold text-[#a2b9b5] uppercase tracking-wider">Empresa Contratada</dt>
+                            <dd class="text-sm font-bold text-[#2DC197] mt-1">{{ $info['razao_social'] }}</dd>
+                            <dd class="text-xs text-[#a2b9b5]">{{ $info['cnpj'] }}</dd>
                         </div>
-                        <div class="pt-3 border-t border-gray-50">
-                            <dt class="text-xs font-medium text-gray-400 uppercase">Nº Contrato / Processo</dt>
-                            <dd class="text-sm text-gray-700 mt-1">{{ $info['numero_contrato'] }} ({{ $info['numero_processo'] }})</dd>
+                        <div class="pt-3 border-t border-[#24403c]">
+                            <dt class="text-xs font-semibold text-[#a2b9b5] uppercase">Nº Contrato / Processo</dt>
+                            <dd class="text-sm text-[#e6f0ee] mt-1">{{ $info['numero_contrato'] }} ({{ $info['numero_processo'] }})</dd>
                         </div>
-                        <div class="pt-3 border-t border-gray-50">
-                            <dt class="text-xs font-medium text-gray-400 uppercase">Secretaria</dt>
-                            <dd class="text-sm text-gray-700 mt-1">{{ $info['secretaria'] }}</dd>
+                        <div class="pt-3 border-t border-[#24403c]">
+                            <dt class="text-xs font-semibold text-[#a2b9b5] uppercase">Secretaria</dt>
+                            <dd class="text-sm text-[#e6f0ee] mt-1">{{ $info['secretaria'] }}</dd>
                         </div>
                     </dl>
                 </div>
             </div>
 
             @if($fiscalizacao->relatorio_fotografico)
-                <div class="bg-white border border-gray-100 shadow-sm rounded-2xl overflow-hidden">
-                    <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
-                        <h3 class="text-lg font-semibold text-gray-800">Relatório Fotográfico</h3>
+                <div class="card !rounded-2xl overflow-hidden">
+                    <div class="px-6 py-4 border-b border-[#24403c] bg-[#0d1b19]">
+                        <h3 class="text-lg font-bold text-[#e6f0ee]">Relatório Fotográfico</h3>
                     </div>
                     <div class="p-6">
                         <a href="{{ asset($fiscalizacao->relatorio_fotografico) }}" target="_blank">
                             <img src="{{ asset($fiscalizacao->relatorio_fotografico) }}" alt="Relatório Fotográfico"
-                                 class="w-full rounded-xl border border-gray-200 hover:opacity-90 transition-opacity">
+                                 class="w-full rounded-xl border border-[#24403c] hover:opacity-90 transition-opacity">
                         </a>
                     </div>
                 </div>
@@ -129,28 +129,28 @@
         </div>
 
         <div class="lg:col-span-2">
-            <div class="bg-white border border-gray-100 shadow-sm rounded-2xl overflow-hidden min-h-full">
-                <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
-                    <h3 class="text-lg font-semibold text-gray-800">Avaliação do cumprimento do contrato</h3>
+            <div class="card !rounded-2xl overflow-hidden min-h-full">
+                <div class="px-6 py-4 border-b border-[#24403c] bg-[#0d1b19]">
+                    <h3 class="text-lg font-bold text-[#e6f0ee]">Avaliação do cumprimento do contrato</h3>
                 </div>
 
                 <div class="p-8 space-y-8">
                     {{-- CHECKLIST DE VERIFICAÇÃO (Compras e Serviços) --}}
                     @if($ocorrenciaEstruturada && !empty($fiscalizacao->checklist_fiscalizacao))
                         <div class="relative pl-8">
-                            <div class="absolute left-0 top-1 text-[#0596A2]">
+                            <div class="absolute left-0 top-1 text-[#2DC197]">
                                 <i class="fas fa-clipboard-check text-lg"></i>
                             </div>
-                            <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Checklist de Verificação</h4>
-                            <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 bg-gray-50/50 p-4 rounded-xl border border-gray-50">
+                            <h4 class="text-xs font-bold text-[#a2b9b5] uppercase tracking-widest">Checklist de Verificação</h4>
+                            <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 bg-[#0d1b19] p-4 rounded-xl border border-[#24403c]">
                                 @foreach(\App\Models\Fiscalizacao::CHECKLIST_ITENS as $chave => $rotulo)
                                     <div class="flex items-center gap-2 text-sm">
                                         @if(data_get($fiscalizacao->checklist_fiscalizacao, $chave))
-                                            <i class="fas fa-check-circle text-green-600"></i>
-                                            <span class="text-gray-700">{{ $rotulo }}</span>
+                                            <i class="fas fa-check-circle text-[#2DC197]"></i>
+                                            <span class="text-[#e6f0ee]">{{ $rotulo }}</span>
                                         @else
-                                            <i class="fas fa-times-circle text-gray-300"></i>
-                                            <span class="text-gray-400">{{ $rotulo }}</span>
+                                            <i class="fas fa-times-circle text-[#a2b9b5]/30"></i>
+                                            <span class="text-[#a2b9b5]">{{ $rotulo }}</span>
                                         @endif
                                     </div>
                                 @endforeach
@@ -175,26 +175,26 @@
                     {{-- OCORRÊNCIAS (Compras e Serviços) --}}
                     @if($ocorrenciaEstruturada)
                         <div class="relative pl-8">
-                            <div class="absolute left-0 top-1 text-[#0596A2]">
+                            <div class="absolute left-0 top-1 text-[#2DC197]">
                                 <i class="fas fa-exclamation-triangle text-lg"></i>
                             </div>
-                            <h4 class="text-xs font-bold text-gray-400">Houve alguma ocorrência ou problema durante a execução do contrato neste período?</h4>
+                            <h4 class="text-xs font-bold text-[#a2b9b5]">Houve alguma ocorrência ou problema durante a execução do contrato neste período?</h4>
                             <div class="mt-2 space-y-3">
                                 @if($fiscalizacao->houve_ocorrencia)
-                                    <span class="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold text-yellow-800 bg-yellow-100 rounded-full">
+                                    <span class="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold text-[#e3b341] bg-[#332610] border border-[#594214] rounded-full">
                                         <i class="fas fa-exclamation-circle"></i> Houve ocorrências
                                     </span>
-                                    <div class="text-sm text-gray-700 leading-relaxed bg-gray-50/50 p-4 rounded-xl border border-gray-50">
+                                    <div class="text-sm text-[#e6f0ee] leading-relaxed bg-[#0d1b19] p-4 rounded-xl border border-[#24403c]">
                                         {!! nl2br(e($fiscalizacao->irregularidade_observada ?: 'Não informado.')) !!}
                                     </div>
                                     @if($fiscalizacao->providencias_adotadas)
-                                        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Providências adotadas</h4>
-                                        <div class="text-sm text-gray-700 leading-relaxed bg-gray-50/50 p-4 rounded-xl border border-gray-50">
+                                        <h4 class="text-xs font-bold text-[#a2b9b5] uppercase tracking-widest">Providências adotadas</h4>
+                                        <div class="text-sm text-[#e6f0ee] leading-relaxed bg-[#0d1b19] p-4 rounded-xl border border-[#24403c]">
                                             {!! nl2br(e($fiscalizacao->providencias_adotadas)) !!}
                                         </div>
                                     @endif
                                 @else
-                                    <span class="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold text-green-800 bg-green-100 rounded-full">
+                                    <span class="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold text-[#2DC197] bg-[#0d2a23] border border-[#184e40] rounded-full">
                                         <i class="fas fa-check-circle"></i> Não houve problemas ou ocorrências durante este período
                                     </span>
                                 @endif
@@ -203,21 +203,21 @@
 
                         {{-- REGULARIDADE FISCAL/TRABALHISTA — SIM/NÃO (Compras e Serviços) --}}
                         <div class="relative pl-8">
-                            <div class="absolute left-0 top-1 text-[#0596A2]">
+                            <div class="absolute left-0 top-1 text-[#2DC197]">
                                 <i class="fas fa-file-invoice-dollar text-lg"></i>
                             </div>
-                            <h4 class="text-xs font-bold text-gray-400">A empresa está com a regularidade fiscal e trabalhista em dia?</h4>
+                            <h4 class="text-xs font-bold text-[#a2b9b5]">A empresa está com a regularidade fiscal e trabalhista em dia?</h4>
                             <div class="mt-2">
                                 @if($fiscalizacao->regularidade_fiscal_trabalhista === 'Sim')
-                                    <span class="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold text-green-800 bg-green-100 rounded-full">
+                                    <span class="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold text-[#2DC197] bg-[#0d2a23] border border-[#184e40] rounded-full">
                                         <i class="fas fa-check-circle"></i> Sim
                                     </span>
                                 @elseif($fiscalizacao->regularidade_fiscal_trabalhista === 'Não')
-                                    <span class="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold text-red-800 bg-red-100 rounded-full">
+                                    <span class="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold text-[#ff7b72] bg-[#2a1315] border border-[#5a2328] rounded-full">
                                         <i class="fas fa-times-circle"></i> Não
                                     </span>
                                 @else
-                                    <span class="text-sm text-gray-400">Não informado.</span>
+                                    <span class="text-sm text-[#a2b9b5]">Não informado.</span>
                                 @endif
                             </div>
                         </div>
@@ -226,11 +226,11 @@
                     @foreach($campos as $campo)
                         @if($campo['show'] && $campo['value'])
                             <div class="relative pl-8">
-                                <div class="absolute left-0 top-1 text-[#0596A2]">
+                                <div class="absolute left-0 top-1 text-[#2DC197]">
                                     <i class="fas {{ $campo['icon'] }} text-lg"></i>
                                 </div>
-                                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest">{{ $campo['label'] }}</h4>
-                                <div class="mt-2 text-sm text-gray-700 leading-relaxed bg-gray-50/50 p-4 rounded-xl border border-gray-50">
+                                <h4 class="text-xs font-bold text-[#a2b9b5] uppercase tracking-widest">{{ $campo['label'] }}</h4>
+                                <div class="mt-2 text-sm text-[#e6f0ee] leading-relaxed bg-[#0d1b19] p-4 rounded-xl border border-[#24403c]">
                                     {!! nl2br(e($campo['value'])) !!}
                                 </div>
                             </div>
@@ -238,13 +238,13 @@
                     @endforeach
 
                     {{-- CONCLUSÃO FINAL --}}
-                    <div class="mt-12 p-6 rounded-2xl border-2 {{ $fiscalizacao->conclusao_badge_class }} border-current bg-opacity-5">
+                    <div class="mt-12 p-6 rounded-2xl border-2 {{ $fiscalizacao->conclusao_badge_class }} border-current bg-[#0a1514]">
                         <div class="flex items-start gap-4">
-                            <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-white shadow-sm text-xl font-bold">
+                            <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-[#10201e] border border-[#24403c] shadow-sm text-xl font-bold text-[#2DC197]">
                                 {{ $fiscalizacao->conclusao_fiscal?->value }}
                             </div>
                             <div>
-                                <h4 class="text-sm font-bold">Qual é a sua conclusão sobre o cumprimento do contrato neste período?</h4>
+                                <h4 class="text-sm font-bold text-[#e6f0ee]">Qual é a sua conclusão sobre o cumprimento do contrato neste período?</h4>
                                 <p class="mt-1 text-sm leading-relaxed font-medium">{{ $fiscalizacao->conclusao_texto }}</p>
                             </div>
                         </div>
@@ -264,82 +264,82 @@
             'servidor_responsavel' => $u->servidor_responsavel,
         ])->values() ?? collect();
     @endphp
-    <div class="mt-6 bg-white border border-gray-100 shadow-sm rounded-2xl overflow-hidden"
+    <div class="mt-6 card !rounded-2xl overflow-hidden"
          x-data="assinantesFiscalizacao({
             unidades: {{ $unidadesAssinantes->toJson() }},
             fiscais: {{ ($fiscais ?? collect())->toJson() }},
             iniciais: {{ json_encode($fiscalizacao->assinantes ?? []) }},
             saveUrl: '{{ route('admin.fiscalizacoes.assinantes', $fiscalizacao->id) }}'
          })">
-        <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-gray-800">
-                <i class="fas fa-file-signature text-[#0596A2] mr-2"></i>Quem deve assinar o relatório?
+        <div class="px-6 py-4 border-b border-[#24403c] bg-[#0d1b19] flex items-center justify-between">
+            <h3 class="text-lg font-bold text-[#e6f0ee]">
+                <i class="fas fa-file-signature text-[#2DC197] mr-2"></i>Quem deve assinar o relatório?
             </h3>
-            <span class="text-xs font-medium text-gray-500" x-show="assinantes.length > 0">
+            <span class="text-xs font-semibold text-[#a2b9b5]" x-show="assinantes.length > 0">
                 <span x-text="assinantes.length"></span> assinante(s)
             </span>
         </div>
 
         <div class="p-6 space-y-5">
-            <p class="text-sm text-gray-500">
+            <p class="text-sm text-[#a2b9b5]">
                 Informe abaixo os servidores que deverão assinar o relatório impresso. Os nomes aparecerão no rodapé do relatório e a assinatura será feita fisicamente.
             </p>
 
             {{-- Formulário de adição --}}
-            <div class="flex flex-col gap-3 p-4 bg-gray-50 border border-gray-200 rounded-lg sm:flex-row sm:items-end">
+            <div class="flex flex-col gap-3 p-4 bg-[#0d1b19] border border-[#24403c] rounded-xl sm:flex-row sm:items-end">
                 <div class="flex-1 min-w-[200px]">
-                    <label class="block mb-1 text-xs font-medium text-gray-600">Selecione a secretaria ou o fiscal responsável</label>
+                    <label class="block mb-1 text-xs font-semibold text-[#a2b9b5]">Selecione a secretaria ou o fiscal responsável</label>
                     <select x-model="selecionado" @change="aoSelecionar()"
-                            class="block w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#009496] focus:border-[#009496]">
-                        <option value="">Selecione (ou preencha manualmente)</option>
-                        <optgroup label="Secretarias" x-show="unidades.length">
+                            class="block w-full px-3 py-2 text-sm bg-[#0a1514] text-[#e6f0ee] border border-[#24403c] rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197]">
+                        <option value="" class="bg-[#10201e] text-[#a2b9b5]">Selecione (ou preencha manualmente)</option>
+                        <optgroup label="Secretarias" x-show="unidades.length" class="bg-[#10201e] text-[#e6f0ee]">
                             <template x-for="u in unidades" :key="'u'+u.id">
-                                <option :value="'unidade:'+u.id" x-text="u.nome"></option>
+                                <option :value="'unidade:'+u.id" x-text="u.nome" class="bg-[#10201e] text-[#e6f0ee]"></option>
                             </template>
                         </optgroup>
-                        <optgroup label="Fiscais / Usuários" x-show="fiscais.length">
+                        <optgroup label="Fiscais / Usuários" x-show="fiscais.length" class="bg-[#10201e] text-[#e6f0ee]">
                             <template x-for="f in fiscais" :key="'f'+f.id">
-                                <option :value="'fiscal:'+f.id" x-text="f.nome + (f.unidade ? ' — ' + f.unidade : '')"></option>
+                                <option :value="'fiscal:'+f.id" x-text="f.nome + (f.unidade ? ' — ' + f.unidade : '')" class="bg-[#10201e] text-[#e6f0ee]"></option>
                             </template>
                         </optgroup>
                     </select>
                 </div>
                 <div class="flex-1 min-w-[160px]">
-                    <label class="block mb-1 text-xs font-medium text-gray-600">Informe o nome completo do servidor <span class="text-red-500">*</span></label>
+                    <label class="block mb-1 text-xs font-semibold text-[#a2b9b5]">Informe o nome completo do servidor <span class="text-red-400">*</span></label>
                     <input type="text" x-model="formNome" placeholder="Nome completo"
-                           class="block w-full px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-[#009496]">
+                           class="block w-full px-3 py-2 text-sm text-[#e6f0ee] bg-[#0a1514] border border-[#24403c] rounded-xl shadow-sm focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] outline-none">
                 </div>
                 <div class="flex-1 min-w-[140px]">
-                    <label class="block mb-1 text-xs font-medium text-gray-600">Informe o cargo ou a função do servidor</label>
+                    <label class="block mb-1 text-xs font-semibold text-[#a2b9b5]">Informe o cargo ou a função do servidor</label>
                     <input type="text" x-model="formCargo" placeholder="Ex: Fiscal de Contrato"
-                           class="block w-full px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-[#009496]">
+                           class="block w-full px-3 py-2 text-sm text-[#e6f0ee] bg-[#0a1514] border border-[#24403c] rounded-xl shadow-sm focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] outline-none">
                 </div>
                 <div>
                     <button type="button" @click="adicionar()" :disabled="!formNome.trim()"
-                            class="flex items-center justify-center w-full px-4 py-2 text-sm font-semibold text-white transition-colors bg-[#009496] rounded-md shadow disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#007779]">
+                            class="flex items-center justify-center w-full px-4 py-2 text-sm font-bold text-[#041d1a] transition-all bg-[#2DC197] rounded-xl shadow disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#26aa84]">
                         + Adicionar
                     </button>
                 </div>
             </div>
 
             {{-- Lista de selecionados --}}
-            <div class="border border-emerald-200 rounded-lg overflow-hidden bg-white">
-                <div class="px-4 py-2.5 bg-emerald-50 border-b border-emerald-200">
-                    <span class="text-xs font-semibold text-emerald-800 uppercase tracking-wide">Assinantes Selecionados</span>
+            <div class="border border-[#24403c] rounded-xl overflow-hidden bg-[#0a1514]">
+                <div class="px-4 py-2.5 bg-[#0d2a23] border-b border-[#184e40]">
+                    <span class="text-xs font-bold text-[#2DC197] uppercase tracking-wide">Assinantes Selecionados</span>
                 </div>
                 <template x-if="assinantes.length === 0">
-                    <div class="p-6 text-sm text-center text-gray-500">Nenhum assinante adicionado.</div>
+                    <div class="p-6 text-sm text-center text-[#a2b9b5]">Nenhum assinante adicionado.</div>
                 </template>
-                <ul class="divide-y divide-emerald-100">
+                <ul class="divide-y divide-[#24403c]">
                     <template x-for="(a, idx) in assinantes" :key="idx">
-                        <li class="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors">
+                        <li class="flex items-center justify-between px-4 py-3 hover:bg-[#142825] transition-colors">
                             <div class="min-w-0">
-                                <p class="text-sm font-semibold text-gray-900 truncate" x-text="a.nome"></p>
-                                <p class="text-xs text-gray-500 truncate"
+                                <p class="text-sm font-semibold text-[#e6f0ee] truncate" x-text="a.nome"></p>
+                                <p class="text-xs text-[#a2b9b5] truncate"
                                    x-text="[a.cargo, a.unidade].filter(Boolean).join(' — ')"></p>
                             </div>
                             <button type="button" @click="remover(idx)"
-                                    class="px-2.5 py-1.5 text-xs font-medium text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md transition-colors">
+                                    class="px-2.5 py-1.5 text-xs font-semibold text-[#ff7b72] hover:bg-[#3d1a1e] rounded-lg transition-colors">
                                 Remover
                             </button>
                         </li>
@@ -359,7 +359,7 @@
                 </template>
                 <div class="flex justify-end">
                     <button type="submit" :disabled="salvando"
-                            class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-[#062F43] rounded-lg hover:bg-[#0596A2] transition-colors disabled:opacity-60 shadow-sm">
+                            class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-[#041d1a] bg-[#2DC197] rounded-xl hover:bg-[#26aa84] hover:scale-105 transition-all disabled:opacity-60 shadow-sm">
                         <i class="fas fa-save"></i> Salvar Assinantes
                     </button>
                 </div>
@@ -370,28 +370,28 @@
     {{-- ============================================================== --}}
     {{-- RELATÓRIO FOTOGRÁFICO (múltiplas imagens) --}}
     {{-- ============================================================== --}}
-    <div class="mt-6 bg-white border border-gray-100 shadow-sm rounded-2xl overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-gray-800">
-                <i class="fas fa-camera text-[#0596A2] mr-2"></i>Relatório Fotográfico
+    <div class="mt-6 card !rounded-2xl overflow-hidden">
+        <div class="px-6 py-4 border-b border-[#24403c] bg-[#0d1b19] flex items-center justify-between">
+            <h3 class="text-lg font-bold text-[#e6f0ee]">
+                <i class="fas fa-camera text-[#2DC197] mr-2"></i>Relatório Fotográfico
             </h3>
-            <span class="text-xs font-medium text-gray-500">{{ $fiscalizacao->fotos->count() }} imagem(ns)</span>
+            <span class="text-xs font-semibold text-[#a2b9b5]">{{ $fiscalizacao->fotos->count() }} imagem(ns)</span>
         </div>
 
         <div class="p-6 space-y-6">
-            <p class="text-sm text-gray-500">
+            <p class="text-sm text-[#a2b9b5]">
                 Adicione imagens da fiscalização. Todas serão anexadas automaticamente ao final do relatório impresso, na seção “Relatório Fotográfico”.
             </p>
 
             {{-- Upload --}}
             <form method="POST" action="{{ route('admin.fiscalizacoes.fotos.upload', $fiscalizacao->id) }}"
                   enctype="multipart/form-data"
-                  class="flex flex-col gap-3 p-4 bg-gray-50 border border-gray-200 rounded-lg sm:flex-row sm:items-center">
+                  class="flex flex-col gap-3 p-4 bg-[#0d1b19] border border-[#24403c] rounded-xl sm:flex-row sm:items-center">
                 @csrf
                 <input type="file" name="fotos[]" multiple accept="image/jpeg,image/png,image/webp" required
-                       class="flex-1 text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#009496] file:text-white hover:file:bg-[#007779] cursor-pointer">
+                       class="flex-1 text-sm text-[#a2b9b5] file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-[#2DC197] file:text-[#041d1a] hover:file:bg-[#26aa84] cursor-pointer">
                 <button type="submit"
-                        class="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-[#009496] rounded-lg hover:bg-[#007779] transition-colors shadow-sm">
+                        class="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold text-[#041d1a] bg-[#2DC197] rounded-xl hover:bg-[#26aa84] hover:scale-105 transition-all shadow-sm">
                     <i class="fas fa-upload"></i> Enviar Fotos
                 </button>
             </form>
@@ -400,7 +400,7 @@
             @if($fiscalizacao->fotos->isNotEmpty())
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                     @foreach($fiscalizacao->fotos as $foto)
-                        <div class="relative group border border-gray-200 rounded-xl overflow-hidden">
+                        <div class="relative group border border-[#24403c] rounded-xl overflow-hidden">
                             <a href="{{ asset($foto->caminho) }}" target="_blank">
                                 <img src="{{ asset($foto->caminho) }}" alt="{{ $foto->legenda ?? 'Foto da fiscalização' }}"
                                      class="w-full h-32 object-cover group-hover:opacity-90 transition-opacity">
@@ -411,7 +411,7 @@
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit"
-                                        class="w-7 h-7 flex items-center justify-center rounded-full bg-red-600 text-white text-xs shadow hover:bg-red-800 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        class="w-7 h-7 flex items-center justify-center rounded-full bg-red-600 text-white text-xs shadow hover:bg-red-700 opacity-0 group-hover:opacity-100 transition-opacity"
                                         title="Remover foto">
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
@@ -420,7 +420,7 @@
                     @endforeach
                 </div>
             @else
-                <div class="p-6 text-sm text-center text-gray-500 border border-dashed border-gray-300 rounded-xl">
+                <div class="p-6 text-sm text-center text-[#a2b9b5] border border-dashed border-[#24403c] rounded-xl bg-[#0a1514]">
                     Nenhuma foto adicionada ainda.
                 </div>
             @endif

@@ -49,7 +49,7 @@
     </script>
 </head>
 
-<body class="bg-[#f3f6f6] font-['Plus_Jakarta_Sans'] text-slate-900 antialiased"
+<body class="bg-[#0a1514] font-['Plus_Jakarta_Sans'] text-[#e6f0ee] antialiased"
       x-data="{ sidebarOpen: false, collapsed: false, isDesktop: window.matchMedia('(min-width: 1024px)').matches }"
       x-init="
           collapsed = sigGetSidebarCollapsed();
@@ -357,7 +357,7 @@
                 {{-- Botão do menu (só no celular) --}}
                 <div class="lg:hidden">
                     <button type="button" @click="sidebarOpen = true" aria-label="Abrir menu" aria-controls="sidebar"
-                            class="flex h-11 w-11 items-center justify-center rounded-xl bg-white text-slate-700 shadow-sm ring-1 ring-slate-900/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700">
+                            class="flex h-11 w-11 items-center justify-center rounded-xl bg-[#10201e] border border-[#24403c] text-[#e6f0ee] shadow-sm hover:border-[#5eead4] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5eead4]">
                         <i class="fas fa-bars"></i>
                     </button>
                 </div>

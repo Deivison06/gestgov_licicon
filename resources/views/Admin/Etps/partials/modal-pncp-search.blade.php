@@ -1,53 +1,53 @@
 <!-- Modal Buscar no PNCP -->
-<div id="modal-pncp-search" class="fixed inset-0 z-[60] flex items-center justify-center hidden bg-black bg-opacity-50">
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh] mx-4">
-        <div class="p-6 border-b border-gray-200 bg-gray-50 flex justify-between items-center rounded-t-2xl">
+<div id="modal-pncp-search" class="fixed inset-0 z-[60] flex items-center justify-center hidden bg-black/70 backdrop-blur-sm">
+    <div class="bg-[#10201e] border border-[#24403c] rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh] mx-4">
+        <div class="p-6 border-b border-[#24403c] bg-[#0d1b19] flex justify-between items-center rounded-t-2xl">
             <div>
-                <h3 class="text-xl font-bold text-gray-800">Buscar no PNCP</h3>
-                <p class="text-xs text-gray-500 mt-1">Busque descrições oficiais diretamente no Portal Nacional de Contratações Públicas</p>
+                <h3 class="text-xl font-bold text-[#e6f0ee]">Buscar no PNCP</h3>
+                <p class="text-xs text-[#a2b9b5] mt-1">Busque descrições oficiais diretamente no Portal Nacional de Contratações Públicas</p>
             </div>
-            <button type="button" onclick="closeModalPncp()" class="text-gray-400 hover:text-red-500 focus:outline-none transition-colors duration-200">
+            <button type="button" onclick="closeModalPncp()" class="text-[#a2b9b5] hover:text-red-400 focus:outline-none transition-colors duration-200">
                 <i class="fas fa-times text-lg"></i>
             </button>
         </div>
         
-        <div class="p-6 flex flex-col flex-1 overflow-hidden">
+        <div class="p-6 flex flex-col flex-1 overflow-hidden bg-[#10201e]">
             <!-- Barra de Busca -->
             <div class="flex gap-2 mb-4">
                 <input 
                     type="text" 
                     id="pncp-modal-search-input" 
                     placeholder="Digite o nome do item para buscar... (mínimo 3 caracteres)"
-                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-[#009496] focus:ring-[#009496] text-sm"
+                    class="w-full rounded-xl bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] placeholder-[#a2b9b5]/50 focus:outline-none focus:border-[#2DC197] focus:ring-2 focus:ring-[#2DC197] text-sm px-3 py-2"
                 >
                 <button 
                     type="button" 
                     id="pncp-modal-search-btn"
                     onclick="executePncpSearch(1)"
-                    class="px-5 py-2 bg-[#009496] text-white rounded-md font-semibold hover:bg-[#007f7c] transition text-sm flex items-center gap-2 whitespace-nowrap"
+                    class="px-5 py-2 bg-[#2DC197] text-[#041d1a] rounded-xl font-bold hover:bg-[#26aa84] hover:scale-105 transition-all text-sm flex items-center gap-2 whitespace-nowrap shadow-sm"
                 >
                     <i class="fas fa-search"></i> Buscar
                 </button>
             </div>
 
             <!-- Mensagem de Erro/Alerta -->
-            <div id="pncp-modal-alert" class="hidden p-3 mb-4 text-sm rounded-lg"></div>
+            <div id="pncp-modal-alert" class="hidden p-3 mb-4 text-sm rounded-xl"></div>
 
             <!-- Área de Resultados (Scrollable) -->
-            <div class="flex-1 overflow-y-auto border border-gray-100 rounded-lg p-2 bg-gray-50/50 min-h-[250px]" id="pncp-modal-results-container">
+            <div class="flex-1 overflow-y-auto border border-[#24403c] rounded-xl p-2 bg-[#0d1b19] min-h-[250px]" id="pncp-modal-results-container">
                 <!-- Estado Inicial -->
-                <div class="flex flex-col items-center justify-center h-full py-16 text-gray-400" id="pncp-modal-placeholder">
-                    <div class="p-4 bg-white rounded-full shadow-sm mb-3">
-                        <i class="fas fa-cloud text-3xl text-[#009496]/40"></i>
+                <div class="flex flex-col items-center justify-center h-full py-16 text-[#a2b9b5]" id="pncp-modal-placeholder">
+                    <div class="p-4 bg-[#10201e] border border-[#24403c] rounded-full shadow-sm mb-3">
+                        <i class="fas fa-cloud text-3xl text-[#2DC197]/60"></i>
                     </div>
-                    <p class="text-sm font-medium">Digite um termo para iniciar a busca no PNCP</p>
-                    <p class="text-xs text-gray-400 mt-1">Ex: Papel sulfite, Cesta básica, Pintura predial</p>
+                    <p class="text-sm font-medium text-[#e6f0ee]">Digite um termo para iniciar a busca no PNCP</p>
+                    <p class="text-xs text-[#a2b9b5] mt-1">Ex: Papel sulfite, Cesta básica, Pintura predial</p>
                 </div>
 
                 <!-- Loading Spinner -->
                 <div class="hidden flex-col items-center justify-center h-full py-16" id="pncp-modal-loading">
-                    <div class="w-10 h-10 border-4 border-[#009496]/20 border-t-[#009496] rounded-full animate-spin mb-3"></div>
-                    <p class="text-sm text-gray-500 animate-pulse" id="pncp-modal-loading-msg">Consultando contratações...</p>
+                    <div class="w-10 h-10 border-4 border-[#2DC197]/20 border-t-[#2DC197] rounded-full animate-spin mb-3"></div>
+                    <p class="text-sm text-[#a2b9b5] animate-pulse" id="pncp-modal-loading-msg">Consultando contratações...</p>
                 </div>
 
                 <!-- Lista de itens encontrados -->
@@ -85,7 +85,7 @@
         if (!term || !text) return text || '';
         const escapedTerm = term.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
         const regex = new RegExp(`(${escapedTerm})`, 'gi');
-        return text.replace(regex, '<mark class="bg-yellow-200 text-gray-900 rounded px-0.5 font-semibold">$1</mark>');
+        return text.replace(regex, '<mark class="bg-[#2DC197]/30 text-[#2DC197] rounded px-0.5 font-semibold">$1</mark>');
     }
 
     function executePncpSearch(page = 1) {
@@ -101,7 +101,7 @@
         alertContainer.classList.add('hidden');
 
         if (term.length < 3) {
-            alertContainer.className = 'p-3 mb-4 text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg';
+            alertContainer.className = 'p-3 mb-4 text-sm text-yellow-300 bg-yellow-950/20 border border-yellow-500/30 rounded-xl';
             alertContainer.textContent = 'Por favor, digite pelo menos 3 caracteres para buscar.';
             alertContainer.classList.remove('hidden');
             return;
@@ -171,7 +171,7 @@
             .catch(err => {
                 loading.classList.add('hidden');
                 placeholder.classList.remove('hidden');
-                alertContainer.className = 'p-3 mb-4 text-sm text-red-800 bg-red-50 border border-red-200 rounded-lg';
+                alertContainer.className = 'p-3 mb-4 text-sm text-red-300 bg-red-950/20 border border-red-500/30 rounded-xl';
                 alertContainer.textContent = err.message || 'Erro inesperado ao consultar o PNCP.';
                 alertContainer.classList.remove('hidden');
             });
@@ -183,10 +183,10 @@
 
         // Exibe contador de resultados
         const headerDiv = document.createElement('div');
-        headerDiv.className = 'flex justify-between items-center pb-2 border-b border-gray-100 mb-3';
+        headerDiv.className = 'flex justify-between items-center pb-2 border-b border-[#24403c] mb-3';
         headerDiv.innerHTML = `
-            <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Itens Correspondentes Encontrados</span>
-            <span class="px-2 py-0.5 text-xs font-bold text-[#009496] bg-[#009496]/10 rounded-full">${allItems.length} itens</span>
+            <span class="text-xs font-semibold text-[#a2b9b5] uppercase tracking-wider">Itens Correspondentes Encontrados</span>
+            <span class="px-2 py-0.5 text-xs font-bold text-[#2DC197] bg-[#2DC197]/15 border border-[#2DC197]/30 rounded-full">${allItems.length} itens</span>
         `;
         resultsList.appendChild(headerDiv);
 
@@ -204,33 +204,33 @@
             const cacheIndex = pncpDescriptionsCache.length - 1;
 
             const card = document.createElement('div');
-            card.className = 'bg-white border border-gray-100 rounded-xl p-4 shadow-sm hover:border-[#009496]/40 transition duration-200 flex flex-col justify-between';
+            card.className = 'bg-[#10201e] border border-[#24403c] rounded-xl p-4 shadow-sm hover:border-[#2DC197]/50 transition duration-200 flex flex-col justify-between';
             
             const tipo = item.tipoItem || (item.materialOuServicoNome) || '';
             const isMaterial = tipo.toLowerCase().includes('material') || tipo === 'M';
-            const badgeClass = isMaterial ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-purple-50 text-purple-700 border-purple-200';
+            const badgeClass = isMaterial ? 'bg-blue-500/15 text-blue-300 border-blue-500/30' : 'bg-purple-500/15 text-purple-300 border-purple-500/30';
             const badgeLabel = tipo || 'Item';
 
             card.innerHTML = `
                 <div class="flex justify-between items-start gap-4 mb-3">
-                    <p class="text-sm font-medium text-gray-800 flex-1 leading-relaxed">${highlightText(descricao, currentPncpTerm)}</p>
+                    <p class="text-sm font-medium text-[#e6f0ee] flex-1 leading-relaxed">${highlightText(descricao, currentPncpTerm)}</p>
                     <button 
                         type="button" 
                         onclick="selectPncpDescription(${cacheIndex})" 
-                        class="px-4 py-2 text-xs font-bold text-white bg-[#009496] hover:bg-[#007f7c] rounded-lg transition-all duration-200 shadow-sm hover:shadow whitespace-nowrap"
+                        class="px-4 py-2 text-xs font-bold text-[#041d1a] bg-[#2DC197] hover:bg-[#26aa84] hover:scale-105 rounded-xl transition-all duration-200 shadow-sm whitespace-nowrap"
                     >
                         Selecionar
                     </button>
                 </div>
-                <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-500 border-t border-gray-50 pt-2">
+                <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[#a2b9b5] border-t border-[#24403c] pt-2">
                     <span class="px-2 py-0.5 rounded-full font-bold text-[9px] uppercase tracking-wide border ${badgeClass}">
                         ${badgeLabel}
                     </span>
-                    <span class="font-medium text-gray-700 truncate max-w-[200px]" title="${c.orgaoEntidade.razaoSocial}">${c.orgaoEntidade.razaoSocial}</span>
-                    <span class="text-gray-300">|</span>
-                    <span class="font-semibold text-gray-600">${c.uf || ''}</span>
+                    <span class="font-medium text-[#e6f0ee] truncate max-w-[200px]" title="${c.orgaoEntidade.razaoSocial}">${c.orgaoEntidade.razaoSocial}</span>
+                    <span class="text-[#24403c]">|</span>
+                    <span class="font-semibold text-[#a2b9b5]">${c.uf || ''}</span>
                     <span>${c.municipio || ''}</span>
-                    <span class="text-gray-300">|</span>
+                    <span class="text-[#24403c]">|</span>
                     <span>Qtd: ${item.quantidade ?? '?'} ${item.unidadeMedida || ''}</span>
                 </div>
             `;
@@ -239,28 +239,28 @@
 
         if (meta.totalPaginas > 1) {
             const paginationContainer = document.createElement('div');
-            paginationContainer.className = 'flex justify-center items-center gap-2 pt-4 border-t border-gray-100 mt-4';
+            paginationContainer.className = 'flex justify-center items-center gap-2 pt-4 border-t border-[#24403c] mt-4';
             
-            const btnClass = 'px-3 py-1.5 text-xs font-bold rounded-lg border transition-all';
+            const btnClass = 'px-3 py-1.5 text-xs font-bold rounded-xl border transition-all';
             
             if (currentPncpPage > 1) {
                 const prevBtn = document.createElement('button');
                 prevBtn.type = 'button';
-                prevBtn.className = `${btnClass} bg-white text-gray-600 border-gray-200 hover:border-[#009496] hover:text-[#009496]`;
+                prevBtn.className = `${btnClass} bg-[#10201e] text-[#e6f0ee] border-[#24403c] hover:border-[#2DC197] hover:text-[#2DC197]`;
                 prevBtn.innerHTML = '← Anterior';
                 prevBtn.onclick = () => executePncpSearch(currentPncpPage - 1);
                 paginationContainer.appendChild(prevBtn);
             }
 
             const pageIndicator = document.createElement('span');
-            pageIndicator.className = 'text-xs text-gray-500 font-semibold px-2';
+            pageIndicator.className = 'text-xs text-[#a2b9b5] font-semibold px-2';
             pageIndicator.textContent = `Pág. ${currentPncpPage} / ${meta.totalPaginas}`;
             paginationContainer.appendChild(pageIndicator);
 
             if (currentPncpPage < meta.totalPaginas) {
                 const nextBtn = document.createElement('button');
                 nextBtn.type = 'button';
-                nextBtn.className = `${btnClass} bg-white text-gray-600 border-gray-200 hover:border-[#009496] hover:text-[#009496]`;
+                nextBtn.className = `${btnClass} bg-[#10201e] text-[#e6f0ee] border-[#24403c] hover:border-[#2DC197] hover:text-[#2DC197]`;
                 nextBtn.innerHTML = 'Próxima →';
                 nextBtn.onclick = () => executePncpSearch(currentPncpPage + 1);
                 paginationContainer.appendChild(nextBtn);

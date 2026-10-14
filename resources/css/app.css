@@ -1,3 +1,825 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ==========================================================================
+   Design System · SIT (GestCloud) & Licicon Dark Theme
+   Referência: /var/www/Fridman/sit-prototipo-codigo
+   ========================================================================== */
+
+:root {
+  --font: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  
+  /* Gradientes & Identidade Institucional */
+  --side-1: #0b3b37;
+  --side-2: #072926;
+  --side-3: #051e1c;
+  --mint: #2DC197;
+  --mint-h: #4bd2aa;
+  --on-mint: #06302d;
+  
+  /* Superfícies & Texto Dark (Padrão Obsidian Teal) */
+  --bg: #0a1514;
+  --card: #10201e;
+  --card-2: #0d1b19;
+  --line: #24403c;
+  --line-2: #1a302d;
+  
+  --ink: #e6f0ee;
+  --ink-2: #a8bdb9;
+  --ink-3: #8aa29d;
+  --teal-text: #5eead4;
+  
+  --ring: 0 1px 2px rgba(0,0,0,.3), 0 0 0 1px rgba(255,255,255,.05);
+  --unread: #f1f7f6;
+  --read: #8aa29d;
+  
+  /* Status Semânticos Dark */
+  --ok-bg: #12352a;
+  --ok: #86efac;
+  --warn-bg: #3a2c0b;
+  --warn: #fcd34d;
+  --bad-bg: #3b1515;
+  --bad: #fca5a5;
+  --info-bg: #132a4a;
+  --info: #93c5fd;
+  --gray-bg: #1b2c2a;
+  --gray: #b6c6c3;
+  --vio-bg: #2a1f4a;
+  --vio: #c4b5fd;
+  --hl: #665c12;
+
+  color-scheme: dark;
+}
+
+/* ==========================================================================
+   Estilos Base do Sistema
+   ========================================================================== */
+html {
+  background-color: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--line-2);
+}
+
+/* ==========================================================================
+   Componentes do Design System SIT
+   ========================================================================== */
+
+/* Cartões e Superfícies */
+.card {
+  background: var(--card) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 20px;
+  box-shadow: var(--ring);
+  overflow: hidden;
+}
+.card-2 {
+  background: var(--card-2) !important;
+  border: 1px solid var(--line-2) !important;
+  border-radius: 16px;
+}
+.card-h {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 22px;
+  background: var(--card-2) !important;
+  background-image: none !important;
+  border-bottom: 1px solid var(--line-2) !important;
+  flex-wrap: wrap;
+}
+.card-h h2, .card-h h3, .card-h h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink) !important;
+}
+.card-h .sub, .card-h p {
+  font-size: 12.5px;
+  color: var(--ink-3) !important;
+  margin-top: 2px;
+}
+
+/* KPI Cards de Métricas */
+.kpi {
+  background: var(--card) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 20px;
+  box-shadow: var(--ring);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+.kpi:hover {
+  transform: translateY(-2px);
+  border-color: var(--teal-text) !important;
+}
+.kpi .top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+.kpi .ic {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.kpi .lab {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--ink-3) !important;
+}
+.kpi .num {
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink) !important;
+}
+.kpi .desc {
+  font-size: 12.5px;
+  color: var(--ink-2) !important;
+  font-weight: 500;
+}
+.kpi.dark {
+  background: linear-gradient(140deg, var(--side-1), var(--side-3)) !important;
+  border-color: rgba(255,255,255,.08) !important;
+  color: #fff !important;
+}
+.kpi.dark .lab {
+  color: var(--mint) !important;
+}
+.kpi.dark .desc {
+  color: rgba(255,255,255,.75) !important;
+}
+
+/* Botões */
+.btn {
+  height: 38px;
+  border-radius: 11px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--ink);
+  transition: all 0.15s ease;
+  font-size: 13.5px;
+  text-decoration: none;
+}
+.btn:hover {
+  border-color: var(--teal-text);
+  color: #fff;
+}
+.btn.pri {
+  background: var(--mint) !important;
+  border-color: var(--mint) !important;
+  color: var(--on-mint) !important;
+  font-weight: 700 !important;
+}
+.btn.pri:hover {
+  background: var(--mint-h) !important;
+  border-color: var(--mint-h) !important;
+  color: var(--on-mint) !important;
+  box-shadow: 0 4px 14px rgba(45, 193, 151, 0.3);
+}
+.btn.dark {
+  background: var(--side-1);
+  border-color: var(--side-1);
+  color: #fff;
+}
+.btn.dark:hover {
+  background: var(--side-2);
+  border-color: var(--side-2);
+}
+.btn.ghost {
+  border-color: transparent;
+  background: transparent;
+}
+.btn.ghost:hover {
+  background: rgba(255,255,255,.07);
+}
+.btn.sm {
+  height: 32px;
+  padding: 0 10px;
+  font-size: 12.5px;
+  border-radius: 9px;
+}
+.btn.danger {
+  background: var(--bad-bg);
+  border-color: rgba(248, 113, 113, 0.2);
+  color: var(--bad);
+}
+.btn.danger:hover {
+  border-color: var(--bad);
+}
+.btn.ai {
+  background: var(--vio-bg);
+  border-color: rgba(196, 181, 253, 0.2);
+  color: var(--vio);
+}
+.btn.ai:hover {
+  border-color: var(--vio);
+}
+.btn[disabled] {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+/* Pills & Badges de Status */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.p-ok   { background: var(--ok-bg) !important;   color: var(--ok) !important;   }
+.p-warn { background: var(--warn-bg) !important; color: var(--warn) !important; }
+.p-bad  { background: var(--bad-bg) !important;  color: var(--bad) !important;  }
+.p-info { background: var(--info-bg) !important; color: var(--info) !important; }
+.p-gray { background: var(--gray-bg) !important; color: var(--gray) !important; }
+.p-vio  { background: var(--vio-bg) !important;  color: var(--vio) !important;  }
+.p-mint { background: color-mix(in srgb, var(--mint) 18%, transparent) !important; color: var(--teal-text) !important; }
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 7px;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+/* Formulários e Entradas */
+.f {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.f label, .flabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.in, select.in, textarea.in {
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--card-2);
+  color: var(--ink);
+  padding: 0 12px;
+  width: 100%;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+textarea.in {
+  height: auto;
+  min-height: 120px;
+  padding: 10px 12px;
+  resize: vertical;
+  line-height: 1.55;
+}
+.in:focus, select.in:focus, textarea.in:focus {
+  outline: none;
+  border-color: var(--mint) !important;
+  box-shadow: 0 0 0 4px rgba(45, 193, 151, .25) !important;
+}
+.in::placeholder, textarea.in::placeholder {
+  color: var(--ink-3);
+}
+
+/* Tabelas Nativas SIT */
+table.t {
+  width: 100%;
+  border-collapse: collapse;
+}
+table.t th {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--ink-3) !important;
+  text-align: left;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--line-2) !important;
+  white-space: nowrap;
+  background: var(--card-2) !important;
+}
+table.t td {
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--line-2) !important;
+  vertical-align: middle;
+  color: var(--ink) !important;
+}
+table.t tr:hover td {
+  background: #142825 !important;
+}
+table.t tr:last-child td {
+  border-bottom: 0;
+}
+table.t td.n {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Caixa de IA (.ai-box) */
+.ai-box {
+  border: 1px solid color-mix(in srgb, var(--vio) 35%, transparent);
+  background: var(--vio-bg);
+  border-radius: 14px;
+  padding: 14px 16px;
+  color: var(--ink);
+}
+.ai-box .ai-h {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  color: var(--vio);
+  margin-bottom: 6px;
+}
+.ai-out {
+  white-space: pre-wrap;
+  color: var(--ink);
+}
+
+/* Banner de Ajuda */
+.help {
+  background: linear-gradient(110deg, var(--side-1) 0%, var(--side-2) 55%, var(--side-3) 100%) !important;
+  border-radius: 20px;
+  padding: 20px 24px;
+  color: #fff !important;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.help p {
+  margin: 0;
+  color: rgba(255,255,255,.75) !important;
+}
+
+/* Modais e Toasts */
+.modal-bg {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 20, 18, .75) !important;
+  backdrop-filter: blur(4px) !important;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 6vh 16px;
+  z-index: 60;
+  overflow-y: auto;
+}
+.modal {
+  background: var(--card) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 640px;
+  box-shadow: 0 30px 80px -20px rgba(0,0,0,.7);
+  color: var(--ink) !important;
+}
+.modal-h {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--line-2) !important;
+}
+.modal-h h3 {
+  margin: 0;
+  font-size: 16px;
+  flex: 1;
+  color: var(--ink) !important;
+}
+.modal-h .mi {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--side-1);
+  color: var(--mint);
+  display: grid;
+  place-items: center;
+}
+.modal-b {
+  padding: 18px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.modal-f {
+  padding: 14px 22px;
+  border-top: 1px solid var(--line-2) !important;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+/* ==========================================================================
+   NORMALIZAÇÃO DARK TOTAL (Intercepta e converte todos os padrões claros)
+   ========================================================================== */
+
+/* 1. Neutralização de gradientes claros que criam faixas brancas */
+.bg-gradient-to-r,
+.bg-gradient-to-l,
+.bg-gradient-to-t,
+.bg-gradient-to-b,
+.bg-gradient-to-tr,
+.bg-gradient-to-tl,
+.bg-gradient-to-br,
+.bg-gradient-to-bl {
+  background-image: none !important;
+  background-color: var(--card-2) !important;
+}
+
+/* Preservação explícita dos gradientes dark do SIT */
+.banner,
+.help,
+.kpi.dark,
+[class*="from-\[\#0b3b37\]"],
+[class*="from-\[\#052323\]"],
+[class*="from-\[\#062F43\]"],
+[class*="from-\[\#072926\]"],
+[class*="from-\[\#051e1c\]"] {
+  background-image: linear-gradient(110deg, var(--side-1) 0%, var(--side-2) 55%, var(--side-3) 100%) !important;
+  background-color: transparent !important;
+}
+
+/* 2. Cartões e Superfícies Legadas */
+.bg-white {
+  background-color: var(--card) !important;
+  color: var(--ink);
+}
+
+.bg-gray-50, .bg-slate-50, .bg-gray-100, .bg-slate-100, .bg-gray-200 {
+  background-color: var(--card-2) !important;
+}
+
+/* bg-gray-300/slate-300 em repouso (ex.: trilho de toggle switch "desligado") —
+   o hover já é coberto pela regra de wildcard [class*="hover\:bg-gray"] abaixo. */
+.bg-gray-300, .bg-slate-300 {
+  background-color: var(--line) !important;
+}
+
+/* Bordas legadas */
+.border-gray-100, .border-slate-100, .border-gray-200, .border-slate-200 {
+  border-color: var(--line-2) !important;
+}
+.border-gray-300, .border-slate-300 {
+  border-color: var(--line) !important;
+}
+.divide-gray-100 > :not([hidden]) ~ :not([hidden]),
+.divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--line-2) !important;
+}
+
+/* 3. Tipografia Legada */
+.text-gray-900, .text-slate-900, .text-gray-800, .text-slate-800 {
+  color: var(--ink) !important;
+}
+.text-gray-700, .text-slate-700, .text-gray-600, .text-slate-600 {
+  color: var(--ink-2) !important;
+}
+.text-gray-500, .text-slate-500, .text-gray-400, .text-slate-400 {
+  color: var(--ink-3) !important;
+}
+
+/* 4. HOVER ESCURO EM TABELAS E LINHAS (Elimina o hover branco) */
+table tbody tr:hover,
+table tr:hover,
+.table tbody tr:hover,
+tbody tr:hover,
+tr.hover\:bg-gray-50:hover,
+tr[class*="hover\:bg-"]:hover,
+[class*="hover\:bg-gray"]:hover,
+[class*="hover\:bg-slate"]:hover,
+[class*="hover\:bg-zinc"]:hover,
+[class*="hover\:bg-white"]:hover,
+.hover\:bg-gray-50:hover,
+.hover\:bg-slate-50:hover,
+.hover\:bg-gray-100:hover,
+.hover\:bg-slate-100:hover {
+  background-color: #142825 !important;
+  background-image: none !important;
+}
+
+table tbody tr:hover td,
+table tbody tr:hover p,
+table tbody tr:hover span:not(.pill):not([class*="bg-"]) {
+  color: var(--ink) !important;
+}
+
+/* Cabeçalhos e linhas de tabelas legadas */
+table thead, thead {
+  background-color: var(--card-2) !important;
+}
+table thead th, thead th {
+  background-color: var(--card-2) !important;
+  color: var(--ink-3) !important;
+  border-bottom: 1px solid var(--line) !important;
+}
+table tbody, tbody {
+  background-color: var(--card) !important;
+}
+table tbody td, tbody td {
+  border-color: var(--line-2) !important;
+  color: var(--ink) !important;
+}
+
+/* Linhas alternadas */
+table tbody tr:nth-child(even),
+[class*="even\:bg-"]:nth-child(even) {
+  background-color: var(--card-2);
+}
+
+/* 5. Paginação do Laravel (Tailwind Links) Dark */
+nav[role="navigation"] {
+  color: var(--ink-2) !important;
+}
+nav[role="navigation"] span,
+nav[role="navigation"] a {
+  background-color: var(--card-2) !important;
+  border-color: var(--line) !important;
+  color: var(--ink) !important;
+}
+nav[role="navigation"] a:hover {
+  background-color: #142825 !important;
+  border-color: var(--teal-text) !important;
+  color: #fff !important;
+}
+nav[role="navigation"] span[aria-current="page"] > span,
+nav[role="navigation"] span[aria-current="page"] {
+  background-color: var(--mint) !important;
+  color: var(--on-mint) !important;
+  font-weight: 700 !important;
+  border-color: var(--mint) !important;
+}
+
+/* 6. Inputs, Textareas e Selects em Formulários Legados */
+input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="reset"]),
+select,
+textarea {
+  background-color: var(--card-2) !important;
+  border: 1px solid var(--line) !important;
+  color: var(--ink) !important;
+  border-radius: 12px;
+}
+input:not([type="checkbox"]):not([type="radio"]):focus,
+select:focus,
+textarea:focus {
+  border-color: var(--mint) !important;
+  box-shadow: 0 0 0 3px rgba(45, 193, 151, .25) !important;
+  outline: none !important;
+}
+input::placeholder, textarea::placeholder {
+  color: var(--ink-3) !important;
+}
+
+select option {
+  background-color: var(--card) !important;
+  color: var(--ink) !important;
+}
+
+/* Checkboxes & Radios */
+input[type="checkbox"], input[type="radio"] {
+  background-color: var(--card-2) !important;
+  border-color: var(--line) !important;
+  accent-color: var(--mint) !important;
+}
+
+/* 7. Dropdowns e Popovers Flutuantes */
+[x-show="open"], .dropdown-menu {
+  background-color: var(--card) !important;
+  border: 1px solid var(--line) !important;
+  color: var(--ink) !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, .6) !important;
+}
+[x-show="open"] a, [x-show="open"] button, .dropdown-menu a, .dropdown-menu button {
+  color: var(--ink) !important;
+}
+[x-show="open"] a:hover, [x-show="open"] button:hover, .dropdown-menu a:hover, .dropdown-menu button:hover {
+  background-color: #142825 !important;
+  color: var(--teal-text) !important;
+}
+
+/* 8. Modais Legados */
+.fixed.inset-0.bg-gray-500,
+.fixed.inset-0.bg-gray-600,
+.fixed.inset-0.bg-opacity-75 {
+  background-color: rgba(5, 20, 18, 0.75) !important;
+  backdrop-filter: blur(4px) !important;
+}
+
+/* 9. Botões com Cores Legadas Ajustadas para o Verde Menta */
+.bg-\[\#0596A2\], .bg-\[\#009496\] {
+  background-color: var(--mint) !important;
+  color: var(--on-mint) !important;
+  font-weight: 700 !important;
+}
+.hover\:bg-\[\#047a85\]:hover, .hover\:bg-\[\#007a7c\]:hover {
+  background-color: var(--mint-h) !important;
+  color: var(--on-mint) !important;
+}
+.text-\[\#0596A2\], .text-\[\#009496\] {
+  color: var(--teal-text) !important;
+}
+
+/* 10. Badges Semânticos Legados com Visual Dark de Alto Contraste */
+.bg-green-100, .bg-emerald-100 { background-color: var(--ok-bg) !important; }
+.text-green-800, .text-green-700, .text-green-600, .text-emerald-800, .text-emerald-700 { color: var(--ok) !important; }
+
+.bg-yellow-100, .bg-amber-100 { background-color: var(--warn-bg) !important; }
+.text-yellow-800, .text-amber-800 { color: var(--warn) !important; }
+
+.bg-red-100 { background-color: var(--bad-bg) !important; }
+.text-red-800, .text-red-700, .text-red-600 { color: var(--bad) !important; }
+
+.bg-blue-100, .bg-indigo-100 { background-color: var(--info-bg) !important; }
+.text-blue-800, .text-blue-700, .text-blue-600, .text-indigo-800 { color: var(--info) !important; }
+
+.bg-purple-100, .bg-violet-100 { background-color: var(--vio-bg) !important; }
+.text-purple-800, .text-purple-700, .text-violet-800 { color: var(--vio) !important; }
+
+.bg-orange-100 { background-color: #3b2310 !important; }
+.text-orange-800 { color: #fdba74 !important; }
+
+/* 11. Caixas de Alerta */
+.bg-green-50, .bg-emerald-50 {
+  background-color: var(--ok-bg) !important;
+  border-color: rgba(134, 239, 172, 0.25) !important;
+}
+.bg-red-50 {
+  background-color: var(--bad-bg) !important;
+  border-color: rgba(252, 165, 165, 0.25) !important;
+}
+.bg-yellow-50, .bg-amber-50, .bg-orange-50 {
+  background-color: var(--warn-bg) !important;
+  border-color: rgba(252, 211, 77, 0.25) !important;
+}
+.bg-blue-50, .bg-indigo-50 {
+  background-color: var(--info-bg) !important;
+  border-color: rgba(147, 197, 253, 0.25) !important;
+}
+
+/* ==========================================================================
+   Bibliotecas Externas (DataTables, SweetAlert2, CKEditor)
+   ========================================================================== */
+
+/* jQuery DataTables Dark */
+.dataTables_wrapper {
+  color: var(--ink) !important;
+}
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter,
+.dataTables_wrapper .dataTables_info,
+.dataTables_wrapper .dataTables_processing,
+.dataTables_wrapper .dataTables_paginate {
+  color: var(--ink-2) !important;
+}
+.dataTables_wrapper .dataTables_filter input,
+.dataTables_wrapper .dataTables_length select {
+  background: var(--card-2) !important;
+  border: 1px solid var(--line) !important;
+  color: var(--ink) !important;
+  border-radius: 10px !important;
+  padding: 6px 10px !important;
+}
+table.dataTable {
+  background-color: var(--card) !important;
+  color: var(--ink) !important;
+  border-bottom: 1px solid var(--line) !important;
+}
+table.dataTable thead th {
+  background-color: var(--card-2) !important;
+  color: var(--ink-3) !important;
+  border-bottom: 1px solid var(--line) !important;
+  font-size: 11px !important;
+  text-transform: uppercase !important;
+  letter-spacing: .06em !important;
+}
+table.dataTable tbody tr {
+  background-color: var(--card) !important;
+}
+table.dataTable tbody tr:hover {
+  background-color: #142825 !important;
+}
+table.dataTable tbody td {
+  border-bottom: 1px solid var(--line-2) !important;
+  color: var(--ink) !important;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+  color: var(--ink) !important;
+  border-radius: 8px !important;
+  border: 1px solid var(--line) !important;
+  background: var(--card-2) !important;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+  background: var(--line) !important;
+  color: #fff !important;
+  border-color: var(--teal-text) !important;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button.current,
+.dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+  background: var(--mint) !important;
+  color: var(--on-mint) !important;
+  font-weight: 700 !important;
+  border-color: var(--mint) !important;
+}
+
+/* SweetAlert2 Dark */
+.swal2-popup {
+  background: var(--card) !important;
+  color: var(--ink) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 30px 80px rgba(0,0,0,.7) !important;
+}
+.swal2-title {
+  color: var(--ink) !important;
+}
+.swal2-html-container {
+  color: var(--ink-2) !important;
+}
+.swal2-confirm {
+  background-color: var(--mint) !important;
+  color: var(--on-mint) !important;
+  font-weight: 700 !important;
+  border-radius: 11px !important;
+}
+.swal2-cancel {
+  background-color: var(--gray-bg) !important;
+  color: var(--gray) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 11px !important;
+}
+
+/* CKEditor Dark */
+.ck.ck-editor__main > .ck-editor__editable {
+  background: var(--card-2) !important;
+  color: var(--ink) !important;
+  border-color: var(--line) !important;
+}
+.ck.ck-toolbar {
+  background: var(--card) !important;
+  border-color: var(--line) !important;
+  color: var(--ink) !important;
+}
+.ck.ck-button {
+  color: var(--ink) !important;
+}
+.ck.ck-button:hover {
+  background: #142825 !important;
+}

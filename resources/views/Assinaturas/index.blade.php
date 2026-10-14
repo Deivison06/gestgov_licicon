@@ -46,10 +46,12 @@
     </div>
 
     {{-- Pendentes --}}
-    <div class="mb-8 overflow-hidden bg-white rounded-xl shadow-sm">
-        <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-amber-50 to-white">
-            <h3 class="text-lg font-semibold text-gray-800">Solicitações Pendentes</h3>
-            <p class="mt-1 text-xs text-gray-500">Ordenadas por urgência (prazo mais próximo no topo)</p>
+    <div class="mb-8 overflow-hidden card !rounded-2xl">
+        <div class="card-h">
+            <div>
+                <h3 class="text-lg font-bold text-[#e6f0ee]">Solicitações Pendentes</h3>
+                <p class="mt-1 text-xs text-[#8aa29d]">Ordenadas por urgência (prazo mais próximo no topo)</p>
+            </div>
         </div>
 
         @if ($pendentes->isEmpty())

@@ -1,31 +1,31 @@
 <!-- Modal de Edição Rápida do Item -->
-<div id="modal-item-quick-edit" class="fixed inset-0 z-[70] flex items-center justify-center hidden bg-black bg-opacity-50">
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col mx-4">
-        <div class="p-6 border-b border-gray-200 bg-gray-50 flex justify-between items-center rounded-t-2xl">
-            <h3 class="text-xl font-bold text-gray-800">Detalhes do Item</h3>
-            <button type="button" onclick="closeModalItemQuickEdit()" class="text-gray-400 hover:text-red-500 focus:outline-none transition-colors duration-200">
+<div id="modal-item-quick-edit" class="fixed inset-0 z-[70] flex items-center justify-center hidden bg-black/70 backdrop-blur-sm">
+    <div class="bg-[#10201e] border border-[#24403c] rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col mx-4">
+        <div class="p-6 border-b border-[#24403c] bg-[#0d1b19] flex justify-between items-center rounded-t-2xl">
+            <h3 class="text-xl font-bold text-[#e6f0ee]">Detalhes do Item</h3>
+            <button type="button" onclick="closeModalItemQuickEdit()" class="text-[#a2b9b5] hover:text-red-400 focus:outline-none transition-colors duration-200">
                 <i class="fas fa-times text-lg"></i>
             </button>
         </div>
         
-        <div class="p-6">
+        <div class="p-6 bg-[#10201e]">
             <input type="hidden" id="quick_edit_item_id" value="">
             <div class="mb-2">
-                <label class="block text-sm font-semibold leading-6 text-gray-900 mb-1">Descrição</label>
-                <textarea id="quick_edit_descricao" rows="6" class="block w-full rounded-md border-0 py-2.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#009496] sm:text-sm sm:leading-6"></textarea>
+                <label class="block text-sm font-semibold leading-6 text-[#a2b9b5] mb-1">Descrição</label>
+                <textarea id="quick_edit_descricao" rows="6" class="block w-full rounded-xl bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] py-2.5 px-3 shadow-sm placeholder-[#a2b9b5]/50 focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] sm:text-sm sm:leading-6"></textarea>
             </div>
-            <p id="quick_edit_alert" class="hidden text-sm text-red-600 font-medium mt-2"></p>
+            <p id="quick_edit_alert" class="hidden text-sm text-red-400 font-medium mt-2"></p>
         </div>
 
-        <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end gap-3 items-center">
-            <div id="quick_edit_loading" class="hidden text-sm text-gray-500 flex items-center gap-2">
-                <div class="w-4 h-4 border-2 border-[#009496]/20 border-t-[#009496] rounded-full animate-spin"></div>
+        <div class="px-6 py-4 bg-[#0d1b19] border-t border-[#24403c] flex justify-end gap-3 items-center">
+            <div id="quick_edit_loading" class="hidden text-sm text-[#a2b9b5] flex items-center gap-2">
+                <div class="w-4 h-4 border-2 border-[#2DC197]/20 border-t-[#2DC197] rounded-full animate-spin"></div>
                 Salvando...
             </div>
-            <button type="button" onclick="closeModalItemQuickEdit()" class="text-sm text-gray-600 hover:text-gray-900 font-medium px-4 py-2 hover:bg-gray-200 rounded-md transition-colors duration-200">
+            <button type="button" onclick="closeModalItemQuickEdit()" class="text-sm text-[#e6f0ee] bg-[#10201e] border border-[#24403c] font-semibold px-4 py-2 hover:bg-[#142825] hover:text-[#2DC197] rounded-xl transition-colors duration-200">
                 Cancelar
             </button>
-            <button type="button" onclick="saveItemQuickEdit()" id="btn_save_quick_edit" class="rounded-md bg-[#009496] px-5 py-2 text-sm font-bold text-white shadow-sm hover:bg-[#007a7a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#009496] transition-colors duration-200">
+            <button type="button" onclick="saveItemQuickEdit()" id="btn_save_quick_edit" class="rounded-xl bg-[#2DC197] px-5 py-2 text-sm font-bold text-[#041d1a] shadow-sm hover:bg-[#26aa84] hover:scale-105 transition-all duration-200">
                 Salvar Alterações
             </button>
         </div>

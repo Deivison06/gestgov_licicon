@@ -488,8 +488,7 @@
         </p>
 
         <p style="text-align: justify;">
-            2.1 Para uma contratação mais segura e eficaz, sugerimos como técnica de averiguação, e controle, as seguintes exigências
-            mínimas:
+            2.1. Constituem requisitos da contratação:
         </p>
         <p style="text-align: justify;">
             2.1.1. Os produtos deverão ser executados de forma parcelada, de acordo com as solicitações da CONTRATANTE, por meio
@@ -723,12 +722,12 @@
             remanescente, sempre que este ocorrer.
         </p>
         <p style="text-align: justify;">
-            6.7. Caso o índice estabelecido para reajustamento venha a ser extinto ou de qualquer forma não possa mais ser utilizado,
+            6.6. Caso o índice estabelecido para reajustamento venha a ser extinto ou de qualquer forma não possa mais ser utilizado,
             será adotado, em substituição, o que vier a ser determinado pela legislação então em vigor, levando em consideração a
             natureza do objeto que terá o preço reajustado.
         </p>
         <p style="text-align: justify;">
-            6.8. Na ausência de previsão legal quanto ao índice substituto, as partes elegerão novo índice oficial, para reajustamento do
+            6.7. Na ausência de previsão legal quanto ao índice substituto, as partes elegerão novo índice oficial, para reajustamento do
             preço do valor remanescente, por meio de termo aditivo.;
         </p>
     </div>

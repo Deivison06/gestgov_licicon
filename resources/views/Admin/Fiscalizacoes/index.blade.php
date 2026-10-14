@@ -4,23 +4,23 @@
 
 @section('content')
 
-<div class="overflow-hidden bg-white shadow-sm rounded-xl">
+<div class="overflow-hidden bg-[#10201e] border border-[#24403c] shadow-sm rounded-xl">
 
     {{-- Header com botão de ação --}}
-    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-[#24403c] bg-[#0d1b19]">
         <div>
-            <h3 class="text-lg font-semibold text-gray-700">
-                <i class="fas fa-clipboard-check text-[#009496] mr-2"></i>Fiscalização & Ocorrências
+            <h3 class="text-lg font-semibold text-[#e6f0ee]">
+                <i class="fas fa-clipboard-check text-[#2DC197] mr-2"></i>Fiscalização & Ocorrências
             </h3>
         </div>
         @can('fiscalizar contratos')
             <div class="flex items-center gap-3">
                 <a href="{{ route('admin.ocorrencias.selecionar-contrato') }}"
-                    class="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-[#009496] border border-[#009496] bg-white transition-colors rounded-lg hover:bg-[#f0fdfa] shadow-sm">
+                    class="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-[#2DC197] border border-[#24403c] bg-[#142825] transition-colors rounded-lg hover:bg-[#1a332f] shadow-sm">
                     <i class="fas fa-plus"></i> Nova Ocorrência
                 </a>
                 <a href="{{ route('admin.fiscalizacoes.selecionar-contrato') }}"
-                    class="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white transition-colors bg-[#009496] rounded-lg hover:bg-[#244853] shadow-sm">
+                    class="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-[#041d1a] transition-colors bg-[#2DC197] rounded-lg hover:bg-[#26aa84] shadow-sm">
                     <i class="fas fa-plus"></i> Nova Fiscalização
                 </a>
             </div>
@@ -28,20 +28,20 @@
     </div>
 
     {{-- Filtros --}}
-    <div class="px-6 py-4 bg-gray-50 border-b border-gray-100">
+    <div class="px-6 py-4 bg-[#0d1b19] border-b border-[#24403c]">
         <form method="GET" action="{{ route('admin.fiscalizacoes.index') }}" class="flex flex-wrap items-end gap-4">
             <input type="hidden" name="tab" value="{{ $activeTab }}">
             @if($activeTab === 'fiscalizacoes')
                 <div class="flex-1 min-w-[200px]">
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Pesquisar</label>
+                    <label class="block text-xs font-medium text-[#a2b9b5] mb-1">Pesquisar</label>
                     <input type="text" name="search" value="{{ request('search') }}"
-                           class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496]"
+                           class="w-full px-3 py-2 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-lg focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197]"
                            placeholder="Nº fiscalização, objeto...">
                 </div>
                 <div class="min-w-[160px]">
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Tipo</label>
+                    <label class="block text-xs font-medium text-[#a2b9b5] mb-1">Tipo</label>
                     <select name="tipo_contrato"
-                            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496]">
+                            class="w-full px-3 py-2 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-lg focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197]">
                         <option value="">Todos</option>
                         @foreach($tiposFiscalizacao as $tipo)
                             <option value="{{ $tipo->value }}" {{ request('tipo_contrato') == $tipo->value ? 'selected' : '' }}>
@@ -52,15 +52,15 @@
                 </div>
             @else
                 <div class="flex-1 min-w-[200px]">
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Pesquisar</label>
+                    <label class="block text-xs font-medium text-[#a2b9b5] mb-1">Pesquisar</label>
                     <input type="text" name="search" value="{{ request('search') }}"
-                           class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496]"
+                           class="w-full px-3 py-2 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-lg focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197]"
                            placeholder="Nº ocorrência, descrição do fato...">
                 </div>
                 <div class="min-w-[160px]">
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Status</label>
+                    <label class="block text-xs font-medium text-[#a2b9b5] mb-1">Status</label>
                     <select name="status"
-                            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496]">
+                            class="w-full px-3 py-2 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-lg focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197]">
                         <option value="">Todos</option>
                         @foreach(\App\Enums\StatusOcorrenciaEnum::cases() as $status)
                             <option value="{{ $status->value }}" {{ request('status') == $status->value ? 'selected' : '' }}>
@@ -70,9 +70,9 @@
                     </select>
                 </div>
                 <div class="min-w-[180px]">
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Situação</label>
+                    <label class="block text-xs font-medium text-[#a2b9b5] mb-1">Situação</label>
                     <select name="situacao"
-                            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496]">
+                            class="w-full px-3 py-2 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-lg focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197]">
                         <option value="">Todas</option>
                         @foreach(\App\Enums\SituacaoOcorrenciaEnum::cases() as $situacao)
                             <option value="{{ $situacao->value }}" {{ request('situacao') == $situacao->value ? 'selected' : '' }}>
@@ -84,9 +84,9 @@
             @endif
             @if(!$isPrefeituraUser)
                 <div class="min-w-[200px]">
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Prefeitura</label>
+                    <label class="block text-xs font-medium text-[#a2b9b5] mb-1">Prefeitura</label>
                     <select name="prefeitura_id"
-                            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496]">
+                            class="w-full px-3 py-2 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-lg focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197]">
                         <option value="">Todas</option>
                         @foreach($prefeituras as $pref)
                             <option value="{{ $pref->id }}" {{ request('prefeitura_id') == $pref->id ? 'selected' : '' }}>
@@ -98,9 +98,9 @@
             @endif
             {{-- Filtro de Unidade --}}
             <div class="min-w-[200px]" id="div_unidade_filtro">
-                <label class="block text-xs font-medium text-gray-500 mb-1">Secretaria/Unidade</label>
+                <label class="block text-xs font-medium text-[#a2b9b5] mb-1">Secretaria/Unidade</label>
                 <select name="unidade_id" id="unidade_id_filtro"
-                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496]">
+                        class="w-full px-3 py-2 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-lg focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197]">
                     <option value="">Todas</option>
                     @foreach($unidades as $un)
                         <option value="{{ $un->id }}" data-prefeitura="{{ $un->prefeitura_id }}"
@@ -112,11 +112,11 @@
             </div>
             <div class="flex gap-2">
                 <button type="submit"
-                        class="px-4 py-2 text-sm font-medium text-white bg-[#009496] rounded-lg hover:bg-[#244853] transition-colors">
+                        class="px-4 py-2 text-sm font-semibold text-[#041d1a] bg-[#2DC197] rounded-lg hover:bg-[#26aa84] transition-colors">
                     <i class="fas fa-search mr-1"></i> Filtrar
                 </button>
                 <a href="{{ route('admin.fiscalizacoes.index') }}"
-                   class="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                   class="px-4 py-2 text-sm font-medium text-[#a2b9b5] bg-[#142825] border border-[#24403c] rounded-lg hover:bg-[#1a332f] hover:text-[#e6f0ee] transition-colors">
                     <i class="fas fa-eraser mr-1"></i> Limpar
                 </a>
             </div>
@@ -124,13 +124,13 @@
     </div>
 
     {{-- Abas do Painel --}}
-    <div class="flex border-b border-gray-100 bg-gray-50/50 px-6">
+    <div class="flex border-b border-[#24403c] bg-[#0a1514] px-6">
         <a href="{{ route('admin.fiscalizacoes.index', ['tab' => 'fiscalizacoes'] + request()->except(['tab', 'page_fisc', 'page_ocor'])) }}"
-           class="py-3 px-4 text-sm font-medium border-b-2 transition-colors flex items-center {{ $activeTab === 'fiscalizacoes' ? 'border-[#009496] text-[#009496] font-semibold' : 'border-transparent text-gray-500 hover:text-gray-700' }}">
+           class="py-3 px-4 text-sm font-medium border-b-2 transition-colors flex items-center {{ $activeTab === 'fiscalizacoes' ? 'border-[#2DC197] text-[#2DC197] font-semibold' : 'border-transparent text-[#7ea29c] hover:text-[#e6f0ee]' }}">
             <i class="fas fa-clipboard-check mr-2"></i>Fiscalizações
         </a>
         <a href="{{ route('admin.fiscalizacoes.index', ['tab' => 'ocorrencias'] + request()->except(['tab', 'page_fisc', 'page_ocor'])) }}"
-           class="py-3 px-4 text-sm font-medium border-b-2 transition-colors flex items-center {{ $activeTab === 'ocorrencias' ? 'border-[#009496] text-[#009496] font-semibold' : 'border-transparent text-gray-500 hover:text-gray-700' }}">
+           class="py-3 px-4 text-sm font-medium border-b-2 transition-colors flex items-center {{ $activeTab === 'ocorrencias' ? 'border-[#2DC197] text-[#2DC197] font-semibold' : 'border-transparent text-[#7ea29c] hover:text-[#e6f0ee]' }}">
             <i class="fas fa-triangle-exclamation mr-2"></i>Ocorrências
         </a>
     </div>
@@ -139,7 +139,7 @@
         {{-- Tabela de Fiscalizações --}}
         <div class="overflow-x-auto">
             <table class="w-full text-sm text-left">
-                <thead class="bg-gray-50 text-gray-600 uppercase text-xs">
+                <thead class="bg-[#0a1514] text-[#7ea29c] uppercase text-xs border-b border-[#24403c]">
                     <tr>
                         <th class="px-6 py-3">Nº Fiscalização</th>
                         <th class="px-6 py-3">Data</th>
@@ -150,16 +150,16 @@
                         <th class="px-6 py-3 text-center">Ações</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100">
+                <tbody class="divide-y divide-[#1a332f] bg-[#10201e]">
                     @forelse($fiscalizacoes as $fisc)
-                        <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="px-6 py-4 font-medium text-gray-900">
+                        <tr class="hover:bg-[#142825] transition-colors">
+                            <td class="px-6 py-4 font-medium text-[#e6f0ee]">
                                 {{ $fisc->numero_fiscalizacao }}
                             </td>
-                            <td class="px-6 py-4 text-gray-600">
+                            <td class="px-6 py-4 text-[#a2b9b5]">
                                 {{ $fisc->data_fiscalizacao?->format('d/m/Y') ?? '—' }}
                             </td>
-                            <td class="px-6 py-4 text-gray-600">
+                            <td class="px-6 py-4 text-[#a2b9b5]">
                                 {{ $fisc->contrato_info['numero_contrato'] ?? '—' }}
                             </td>
                             <td class="px-6 py-4">
@@ -220,7 +220,7 @@
         {{-- Tabela de Ocorrências --}}
         <div class="overflow-x-auto">
             <table class="w-full text-sm text-left">
-                <thead class="bg-gray-50 text-gray-600 uppercase text-xs">
+                <thead class="bg-[#0a1514] text-[#7ea29c] uppercase text-xs border-b border-[#24403c]">
                     <tr>
                         <th class="px-6 py-3">Nº Ocorrência</th>
                         <th class="px-6 py-3">Data</th>
@@ -231,19 +231,19 @@
                         <th class="px-6 py-3 text-center">Ações</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100">
+                <tbody class="divide-y divide-[#1a332f] bg-[#10201e]">
                     @forelse($ocorrencias as $ocorrencia)
-                        <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="px-6 py-4 font-medium text-gray-900">
+                        <tr class="hover:bg-[#142825] transition-colors">
+                            <td class="px-6 py-4 font-medium text-[#e6f0ee]">
                                 {{ $ocorrencia->numero_ocorrencia }}
                             </td>
-                            <td class="px-6 py-4 text-gray-600">
+                            <td class="px-6 py-4 text-[#a2b9b5]">
                                 {{ $ocorrencia->data_ocorrencia?->format('d/m/Y') ?? '—' }}
                             </td>
-                            <td class="px-6 py-4 text-gray-600">
+                            <td class="px-6 py-4 text-[#a2b9b5]">
                                 {{ $ocorrencia->contrato_info['numero_contrato'] ?? '—' }}
                             </td>
-                            <td class="px-6 py-4 text-gray-600">
+                            <td class="px-6 py-4 text-[#a2b9b5]">
                                 {{ \Str::limit($ocorrencia->contrato_info['razao_social'] ?? '—', 30) }}
                             </td>
                             <td class="px-6 py-4">

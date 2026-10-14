@@ -432,11 +432,13 @@
     <!-- Seção de Dados do Contrato (Apenas Inexigibilidade) -->
     @if($processo->modalidade === \App\Enums\ModalidadeEnum::INEXIGIBILIDADE)
         <div class="mb-8">
-            <div class="overflow-hidden bg-white border border-gray-100 shadow-sm rounded-2xl">
+            <div class="overflow-hidden card !rounded-2xl">
                 <!-- Header -->
-                <div class="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
-                    <h3 class="text-lg font-semibold text-gray-800">Dados Gerais do Contrato</h3>
-                    <p class="mt-1 text-sm text-gray-500">Informações exclusivas que serão salvas e usadas na geração do contrato de inexigibilidade.</p>
+                <div class="card-h">
+                    <div>
+                        <h3 class="text-lg font-bold text-[#e6f0ee]">Dados Gerais do Contrato</h3>
+                        <p class="mt-1 text-sm text-[#8aa29d]">Informações exclusivas que serão salvas e usadas na geração do contrato de inexigibilidade.</p>
+                    </div>
                 </div>
 
                 <!-- Formulário de Contrato -->
