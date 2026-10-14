@@ -628,6 +628,21 @@ input::placeholder, textarea::placeholder {
   color: var(--ink-3) !important;
 }
 
+/* Autofill do navegador (Chrome/Edge/Safari pintam o campo preenchido com um
+   fundo claro próprio, por fora do CSS normal — só box-shadow inset consegue
+   sobrepor). Sem isso, qualquer input autocompletado (login, e-mail etc.)
+   aparece com fundo claro mesmo com todo o resto escuro. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px var(--card-2) inset !important;
+  box-shadow: 0 0 0 1000px var(--card-2) inset !important;
+  -webkit-text-fill-color: var(--ink) !important;
+  caret-color: var(--ink) !important;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
 select option {
   background-color: var(--card) !important;
   color: var(--ink) !important;
