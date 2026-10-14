@@ -608,8 +608,10 @@ nav[role="navigation"] span[aria-current="page"] {
   border-color: var(--mint) !important;
 }
 
-/* 6. Inputs, Textareas e Selects em Formulários Legados */
-input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="reset"]),
+/* 6. Inputs, Textareas e Selects em Formulários Legados
+   (exclui .border-0.bg-transparent: input já estilizado manualmente dentro de um
+   wrapper com a própria borda, ex. login — senão fica borda dupla) */
+input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not(.border-0.bg-transparent),
 select,
 textarea {
   background-color: var(--card-2) !important;
@@ -617,7 +619,7 @@ textarea {
   color: var(--ink) !important;
   border-radius: 12px;
 }
-input:not([type="checkbox"]):not([type="radio"]):focus,
+input:not([type="checkbox"]):not([type="radio"]):not(.border-0.bg-transparent):focus,
 select:focus,
 textarea:focus {
   border-color: var(--mint) !important;
