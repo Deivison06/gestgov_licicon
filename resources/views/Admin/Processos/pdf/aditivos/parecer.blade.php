@@ -55,7 +55,7 @@
 
     <div class="section-title">I – RELATÓRIO</div>
     <div class="clause-content">
-        Trata-se de solicitação de manifestação jurídica acerca da possibilidade de celebração de Termo Aditivo ao Contrato nº {{ $contrato->numero_contrato ?? 'S/N' }}, cujo objeto consiste em {{ strtolower(trim(html_entity_decode(strip_tags($objetoContrato ?? 'execução do objeto')))) }}, celebrado entre o Município de {{ $prefeitura->cidade ?? 'Município' }} - {{ $prefeitura->estado ?? 'UF' }} e a empresa {{ $contrato->dados_contratante['razao_social'] ?? 'CONTRATADA' }}.
+        Trata-se de solicitação de manifestação jurídica acerca da possibilidade de celebração de Termo Aditivo ao Contrato nº {{ $contrato->numero_contrato ?? 'S/N' }}, cujo objeto consiste em {{ mb_strtoupper(trim(html_entity_decode(strip_tags($objetoContrato ?? 'execução do objeto')))) }}, celebrado entre o Município de {{ $prefeitura->cidade ?? 'Município' }} e a empresa {{ $contrato->dados_contratante['razao_social'] ?? 'CONTRATADA' }}.
     </div>
 
     <div class="clause-content" style="text-indent: 0;">
@@ -83,15 +83,19 @@
         A Lei nº 14.133/2021 autoriza expressamente a alteração dos contratos administrativos, inclusive aqueles que tenham por objeto compras e serviços comuns ou obras, desde que atendidos os requisitos legais.
     </div>
 
+    @if(in_array($incidente->tipo, ['valor', 'prazo_valor']))
     <div class="clause-content">
         <strong>Aditivo de Valor (Acréscimo ou Supressão):</strong><br>
         O art. 124, inciso I, alínea “a”, da Lei nº 14.133/2021, permite a alteração quantitativa do contrato para melhor adequação às finalidades de interesse público, desde que haja justificativa formal, o aditivo esteja relacionado ao objeto originalmente contratado, não ocorra descaracterização do objeto e sejam observados os limites legais previstos no art. 125 da Lei nº 14.133/2021. No caso em análise, não há inovação indevida ou alteração substancial do objeto.
     </div>
+    @endif
 
+    @if(in_array($incidente->tipo, ['prazo', 'prazo_valor']))
     <div class="clause-content">
         <strong>Aditivo de Prazo:</strong><br>
         Nos contratos é juridicamente possível a prorrogação do prazo contratual, desde que haja interesse da Administração, o contrato esteja sendo executado de forma regular, seja mantida a vantajosidade econômica, exista justificativa formal e disponibilidade orçamentária. A prorrogação encontra respaldo no art. 107 da Lei nº 14.133/2021.
     </div>
+    @endif
 
     <div class="section-title">IV – DA VANTAJOSIDADE, CONTINUIDADE E INTERESSE PÚBLICO</div>
     <div class="clause-content">
@@ -121,7 +125,7 @@
     </div>
 
     <div style="margin-top: 40px; text-align: left; margin-left: 40px;">
-        {{ $prefeitura->cidade ?? 'Cidade' }} – {{ $prefeitura->estado ?? 'UF' }}, {{ \Carbon\Carbon::parse($data_selecionada ?? now())->translatedFormat('d \d\e F \d\e Y') }}.
+        {{ $prefeitura->cidade ?? 'Cidade' }}, {{ \Carbon\Carbon::parse($data_selecionada ?? now())->translatedFormat('d \d\e F \d\e Y') }}.
     </div>
 
     @if(isset($documentoSelecao) && is_array($documentoSelecao->assinantes) && count($documentoSelecao->assinantes) > 0)
@@ -138,7 +142,8 @@
     @else
         <div class="signature-block">
             ___________________________________<br>
-            <strong>{{ $incidente->nome_parecerista ?? 'Assessor Jurídico / Parecerista' }}</strong><br>
+            <strong>{{ mb_strtoupper($incidente->nome_parecerista ?? 'Assessor Jurídico / Parecerista') }}</strong><br>
+            {{ $incidente->cargo_parecerista ?? 'Assessor Jurídico / Parecerista' }}<br>
             {{ $incidente->oab_parecerista ?? 'OAB/UF nº XXXXXX' }}
         </div>
     @endif

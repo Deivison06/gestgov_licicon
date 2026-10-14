@@ -25,6 +25,7 @@ class IncidenteContratualService
                 'nome_solicitante' => $dados['nome_solicitante'] ?? $incidente->nome_solicitante,
                 'cargo_solicitante' => $dados['cargo_solicitante'] ?? $incidente->cargo_solicitante,
                 'nome_parecerista' => $dados['nome_parecerista'] ?? $incidente->nome_parecerista,
+                'cargo_parecerista' => $dados['cargo_parecerista'] ?? $incidente->cargo_parecerista,
                 'oab_parecerista' => $dados['oab_parecerista'] ?? $incidente->oab_parecerista,
             ]);
 
@@ -48,7 +49,7 @@ class IncidenteContratualService
 
                 foreach ($lotesContratados as $loteContratado) {
                     $qtdOriginal = $loteContratado->quantidade_contratada;
-                    // Mantém precisão decimal se for menor que 1, ou arredonda se desejar, 
+                    // Mantém precisão decimal se for menor que 1, ou arredonda se desejar,
                     // usaremos o valor direto para não zerar (ex: 1 * 0.2 = 0.2)
                     $qtdAditivada = $qtdOriginal * $percentual;
 
@@ -94,7 +95,7 @@ class IncidenteContratualService
 
                 foreach ($dados['itens'] as $item) {
                     $lote = LoteContratado::find($item['lote_contratado_id']);
-                    if (!$lote || (float) $item['quantidade_aditivada'] <= 0) {
+                    if (! $lote || (float) $item['quantidade_aditivada'] <= 0) {
                         continue;
                     }
 
@@ -129,7 +130,7 @@ class IncidenteContratualService
 
         if (in_array($incidente->tipo, ['prazo', 'prazo_valor'])
             && $incidente->data_finalizacao_base
-            && !empty($dados['meses_prorrogacao'])) {
+            && ! empty($dados['meses_prorrogacao'])) {
             $contrato->data_finalizacao = $incidente->data_finalizacao_base->copy()
                 ->addMonths((int) $dados['meses_prorrogacao']);
             $mudou = true;
@@ -141,7 +142,7 @@ class IncidenteContratualService
             if ($incidente->origem === 'externo' && isset($dados['valor_acrescido'])) {
                 $contrato->valor_total = $incidente->valor_total_base + $dados['valor_acrescido'];
                 $mudou = true;
-            } elseif ($incidente->origem !== 'externo' && !empty($dados['percentual_valor'])) {
+            } elseif ($incidente->origem !== 'externo' && ! empty($dados['percentual_valor'])) {
                 $contrato->valor_total = $incidente->valor_total_base * (1 + $dados['percentual_valor'] / 100);
                 $mudou = true;
             }

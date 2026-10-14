@@ -46,11 +46,11 @@
     </div>
 
     <div class="clause-content">
-        Eu, <strong>{{ mb_strtoupper($prefeitura->autoridade_competente ?? 'Prefeito') }}</strong>, {{ $prefeitura->cargo_autoridade ?? 'Prefeito Municipal' }} de {{ $prefeitura->cidade ?? 'Cidade' }} - {{ $prefeitura->estado ?? 'UF' }}, no uso de minhas atribuições legais, <strong>AUTORIZO</strong> o(a) Agente de Contratação desta Prefeitura Municipal que proceda com o aditivo do Contrato n° {{ $contrato->numero_contrato ?? 'S/N' }}, conforme solicitado pela {{ $contrato->dados_contratante['orgao_responsavel'] ?? 'Secretaria' }}, vinculada a esta Administração.
+        Eu, <strong>{{ mb_strtoupper($prefeitura->autoridade_competente ?? 'Prefeito') }}</strong>, {{ $prefeitura->cargo_autoridade ?? 'Prefeito Municipal' }} de {{ $prefeitura->cidade ?? 'Cidade' }}, no uso de minhas atribuições legais, <strong>AUTORIZO</strong> o(a) Agente de Contratação desta Prefeitura Municipal que proceda com o aditivo do Contrato n° {{ $contrato->numero_contrato ?? 'S/N' }}, conforme solicitado pela {{ $contrato->dados_contratante['orgao_responsavel'] ?? 'Secretaria' }}, vinculada a esta Administração.
     </div>
 
     <div style="margin-top: 60px; text-align: left; margin-left: 40px;">
-        {{ $prefeitura->cidade ?? 'Cidade' }} – {{ $prefeitura->estado ?? 'UF' }}, {{ \Carbon\Carbon::parse($data_selecionada ?? now())->translatedFormat('d \d\e F \d\e Y') }}.
+        {{ $prefeitura->cidade ?? 'Cidade' }}, {{ \Carbon\Carbon::parse($data_selecionada ?? now())->translatedFormat('d \d\e F \d\e Y') }}.
     </div>
 
     @if(isset($documentoSelecao) && is_array($documentoSelecao->assinantes) && count($documentoSelecao->assinantes) > 0)

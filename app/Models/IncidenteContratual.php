@@ -27,7 +27,8 @@ class IncidenteContratual extends Model
         'nome_solicitante',
         'cargo_solicitante',
         'nome_parecerista',
-        'oab_parecerista'
+        'cargo_parecerista',
+        'oab_parecerista',
     ];
 
     protected $casts = [

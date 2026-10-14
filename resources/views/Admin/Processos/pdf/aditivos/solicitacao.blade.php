@@ -59,13 +59,13 @@
         <p><strong>Assunto:</strong> Solicitação de Aditivo</p>
         <p><strong>Contrato n°:</strong> {{ $contrato->numero_contrato ?? 'S/N' }}</p>
         <p><strong>Contratada:</strong> {{ $contrato->dados_contratante['razao_social'] ?? 'NOME DA EMPRESA' }}</p>
-        <p><strong>Objeto:</strong> {{ trim(html_entity_decode(strip_tags($objetoContrato ?? 'Objeto do Processo'))) }}</p>
+        <p><strong>Objeto:</strong> {{ mb_strtoupper(trim(html_entity_decode(strip_tags($objetoContrato ?? 'Objeto do Processo')))) }}</p>
     </div>
 
     <p style="font-weight: bold; margin-bottom: 15px;">Sr(a). {{ $prefeitura->autoridade_competente ?? 'Prefeito(a)' }},</p>
 
     <div class="clause-content">
-        O Contrato nº {{ $contrato->numero_contrato ?? 'S/N' }} tem como objeto a {{ strtolower(trim(html_entity_decode(strip_tags($objetoContrato ?? '')))) }}.
+        O Contrato nº {{ $contrato->numero_contrato ?? 'S/N' }} tem como objeto a {{ mb_strtoupper(trim(html_entity_decode(strip_tags($objetoContrato ?? '')))) }}.
     </div>
 
     <div class="clause-content">
@@ -86,7 +86,7 @@
     </div>
 
     <div style="margin-top: 40px;">
-        {{ $prefeitura->cidade ?? 'Cidade' }} – {{ $prefeitura->estado ?? 'UF' }}, {{ \Carbon\Carbon::parse($data_selecionada ?? now())->translatedFormat('d \d\e F \d\e Y') }}
+        {{ $prefeitura->cidade ?? 'Cidade' }}, {{ \Carbon\Carbon::parse($data_selecionada ?? now())->translatedFormat('d \d\e F \d\e Y') }}
     </div>
 
     @if(isset($documentoSelecao) && is_array($documentoSelecao->assinantes) && count($documentoSelecao->assinantes) > 0)

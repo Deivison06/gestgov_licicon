@@ -245,15 +245,24 @@ class IncidenteContratualController extends Controller
         $rules = [
             'tipo' => 'required|string',
             'categoria' => 'required|string',
-            'meses_prorrogacao' => 'required_if:tipo,prazo,prazo_valor|nullable|integer|min:1',
-            'percentual_valor' => 'required_if:tipo,valor,prazo_valor|nullable|numeric',
             'justificativa' => 'nullable|string',
             'arquivo_solicitacao' => 'nullable|file|mimes:pdf|max:10240',
             'nome_solicitante' => 'nullable|string',
             'cargo_solicitante' => 'nullable|string',
             'nome_parecerista' => 'nullable|string',
+            'cargo_parecerista' => 'nullable|string',
             'oab_parecerista' => 'nullable|string',
         ];
+
+        // meses_prorrogacao/percentual_valor só existem no <form> do card "Termo
+        // Aditivo" — exigi-los incondicionalmente quebrava o salvamento dos demais
+        // cards (ex: Solicitação do Aditivo), que não enviam esses campos.
+        if ($request->has('meses_prorrogacao')) {
+            $rules['meses_prorrogacao'] = 'required_if:tipo,prazo,prazo_valor|nullable|integer|min:1';
+        }
+        if ($request->has('percentual_valor')) {
+            $rules['percentual_valor'] = 'required_if:tipo,valor,prazo_valor|nullable|numeric';
+        }
 
         if ($incidente->categoria === 'obras' && in_array($incidente->tipo, ['valor', 'prazo_valor'])) {
             $rules['arquivo_orcamento_obra'] = 'nullable|file|mimes:pdf|max:10240';
@@ -330,7 +339,24 @@ class IncidenteContratualController extends Controller
                 'cor' => '#dc2626', // vermelho
                 'requer_assinatura' => $temAssinaturaEletronica,
                 'campos' => [
-
+                    [
+                        'name' => 'nome_parecerista',
+                        'label' => 'Nome do Parecerista',
+                        'tipo' => 'string',
+                        'value' => $incidente->nome_parecerista,
+                    ],
+                    [
+                        'name' => 'cargo_parecerista',
+                        'label' => 'Cargo do Parecerista',
+                        'tipo' => 'string',
+                        'value' => $incidente->cargo_parecerista,
+                    ],
+                    [
+                        'name' => 'oab_parecerista',
+                        'label' => 'OAB do Parecerista',
+                        'tipo' => 'string',
+                        'value' => $incidente->oab_parecerista,
+                    ],
                 ],
             ],
             'autorizacao_prefeito_aditivo' => [
