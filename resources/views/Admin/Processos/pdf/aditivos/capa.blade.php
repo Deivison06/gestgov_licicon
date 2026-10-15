@@ -46,15 +46,8 @@
     </style>
 </head>
 <body>
-    @php
-        $strTipo = '';
-        if ($incidente->tipo === 'prazo') $strTipo = 'PRORROGAÇÃO DE PRAZO';
-        elseif ($incidente->tipo === 'valor') $strTipo = 'ACRÉSCIMO DE VALOR';
-        else $strTipo = 'ACRÉSCIMO DE VALOR E PRORROGAÇÃO DE PRAZO';
-    @endphp
-
     <div class="title">
-        TERMO ADITIVO DE {{ $strTipo }} AO CONTRATO Nº {{ $contrato->numero_contrato ?? 'S/N' }}
+        {{ $vm->tituloDocumento() }}
     </div>
 
     <table>
@@ -64,7 +57,7 @@
         </tr>
         <tr>
             <td class="td-label">OBJETIVO</td>
-            <td style="font-weight: bold; text-transform: uppercase;">{{ $strTipo }} DO CONTRATO Nº {{ $contrato->numero_contrato ?? 'S/N' }}</td>
+            <td style="font-weight: bold; text-transform: uppercase;">{{ $vm->tituloTipoAlteracao() }} DO CONTRATO Nº {{ $contrato->numero_contrato ?? 'S/N' }}</td>
         </tr>
     </table>
 </body>

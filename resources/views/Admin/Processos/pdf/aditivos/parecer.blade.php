@@ -5,69 +5,54 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Parecer Jurídico</title>
     <style>
-        @font-face {
-            font-family: 'Aptos';
-            src: url('{{ public_path('storage/fonts/Aptos.ttf') }}') format('truetype');
-            font-style: normal;
-        }
-
-        @font-face {
-            font-family: 'AptosExtraBold';
-            src: url('{{ public_path('storage/fonts/Aptos-ExtraBold.ttf') }}') format('truetype');
-            font-style: normal;
-        }
-
-        @page { margin: 0; size: A4; }
-
-        body {
-            margin: 0; padding: 4cm 2cm;
-            font-size: 11pt; font-family: 'Aptos', sans-serif;
-            background-image: url('{{ public_path($prefeitura->timbre ?? '') }}');
-            background-repeat: no-repeat; background-position: top left; background-size: cover;
-            text-align: justify; text-justify: inter-word; line-height: 1.4;
-        }
-
-        .title {
-            text-align: center; font-weight: bold; font-size: 14pt; margin-bottom: 25px;
-            font-family: 'AptosExtraBold', sans-serif;
-        }
-
-        .section-title { font-weight: bold; margin-top: 20px; margin-bottom: 10px; }
-        .clause-content { margin-bottom: 10px; text-indent: 40px; }
-        .list-content { margin-left: 40px; margin-bottom: 10px; }
-        .list-content li { margin-bottom: 5px; }
-        .signature-block { margin-top: 60px; text-align: center; }
-        
+        @include('Admin.Processos.pdf.aditivos.partials.estilo-base')
         .check-box { font-family: monospace; font-size: 12pt; }
     </style>
 </head>
 <body>
     @php
         \Carbon\Carbon::setLocale('pt_BR');
-        
-        $chkValor = ($incidente->tipo === 'valor' && $incidente->percentual_valor >= 0) ? '( X )' : '(   )';
-        $chkSupressao = ($incidente->tipo === 'valor' && $incidente->percentual_valor < 0) ? '( X )' : '(   )';
+
+        $chkAcrescimo = $vm->temAcrescimo() ? '( X )' : '(   )';
+        $chkSupressao = $vm->temSupressao() ? '( X )' : '(   )';
         $chkPrazo = ($incidente->tipo === 'prazo') ? '( X )' : '(   )';
         $chkAmbos = ($incidente->tipo === 'prazo_valor') ? '( X )' : '(   )';
+
+        $itemDotacao = $textoJuridico->itemDotacaoDocumentosDosAutos($vm);
+        $paragrafoResponsabilidade = $textoJuridico->paragrafoResponsabilidadeAtrasoParecerJuridico($vm);
     @endphp
 
     <div class="title">PARECER JURÍDICO</div>
 
     <div class="section-title">I – RELATÓRIO</div>
     <div class="clause-content">
-        Trata-se de solicitação de manifestação jurídica acerca da possibilidade de celebração de Termo Aditivo ao Contrato nº {{ $contrato->numero_contrato ?? 'S/N' }}, cujo objeto consiste em {{ mb_strtoupper(trim(html_entity_decode(strip_tags($objetoContrato ?? 'execução do objeto')))) }}, celebrado entre o Município de {{ $prefeitura->cidade ?? 'Município' }} e a empresa {{ $contrato->dados_contratante['razao_social'] ?? 'CONTRATADA' }}.
+        Trata-se de solicitação de manifestação jurídica acerca da possibilidade legal de celebração de {{ $vm->tituloTipoAlteracao() }}
+        ao Contrato nº {{ $vm->numeroContrato }}, firmado entre o Município de {{ $prefeitura->cidade ?? 'Município' }} – {{ $prefeitura->uf ?? 'PI' }}
+        e a empresa {{ $contrato->dados_contratante['razao_social'] ?? 'CONTRATADA' }}, cujo objeto é {{ $vm->objetoContrato }}.
     </div>
 
     <div class="clause-content" style="text-indent: 0;">
         O aditivo proposto refere-se a:<br>
-        <span class="check-box">{{ $chkValor }}</span> acréscimo de quantitativo/valor;<br>
+        <span class="check-box">{{ $chkAcrescimo }}</span> acréscimo de quantitativo/valor;<br>
         <span class="check-box">{{ $chkSupressao }}</span> supressão de quantitativo/valor;<br>
         <span class="check-box">{{ $chkPrazo }}</span> prorrogação de prazo;<br>
-        <span class="check-box">{{ $chkAmbos }}</span> acréscimo de valor e prorrogação de prazo.
+        <span class="check-box">{{ $chkAmbos }}</span> acréscimo/supressão de valor e prorrogação de prazo.
     </div>
 
-    <div class="clause-content">
-        Constam nos autos justificativa do setor demandante, planilha demonstrativa do impacto contratual.
+    <div class="clause-content" style="text-indent: 0;">
+        Constam nos autos, entre outros documentos:
+        <ul class="list-content">
+            <li>solicitação e justificativa do setor demandante;</li>
+            <li>solicitação e documentação de regularidade da contratada;</li>
+            @if($itemDotacao)
+                <li>{{ $itemDotacao }}</li>
+            @endif
+            @if($vm->ehObras())
+                <li>Parecer Técnico da Engenharia, com planilha do aditivo.</li>
+            @else
+                <li>quadro de itens alterados (quando aplicável).</li>
+            @endif
+        </ul>
     </div>
     <div class="clause-content">
         É o relatório. Passa-se à análise jurídica.
@@ -83,62 +68,70 @@
         A Lei nº 14.133/2021 autoriza expressamente a alteração dos contratos administrativos, inclusive aqueles que tenham por objeto compras e serviços comuns ou obras, desde que atendidos os requisitos legais.
     </div>
 
-    @if(in_array($incidente->tipo, ['valor', 'prazo_valor']))
+    @if($vm->envolveValor())
     <div class="clause-content">
-        <strong>Aditivo de Valor (Acréscimo ou Supressão):</strong><br>
-        O art. 124, inciso I, alínea “a”, da Lei nº 14.133/2021, permite a alteração quantitativa do contrato para melhor adequação às finalidades de interesse público, desde que haja justificativa formal, o aditivo esteja relacionado ao objeto originalmente contratado, não ocorra descaracterização do objeto e sejam observados os limites legais previstos no art. 125 da Lei nº 14.133/2021. No caso em análise, não há inovação indevida ou alteração substancial do objeto.
+        <strong>Aditivo de Valor (Acréscimo e/ou Supressão):</strong><br>
+        O art. 124, inciso I, alínea "{{ $vm->alineaArt124() }}", da Lei nº 14.133/2021, permite a alteração quantitativa do
+        contrato para melhor adequação às finalidades de interesse público, desde que haja justificativa formal, o
+        aditivo esteja relacionado ao objeto originalmente contratado, não ocorra descaracterização do objeto e sejam
+        observados os limites legais previstos no art. 125 da Lei nº 14.133/2021. No caso em análise, não há inovação
+        indevida ou alteração substancial do objeto.
     </div>
     @endif
 
-    @if(in_array($incidente->tipo, ['prazo', 'prazo_valor']))
+    @if($vm->envolvePrazo())
     <div class="clause-content">
         <strong>Aditivo de Prazo:</strong><br>
-        Nos contratos é juridicamente possível a prorrogação do prazo contratual, desde que haja interesse da Administração, o contrato esteja sendo executado de forma regular, seja mantida a vantajosidade econômica, exista justificativa formal e disponibilidade orçamentária. A prorrogação encontra respaldo no art. 107 da Lei nº 14.133/2021.
+        @if($vm->contratoContinuo)
+            Nos contratos de serviços e fornecimentos contínuos, o art. 107 da Lei nº 14.133/2021 admite a prorrogação
+            sucessiva do prazo contratual, respeitada a vigência máxima decenal, desde que presentes os requisitos legais
+            (interesse da Administração, preços e condições vantajosos, regularidade da contratada e disponibilidade orçamentária).
+        @else
+            Nos contratos com escopo predefinido, o art. 111 da Lei nº 14.133/2021 estabelece que o prazo de vigência
+            será prorrogado quando o objeto não for concluído no período firmado, devendo a prorrogação ser formalizada
+            por termo aditivo com indicação do novo prazo.
+        @endif
+        No caso concreto, verifica-se o atendimento dos requisitos legais, não se verificando impedimento jurídico à
+        formalização da prorrogação.
+    </div>
+    @if($paragrafoResponsabilidade)
+    <div class="clause-content">
+        {{ $paragrafoResponsabilidade }}
     </div>
     @endif
+    @endif
 
-    <div class="section-title">IV – DA VANTAJOSIDADE, CONTINUIDADE E INTERESSE PÚBLICO</div>
-    <div class="clause-content">
-        Sob o prisma jurídico, a celebração do Termo Aditivo mostra-se mais vantajosa do que a realização de nova contratação, considerando a manutenção da continuidade do serviço público, a economicidade do ajuste, a preservação do equilíbrio contratual e a ausência de violação aos princípios da legalidade, isonomia, eficiência e planejamento.
-    </div>
-
-    <div class="section-title">V – DAS CONDIÇÕES PARA A FORMALIZAÇÃO</div>
+    <div class="section-title">IV – DAS CONDIÇÕES PARA A FORMALIZAÇÃO</div>
     <div class="clause-content" style="text-indent: 0;">
         Para a regularidade do aditivo, recomenda-se que:
         <ul class="list-content" style="list-style-type: none; margin-left: 0;">
             <li>✓ o termo aditivo seja devidamente motivado;</li>
             <li>✓ haja autorização expressa da autoridade competente;</li>
             <li>✓ sejam mantidas as cláusulas essenciais do contrato;</li>
-            <li>✓ exista prévia dotação orçamentária;</li>
-            <li>✓ o aditivo seja formalizado antes do término da vigência contratual (quando envolver prazo);</li>
-            <li>✓ seja providenciada a publicação legal exigida.</li>
+            @if($vm->exigeDotacaoOrcamentaria())
+                <li>✓ exista prévia dotação orçamentária;</li>
+            @endif
+            <li>✓ seja providenciada a publicação do termo aditivo nos meios legais.</li>
         </ul>
     </div>
 
-    <div class="section-title">VI – CONCLUSÃO</div>
+    <div class="section-title">V – CONCLUSÃO</div>
     <div class="clause-content">
-        Diante do exposto, esta Assessoria Jurídica OPINA FAVORAVELMENTE à celebração de TERMO ADITIVO AO CONTRATO Nº {{ $contrato->numero_contrato ?? 'S/N' }}, nos termos propostos, por estar em conformidade com a Lei nº 14.133/2021, desde que observadas as recomendações acima.
+        Diante do exposto, esta Assessoria Jurídica OPINA FAVORAVELMENTE à celebração de {{ $vm->tituloTipoAlteracao() }} AO
+        CONTRATO Nº {{ $vm->numeroContrato }}, nos termos propostos, por estar em conformidade com a Lei nº 14.133/2021, desde
+        que seja providenciada a publicação do termo aditivo nos meios legais.
     </div>
-    
+
     <div class="clause-content">
         É o parecer.
     </div>
 
-    <div style="margin-top: 40px; text-align: left; margin-left: 40px;">
+    <div style="margin-top: 40px; text-align: left;">
         {{ $prefeitura->cidade ?? 'Cidade' }}, {{ \Carbon\Carbon::parse($data_selecionada ?? now())->translatedFormat('d \d\e F \d\e Y') }}.
     </div>
 
     @if(isset($documentoSelecao) && is_array($documentoSelecao->assinantes) && count($documentoSelecao->assinantes) > 0)
-        @foreach($documentoSelecao->assinantes as $assinante)
-            <div class="signature-block" style="margin-top: 40px; text-align: center;">
-                ___________________________________<br>
-                <strong>{{ mb_strtoupper($assinante['responsavel']) }}</strong><br>
-                {{ $assinante['unidade_nome'] }}
-                @if(!empty($assinante['portaria']))
-                <br>Portaria: {{ $assinante['portaria'] }}
-                @endif
-            </div>
-        @endforeach
+        @include('Admin.Processos.pdf.aditivos.partials.bloco-assinaturas')
     @else
         <div class="signature-block">
             ___________________________________<br>

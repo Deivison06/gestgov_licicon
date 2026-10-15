@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\FatorAtrasoEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Contrato;
 use App\Models\ContratoManual;
@@ -9,8 +10,10 @@ use App\Models\Documento;
 use App\Models\DocumentoSelecaoAssinantes;
 use App\Models\IncidenteContratual;
 use App\Models\LoteContratado;
+use App\Services\Aditivos\AditivoCalculoFinanceiroService;
 use App\Services\IncidenteContratualService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 /**
  * Gerencia o fluxo de Aditivo (IncidenteContratual), que pode pertencer tanto a um
@@ -29,9 +32,12 @@ class IncidenteContratualController extends Controller
 {
     protected $incidenteService;
 
-    public function __construct(IncidenteContratualService $incidenteService)
+    protected $calculoFinanceiro;
+
+    public function __construct(IncidenteContratualService $incidenteService, AditivoCalculoFinanceiroService $calculoFinanceiro)
     {
         $this->incidenteService = $incidenteService;
+        $this->calculoFinanceiro = $calculoFinanceiro;
     }
 
     /**
@@ -94,6 +100,26 @@ class IncidenteContratualController extends Controller
     }
 
     /**
+     * Sugestão de tipo_objeto_contrato (compra|servico) na abertura do aditivo,
+     * usada como default editável quando o usuário não escolhe explicitamente.
+     * Contrato (sistema) usa o cadastro padrão em Contrato::tipo_objeto;
+     * ContratoManual deriva do seu próprio tipo_contrato ('Compras'/'Serviço'/
+     * 'Obra' — 'Obra' não se aplica aqui, pois a categoria já seria 'obras').
+     */
+    private function tipoObjetoContratoPadrao(Contrato|ContratoManual $contrato): ?string
+    {
+        if ($contrato instanceof ContratoManual) {
+            return match ($contrato->tipo_contrato) {
+                'Compras' => 'compra',
+                'Serviço' => 'servico',
+                default => null,
+            };
+        }
+
+        return $contrato->tipo_objeto;
+    }
+
+    /**
      * Usuário de prefeitura só pode mexer na tela de aditivo externo de um incidente
      * que foi, de fato, criado como externo (evita acessar o fluxo de um incidente
      * interno por adivinhação de id).
@@ -113,6 +139,11 @@ class IncidenteContratualController extends Controller
             'tipo' => 'required|in:prazo,valor,prazo_valor',
             'categoria' => 'required|in:compras_servicos,obras',
             'origem' => 'nullable|in:interno,externo',
+            // Decisões de abertura exigidas pela atualização TCU — ver
+            // IncidenteContratual::camposTceFaltantes() para a mesma regra.
+            'natureza_alteracao' => 'required_if:tipo,valor,prazo_valor|nullable|in:acrescimo,supressao,acrescimo_e_supressao',
+            'tipo_objeto_contrato' => 'required_if:categoria,compras_servicos|nullable|in:compra,servico',
+            'contrato_continuo' => 'required_if:tipo,prazo,prazo_valor|nullable|boolean',
         ]);
 
         // Usuários de prefeitura só podem criar aditivo externo — nunca confiar no
@@ -127,6 +158,9 @@ class IncidenteContratualController extends Controller
             'tipo' => $validated['tipo'],
             'categoria' => $validated['categoria'],
             'origem' => $validated['origem'] ?? 'interno',
+            'natureza_alteracao' => $validated['natureza_alteracao'] ?? null,
+            'tipo_objeto_contrato' => $validated['tipo_objeto_contrato'] ?? $this->tipoObjetoContratoPadrao($contrato),
+            'contrato_continuo' => $validated['contrato_continuo'] ?? $contrato->continuo,
             // Snapshot do estado do contrato ANTES do efeito deste aditivo — usado
             // depois para aplicar/reverter prazo e valor de forma absoluta (idempotente).
             'data_finalizacao_base' => $contrato->data_finalizacao,
@@ -268,6 +302,42 @@ class IncidenteContratualController extends Controller
             $rules['arquivo_orcamento_obra'] = 'nullable|file|mimes:pdf|max:10240';
         }
 
+        // Ato "Aceite e Documentação de Regularidade da Contratada" — upload único.
+        if ($request->hasFile('arquivo_aceite_documentacao') || $incidente->arquivo_aceite_documentacao_path) {
+            $rules['arquivo_aceite_documentacao'] = 'nullable|file|mimes:pdf|max:20480';
+        }
+
+        // Percentuais de acréscimo/supressão (natureza explícita do aditivo).
+        if ($request->has('percentual_acrescimo') || $request->has('percentual_supressao')) {
+            $rules['natureza_alteracao'] = 'required|in:acrescimo,supressao,acrescimo_e_supressao';
+            $rules['percentual_acrescimo'] = 'required_if:natureza_alteracao,acrescimo,acrescimo_e_supressao|nullable|numeric|min:0';
+            $rules['percentual_supressao'] = 'required_if:natureza_alteracao,supressao,acrescimo_e_supressao|nullable|numeric|min:0';
+        }
+
+        if ($request->has('tem_valor_periodo_prorrogado')) {
+            $rules['tem_valor_periodo_prorrogado'] = 'nullable|boolean';
+            $rules['valor_periodo_prorrogado'] = 'required_if:tem_valor_periodo_prorrogado,1|nullable|numeric|min:0';
+        }
+
+        // Ato "Parecer Técnico" (só Obras).
+        if ($incidente->categoria === 'obras' && $request->has('situacao_execucao_contratual')) {
+            $rules['nome_engenheiro_parecer_tecnico'] = 'nullable|string|max:255';
+            $rules['cargo_engenheiro_parecer_tecnico'] = 'nullable|string|max:255';
+            $rules['registro_profissional_parecer_tecnico'] = 'nullable|string|max:255';
+            $rules['percentual_execucao_fisica'] = 'nullable|numeric|min:0|max:100';
+            $rules['situacao_execucao_contratual'] = 'required|in:andamento_regular,com_atraso,paralisada';
+            $rules['fatores_atraso'] = 'nullable|array';
+            $rules['fatores_atraso.*'] = Rule::in(FatorAtrasoEnum::values());
+            $rules['descricao_fatores_atraso'] = 'nullable|string';
+            $rules['responsabilidade_atraso'] = 'required_if:tipo,prazo,prazo_valor|nullable|in:imputavel_contratada,nao_imputavel_contratada';
+            $rules['texto_vantajosidade_tecnica'] = 'nullable|string';
+            $rules['conclusao_tecnica'] = 'nullable|string';
+
+            if (in_array($incidente->tipo, ['valor', 'prazo_valor'])) {
+                $rules['limite_legal_aditivo_obras'] = 'required|in:25,50';
+            }
+        }
+
         $validated = $request->validate($rules);
         $dados = $validated;
 
@@ -285,12 +355,75 @@ class IncidenteContratualController extends Controller
             $dados['arquivo_orcamento_obra_path'] = $incidente->arquivo_orcamento_obra_path;
         }
 
+        if ($request->hasFile('arquivo_aceite_documentacao')) {
+            $path = $request->file('arquivo_aceite_documentacao')->store('incidentes/aceites', 'public');
+            $dados['arquivo_aceite_documentacao_path'] = $path;
+        } else {
+            $dados['arquivo_aceite_documentacao_path'] = $incidente->arquivo_aceite_documentacao_path;
+        }
+
         $dados['tipo'] = $incidente->tipo;
         $dados['categoria'] = $incidente->categoria;
 
         $this->incidenteService->atualizarAditivo($incidente, $contrato, $dados);
 
         return redirect()->back()->with('success', 'Configurações do aditivo salvas com sucesso.');
+    }
+
+    /**
+     * Ato "Informação de Disponibilidade Orçamentária" — relação hasMany (permite
+     * rateio entre fontes de recurso), por isso fora do form genérico de
+     * atualizarCampos(). Pré-preenchido na tela a partir do cadastro padrão do
+     * Contrato/ContratoManual, mas a gravação aqui é sempre o que o usuário confirmou.
+     */
+    public function atualizarDotacoes(Request $request, $contrato_id, $incidente_id)
+    {
+        $contrato = $this->resolverContrato($contrato_id);
+        $incidente = $this->buscarIncidente($contrato, $incidente_id);
+
+        $validated = $request->validate([
+            'dotacoes' => 'required|array|min:1',
+            'dotacoes.*.unidade_orcamentaria' => 'required|string|max:255',
+            'dotacoes.*.classificacao_funcional_programatica' => 'required|string|max:255',
+            'dotacoes.*.elemento_despesa' => 'required|string|max:255',
+            'dotacoes.*.fonte_recurso' => 'required|string|max:255',
+            'dotacoes.*.valor' => 'nullable|numeric|min:0',
+        ]);
+
+        $incidente->dotacoes()->delete();
+        foreach ($validated['dotacoes'] as $linha) {
+            $incidente->dotacoes()->create($linha);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Dotação orçamentária salva com sucesso.']);
+    }
+
+    /**
+     * Formulário de "dados pendentes" para aditivos legados (criados antes da
+     * atualização TCU), que não têm os novos campos obrigatórios preenchidos.
+     * gerarDocumentoPdf() bloqueia a geração até IncidenteContratual::
+     * dadosTceCompletos() retornar true.
+     */
+    /**
+     * Completa SOMENTE os campos de ABERTURA (ver
+     * IncidenteContratual::camposAberturaTceFaltantes()) de um aditivo
+     * legado. Percentuais e limite legal continuam sendo preenchidos pelo
+     * fluxo normal (cards Solicitação/Parecer Técnico), não aqui.
+     */
+    public function completarDadosTce(Request $request, $contrato_id, $incidente_id)
+    {
+        $contrato = $this->resolverContrato($contrato_id);
+        $incidente = $this->buscarIncidente($contrato, $incidente_id);
+
+        $validated = $request->validate([
+            'tipo_objeto_contrato' => 'required_if:categoria,compras_servicos|nullable|in:compra,servico',
+            'contrato_continuo' => 'nullable|boolean',
+            'natureza_alteracao' => 'nullable|in:acrescimo,supressao,acrescimo_e_supressao',
+        ]);
+
+        $incidente->update(array_filter($validated, fn ($v) => $v !== null));
+
+        return redirect()->back()->with('success', 'Dados complementares do aditivo salvos com sucesso.');
     }
 
     public function documentos($contrato_id, $incidente_id)
@@ -317,23 +450,65 @@ class IncidenteContratualController extends Controller
                 'titulo' => 'Solicitação do Aditivo',
                 'cor' => '#009496',
                 'requer_assinatura' => $temAssinaturaEletronica,
+                'campos' => array_merge(
+                    $this->camposValorSolicitacao($incidente),
+                    [
+                        [
+                            'name' => 'justificativa',
+                            'label' => 'Justificativa para a solicitação de Aditivo',
+                            'tipo' => 'textarea',
+                            'ia' => true,
+                            'ia_campo' => 'justificativa_aditivo',
+                            'value' => $incidente->justificativa,
+                        ],
+
+                        [
+                            'name' => 'arquivo_solicitacao',
+                            'label' => 'Anexar PDF da solicitação de aditivo',
+                            'tipo' => 'file',
+                            'value' => $incidente->arquivo_solicitacao_path,
+                        ],
+                    ]
+                ),
+            ],
+            'aceite_documentacao_aditivo' => [
+                'titulo' => 'Aceite e Documentação de Regularidade da Contratada',
+                'cor' => '#16a34a', // verde
+                'requer_assinatura' => false,
                 'campos' => [
                     [
-                        'name' => 'justificativa',
-                        'label' => 'Justificativa para a solicitação de Aditivo',
-                        'tipo' => 'textarea',
-                        'ia' => true,
-                        'value' => $incidente->justificativa,
-                    ],
-
-                    [
-                        'name' => 'arquivo_solicitacao',
-                        'label' => 'Anexar PDF da solicitação de aditivo',
+                        'name' => 'arquivo_aceite_documentacao',
+                        'label' => 'Anexar PDF com aceite e documentação de regularidade/habilitação da empresa',
                         'tipo' => 'file',
-                        'value' => $incidente->arquivo_solicitacao_path,
+                        'value' => $incidente->arquivo_aceite_documentacao_path,
                     ],
                 ],
             ],
+        ];
+
+        // Ato "Parecer Técnico" — exclusivo de Obras (Compras e Serviços não tem
+        // engenharia envolvida no aditivo).
+        if ($incidente->categoria === 'obras') {
+            $documentos['parecer_tecnico_aditivo'] = [
+                'titulo' => 'Parecer Técnico',
+                'cor' => '#7c3aed', // roxo
+                'requer_assinatura' => $temAssinaturaEletronica,
+                'campos' => $this->camposParecerTecnico($incidente),
+            ];
+        }
+
+        // Ato "Informação de Disponibilidade Orçamentária" — condicional: só quando
+        // há acréscimo de valor (ou valor estimado para o período prorrogado).
+        if ($incidente->temAcrescimoDeValor()) {
+            $documentos['dotacao_orcamentaria_aditivo'] = [
+                'titulo' => 'Informação de Disponibilidade Orçamentária',
+                'cor' => '#0891b2', // ciano
+                'requer_assinatura' => false,
+                'campos' => [], // tela própria (ver atualizarDotacoes()), não o form genérico
+            ];
+        }
+
+        $documentos += [
             'parecer_juridico_aditivo' => [
                 'titulo' => 'Parecer Jurídico',
                 'cor' => '#dc2626', // vermelho
@@ -384,14 +559,10 @@ class IncidenteContratualController extends Controller
         }
 
         if (in_array($incidente->tipo, ['valor', 'prazo_valor'])) {
-            $documentos['termo_aditivo']['campos'][] = [
-                'name' => 'percentual_valor',
-                'label' => 'Percentual de Acréscimo (%)',
-                'tipo' => 'number',
-                'step' => '0.01',
-                'value' => $incidente->percentual_valor,
-            ];
-
+            // percentual_valor (legado) não é mais editável aqui — a natureza da
+            // alteração e os percentuais de acréscimo/supressão são decididos na
+            // abertura do aditivo e editáveis no card "Solicitação do Aditivo"
+            // (ver camposValorSolicitacao()).
             if ($incidente->categoria === 'obras') {
                 $documentos['termo_aditivo']['campos'][] = [
                     'name' => 'arquivo_orcamento_obra',
@@ -406,9 +577,111 @@ class IncidenteContratualController extends Controller
         // para aditivos de Contrato Manual).
         $documentosGerados = Documento::where('incidente_id', $incidente->id)->get();
 
+        $resumoFinanceiro = in_array($incidente->tipo, ['valor', 'prazo_valor'])
+            ? $this->calculoFinanceiro->resumoFinanceiro($incidente, $contrato)
+            : null;
+        $numeroOrdinal = $this->calculoFinanceiro->numeroOrdinal($incidente, $contrato);
+        $dotacoesAtuais = $incidente->dotacoes()->get();
+        $dotacaoSugerida = [
+            'unidade_orcamentaria' => $contrato->dotacao_unidade_orcamentaria ?? null,
+            'classificacao_funcional_programatica' => $contrato->dotacao_classificacao_funcional_programatica ?? null,
+            'elemento_despesa' => $contrato->dotacao_elemento_despesa ?? null,
+            'fonte_recurso' => $contrato->fonte_recurso ?? null,
+        ];
+        // O aviso/formulário de "dados pendentes" só aparece para aditivos
+        // LEGADOS (criados antes desta atualização, sem os campos de
+        // abertura) — nunca para um aditivo novo que ainda está no meio do
+        // preenchimento normal do fluxo (ver IncidenteContratual::ehAditivoLegado()).
+        $ehAditivoLegado = $incidente->ehAditivoLegado();
+        $camposAberturaFaltantes = $incidente->camposAberturaTceFaltantes();
+
         return view('Admin.IncidentesContratuais.documentos', compact(
-            'contrato', 'incidente', 'processo', 'documentos', 'documentosGerados', 'temAssinaturaEletronica'
+            'contrato', 'incidente', 'processo', 'documentos', 'documentosGerados', 'temAssinaturaEletronica',
+            'resumoFinanceiro', 'numeroOrdinal', 'dotacoesAtuais', 'dotacaoSugerida', 'ehAditivoLegado', 'camposAberturaFaltantes'
         ));
+    }
+
+    /**
+     * Campos de natureza/percentual de valor exibidos no card "Solicitação do
+     * Aditivo" — captados na abertura (store()), mas editáveis depois aqui,
+     * seguindo o mesmo padrão genérico de atualizarCampos().
+     */
+    private function camposValorSolicitacao(IncidenteContratual $incidente): array
+    {
+        if (! in_array($incidente->tipo, ['valor', 'prazo_valor'])) {
+            return [];
+        }
+
+        $campos = [
+            [
+                'name' => 'natureza_alteracao',
+                'label' => 'Natureza da Alteração',
+                'tipo' => 'select',
+                'opcoes' => \App\Enums\NaturezaAlteracaoAditivoEnum::cases(),
+                'value' => $incidente->natureza_alteracao,
+            ],
+            [
+                'name' => 'percentual_acrescimo',
+                'label' => 'Percentual de Acréscimo (%)',
+                'tipo' => 'number',
+                'step' => '0.01',
+                'value' => $incidente->percentual_acrescimo,
+            ],
+            [
+                'name' => 'percentual_supressao',
+                'label' => 'Percentual de Supressão (%)',
+                'tipo' => 'number',
+                'step' => '0.01',
+                'value' => $incidente->percentual_supressao,
+            ],
+        ];
+
+        if ($incidente->categoria === 'compras_servicos' && $incidente->tipo === 'prazo_valor') {
+            $campos[] = [
+                'name' => 'tem_valor_periodo_prorrogado',
+                'label' => 'Há valor estimado para o período prorrogado?',
+                'tipo' => 'checkbox',
+                'value' => $incidente->tem_valor_periodo_prorrogado,
+            ];
+            $campos[] = [
+                'name' => 'valor_periodo_prorrogado',
+                'label' => 'Valor estimado para o período prorrogado (preços unitários mantidos)',
+                'tipo' => 'number',
+                'step' => '0.01',
+                'value' => $incidente->valor_periodo_prorrogado,
+            ];
+        }
+
+        return $campos;
+    }
+
+    /**
+     * Campos do ato "Parecer Técnico" (exclusivo Obras).
+     */
+    private function camposParecerTecnico(IncidenteContratual $incidente): array
+    {
+        $campos = [
+            ['name' => 'nome_engenheiro_parecer_tecnico', 'label' => 'Nome do Engenheiro(a) Responsável', 'tipo' => 'string', 'value' => $incidente->nome_engenheiro_parecer_tecnico],
+            ['name' => 'cargo_engenheiro_parecer_tecnico', 'label' => 'Cargo', 'tipo' => 'string', 'value' => $incidente->cargo_engenheiro_parecer_tecnico],
+            ['name' => 'registro_profissional_parecer_tecnico', 'label' => 'CREA/CAU nº', 'tipo' => 'string', 'value' => $incidente->registro_profissional_parecer_tecnico],
+            ['name' => 'percentual_execucao_fisica', 'label' => 'Percentual de Execução Física (%)', 'tipo' => 'number', 'step' => '0.01', 'value' => $incidente->percentual_execucao_fisica],
+            ['name' => 'situacao_execucao_contratual', 'label' => 'Situação da Execução', 'tipo' => 'select', 'opcoes' => \App\Enums\SituacaoExecucaoContratualEnum::cases(), 'value' => $incidente->situacao_execucao_contratual],
+        ];
+
+        if (in_array($incidente->tipo, ['prazo', 'prazo_valor'])) {
+            $campos[] = ['name' => 'fatores_atraso', 'label' => 'Fatores que Afetaram o Prazo', 'tipo' => 'checkboxes', 'opcoes' => \App\Enums\FatorAtrasoEnum::cases(), 'value' => $incidente->fatores_atraso ?? []];
+            $campos[] = ['name' => 'descricao_fatores_atraso', 'label' => 'Descrição Técnica dos Fatores que Afetaram o Prazo', 'tipo' => 'textarea', 'ia' => true, 'ia_campo' => 'descricao_fatores_atraso_aditivo', 'value' => $incidente->descricao_fatores_atraso];
+            $campos[] = ['name' => 'responsabilidade_atraso', 'label' => 'Responsabilidade pela Ocorrência do Atraso', 'tipo' => 'select', 'opcoes' => \App\Enums\ResponsabilidadeAtrasoEnum::cases(), 'value' => $incidente->responsabilidade_atraso];
+        }
+
+        if (in_array($incidente->tipo, ['valor', 'prazo_valor'])) {
+            $campos[] = ['name' => 'limite_legal_aditivo_obras', 'label' => 'Limite Legal Aplicável', 'tipo' => 'select', 'opcoes' => \App\Enums\LimiteLegalObraEnum::cases(), 'value' => $incidente->limite_legal_aditivo_obras];
+        }
+
+        $campos[] = ['name' => 'texto_vantajosidade_tecnica', 'label' => 'Vantajosidade e Interesse Público', 'tipo' => 'textarea', 'value' => $incidente->texto_vantajosidade_tecnica];
+        $campos[] = ['name' => 'conclusao_tecnica', 'label' => 'Conclusão Técnica', 'tipo' => 'textarea', 'value' => $incidente->conclusao_tecnica];
+
+        return $campos;
     }
 
     public function salvarCampoDocumento(Request $request, $contrato_id, $incidente_id)
@@ -445,10 +718,25 @@ class IncidenteContratualController extends Controller
         $contrato = $ehManual
             ? ContratoManual::with(['prefeitura', 'empresa'])->findOrFail($contrato_id)
             : Contrato::with(['processo.prefeitura', 'processo.detalhe', 'processo.documentos'])->findOrFail($contrato_id);
-        $incidente = IncidenteContratual::with(['itens.loteContratado'])
+        $incidente = IncidenteContratual::with(['itens.loteContratado', 'dotacoes'])
             ->where('contratavel_id', $contrato->id)
             ->where('contratavel_type', get_class($contrato))
             ->findOrFail($incidente_id);
+
+        // Bloqueia a geração até todos os campos exigidos estarem preenchidos.
+        // Mensagem diferente conforme o motivo: aditivo LEGADO (criado antes
+        // desta atualização, precisa do formulário de "dados pendentes" — ver
+        // completarDadosTce()) vs. aditivo novo ainda no meio do preenchimento
+        // normal do fluxo (basta continuar preenchendo os cards acima).
+        if (! $incidente->dadosTceCompletos()) {
+            $mensagem = $incidente->ehAditivoLegado()
+                ? 'Complete os novos campos exigidos pela atualização do Tribunal de Contas antes de gerar os documentos deste aditivo.'
+                : 'Preencha todos os campos obrigatórios (percentuais, limite legal etc.) nos cards acima antes de gerar este documento.';
+
+            return redirect()
+                ->route($this->routeName('documentos'), ['contrato_id' => $contrato->id, 'incidente_id' => $incidente->id])
+                ->withErrors(['tce' => $mensagem]);
+        }
 
         $processo = $contrato instanceof Contrato ? $contrato->processo : null;
         $prefeitura = $processo?->prefeitura ?? $contrato->prefeitura;
@@ -519,6 +807,18 @@ class IncidenteContratualController extends Controller
                 $viewName = 'Admin.Processos.pdf.aditivos.solicitacao';
                 $tituloArquivo = 'Solicitacao_Aditivo_'.$numContratoSafe;
                 break;
+            case 'aceite_documentacao_aditivo':
+                $viewName = 'Admin.Processos.pdf.aditivos.aceite_documentacao';
+                $tituloArquivo = 'Aceite_Documentacao_Aditivo_'.$numContratoSafe;
+                break;
+            case 'parecer_tecnico_aditivo':
+                $viewName = 'Admin.Processos.pdf.aditivos.parecer_tecnico';
+                $tituloArquivo = 'Parecer_Tecnico_Aditivo_'.$numContratoSafe;
+                break;
+            case 'dotacao_orcamentaria_aditivo':
+                $viewName = 'Admin.Processos.pdf.aditivos.dotacao_orcamentaria';
+                $tituloArquivo = 'Dotacao_Orcamentaria_Aditivo_'.$numContratoSafe;
+                break;
             case 'parecer_juridico_aditivo':
                 $viewName = 'Admin.Processos.pdf.aditivos.parecer';
                 $tituloArquivo = 'Parecer_Juridico_Aditivo_'.$numContratoSafe;
@@ -570,6 +870,9 @@ class IncidenteContratualController extends Controller
             ]);
         }
 
+        $vm = app(\App\Services\Aditivos\AditivoViewModelFactory::class)->build($incidente, $contrato, $objetoContrato);
+        $textoJuridico = app(\App\Services\Aditivos\AditivoTextoJuridicoService::class);
+
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView($viewName, compact(
             'contrato',
             'incidente',
@@ -578,7 +881,9 @@ class IncidenteContratualController extends Controller
             'detalhe',
             'objetoContrato',
             'data_selecionada',
-            'documentoSelecao'
+            'documentoSelecao',
+            'vm',
+            'textoJuridico'
         ))->setPaper('a4', 'portrait');
 
         return $pdf->stream($tituloArquivo.'.pdf');

@@ -1,23 +1,37 @@
 {{-- ============================================================
   Popover de IA para um campo específico.
   Props:
-    - name        (string)  id do campo alvo (ex: "justificativa")
-    - processoId  (?int)    id do processo atual (opcional, melhora contexto)
+    - name                   (string)  id do elemento DOM alvo (ex: "justificativa")
+    - iaCampo                (?string) chave whitelisted em IaContextoService::CAMPOS_PERMITIDOS
+                                        enviada ao backend. Default: igual a `name`
+                                        (retrocompatível com DFD/ETP, onde id do campo
+                                        == chave de IA). NUNCA um id dinâmico/concatenado
+                                        quando o elemento DOM não corresponde 1:1 à chave
+                                        de IA (ex.: módulo de Aditivos) — foi exatamente
+                                        essa confusão que quebrava o botão de IA ali.
+    - processoId             (?int)    id do processo atual (opcional, melhora contexto)
+    - incidenteContratualId  (?int)    id do IncidenteContratual (aditivo) atual, quando
+                                        o contexto não é um Processo (ex.: ContratoManual)
 ============================================================ --}}
 @props([
     'name',
+    'iaCampo' => null,
     'processoId' => null,
+    'incidenteContratualId' => null,
 ])
 
 <div x-data="iaPopoverField({
-        campo: '{{ $name }}',
+        elementId: '{{ $name }}',
+        campo: '{{ $iaCampo ?? $name }}',
         processoId: {{ $processoId ? (int) $processoId : 'null' }},
+        incidenteContratualId: {{ $incidenteContratualId ? (int) $incidenteContratualId : 'null' }},
      })"
      class="relative inline-block">
 
     {{-- Botão minimalista (faísca) --}}
     <button type="button"
-            @click="abrir = !abrir"
+            x-ref="botao"
+            @click="abrir = !abrir; if (abrir) $nextTick(() => posicionarPopover())"
             :aria-expanded="abrir"
             aria-label="Gerar conteúdo com IA"
             title="Gerar com IA"
@@ -28,70 +42,77 @@
         <span>IA</span>
     </button>
 
-    {{-- Popover --}}
-    <div x-show="abrir"
-         x-cloak
-         x-transition.opacity.duration.150ms
-         @click.outside="abrir = false"
-         @keydown.escape.window="abrir = false"
-         role="dialog"
-         aria-modal="true"
-         class="absolute right-0 mt-2 w-80 sm:w-96 bg-white border border-gray-200 rounded-xl shadow-xl z-50 p-4">
-        <div class="flex items-start justify-between mb-3">
-            <h4 class="text-sm font-semibold text-gray-900">Gerar com IA</h4>
-            <button type="button" @click="abrir = false" class="text-gray-400 hover:text-gray-600" aria-label="Fechar">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-            </button>
-        </div>
-
-        <label class="block mb-1 text-xs font-medium text-gray-600">
-            Descreva o que você precisa
-        </label>
-        <textarea x-model="instrucao"
-                  rows="3"
-                  maxlength="500"
-                  placeholder="Ex: Compra de 200 cadeiras para 3 escolas municipais. Justifique a necessidade."
-                  @keydown.enter.prevent.stop="gerar()"
-                  :disabled="loading"
-                  class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#009496] focus:border-[#009496] disabled:bg-gray-50"></textarea>
-
-        <div class="mt-1 flex items-center justify-between text-[10px] text-gray-400">
-            <span x-text="instrucao.length + ' / 500'"></span>
-            <span class="hidden sm:inline">Pressione Enter para gerar</span>
-        </div>
-
-        <label class="mt-3 flex items-center gap-2 text-xs text-gray-600 cursor-pointer">
-            <input type="checkbox" x-model="substituir" :disabled="loading"
-                   class="rounded border-gray-300 text-[#009496] focus:ring-[#009496]">
-            Substituir conteúdo atual do campo
-        </label>
-
-        <div class="mt-4 flex items-center justify-end gap-2">
-            <button type="button"
-                    @click="abrir = false"
-                    :disabled="loading"
-                    class="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50">
-                Cancelar
-            </button>
-            <button type="button"
-                    @click="gerar()"
-                    :disabled="loading || instrucao.trim().length < 3"
-                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-[#009496] rounded-md hover:bg-[#007779] disabled:opacity-50 disabled:cursor-not-allowed">
-                <template x-if="!loading">
-                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l1.8 5.2L19 9l-5.2 1.8L12 16l-1.8-5.2L5 9l5.2-1.8L12 2z"/></svg>
-                </template>
-                <template x-if="loading">
-                    <svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 11-8 8h4z"></path>
+    {{-- Popover — teleportado para <body> e posicionado via `fixed` calculado em JS
+         (posicionarPopover()). Evita que o popover fique preso no stacking context do
+         acordeão/formulário onde o botão está e apareça atrás do menu lateral, e evita
+         que ele seja cortado quando o botão está perto da borda esquerda da tela. --}}
+    <template x-teleport="body">
+        <div x-show="abrir"
+             x-cloak
+             x-transition.opacity.duration.150ms
+             x-ref="painel"
+             :style="estiloPopover"
+             @click.outside="abrir = false"
+             @keydown.escape.window="abrir = false"
+             role="dialog"
+             aria-modal="true"
+             class="fixed w-80 sm:w-96 bg-white border border-gray-200 rounded-xl shadow-xl z-[9999] p-4">
+            <div class="flex items-start justify-between mb-3">
+                <h4 class="text-sm font-semibold text-gray-900">Gerar com IA</h4>
+                <button type="button" @click="abrir = false" class="text-gray-400 hover:text-gray-600" aria-label="Fechar">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
-                </template>
-                <span x-text="loading ? 'Gerando…' : 'Gerar'"></span>
-            </button>
+                </button>
+            </div>
+
+            <label class="block mb-1 text-xs font-medium text-gray-600">
+                Descreva o que você precisa
+            </label>
+            <textarea x-model="instrucao"
+                      rows="3"
+                      maxlength="500"
+                      placeholder="Ex: Compra de 200 cadeiras para 3 escolas municipais. Justifique a necessidade."
+                      @keydown.enter.prevent.stop="gerar()"
+                      :disabled="loading"
+                      class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#009496] focus:border-[#009496] disabled:bg-gray-50"></textarea>
+
+            <div class="mt-1 flex items-center justify-between text-[10px] text-gray-400">
+                <span x-text="instrucao.length + ' / 500'"></span>
+                <span class="hidden sm:inline">Pressione Enter para gerar</span>
+            </div>
+
+            <label class="mt-3 flex items-center gap-2 text-xs text-gray-600 cursor-pointer">
+                <input type="checkbox" x-model="substituir" :disabled="loading"
+                       class="rounded border-gray-300 text-[#009496] focus:ring-[#009496]">
+                Substituir conteúdo atual do campo
+            </label>
+
+            <div class="mt-4 flex items-center justify-end gap-2">
+                <button type="button"
+                        @click="abrir = false"
+                        :disabled="loading"
+                        class="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50">
+                    Cancelar
+                </button>
+                <button type="button"
+                        @click="gerar()"
+                        :disabled="loading || instrucao.trim().length < 3"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-[#009496] rounded-md hover:bg-[#007779] disabled:opacity-50 disabled:cursor-not-allowed">
+                    <template x-if="!loading">
+                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l1.8 5.2L19 9l-5.2 1.8L12 16l-1.8-5.2L5 9l5.2-1.8L12 2z"/></svg>
+                    </template>
+                    <template x-if="loading">
+                        <svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 11-8 8h4z"></path>
+                        </svg>
+                    </template>
+                    <span x-text="loading ? 'Gerando…' : 'Gerar'"></span>
+                </button>
+            </div>
         </div>
-    </div>
+    </template>
 
     {{-- Overlay de loading sobre o campo alvo (renderizado fora do popover) --}}
     <template x-teleport="body">
@@ -112,8 +133,58 @@ function iaPopoverField(config) {
         loading: false,
         instrucao: '',
         substituir: false,
+        elementId: config.elementId,
         campo: config.campo,
         processoId: config.processoId,
+        incidenteContratualId: config.incidenteContratualId,
+        estiloPopover: 'top:-9999px;left:-9999px;',
+        _onReposicionar: null,
+
+        init() {
+            // Enquanto aberto, reposiciona se a janela for redimensionada ou a
+            // página rolar (o botão pode se mover; o painel é `fixed`, então
+            // precisa ser recalculado para não "descolar" do botão).
+            this._onReposicionar = () => { if (this.abrir) this.posicionarPopover(); };
+            window.addEventListener('resize', this._onReposicionar);
+            window.addEventListener('scroll', this._onReposicionar, true);
+        },
+
+        /**
+         * Calcula a posição do popover em relação ao botão que o abriu,
+         * sempre dentro da viewport (nunca cortado nas bordas nem escondido
+         * atrás do menu lateral — o painel é teleportado para <body> e usa
+         * `position: fixed`, por isso o cálculo é sempre relativo à janela).
+         */
+        posicionarPopover() {
+            const botao = this.$refs.botao;
+            const painel = this.$refs.painel;
+            if (!botao || !painel) return;
+
+            const margem = 8;
+            const rectBotao = botao.getBoundingClientRect();
+            const larguraPainel = painel.offsetWidth || 384;
+
+            // Preferência: alinhar a borda direita do painel com a do botão.
+            let left = rectBotao.right - larguraPainel;
+            // Sem espaço à esquerda (ex.: botão perto da borda esquerda da
+            // tela, atrás de menu lateral): alinha pela esquerda do botão.
+            if (left < margem) left = rectBotao.left;
+            // Ainda estoura à direita (telas estreitas): encosta na borda direita.
+            if (left + larguraPainel > window.innerWidth - margem) {
+                left = window.innerWidth - larguraPainel - margem;
+            }
+            // Último recurso: nunca deixa sair pela esquerda.
+            if (left < margem) left = margem;
+
+            let top = rectBotao.bottom + 8;
+            const alturaPainel = painel.offsetHeight || 320;
+            if (top + alturaPainel > window.innerHeight - margem) {
+                // Sem espaço abaixo: abre para cima do botão.
+                top = Math.max(margem, rectBotao.top - alturaPainel - 8);
+            }
+
+            this.estiloPopover = `top:${top}px;left:${left}px;`;
+        },
 
         async gerar() {
             const texto = this.instrucao.trim();
@@ -130,6 +201,7 @@ function iaPopoverField(config) {
                 campo: this.campo,
                 instrucao: texto,
                 processoId: this.processoId,
+                incidenteContratualId: this.incidenteContratualId,
             });
 
             this.loading = false;
@@ -141,7 +213,7 @@ function iaPopoverField(config) {
             }
 
             window.injetarConteudoNoCampo(
-                this.campo,
+                this.elementId,
                 resultado.conteudo,
                 this.substituir ? 'replace' : 'append'
             );
@@ -155,18 +227,18 @@ function iaPopoverField(config) {
          * iframe do TinyMCE (que substitui o textarea), com um spinner.
          */
         mostrarOverlayNoCampo(mostrar) {
-            const overlayId = 'ia-overlay-' + this.campo;
+            const overlayId = 'ia-overlay-' + this.elementId;
             const existente = document.getElementById(overlayId);
             if (existente) existente.remove();
             if (!mostrar) return;
 
             // Tenta achar o container do TinyMCE primeiro; fallback no textarea
-            const tinyContainer = document.querySelector(`.tox-tinymce[id$="${this.campo}_ifr"], #${this.campo}_ifr`)
+            const tinyContainer = document.querySelector(`.tox-tinymce[id$="${this.elementId}_ifr"], #${this.elementId}_ifr`)
                 ?.closest('.tox-tinymce')
-                ?? document.querySelector(`[data-tinymce-target="${this.campo}"]`);
+                ?? document.querySelector(`[data-tinymce-target="${this.elementId}"]`);
             const alvo = tinyContainer
-                ?? document.getElementById(this.campo)?.closest('.tox-tinymce')
-                ?? document.getElementById(this.campo);
+                ?? document.getElementById(this.elementId)?.closest('.tox-tinymce')
+                ?? document.getElementById(this.elementId);
 
             if (!alvo) return;
 

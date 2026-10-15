@@ -358,6 +358,10 @@ Route::prefix('admin')
                 ->name('incidentes.documentos.salvar-campo');
             Route::get('/contratos/{contrato_id}/incidentes/{incidente_id}/pdf/{tipo}', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'gerarDocumentoPdf'])
                 ->name('incidentes.pdf');
+            Route::post('/contratos/{contrato_id}/incidentes/{incidente_id}/dotacoes', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'atualizarDotacoes'])
+                ->name('incidentes.dotacoes.atualizar');
+            Route::post('/contratos/{contrato_id}/incidentes/{incidente_id}/completar-dados-tce', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'completarDadosTce'])
+                ->name('incidentes.completar-dados-tce');
             Route::delete('/contratos/{contrato_id}/incidentes/{incidente_id}', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'destroy'])
                 ->name('incidentes.destroy');
         });
@@ -382,6 +386,10 @@ Route::prefix('admin')
                 ->name('incidentes-manual.documentos.salvar-campo');
             Route::get('/contratos-manuais/{contrato_id}/incidentes/{incidente_id}/pdf/{tipo}', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'gerarDocumentoPdf'])
                 ->name('incidentes-manual.pdf');
+            Route::post('/contratos-manuais/{contrato_id}/incidentes/{incidente_id}/dotacoes', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'atualizarDotacoes'])
+                ->name('incidentes-manual.dotacoes.atualizar');
+            Route::post('/contratos-manuais/{contrato_id}/incidentes/{incidente_id}/completar-dados-tce', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'completarDadosTce'])
+                ->name('incidentes-manual.completar-dados-tce');
             Route::delete('/contratos-manuais/{contrato_id}/incidentes/{incidente_id}', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'destroy'])
                 ->name('incidentes-manual.destroy');
         });

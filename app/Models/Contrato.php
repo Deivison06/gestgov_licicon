@@ -20,6 +20,13 @@ class Contrato extends Model
         'comarca',
         'fonte_recurso',
         'subcontratacao',
+        // Cadastro padrão reaproveitável pelo módulo de Aditivos (e outros
+        // módulos futuros) — snapshot por aditivo mora em IncidenteContratual.
+        'tipo_objeto',
+        'continuo',
+        'dotacao_unidade_orcamentaria',
+        'dotacao_classificacao_funcional_programatica',
+        'dotacao_elemento_despesa',
         // Snapshot do contratante (sobrescreve os dados globais do processo só neste contrato)
         'dados_contratante',
         // Arquivo PDF próprio deste contrato
@@ -36,6 +43,7 @@ class Contrato extends Model
         'gerado_em' => 'datetime',
         'dados_contratante' => 'array',
         'concluido' => 'boolean',
+        'continuo' => 'boolean',
         'data_finalizacao' => 'date',
         // Sim/Não (1/0). Sem cast, "0" (string) quebrava a comparação estrita
         // `=== 0` da cláusula de subcontratação. null permanece null (=> "permitida").

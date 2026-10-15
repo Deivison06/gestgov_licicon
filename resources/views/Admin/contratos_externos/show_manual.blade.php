@@ -254,81 +254,11 @@
 
                 {{-- Modal: Iniciar Novo Aditivo (Contrato Manual) --}}
                 @if($podeAbrirAditivoManual)
-                    <div id="modalNovoAditivoManual" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title-aditivo-manual" role="dialog" aria-modal="true">
-                        <div class="flex items-end justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-                            <div class="fixed inset-0 transition-opacity bg-[#040807]/80 backdrop-blur-sm" aria-hidden="true"
-                                 onclick="document.getElementById('modalNovoAditivoManual').classList.add('hidden')"></div>
-                            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-                            <div class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-[#10201e] border border-[#24403c] rounded-2xl shadow-2xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                                <form method="POST" action="{{ route('admin.incidentes-manual.store', $contrato->id) }}">
-                                    @csrf
-                                    <div class="px-5 pt-6 pb-5 bg-[#10201e] sm:p-6 sm:pb-5">
-                                        <div class="sm:flex sm:items-start">
-                                            <div class="flex items-center justify-center flex-shrink-0 w-12 h-12 mx-auto bg-[#132d27] border border-[#24403c] rounded-xl sm:mx-0 sm:h-10 sm:w-10">
-                                                <i class="text-[#2DC197] fas fa-file-contract"></i>
-                                            </div>
-                                            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                                                <h3 class="text-lg font-bold leading-6 text-[#e6f0ee]" id="modal-title-aditivo-manual">
-                                                    Iniciar Novo Aditivo
-                                                </h3>
-                                                <p class="mt-1 text-xs text-[#e0a845]">
-                                                    <i class="fas fa-circle-info"></i> Contrato Manual/Externo: os documentos serão gerados para assinatura física.
-                                                </p>
-                                                <div class="mt-4 space-y-4">
-                                                    <div>
-                                                        <label for="aditivo_tipo_manual" class="block text-sm font-semibold text-[#a2b9b5]">Tipo de Aditivo <span class="text-[#2DC197]">*</span></label>
-                                                        <select id="aditivo_tipo_manual" name="tipo" required class="block w-full mt-1.5 px-4 py-2.5 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] sm:text-sm">
-                                                            <option value="">Selecione...</option>
-                                                            <option value="prazo">Prorrogação de Prazo</option>
-                                                            <option value="valor">Acréscimo de Valor</option>
-                                                            <option value="prazo_valor">Prazo e Valor</option>
-                                                        </select>
-                                                    </div>
-                                                    <div>
-                                                        <label for="aditivo_categoria_manual" class="block text-sm font-semibold text-[#a2b9b5]">Categoria do Contrato <span class="text-[#2DC197]">*</span></label>
-                                                        <select id="aditivo_categoria_manual" name="categoria" required class="block w-full mt-1.5 px-4 py-2.5 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] sm:text-sm">
-                                                            <option value="">Selecione...</option>
-                                                            <option value="compras_servicos">Compras e Serviços</option>
-                                                            <option value="obras">Obras</option>
-                                                        </select>
-                                                    </div>
-                                                    @if(auth()->user()->hasRole(['prefeitura', 'Prefeitura - Personalizado']))
-                                                        <input type="hidden" name="origem" value="externo">
-                                                        <p class="text-xs text-[#a2b9b5]">
-                                                            <i class="fas fa-circle-info text-[#2DC197]"></i> Este aditivo será registrado como <strong>Externo</strong>.
-                                                            Para corrigir ou cancelar um aditivo depois de criado, entre em contato com a equipe Licicon.
-                                                        </p>
-                                                    @else
-                                                        <div>
-                                                            <label class="block text-sm font-semibold text-[#a2b9b5]">Origem do Aditivo <span class="text-[#2DC197]">*</span></label>
-                                                            <div class="flex gap-4 mt-2">
-                                                                <label class="inline-flex items-center gap-1.5 text-sm text-[#e6f0ee] cursor-pointer">
-                                                                    <input type="radio" name="origem" value="interno" checked class="text-[#2DC197] focus:ring-[#2DC197] bg-[#0a1514] border-[#24403c]">
-                                                                    Interno (gera documentos)
-                                                                </label>
-                                                                <label class="inline-flex items-center gap-1.5 text-sm text-[#e6f0ee] cursor-pointer">
-                                                                    <input type="radio" name="origem" value="externo" class="text-[#2DC197] focus:ring-[#2DC197] bg-[#0a1514] border-[#24403c]">
-                                                                    Externo (feito fora do sistema)
-                                                                </label>
-                                                            </div>
-                                                        </div>
-                                                    @endif
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="px-5 py-4 bg-[#0d1b19] border-t border-[#24403c] sm:px-6 sm:flex sm:flex-row-reverse">
-                                        <button type="submit" class="inline-flex justify-center w-full px-5 py-2.5 text-sm font-bold text-[#041d1a] bg-[#2DC197] rounded-xl hover:bg-[#26aa84] transition-all shadow-sm sm:ml-3 sm:w-auto hover:scale-105">
-                                            Iniciar Aditivo
-                                        </button>
-                                        <button type="button" onclick="document.getElementById('modalNovoAditivoManual').classList.add('hidden')" class="inline-flex justify-center w-full px-4 py-2.5 mt-3 text-sm font-semibold text-[#e6f0ee] bg-[#10201e] border border-[#24403c] rounded-xl hover:bg-[#142825] hover:text-[#2DC197] transition-colors sm:mt-0 sm:ml-3 sm:w-auto">
-                                            Cancelar
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
+                    <x-aditivos.modal-novo-aditivo
+                        modal-id="modalNovoAditivoManual"
+                        :action-route="route('admin.incidentes-manual.store', $contrato->id)"
+                        :dark="true"
+                        :forcar-externo="auth()->user()->hasRole(['prefeitura', 'Prefeitura - Personalizado'])" />
                 @endif
 
                 {{-- Acompanhamento da Execução Contratual --}}

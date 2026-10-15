@@ -24,12 +24,19 @@ class ContratoManual extends Model
         'tipo_contrato',    // 'Fornecimento' ou 'Serviço'
         'objeto',           // Nome unificado (antes era objeto_contrato)
         'valor_total',
+        'valor_total_original',
         'data_assinatura',
         'data_inicio',
         'data_finalizacao',
         'arquivo_contrato',
         'situacao_manual',
         'concluido',
+        // Cadastro padrão reaproveitável pelo módulo de Aditivos
+        'continuo',
+        'fonte_recurso',
+        'dotacao_unidade_orcamentaria',
+        'dotacao_classificacao_funcional_programatica',
+        'dotacao_elemento_despesa',
     ];
 
     protected $casts = [
@@ -38,7 +45,9 @@ class ContratoManual extends Model
         'data_inicio' => 'date',
         'data_finalizacao' => 'date',
         'valor_total' => 'decimal:2',
+        'valor_total_original' => 'decimal:2',
         'concluido' => 'boolean',
+        'continuo' => 'boolean',
     ];
 
     public function empresa()

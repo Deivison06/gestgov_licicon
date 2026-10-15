@@ -84,7 +84,7 @@
      *
      * @returns {Promise<{success: boolean, conteudo?: string, message?: string, code?: string}>}
      */
-    window.gerarConteudoIa = async function ({ campo, instrucao, processoId = null }) {
+    window.gerarConteudoIa = async function ({ campo, instrucao, processoId = null, incidenteContratualId = null }) {
         const url = "{{ route('admin.ia.gerar') }}";
         try {
             const response = await fetch(url, {
@@ -99,6 +99,7 @@
                     campo: campo,
                     instrucao: instrucao,
                     processo_id: processoId,
+                    incidente_contratual_id: incidenteContratualId,
                 }),
             });
 

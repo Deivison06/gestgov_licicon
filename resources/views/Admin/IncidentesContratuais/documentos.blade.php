@@ -40,6 +40,56 @@
         </div>
     @endunless
 
+    {{-- Só aparece para aditivos antigos (criados antes desta atualização,
+         sem os campos de abertura) --}}
+    @if($ehAditivoLegado)
+        <div class="mb-4 p-4 text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg">
+            <div class="flex items-center gap-2 mb-3 font-semibold">
+                <i class="fas fa-triangle-exclamation"></i>
+                Este aditivo foi criado antes da atualização de conformidade com o Tribunal de Contas. Complete os campos abaixo para liberar a geração dos documentos.
+            </div>
+            <form action="{{ route("$rotaBase.completar-dados-tce", ['contrato_id' => $contrato->id, 'incidente_id' => $incidente->id]) }}" method="POST" class="grid gap-3 sm:grid-cols-2">
+                @csrf
+                @if(in_array('tipo_objeto_contrato', $camposAberturaFaltantes))
+                    <div>
+                        <label class="block mb-1 text-xs font-medium text-gray-700">Tipo de Objeto do Contrato</label>
+                        <select name="tipo_objeto_contrato" class="block w-full px-3 py-2 text-sm border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">
+                            <option value="">Selecione...</option>
+                            <option value="compra">Compra (Fornecimento)</option>
+                            <option value="servico">Serviço</option>
+                        </select>
+                    </div>
+                @endif
+                @if(in_array('contrato_continuo', $camposAberturaFaltantes))
+                    <div>
+                        <label class="block mb-1 text-xs font-medium text-gray-700">Contrato Contínuo?</label>
+                        <select name="contrato_continuo" class="block w-full px-3 py-2 text-sm border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">
+                            <option value="">Selecione...</option>
+                            <option value="1">Sim</option>
+                            <option value="0">Não</option>
+                        </select>
+                    </div>
+                @endif
+                @if(in_array('natureza_alteracao', $camposAberturaFaltantes))
+                    <div>
+                        <label class="block mb-1 text-xs font-medium text-gray-700">Natureza da Alteração de Valor</label>
+                        <select name="natureza_alteracao" class="block w-full px-3 py-2 text-sm border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">
+                            <option value="">Selecione...</option>
+                            <option value="acrescimo">Acréscimo</option>
+                            <option value="supressao">Supressão</option>
+                            <option value="acrescimo_e_supressao">Acréscimo e Supressão</option>
+                        </select>
+                    </div>
+                @endif
+                <div class="sm:col-span-2">
+                    <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#009496] rounded-md hover:bg-[#007b85]">
+                        <i class="fas fa-save"></i> Salvar Dados Complementares
+                    </button>
+                </div>
+            </form>
+        </div>
+    @endif
+
     <!-- Seção de Documentos -->
     <div class="mb-8">
         <div class="px-6 py-5 bg-white border border-gray-200 shadow-sm rounded-t-xl">
@@ -118,7 +168,7 @@
                             $dataId = 'data_' . $tipo;
                             $accordionId = "accordion-collapse-{$tipo}";
                             $requerAssinatura = $doc['requer_assinatura'] ?? false;
-                            $temCampos = !empty($doc['campos']);
+                            $temCampos = !empty($doc['campos']) || $tipo === 'dotacao_orcamentaria_aditivo';
                             $documentoGerado = $documentosProcesso->firstWhere('tipo_documento', $tipo);
                             $dataSelecionada = $documentoGerado->data_selecionada ?? '';
                         @endphp
@@ -246,7 +296,32 @@
                                                 </div>
                                             @endif
                                             
-                                            @if ($temCampos)
+                                            @if ($tipo === 'dotacao_orcamentaria_aditivo')
+                                                <div x-data="dotacaoAditivo({{ json_encode($dotacoesAtuais->map(fn($d) => $d->only(['unidade_orcamentaria','classificacao_funcional_programatica','elemento_despesa','fonte_recurso','valor']))->values()) }}, {{ json_encode($dotacaoSugerida) }})">
+                                                    <h4 class="mb-3 text-sm font-semibold text-gray-700">Linhas de Dotação Orçamentária</h4>
+                                                    <p class="mb-3 text-xs text-gray-500">Sugerido a partir do cadastro do contrato — confira e ajuste antes de salvar.</p>
+                                                    <template x-for="(linha, idx) in linhas" :key="idx">
+                                                        <div class="grid grid-cols-1 gap-2 p-3 mb-2 bg-white border border-gray-200 rounded-lg sm:grid-cols-5">
+                                                            <input type="text" x-model="linha.unidade_orcamentaria" placeholder="Unidade Orçamentária" class="px-2 py-1.5 text-sm border-gray-300 rounded-md">
+                                                            <input type="text" x-model="linha.classificacao_funcional_programatica" placeholder="Classificação Funcional Programática" class="px-2 py-1.5 text-sm border-gray-300 rounded-md">
+                                                            <input type="text" x-model="linha.elemento_despesa" placeholder="Elemento de Despesa" class="px-2 py-1.5 text-sm border-gray-300 rounded-md">
+                                                            <input type="text" x-model="linha.fonte_recurso" placeholder="Fonte de Recurso" class="px-2 py-1.5 text-sm border-gray-300 rounded-md">
+                                                            <div class="flex gap-2">
+                                                                <input type="number" step="0.01" x-model="linha.valor" placeholder="Valor (opcional)" class="w-full px-2 py-1.5 text-sm border-gray-300 rounded-md">
+                                                                <button type="button" @click="linhas.splice(idx, 1)" class="px-2 text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>
+                                                            </div>
+                                                        </div>
+                                                    </template>
+                                                    <button type="button" @click="adicionarLinha()" class="inline-flex items-center gap-1 px-3 py-1.5 mb-4 text-xs font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600">+ Adicionar Linha</button>
+                                                    <div class="flex justify-end">
+                                                        <button type="button" @click="salvar()" :disabled="salvando" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 bg-[#009496] rounded-md hover:bg-[#007b85] disabled:opacity-50">
+                                                            <i class="fas fa-save"></i> <span x-text="salvando ? 'Salvando...' : 'Salvar Dotação'"></span>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            @endif
+
+                                            @if ($temCampos && $tipo !== 'dotacao_orcamentaria_aditivo')
                                             <form action="{{ route("$rotaBase.atualizar-campos", ['contrato_id' => $contrato->id, 'incidente_id' => $incidente->id]) }}" method="POST" enctype="multipart/form-data">
                                                 @csrf
                                                 <input type="hidden" name="tipo" value="{{ $incidente->tipo }}">
@@ -261,7 +336,7 @@
                                                             <div class="relative" x-data="{ openIA: false, queryIA: '{{ $campo['value'] }}', loadingIA: false }">
                                                                 <textarea name="{{ $campo['name'] }}" id="{{ $tipo }}_{{ $campo['name'] }}" class="block w-full px-3 py-2 text-sm border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]" rows="4" x-model="queryIA">{{ $campo['value'] }}</textarea>
                                                                 @if(isset($campo['ia']) && $campo['ia'])
-                                                                    <x-ia-popover name="{{ $tipo }}_{{ $campo['name'] }}" :processoId="$processo?->id" />
+                                                                    <x-ia-popover name="{{ $tipo }}_{{ $campo['name'] }}" :iaCampo="$campo['ia_campo'] ?? $campo['name']" :processoId="$processo?->id" :incidenteContratualId="$incidente->id" />
                                                                 @endif
                                                             </div>
                                                         @elseif($campo['tipo'] === 'file')
@@ -275,6 +350,28 @@
                                                             <input type="number" name="{{ $campo['name'] }}" id="{{ $tipo }}_{{ $campo['name'] }}" step="{{ $campo['step'] ?? '1' }}" value="{{ $campo['value'] }}" class="block w-full px-3 py-2 text-sm border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">
                                                         @elseif($campo['tipo'] === 'string')
                                                             <input type="text" name="{{ $campo['name'] }}" id="{{ $tipo }}_{{ $campo['name'] }}" value="{{ $campo['value'] }}" class="block w-full px-3 py-2 text-sm border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">
+                                                        @elseif($campo['tipo'] === 'select')
+                                                            <select name="{{ $campo['name'] }}" id="{{ $tipo }}_{{ $campo['name'] }}" class="block w-full px-3 py-2 text-sm border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">
+                                                                <option value="">Selecione...</option>
+                                                                @foreach($campo['opcoes'] as $opcao)
+                                                                    <option value="{{ $opcao->value }}" @selected($campo['value'] === $opcao->value)>{{ $opcao->getDisplayName() }}</option>
+                                                                @endforeach
+                                                            </select>
+                                                        @elseif($campo['tipo'] === 'checkbox')
+                                                            <label class="flex items-center gap-2 text-sm text-gray-700">
+                                                                <input type="hidden" name="{{ $campo['name'] }}" value="0">
+                                                                <input type="checkbox" name="{{ $campo['name'] }}" id="{{ $tipo }}_{{ $campo['name'] }}" value="1" @checked($campo['value']) class="rounded border-gray-300 text-[#009496] focus:ring-[#009496]">
+                                                                Sim
+                                                            </label>
+                                                        @elseif($campo['tipo'] === 'checkboxes')
+                                                            <div class="flex flex-wrap gap-3">
+                                                                @foreach($campo['opcoes'] as $opcao)
+                                                                    <label class="inline-flex items-center gap-1.5 text-sm text-gray-700">
+                                                                        <input type="checkbox" name="{{ $campo['name'] }}[]" value="{{ $opcao->value }}" @checked(in_array($opcao->value, (array) $campo['value'])) class="rounded border-gray-300 text-[#009496] focus:ring-[#009496]">
+                                                                        {{ $opcao->getDisplayName() }}
+                                                                    </label>
+                                                                @endforeach
+                                                            </div>
                                                         @endif
                                                     </div>
                                                 @endforeach
@@ -313,6 +410,41 @@
         }
 
         document.addEventListener('alpine:init', () => {
+            Alpine.data('dotacaoAditivo', (linhasIniciais, sugestao) => ({
+                linhas: (linhasIniciais && linhasIniciais.length > 0) ? linhasIniciais : [{ ...sugestao, valor: null }],
+                salvando: false,
+
+                adicionarLinha() {
+                    this.linhas.push({ unidade_orcamentaria: '', classificacao_funcional_programatica: '', elemento_despesa: '', fonte_recurso: '', valor: null });
+                },
+
+                salvar() {
+                    this.salvando = true;
+                    fetch(`{{ route("$rotaBase.dotacoes.atualizar", ['contrato_id' => $contrato->id, 'incidente_id' => $incidente->id]) }}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({ dotacoes: this.linhas }),
+                    })
+                    .then(response => response.json().then(data => ({ ok: response.ok, data })))
+                    .then(({ ok, data }) => {
+                        this.salvando = false;
+                        if (ok) {
+                            showMessage('Dotação orçamentária salva com sucesso.', 'success');
+                        } else {
+                            showMessage(data.message || 'Erro ao salvar a dotação orçamentária.', 'error');
+                        }
+                    })
+                    .catch(() => {
+                        this.salvando = false;
+                        showMessage('Erro ao salvar a dotação orçamentária.', 'error');
+                    });
+                },
+            }));
+
             Alpine.data('formFieldAditivo', (initialData) => ({
                 ...initialData,
                 confirmed: {},
