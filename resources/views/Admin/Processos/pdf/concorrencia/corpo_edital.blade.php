@@ -916,7 +916,7 @@
             <p style="text-align: justify;">
                 8.5.8. A microempresa ou empresa de pequeno porte deverá apresentar toda a documentação exigida para comprovação de regularidade fiscal e trabalhista, mesmo que esta apresente alguma restrição, sob pena de inabilitação (art. 43 da LC nº 123/2006). A restrição não impedirá sua participação na fase de lances nem sua declaração como vencedora, observado o item 8.12.
             </p>
-            {!! preg_replace('/<\/?ul[^>]*>/', '', $detalhe->regularidade_fisica) !!}
+            {!! preg_replace(['/<\/?ul[^>]*>/', '/\sstyle="[^"]*"/i', '/\sclass="[^"]*"/i'], '', $detalhe->regularidade_fisica) !!}
             <p>8.6. <span style="font-weight: bold;">HABILITAÇÃO ECONÔMICO-FINANCEIRA.</span> </p>
             <p style="text-align: justify;">
                 8.6.1. Certidão Negativa de falência, de concordata, de recuperação judicial ou extrajudicial 
@@ -1030,7 +1030,7 @@
             </p>
             @if (!empty($detalhe?->qualificacao_economica))
                 <div style="text-align: justify;">
-                    {!! preg_replace('/<\/?ul[^>]*>/', '', $detalhe->qualificacao_economica) !!}
+                    {!! preg_replace(['/<\/?ul[^>]*>/', '/\sstyle="[^"]*"/i', '/\sclass="[^"]*"/i'], '', $detalhe->qualificacao_economica) !!}
                 </div>
             @endif
             <p>8.7. <span style="font-weight: bold;">QUALIFICAÇÃO TÉCNICA.</span> </p>
@@ -1107,7 +1107,7 @@
                 nos incisos III e IV do art. 1º e no inciso III do art. 5º da Constituição Federal;
             </p>
             <p style="text-align: justify;">
-                8.8.4. Declaração, assinada pelo responsável técnico do licitante, de que tem pleno conhecimento do local e das condições e peculiaridades da obra, sendo facultada a realização de vistoria prévia, mediante agendamento com a Secretaria Municipal de Obras pelo telefone/e-mail [___], até o dia útil anterior à abertura da sessão (art. 63, §§2º e 3º).
+                8.8.4. Declaração, assinada pelo responsável técnico do licitante, de que tem pleno conhecimento do local e das condições e peculiaridades da obra, sendo facultada a realização de vistoria prévia, mediante agendamento prévio com a Secretaria Municipal de Obras pelo telefone/e-mail, até o dia útil anterior à abertura da sessão (art. 63, §§2º e 3º).
             </p>
             @if (($processo->detalhe->inversao_fase ?? $detalhe->inversao_fase) === 'sim')
                 <p style="text-align: justify;">
