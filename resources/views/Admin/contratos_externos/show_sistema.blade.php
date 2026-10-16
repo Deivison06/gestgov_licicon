@@ -203,6 +203,7 @@
 
                 @php
                     $podeAbrirAditivoSistema = auth()->user()->can('fiscalizar contratos')
+                        || auth()->user()->can('contratos')
                         || auth()->user()->hasRole(['prefeitura', 'Prefeitura - Personalizado']);
                 @endphp
                 @if($processo->contrato)
@@ -298,7 +299,7 @@
                                                                 <option value="obras">Obras</option>
                                                             </select>
                                                         </div>
-                                                        @if(auth()->user()->hasRole(['prefeitura', 'Prefeitura - Personalizado']))
+                                                        @if(! auth()->user()->hasAnyRole(['diretor_licicon', 'gerente_licicon', 'colaborador_licicon']))
                                                             <input type="hidden" name="origem" value="externo">
                                                             <p class="text-xs text-[#a2b9b5]">
                                                                 <i class="fas fa-circle-info text-[#2DC197]"></i> Este aditivo será registrado como <strong>Externo</strong>.

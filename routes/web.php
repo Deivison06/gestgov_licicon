@@ -337,9 +337,10 @@ Route::prefix('admin')
 
         // Incidentes Contratuais (Aditivos) — Contratos do Sistema (App\Models\Contrato,
         // vinculado a um Processo licitatório).
-        // Fluxo do aditivo externo: também liberado para usuários de prefeitura (o
-        // controller força origem=externo e valida a titularidade do contrato para esse perfil).
-        Route::middleware('role:diretor_licicon|gerente_licicon|colaborador_licicon|prefeitura|Prefeitura - Personalizado')->group(function () {
+        // Fluxo do aditivo externo: também liberado para usuários de prefeitura e para
+        // quem tenha a permission "contratos" (o controller força origem=externo e
+        // valida a titularidade do contrato para quem não for da equipe Licicon).
+        Route::middleware('role_or_permission:diretor_licicon|gerente_licicon|colaborador_licicon|prefeitura|Prefeitura - Personalizado|contratos')->group(function () {
             Route::post('/contratos/{contrato_id}/incidentes', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'store'])
                 ->name('incidentes.store');
             Route::get('/contratos/{contrato_id}/incidentes/{incidente_id}/externo', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'externo'])
@@ -368,7 +369,7 @@ Route::prefix('admin')
 
         // Incidentes Contratuais (Aditivos) — Contratos Manuais/Externos (App\Models\ContratoManual,
         // sem Processo). Mesmos métodos do controller acima; o tipo é resolvido pelo nome da rota.
-        Route::middleware('role:diretor_licicon|gerente_licicon|colaborador_licicon|prefeitura|Prefeitura - Personalizado')->group(function () {
+        Route::middleware('role_or_permission:diretor_licicon|gerente_licicon|colaborador_licicon|prefeitura|Prefeitura - Personalizado|contratos')->group(function () {
             Route::post('/contratos-manuais/{contrato_id}/incidentes', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'store'])
                 ->name('incidentes-manual.store');
             Route::get('/contratos-manuais/{contrato_id}/incidentes/{incidente_id}/externo', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'externo'])

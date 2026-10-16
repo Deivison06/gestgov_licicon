@@ -58,17 +58,25 @@ class IncidenteContratualController extends Controller
     }
 
     /**
-     * Usuários de prefeitura só têm acesso ao fluxo de aditivo externo (liberado via
-     * middleware de rota); aqui garantimos que, além disso, só mexam em contratos da
-     * própria prefeitura. ContratoManual já é filtrado por um global scope
-     * (PrefeituraScope), mas Contrato (sistema) não tem proteção nenhuma hoje — a
-     * titularidade só existe indiretamente via Processo.
+     * Equipe Licicon (acesso irrestrito a qualquer prefeitura). Todo o resto — role
+     * prefeitura/Prefeitura - Personalizado, ou qualquer usuário liberado só pela
+     * permission "contratos" — só pode mexer nos contratos da própria prefeitura.
+     */
+    private function ehEquipeLicicon(): bool
+    {
+        return auth()->user()->hasAnyRole(['diretor_licicon', 'gerente_licicon', 'colaborador_licicon']);
+    }
+
+    /**
+     * Fora da equipe Licicon, o fluxo de incidentes só é acessível via o próprio
+     * fluxo de aditivo externo (liberado no middleware de rota); aqui garantimos que,
+     * além disso, só mexam em contratos da própria prefeitura. ContratoManual já é
+     * filtrado por um global scope (PrefeituraScope), mas Contrato (sistema) não tem
+     * proteção nenhuma hoje — a titularidade só existe indiretamente via Processo.
      */
     private function autorizarAcessoPrefeitura(Contrato|ContratoManual $contrato): void
     {
-        $user = auth()->user();
-
-        if (! $user->hasRole(['prefeitura', 'Prefeitura - Personalizado'])) {
+        if ($this->ehEquipeLicicon()) {
             return;
         }
 
@@ -76,7 +84,7 @@ class IncidenteContratualController extends Controller
             ? $contrato->prefeitura_id
             : $contrato->processo?->prefeitura_id;
 
-        if ($prefeituraIdDoContrato != $user->prefeitura_id) {
+        if ($prefeituraIdDoContrato != auth()->user()->prefeitura_id) {
             abort(403, 'Acesso não autorizado.');
         }
     }
@@ -120,13 +128,13 @@ class IncidenteContratualController extends Controller
     }
 
     /**
-     * Usuário de prefeitura só pode mexer na tela de aditivo externo de um incidente
-     * que foi, de fato, criado como externo (evita acessar o fluxo de um incidente
-     * interno por adivinhação de id).
+     * Fora da equipe Licicon, só se pode mexer na tela de aditivo externo de um
+     * incidente que foi, de fato, criado como externo (evita acessar o fluxo de um
+     * incidente interno por adivinhação de id).
      */
     private function autorizarAditivoExternoPrefeitura(IncidenteContratual $incidente): void
     {
-        if (auth()->user()->hasRole(['prefeitura', 'Prefeitura - Personalizado']) && ! $incidente->ehExterno()) {
+        if (! $this->ehEquipeLicicon() && ! $incidente->ehExterno()) {
             abort(403, 'Acesso não autorizado.');
         }
     }
@@ -146,9 +154,10 @@ class IncidenteContratualController extends Controller
             'contrato_continuo' => 'required_if:tipo,prazo,prazo_valor|nullable|boolean',
         ]);
 
-        // Usuários de prefeitura só podem criar aditivo externo — nunca confiar no
+        // Fora da equipe Licicon (prefeitura, ou qualquer usuário liberado só pela
+        // permission "contratos"), só pode criar aditivo externo — nunca confiar no
         // campo vindo do request para esse perfil, mesmo que a UI já force isso.
-        if (auth()->user()->hasRole(['prefeitura', 'Prefeitura - Personalizado'])) {
+        if (! $this->ehEquipeLicicon()) {
             $validated['origem'] = 'externo';
         }
 

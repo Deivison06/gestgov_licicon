@@ -197,6 +197,7 @@
                 {{-- Incidentes Contratuais (Aditivos) --}}
                 @php
                     $podeAbrirAditivoManual = auth()->user()->can('fiscalizar contratos')
+                        || auth()->user()->can('contratos')
                         || auth()->user()->hasRole(['prefeitura', 'Prefeitura - Personalizado']);
                 @endphp
                 <div class="mt-8 pt-8 border-t border-[#24403c]">
@@ -258,7 +259,7 @@
                         modal-id="modalNovoAditivoManual"
                         :action-route="route('admin.incidentes-manual.store', $contrato->id)"
                         :dark="true"
-                        :forcar-externo="auth()->user()->hasRole(['prefeitura', 'Prefeitura - Personalizado'])" />
+                        :forcar-externo="! auth()->user()->hasAnyRole(['diretor_licicon', 'gerente_licicon', 'colaborador_licicon'])" />
                 @endif
 
                 {{-- Acompanhamento da Execução Contratual --}}
