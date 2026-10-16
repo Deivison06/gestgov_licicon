@@ -1632,6 +1632,8 @@ class ProcessoController extends AbstractController
                     $processo->pesquisaPrecoMemoriaItens()->create([
                         'etp_item_id' => $etpItensIds[$index] ?? null,
                         'ordem' => $item['ordem'],
+                        'lote' => $item['lote'],
+                        'numero_item' => $item['numero_item'],
                         'titulo' => $item['titulo'],
                         'valor_adotado' => $item['valor_adotado'],
                         'fontes' => $item['fontes'],

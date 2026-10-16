@@ -13,7 +13,13 @@ class MemoriaCalculoImportService
      * "MEMÓRIA DE CÁLCULO" em um array de itens prontos para persistir em
      * pesquisa_preco_memoria_itens.
      *
-     * @return array<int, array{ordem:int, titulo:?string, valor_adotado:float, fontes:array}>
+     * `ordem` é sempre a posição sequencial global do item no arquivo (1, 2, 3...),
+     * usada para casar com a ordem plana dos itens do ETP (`all_itens`, que já
+     * percorre lote a lote) e para garantir unicidade no banco. `numero_item` e
+     * `lote` preservam a numeração tal como escrita na planilha (reinicia a cada
+     * lote), usada apenas para exibição no relatório.
+     *
+     * @return array<int, array{ordem:int, lote:?string, numero_item:int, titulo:?string, valor_adotado:float, fontes:array}>
      */
     public function parse(Collection $rows): array
     {
@@ -30,15 +36,17 @@ class MemoriaCalculoImportService
                 continue;
             }
 
-            if (preg_match('/^Item\s+(\d+)\s*[-–—]\s*(.+)$/u', $colA, $m)) {
+            if (preg_match('/^(?:Lote\s+(\S+)\s*·\s*)?Item\s+(\d+)\s*[-–—]\s*(.+)$/u', $colA, $m)) {
                 $this->fecharFonte($itemAtual, $fonteAtual);
                 $this->fecharItem($itens, $itemAtual);
 
-                $resto = $m[2];
+                $resto = $m[3];
                 $titulo = Str::contains($resto, ':') ? trim(Str::before($resto, ':')) : trim($resto);
 
                 $itemAtual = [
-                    'ordem' => (int) $m[1],
+                    'ordem' => count($itens) + 1,
+                    'lote' => $m[1] !== '' ? $m[1] : null,
+                    'numero_item' => (int) $m[2],
                     'titulo' => $titulo,
                     'valor_adotado' => null,
                     'fontes' => [],
@@ -85,8 +93,13 @@ class MemoriaCalculoImportService
                     } else {
                         $fonteAtual['orgao_nome'] = $orgaoUf !== '' ? $orgaoUf : null;
                     }
-                } elseif (Str::contains($resto, 'Fornecedor local')) {
+                } elseif (Str::startsWith($resto, 'Fornecedor local')) {
                     $fonteAtual['tipo'] = 'fornecedor_local';
+                    $nomeFornecedor = trim(ltrim(Str::after($resto, 'Fornecedor local'), "· \t"));
+
+                    if ($nomeFornecedor !== '') {
+                        $fonteAtual['fornecedor_nome'] = $nomeFornecedor;
+                    }
                 } else {
                     $fonteAtual['tipo'] = 'outro';
                     $fonteAtual['orgao_nome'] = $resto;
@@ -120,6 +133,12 @@ class MemoriaCalculoImportService
                         $fonteAtual['processo_origem'] = trim($mm[1]);
                     }
                 }
+
+                continue;
+            }
+
+            if (preg_match('/^Data:\s*(\d{2}\/\d{2}\/\d{4})$/u', $colA, $m)) {
+                $fonteAtual['data_referencia'] = $m[1];
 
                 continue;
             }
@@ -208,7 +227,9 @@ class MemoriaCalculoImportService
 
         foreach ($itens as $item) {
             if ($item['valor_adotado'] === null) {
-                throw new RuntimeException("O item \"Item {$item['ordem']} — {$item['titulo']}\" não possui um valor adotado preenchido na planilha.");
+                $rotulo = ($item['lote'] ? "Lote {$item['lote']} · " : '')."Item {$item['numero_item']} — {$item['titulo']}";
+
+                throw new RuntimeException("O item \"{$rotulo}\" não possui um valor adotado preenchido na planilha.");
             }
         }
     }

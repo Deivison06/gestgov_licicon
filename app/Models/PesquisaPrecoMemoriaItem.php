@@ -13,6 +13,8 @@ class PesquisaPrecoMemoriaItem extends Model
         'processo_id',
         'etp_item_id',
         'ordem',
+        'lote',
+        'numero_item',
         'titulo',
         'valor_adotado',
         'fontes',
@@ -20,6 +22,7 @@ class PesquisaPrecoMemoriaItem extends Model
 
     protected $casts = [
         'ordem' => 'integer',
+        'numero_item' => 'integer',
         'valor_adotado' => 'float',
         'fontes' => 'array',
     ];

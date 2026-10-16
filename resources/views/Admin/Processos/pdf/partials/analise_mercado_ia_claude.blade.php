@@ -110,7 +110,8 @@ aderência à especificação, a data mais recente e a diversidade de órgãos.<
 @php
     $etpItemMemoria = $memoriaItem->etpItem;
     $descricaoMemoria = $etpItemMemoria?->descricao_item ?? $memoriaItem->titulo;
-    $numeroItemMemoria = str_pad((string) $memoriaItem->ordem, 2, '0', STR_PAD_LEFT);
+    $numeroItemMemoria = str_pad((string) ($memoriaItem->numero_item ?? $memoriaItem->ordem), 2, '0', STR_PAD_LEFT);
+    $rotuloItemMemoria = ($memoriaItem->lote ? 'Lote '.$memoriaItem->lote.' · ' : '').'Item '.($memoriaItem->numero_item ?? $memoriaItem->ordem);
 @endphp
 {{--
     dompdf (nesta versão) não respeita <colgroup>/<col> em table-layout:fixed — a largura das
@@ -120,7 +121,7 @@ aderência à especificação, a data mais recente e a diversidade de órgãos.<
 <table style="margin-bottom: 0; table-layout: fixed;">
     <tr style="background-color:#D9E1F2;">
         <td class="left" style="font-weight:bold; word-break: break-word;">
-            Item {{ $memoriaItem->ordem }} — {{ $memoriaItem->titulo }}: {{ $descricaoMemoria }}
+            {{ $rotuloItemMemoria }} — {{ $memoriaItem->titulo }}: {{ $descricaoMemoria }}
         </td>
     </tr>
 </table>

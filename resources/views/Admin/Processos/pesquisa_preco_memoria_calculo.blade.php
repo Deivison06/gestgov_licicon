@@ -87,7 +87,10 @@
                         {{ $item->ordem }}
                     </span>
                     <div class="min-w-0">
-                        <p class="text-sm font-bold text-gray-900 truncate">{{ $item->titulo ?? $etpItem?->descricao_item ?? '—' }}</p>
+                        <p class="text-sm font-bold text-gray-900 truncate">
+                            @if($item->lote)<span class="text-indigo-600">Lote {{ $item->lote }} ·</span> @endif
+                            Item {{ $item->numero_item ?? $item->ordem }} — {{ $item->titulo ?? $etpItem?->descricao_item ?? '—' }}
+                        </p>
                         <p class="text-xs text-gray-500">
                             {{ count($item->fontes) }} {{ Str::plural('fonte', count($item->fontes)) }} consultada{{ count($item->fontes) === 1 ? '' : 's' }}
                             @if($etpItem)
