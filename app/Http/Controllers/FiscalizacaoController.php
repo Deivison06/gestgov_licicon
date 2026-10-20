@@ -779,7 +779,16 @@ class FiscalizacaoController extends Controller
             ->has('contrato')
             ->when($prefeituraId, fn ($q) => $q->where('prefeitura_id', $prefeituraId))
             ->when($user->unidade_id && ! $isLiciconAdmin, function ($q) use ($user) {
-                return $q->whereHas('user', fn ($u) => $u->where('unidade_id', $user->unidade_id));
+                // A secretaria "dona" do contrato é a mesma usada para exibição (linha 796,
+                // unidade_numeracao ?? detalhe->secretaria), não o unidade_id de quem criou o
+                // processo no sistema — esse costuma ser o Pregoeiro/Agente de Contratação,
+                // que atende várias secretarias e muitas vezes nem tem unidade_id preenchido.
+                $unidadeNome = $user->unidade?->nome;
+
+                return $q->where(function ($q2) use ($unidadeNome) {
+                    $q2->where('unidade_numeracao', $unidadeNome)
+                        ->orWhereHas('detalhe', fn ($d) => $d->where('secretaria', $unidadeNome));
+                });
             })
             ->get()
             ->map(function ($item) {
