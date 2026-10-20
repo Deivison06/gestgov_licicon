@@ -143,7 +143,7 @@
                 <!-- Conteúdo da primeira célula -->
                 </td>
                 <td style="width:60%; padding:8px; vertical-align:top; word-wrap:break-word; white-space:normal;">
-                    OBJETO: <span style="font-size: 12px;">{!! strip_tags($processo->objeto) !!}</span>, conforme especificações técnicas do Edital, Termo de Referência e Anexos.
+                    OBJETO: <span style="font-size: 12px;">{!! strip_tags($processo->objeto) !!}</span>, conforme especificações técnicas do Edital, Projeto Básico e Anexos.
                 </td>
             </tr>
         </table>
