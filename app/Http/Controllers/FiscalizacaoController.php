@@ -23,6 +23,20 @@ class FiscalizacaoController extends Controller
 {
     use ExtraiInfoContrato;
 
+    /**
+     * Restringe uma query de Contrato (sistema) à secretaria informada, usando o
+     * mesmo critério usado em toda a tela (unidade_numeracao OU detalhe->secretaria
+     * do processo) — nunca o unidade_id de quem criou o processo, que costuma ser o
+     * Pregoeiro/Agente de Contratação e não representa a secretaria dona do contrato.
+     */
+    private function scopeContratoPorSecretaria($query, ?string $unidadeNome): void
+    {
+        $query->whereHas('processo', function ($q) use ($unidadeNome) {
+            $q->where('unidade_numeracao', $unidadeNome)
+                ->orWhereHas('detalhe', fn ($d) => $d->where('secretaria', $unidadeNome));
+        });
+    }
+
     // =========================================================
     // INDEX — Listagem de Fiscalizações
     // =========================================================
@@ -47,24 +61,24 @@ class FiscalizacaoController extends Controller
         $queryFisc = Fiscalizacao::with(['fiscalizavel', 'prefeitura', 'user'])->latest();
 
         if ($user->unidade_id && ! $isLiciconAdmin) {
-            $queryFisc->whereHasMorph('fiscalizavel', [ContratoManual::class, Contrato::class], function ($q, $type) use ($user) {
+            $unidadeNomeUsuario = $user->unidade?->nome;
+            $queryFisc->whereHasMorph('fiscalizavel', [ContratoManual::class, Contrato::class], function ($q, $type) use ($user, $unidadeNomeUsuario) {
                 if ($type === ContratoManual::class) {
                     $q->where('contratos_manuais.unidade_id', $user->unidade_id);
                 } else {
-                    $q->whereHas('processo.user', function ($u) use ($user) {
-                        $u->where('unidade_id', $user->unidade_id);
-                    });
+                    $this->scopeContratoPorSecretaria($q, $unidadeNomeUsuario);
                 }
             });
         }
 
         if ($request->filled('unidade_id')) {
             $unidadeFiltro = $request->unidade_id;
-            $queryFisc->whereHasMorph('fiscalizavel', [ContratoManual::class, Contrato::class], function ($q, $type) use ($unidadeFiltro) {
+            $unidadeNomeFiltro = Unidade::find($unidadeFiltro)?->nome;
+            $queryFisc->whereHasMorph('fiscalizavel', [ContratoManual::class, Contrato::class], function ($q, $type) use ($unidadeFiltro, $unidadeNomeFiltro) {
                 if ($type === ContratoManual::class) {
                     $q->where('contratos_manuais.unidade_id', $unidadeFiltro);
                 } else {
-                    $q->whereHas('processo.user', fn ($u) => $u->where('unidade_id', $unidadeFiltro));
+                    $this->scopeContratoPorSecretaria($q, $unidadeNomeFiltro);
                 }
             });
         }
@@ -97,24 +111,24 @@ class FiscalizacaoController extends Controller
         $queryOcor = Ocorrencia::with(['fiscalizavel', 'prefeitura', 'user'])->latest();
 
         if ($user->unidade_id && ! $isLiciconAdmin) {
-            $queryOcor->whereHasMorph('fiscalizavel', [ContratoManual::class, Contrato::class], function ($q, $type) use ($user) {
+            $unidadeNomeUsuario = $user->unidade?->nome;
+            $queryOcor->whereHasMorph('fiscalizavel', [ContratoManual::class, Contrato::class], function ($q, $type) use ($user, $unidadeNomeUsuario) {
                 if ($type === ContratoManual::class) {
                     $q->where('contratos_manuais.unidade_id', $user->unidade_id);
                 } else {
-                    $q->whereHas('processo.user', function ($u) use ($user) {
-                        $u->where('unidade_id', $user->unidade_id);
-                    });
+                    $this->scopeContratoPorSecretaria($q, $unidadeNomeUsuario);
                 }
             });
         }
 
         if ($request->filled('unidade_id')) {
             $unidadeFiltro = $request->unidade_id;
-            $queryOcor->whereHasMorph('fiscalizavel', [ContratoManual::class, Contrato::class], function ($q, $type) use ($unidadeFiltro) {
+            $unidadeNomeFiltro = Unidade::find($unidadeFiltro)?->nome;
+            $queryOcor->whereHasMorph('fiscalizavel', [ContratoManual::class, Contrato::class], function ($q, $type) use ($unidadeFiltro, $unidadeNomeFiltro) {
                 if ($type === ContratoManual::class) {
                     $q->where('contratos_manuais.unidade_id', $unidadeFiltro);
                 } else {
-                    $q->whereHas('processo.user', fn ($u) => $u->where('unidade_id', $unidadeFiltro));
+                    $this->scopeContratoPorSecretaria($q, $unidadeNomeFiltro);
                 }
             });
         }
