@@ -29,7 +29,7 @@ class SolicitacaoController extends Controller
             'prefeitura_id'=> $user->prefeitura_id ?? null,
         ]);
 
-        if ($user->hasRole('prefeitura')) {
+        if ($user->prefeitura_id) {
             $solicitacoes = $this->service->listByPrefeitura($user->prefeitura_id, $request->all());
         } else {
             $solicitacoes = $this->service->listAll($request->all());
@@ -53,7 +53,7 @@ class SolicitacaoController extends Controller
 
         $prefeituras = [];
 
-        if (!$user->hasRole('prefeitura')) {
+        if (!$user->prefeitura_id) {
             $prefeituras = \App\Models\Prefeitura::all();
             Log::info('[Solicitacao@create] Prefeituras carregadas', [
                 'total' => $prefeituras->count(),
@@ -110,7 +110,7 @@ class SolicitacaoController extends Controller
         $data = $request->all();
         $data['user_id'] = $user->id;
 
-        if ($user->hasRole('prefeitura')) {
+        if ($user->prefeitura_id) {
             $data['prefeitura_id'] = $user->prefeitura_id;
             Log::info('[Solicitacao@store] Prefeitura forçada pelo role', [
                 'prefeitura_id' => $data['prefeitura_id'],

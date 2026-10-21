@@ -22,7 +22,7 @@ class PcaController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
-        $isPrefeituraUser = $user->hasRole('prefeitura') && $user->prefeitura_id;
+        $isPrefeituraUser = (bool) $user->prefeitura_id; // prefeitura_id isola por município, não o papel
 
         $filters = $request->only(['search', 'status', 'exercicio', 'prefeitura_id']);
 
@@ -43,7 +43,7 @@ class PcaController extends Controller
     public function create()
     {
         $user = auth()->user();
-        $isPrefeituraUser = $user->hasRole('prefeitura') && $user->prefeitura_id;
+        $isPrefeituraUser = (bool) $user->prefeitura_id; // prefeitura_id isola por município, não o papel
 
         if ($isPrefeituraUser) {
             $prefeituras = Prefeitura::where('id', $user->prefeitura_id)->get();
@@ -79,7 +79,7 @@ class PcaController extends Controller
 
         try {
             $user = auth()->user();
-            if ($user->hasRole('prefeitura') && $user->prefeitura_id != $request->prefeitura_id) {
+            if ($user->prefeitura_id && $user->prefeitura_id != $request->prefeitura_id) {
                 return back()->withInput()->with('error', 'Ação não permitida para a prefeitura selecionada.');
             }
             $pca = $this->pcaService->store($request->all());
@@ -116,7 +116,7 @@ class PcaController extends Controller
         $this->authorizeAccess($pca);
 
         $user = auth()->user();
-        $isPrefeituraUser = $user->hasRole('prefeitura') && $user->prefeitura_id;
+        $isPrefeituraUser = (bool) $user->prefeitura_id; // prefeitura_id isola por município, não o papel
 
         if ($isPrefeituraUser) {
             $prefeituras = Prefeitura::where('id', $user->prefeitura_id)->get();
@@ -213,7 +213,7 @@ class PcaController extends Controller
             return;
         }
 
-        if ($user->hasRole('prefeitura') && $pca->prefeitura_id != $user->prefeitura_id) {
+        if ($user->prefeitura_id && $pca->prefeitura_id != $user->prefeitura_id) {
             abort(403, 'Acesso não autorizado.');
         }
     }

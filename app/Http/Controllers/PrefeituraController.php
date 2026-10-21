@@ -165,8 +165,10 @@ class PrefeituraController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        // Se for prefeitura → só vê os dela
-        if ($user->hasRole('prefeitura')) {
+        // Qualquer conta vinculada a uma prefeitura (prefeitura_id preenchido) só vê a dela —
+        // o papel 'prefeitura' sozinho não é confiável (contas de assinante/secretaria têm
+        // prefeitura_id mas não esse papel, e caíam no "else" vendo todas as prefeituras).
+        if ($user->prefeitura_id) {
 
             $prefeitura = $user->prefeitura; // relacionamento do user
             $processosQuery->where('prefeitura_id', $user->prefeitura_id);

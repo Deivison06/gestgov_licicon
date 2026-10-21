@@ -26,7 +26,10 @@ class ContratoManualController extends Controller
         $userPrefeituraId = $user->prefeitura_id;
 
         // Verificar se é usuário da prefeitura
-        $isPrefeituraUser = $user->hasRole('prefeitura') && $userPrefeituraId;
+        // prefeitura_id sozinho já identifica uma conta vinculada a um único município —
+        // o papel 'prefeitura' não é um requisito extra confiável (contas de assinante/
+        // secretaria têm prefeitura_id mas não esse papel, e ficavam sem isolamento).
+        $isPrefeituraUser = (bool) $userPrefeituraId;
 
         if ($abaAtiva === 'sistema') {
             $query = Processo::with([
@@ -244,7 +247,10 @@ class ContratoManualController extends Controller
     {
         $user = auth()->user();
         $userPrefeituraId = $user->prefeitura_id;
-        $isPrefeituraUser = $user->hasRole('prefeitura') && $userPrefeituraId;
+        // prefeitura_id sozinho já identifica uma conta vinculada a um único município —
+        // o papel 'prefeitura' não é um requisito extra confiável (contas de assinante/
+        // secretaria têm prefeitura_id mas não esse papel, e ficavam sem isolamento).
+        $isPrefeituraUser = (bool) $userPrefeituraId;
 
         if ($request->get('tipo', 'manual') === 'sistema') {
             return $this->relatorioPdfSistema($request, $isPrefeituraUser, $userPrefeituraId);
@@ -598,7 +604,7 @@ class ContratoManualController extends Controller
 
         // Verificar acesso
         $user = auth()->user();
-        if ($user->hasRole('prefeitura') && $user->prefeitura_id) {
+        if ($user->prefeitura_id) {
             if ($processo->prefeitura_id != $user->prefeitura_id) {
                 abort(403, 'Acesso não autorizado.');
             }
@@ -610,7 +616,8 @@ class ContratoManualController extends Controller
     public function create()
     {
         $user = auth()->user();
-        $isPrefeituraUser = $user->hasRole('prefeitura') && $user->prefeitura_id;
+        // Ver comentário em index(): prefeitura_id sozinho é o critério correto de isolamento.
+        $isPrefeituraUser = (bool) $user->prefeitura_id;
 
         // Para usuários da prefeitura, mostrar apenas a prefeitura dele
         if ($isPrefeituraUser) {
@@ -674,7 +681,7 @@ class ContratoManualController extends Controller
         ]);
 
         // Para usuários da prefeitura, verificar se estão tentando criar contrato para outra prefeitura
-        if ($user->hasRole('prefeitura') && $user->prefeitura_id) {
+        if ($user->prefeitura_id) {
             if ($request->prefeitura_id != $user->prefeitura_id) {
                 Log::warning('🚫 Usuário da prefeitura tentando criar contrato para outra prefeitura', [
                     'user_prefeitura_id' => $user->prefeitura_id,
@@ -892,7 +899,8 @@ class ContratoManualController extends Controller
         $contrato->load(['empresa', 'secretaria', 'prefeitura']);
 
         $user = auth()->user();
-        $isPrefeituraUser = $user->hasRole('prefeitura') && $user->prefeitura_id;
+        // Ver comentário em index(): prefeitura_id sozinho é o critério correto de isolamento.
+        $isPrefeituraUser = (bool) $user->prefeitura_id;
 
         // Para usuários da prefeitura, mostrar apenas a prefeitura dele
         if ($isPrefeituraUser) {
@@ -929,7 +937,7 @@ class ContratoManualController extends Controller
         $user = auth()->user();
 
         // Para usuários da prefeitura, verificar se estão tentando editar contrato de outra prefeitura
-        if ($user->hasRole('prefeitura') && $user->prefeitura_id) {
+        if ($user->prefeitura_id) {
             if ($contrato->prefeitura_id != $user->prefeitura_id) {
                 Log::warning('🚫 Usuário da prefeitura tentando editar contrato de outra prefeitura', [
                     'user_prefeitura_id' => $user->prefeitura_id,
@@ -1100,7 +1108,7 @@ class ContratoManualController extends Controller
 
         // Para usuários da prefeitura, verificar se estão tentando excluir contrato de outra prefeitura
         $user = auth()->user();
-        if ($user->hasRole('prefeitura') && $user->prefeitura_id) {
+        if ($user->prefeitura_id) {
             if ($contrato->prefeitura_id != $user->prefeitura_id) {
                 Log::warning('🚫 Usuário da prefeitura tentando excluir contrato de outra prefeitura', [
                     'user_prefeitura_id' => $user->prefeitura_id,
@@ -1147,7 +1155,7 @@ class ContratoManualController extends Controller
         }
 
         // Se for usuário da prefeitura, verifica se o contrato pertence à mesma prefeitura
-        if ($user->hasRole('prefeitura') && $contrato->prefeitura_id != $user->prefeitura_id) {
+        if ($user->prefeitura_id && $contrato->prefeitura_id != $user->prefeitura_id) {
             Log::warning('🚫 Tentativa de acesso não autorizado', [
                 'user_id' => $user->id,
                 'contrato_prefeitura_id' => $contrato->prefeitura_id,
@@ -1173,7 +1181,7 @@ class ContratoManualController extends Controller
         $processo = Processo::with('contrato')->findOrFail($id);
 
         $user = auth()->user();
-        if ($user->hasRole('prefeitura') && $user->prefeitura_id) {
+        if ($user->prefeitura_id) {
             if ($processo->prefeitura_id != $user->prefeitura_id) {
                 abort(403, 'Acesso não autorizado.');
             }
