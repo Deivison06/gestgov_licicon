@@ -32,7 +32,7 @@
 
             {{-- Dados de Assinatura (read-only) — só para users com is_assinante=true --}}
             @if (auth()->user()->is_assinante)
-                <div class="overflow-hidden card !rounded-2xl border-l-4 border-l-[#2DC197]">
+                <div class="overflow-hidden card !rounded-2xl border-l-4 border-l-[var(--mint)]">
                     <div class="card-h">
                         <div>
                             <h3 class="text-lg font-bold text-[var(--ink)]">Dados de Assinatura</h3>

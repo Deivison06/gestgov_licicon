@@ -10,7 +10,7 @@
             <!-- Cabeçalho com Título e Botão Dashboard -->
             <div class="flex flex-col items-start justify-between mb-6 lg:flex-row lg:items-center">
                 <div>
-                    <h1 class="text-2xl font-bold text-white">Atas de Contratação</h1>
+                    <h1 class="text-2xl font-bold text-[var(--ink)]">Atas de Contratação</h1>
                     <p class="mt-1 text-sm text-[var(--ink-2)]">Gerencie e visualize atas de registro de preços dos processos</p>
                 </div>
                 <div class="mt-4 lg:mt-0">
@@ -22,7 +22,7 @@
             <div class="mb-6">
                 <div class="p-6 bg-[var(--card)] border border-[var(--line)] rounded-lg shadow-sm">
                     <div class="mb-4">
-                        <h3 class="text-lg font-medium text-white">Filtrar Processos</h3>
+                        <h3 class="text-lg font-medium text-[var(--ink)]">Filtrar Processos</h3>
                         <p class="mt-1 text-sm text-[var(--ink-2)]">Use os filtros abaixo para encontrar processos específicos</p>
                     </div>
 
@@ -179,13 +179,13 @@
                 <div class="px-6 py-4 border-b border-[var(--line)] bg-[var(--card-2)]">
                     <div class="flex flex-col items-start justify-between md:flex-row md:items-center">
                         <div>
-                            <h3 class="text-lg font-medium text-white">Processos Disponíveis</h3>
+                            <h3 class="text-lg font-medium text-[var(--ink)]">Processos Disponíveis</h3>
                             <p class="mt-1 text-sm text-[var(--ink-2)]">
                                 {{ $processos->count() }} {{ Str::plural('processo', $processos->count()) }} encontrado{{ $processos->count() !== 1 ? 's' : '' }}
                             </p>
                             @if(!empty($search))
                                 <p class="text-xs text-[var(--ink-2)]/80">
-                                    Resultados da pesquisa por: "<strong class="text-white">{{ $search }}</strong>"
+                                    Resultados da pesquisa por: "<strong class="text-[var(--ink)]">{{ $search }}</strong>"
                                 </p>
                             @endif
                         </div>
@@ -264,7 +264,7 @@
                                                         </svg>
                                                     </div>
                                                     <div class="ml-4">
-                                                        <div class="text-sm font-medium text-white">
+                                                        <div class="text-sm font-medium text-[var(--ink)]">
                                                             {{ $processo->prefeitura->cidade }}
                                                         </div>
                                                         <div class="text-xs text-[var(--ink-2)]">
@@ -298,7 +298,7 @@
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                                                     </svg>
                                                     <div>
-                                                        <div class="text-sm font-medium text-white">{{ $totalLotes }} lotes</div>
+                                                        <div class="text-sm font-medium text-[var(--ink)]">{{ $totalLotes }} lotes</div>
                                                         @if($hasContratacoes)
                                                             <div class="text-xs text-[var(--mint)] font-semibold">{{ $lotesContratados }} com contratação</div>
                                                         @endif
@@ -352,7 +352,7 @@
                                                             <svg class="inline w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                                             </svg>
-                                                            Responsável: <span class="text-white">{{ $processo->user->name }}</span>
+                                                            Responsável: <span class="text-[var(--ink)]">{{ $processo->user->name }}</span>
                                                         </div>
                                                     @endif
                                                     @if($processo->vencedores->count() > 0)
@@ -362,7 +362,7 @@
                                                             </svg>
                                                             Contratados:
                                                             @foreach($processo->vencedores as $vencedor)
-                                                                <span class="font-medium text-white">{{ $vencedor->nome ?? $vencedor->razao_social }}</span>
+                                                                <span class="font-medium text-[var(--ink)]">{{ $vencedor->nome ?? $vencedor->razao_social }}</span>
                                                                 @if(!$loop->last), @endif
                                                             @endforeach
                                                         </div>
@@ -381,7 +381,7 @@
                             <svg class="w-16 h-16 mx-auto text-[var(--ink-2)]/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
-                            <h3 class="mt-4 text-lg font-medium text-white">
+                            <h3 class="mt-4 text-lg font-medium text-[var(--ink)]">
                                 @if($prefeituraId || $processoId || !empty($search))
                                     Nenhum processo encontrado para os filtros selecionados
                                 @else

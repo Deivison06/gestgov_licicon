@@ -19,7 +19,7 @@
 
         <div class="px-6 py-4 bg-[var(--card-2)] border-t border-[var(--line)] flex justify-end gap-3 items-center">
             <div id="quick_edit_loading" class="hidden text-sm text-[var(--ink-2)] flex items-center gap-2">
-                <div class="w-4 h-4 border-2 border-[var(--mint)]/20 border-t-[#2DC197] rounded-full animate-spin"></div>
+                <div class="w-4 h-4 border-2 border-[var(--mint)]/20 border-t-[var(--mint)] rounded-full animate-spin"></div>
                 Salvando...
             </div>
             <button type="button" onclick="closeModalItemQuickEdit()" class="text-sm text-[var(--ink)] bg-[var(--card)] border border-[var(--line)] font-semibold px-4 py-2 hover:bg-[var(--hover-bg)] hover:text-[var(--mint)] rounded-xl transition-colors duration-200">

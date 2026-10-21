@@ -46,7 +46,7 @@
 
                 <!-- Loading Spinner -->
                 <div class="hidden flex-col items-center justify-center h-full py-16" id="pncp-modal-loading">
-                    <div class="w-10 h-10 border-4 border-[var(--mint)]/20 border-t-[#2DC197] rounded-full animate-spin mb-3"></div>
+                    <div class="w-10 h-10 border-4 border-[var(--mint)]/20 border-t-[var(--mint)] rounded-full animate-spin mb-3"></div>
                     <p class="text-sm text-[var(--ink-2)] animate-pulse" id="pncp-modal-loading-msg">Consultando contratações...</p>
                 </div>
 

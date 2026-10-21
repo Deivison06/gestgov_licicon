@@ -149,7 +149,7 @@
                 <div>
                     <label class="block mb-2 text-sm font-semibold text-[var(--ink-2)]">Data Finalização <span class="text-[var(--mint)]">*</span></label>
                     <input type="date" name="data_finalizacao" required value="{{ $contrato->data_finalizacao ? $contrato->data_finalizacao->format('Y-m-d') : '' }}"
-                            class="w-full px-4 py-2.5 bg-[var(--card)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] border-l-4 border-l-[#2DC197] transition-colors">
+                            class="w-full px-4 py-2.5 bg-[var(--card)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] border-l-4 border-l-[var(--mint)] transition-colors">
                     @error('data_finalizacao')
                     <p class="mt-1 text-xs text-[var(--bad-strong)]">{{ $message }}</p>
                     @enderror

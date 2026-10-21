@@ -184,7 +184,7 @@
             <div class="mt-6 overflow-hidden bg-[var(--card)] border border-[var(--line)] shadow-sm rounded-xl">
                 <div class="px-6 py-4 border-b border-[var(--line)] bg-[var(--card-2)]">
                     <div class="flex items-center justify-between">
-                        <h3 class="text-lg font-semibold text-white">Unidades/Setores/Departamentos</h3>
+                        <h3 class="text-lg font-semibold text-[var(--ink)]">Unidades/Setores/Departamentos</h3>
                         <button type="button" id="btn-add-unidade"
                             class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-[var(--on-mint)] bg-[var(--mint)] rounded-lg hover:bg-[var(--ok)] transition-colors shadow-sm">
                             Adicionar Unidade
@@ -207,7 +207,7 @@
                                 <tbody class="bg-[var(--card)] divide-y divide-[var(--line)]" id="unidades-table-body">
                                     @foreach ($prefeitura->unidades as $unidade)
                                         <tr id="unidade-row-{{ $unidade->id }}" class="hover:bg-[var(--hover-bg)] transition-colors">
-                                            <td class="px-6 py-4 text-white font-medium">{{ $unidade->nome }}</td>
+                                            <td class="px-6 py-4 text-[var(--ink)] font-medium">{{ $unidade->nome }}</td>
                                             <td class="px-6 py-4 text-[var(--ink)]">{{ $unidade->servidor_responsavel }}</td>
                                             <td class="px-6 py-4 text-[var(--ink-2)]">{{ $unidade->numero_portaria ?? '—' }}</td>
                                             <td class="px-6 py-4 text-[var(--ink-2)]">

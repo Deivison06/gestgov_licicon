@@ -160,7 +160,7 @@
                 <td colspan="{{ $colspan }}" class="px-6 py-10 text-center text-[var(--ink-2)]">
                     <div class="flex flex-col items-center justify-center">
                         <i class="fas fa-cogs text-4xl text-[var(--line)] mb-3"></i>
-                        <p class="font-medium text-white">Nenhum contrato do sistema encontrado.</p>
+                        <p class="font-medium text-[var(--ink)]">Nenhum contrato do sistema encontrado.</p>
                         <p class="text-sm mt-1 text-[var(--ink-2)]">Os contratos são gerados automaticamente após a finalização dos processos.</p>
                     </div>
                 </td>

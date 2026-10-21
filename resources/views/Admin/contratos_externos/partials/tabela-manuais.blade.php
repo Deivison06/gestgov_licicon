@@ -183,7 +183,7 @@
                 <td colspan="{{ $colspan }}" class="px-6 py-12 text-center text-[var(--ink-2)]">
                     <div class="flex flex-col items-center justify-center">
                         <i class="fas fa-file-signature text-4xl text-[var(--line)] mb-3"></i>
-                        <p class="font-medium text-white">Nenhum contrato manual encontrado</p>
+                        <p class="font-medium text-[var(--ink)]">Nenhum contrato manual encontrado</p>
                         <p class="text-sm mt-1 max-w-md text-[var(--ink-2)]">
                             Clique em "Novo Contrato Manual" para adicionar um novo contrato.
                         </p>
