@@ -726,7 +726,14 @@ input[type="checkbox"], input[type="radio"] {
   accent-color: var(--mint) !important;
 }
 
-/* 7. Dropdowns e Popovers Flutuantes */
+/* 7. Dropdowns e Popovers Flutuantes
+   CUIDADO: [x-show="open"] casa por valor do atributo, não por ser de fato
+   um dropdown — qualquer x-data que use "open" como nome de variável (ex.:
+   um alerta fechável) cai aqui também e ganha fundo + sombra pesada
+   (0 20px 40px rgba(0,0,0,.6)) sem motivo. Já aconteceu em
+   contratos_externos/index.blade.php (renomeado pra "visivel"). Componentes
+   novos que usem x-show="open" sem ser um dropdown flutuante: troque o nome
+   da variável, não mexa aqui. */
 [x-show="open"], .dropdown-menu {
   background-color: var(--card) !important;
   border: 1px solid var(--line) !important;

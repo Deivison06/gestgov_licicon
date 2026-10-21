@@ -17,7 +17,11 @@
 
     {{-- Alerta de Contratos Vencidos --}}
     @if($vencidosCount > 0)
-        <div x-data="{ open: true }" x-show="open" class="flex items-center justify-between p-4 mb-6 text-[var(--bad-strong)] border border-[var(--bad-border)] rounded-lg bg-[var(--bad-bg)]">
+        {{-- x-show="visivel" (não "open"): esse nome colide com o seletor CSS
+             [x-show="open"] usado pra estilizar dropdowns/submenus flutuantes
+             (background claro + sombra 0 20px 40px rgba(0,0,0,.6)) — esse
+             alerta não é um dropdown, só reaproveitava "open" por acaso. --}}
+        <div x-data="{ visivel: true }" x-show="visivel" class="flex items-center justify-between p-4 mb-6 text-[var(--bad-strong)] border border-[var(--bad-border)] rounded-lg bg-[var(--bad-bg)]">
             <div class="flex items-center gap-3">
                 <svg class="w-5 h-5 flex-shrink-0 text-[var(--bad-strong)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -34,7 +38,7 @@
                     </svg>
                 </a>
             </div>
-            <button @click="open = false" class="text-[var(--ink-4)] hover:text-[var(--ink)] transition-colors" title="Fechar">
+            <button @click="visivel = false" class="text-[var(--ink-4)] hover:text-[var(--ink)] transition-colors" title="Fechar">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
