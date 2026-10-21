@@ -92,7 +92,7 @@
                     <input type="hidden" name="tipo" value="{{ $abaAtiva }}">
 
                     {{-- Campo de Pesquisa Livre --}}
-                    <div class="mb-4">
+                    <div>
                         <label for="search" class="block mb-2 text-sm font-medium text-[var(--ink-2)]">
                             <i class="fas fa-search mr-1 text-[var(--mint)]"></i> Pesquisa Livre
                         </label>
@@ -112,7 +112,10 @@
                         </p>
                     </div>
 
-                    <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
+                    {{-- 5 campos (Prefeitura, Modalidade, Empresa/Vencedor, Situação, Vencimento) —
+                         lg:grid-cols-5 encaixa todos numa linha só em telas largas, sem sobrar
+                         um campo sozinho numa linha incompleta. --}}
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
                         {{-- Filtro por Prefeitura (apenas para admin/diretor) --}}
                         <div>
                             <label for="prefeitura_id" class="block mb-1 text-sm font-medium text-[var(--ink-2)]">
@@ -220,18 +223,18 @@
                     </div>
 
                     {{-- Botões --}}
-                    <div class="flex flex-shrink-0 gap-2">
-                        <button type="submit" class="px-4 py-2 font-semibold text-[var(--on-mint)] transition-colors duration-200 rounded-lg bg-[var(--mint)] hover:bg-[var(--mint-h)] focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:ring-offset-2 whitespace-nowrap">
-                            <i class="fas fa-filter mr-1"></i> Filtrar
-                        </button>
-                        <a href="{{ route('admin.contratos.index', ['tipo' => $abaAtiva]) }}" class="px-4 py-2 text-center text-[var(--ink-2)] transition-colors duration-200 bg-[var(--hover-bg)] border border-[var(--line)] rounded-lg hover:bg-[var(--card-3)] hover:text-[var(--ink)] focus:outline-none whitespace-nowrap">
-                            <i class="fas fa-times mr-1"></i> Limpar
-                        </a>
+                    <div class="flex flex-wrap items-center justify-end gap-2 pt-4 border-t border-[var(--line-2)]">
                         <a href="{{ route('admin.contratos.relatorio-pdf', array_filter(array_merge(['tipo' => $abaAtiva], request()->only(['search', 'prefeitura_id', 'modalidade', 'empresa_id', 'situacao', 'vencedor_id', 'vencimento'])))) }}"
                            target="_blank"
-                           class="inline-flex items-center gap-1.5 px-4 py-2 text-white transition-colors duration-200 rounded-lg bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 whitespace-nowrap">
+                           class="inline-flex items-center gap-1.5 px-4 py-2 text-white transition-colors duration-200 rounded-lg bg-[var(--bad-strong)] hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--bad-strong)] focus:ring-offset-2 whitespace-nowrap order-3 sm:order-1">
                             <i class="fas fa-file-pdf"></i> Gerar PDF
                         </a>
+                        <a href="{{ route('admin.contratos.index', ['tipo' => $abaAtiva]) }}" class="px-4 py-2 text-center text-[var(--ink-2)] transition-colors duration-200 bg-[var(--hover-bg)] border border-[var(--line)] rounded-lg hover:bg-[var(--card-3)] hover:text-[var(--ink)] focus:outline-none whitespace-nowrap order-2">
+                            <i class="fas fa-times mr-1"></i> Limpar
+                        </a>
+                        <button type="submit" class="px-4 py-2 font-semibold text-[var(--on-mint)] transition-colors duration-200 rounded-lg bg-[var(--mint)] hover:bg-[var(--mint-h)] focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:ring-offset-2 whitespace-nowrap order-1 sm:order-3">
+                            <i class="fas fa-filter mr-1"></i> Filtrar
+                        </button>
                     </div>
                 </form>
             </div>
