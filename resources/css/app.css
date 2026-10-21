@@ -748,6 +748,31 @@ input[type="checkbox"], input[type="radio"] {
   color: var(--teal-text) !important;
 }
 
+/* O submenu do ETP Inteligente (dentro da sidebar) também é um [x-show="open"],
+   mas não é um dropdown flutuante — é a lista indentada dentro do próprio
+   menu lateral, que fica sempre escuro (ver estilo inline no <aside>). Sem
+   isso, ganhava o mesmo cartão branco + sombra de um dropdown qualquer. */
+#sidebar [x-show="open"] {
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+/* idem pro texto dos links — a regra acima de [x-show="open"] a força
+   var(--ink), que no claro é escuro (ilegível num fundo que virou
+   transparente, ou seja, verde-escuro da sidebar por trás). Restaura as
+   cores que o próprio item de submenu já define (claro/semi-transparente
+   quando inativo, --on-mint quando ativo, igual ao resto do menu). */
+#sidebar [x-show="open"] a {
+  color: rgba(255, 255, 255, .7) !important;
+}
+#sidebar [x-show="open"] a:hover {
+  background-color: rgba(255, 255, 255, .07) !important;
+  color: #fff !important;
+}
+#sidebar [x-show="open"] a[class*="bg-[var(--mint)]"] {
+  color: var(--on-mint) !important;
+}
+
 /* 8. Modais Legados */
 .fixed.inset-0.bg-gray-500,
 .fixed.inset-0.bg-gray-600,
