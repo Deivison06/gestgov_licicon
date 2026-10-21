@@ -608,8 +608,12 @@ class FiscalizacaoController extends Controller
                 return $q->where('prefeitura_id', $user->prefeitura_id);
             })
             ->when($user->unidade_id && ! $isLiciconAdmin, function ($q) use ($user) {
-                // Filtra através do usuário criador do processo
-                return $q->whereHas('user', fn ($u) => $u->where('unidade_id', $user->unidade_id));
+                $unidadeNome = $user->unidade?->nome;
+
+                return $q->where(function ($q2) use ($unidadeNome) {
+                    $q2->where('unidade_numeracao', $unidadeNome)
+                        ->orWhereHas('detalhe', fn ($d) => $d->where('secretaria', $unidadeNome));
+                });
             })
             ->where(function ($q) use ($termo) {
                 $q->where('numero_processo', 'LIKE', "%{$termo}%")

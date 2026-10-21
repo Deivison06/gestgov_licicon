@@ -232,12 +232,14 @@
                         @endcan
                         @endif
 
-                        <a href="{{ route('admin.solicitacoes.index') }}" title="Solicitações"
-                           @if(request()->routeIs('admin.solicitacoes.*')) aria-current="page" @endif
-                           class="{{ $navItemBase }} {{ request()->routeIs('admin.solicitacoes.*') ? $navItemActive : $navItemInactive }}">
-                            <svg class="{{ request()->routeIs('admin.solicitacoes.*') ? $iconAtivo : $iconInativo }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/></svg>
-                            <span class="flex-1 whitespace-nowrap group-[.is-collapsed]/sb:hidden">Solicitações</span>
-                        </a>
+                        @if(auth()->user()->hasAnyRole(['diretor_licicon', 'gerente_licicon', 'colaborador_licicon', 'prefeitura']))
+                            <a href="{{ route('admin.solicitacoes.index') }}" title="Solicitações"
+                               @if(request()->routeIs('admin.solicitacoes.*')) aria-current="page" @endif
+                               class="{{ $navItemBase }} {{ request()->routeIs('admin.solicitacoes.*') ? $navItemActive : $navItemInactive }}">
+                                <svg class="{{ request()->routeIs('admin.solicitacoes.*') ? $iconAtivo : $iconInativo }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/></svg>
+                                <span class="flex-1 whitespace-nowrap group-[.is-collapsed]/sb:hidden">Solicitações</span>
+                            </a>
+                        @endif
 
                         @can('pca')
                             <a href="{{ route('admin.pcas.index') }}" title="PCA"
