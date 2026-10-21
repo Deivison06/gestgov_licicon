@@ -95,10 +95,10 @@
                         @php
                             $situacao = $processo->contrato->situacao;
                             $cores = [
-                                'VIGENTE' => 'bg-emerald-900/40 text-emerald-300 border border-emerald-500/30',
-                                'VENCIDO' => 'bg-red-900/40 text-red-300 border border-red-500/30',
-                                'CONCLUÍDO' => 'bg-blue-900/40 text-blue-300 border border-blue-500/30',
-                                'PENDENTE' => 'bg-amber-900/40 text-amber-300 border border-amber-500/30'
+                                'VIGENTE' => 'bg-[var(--card-3)] text-[var(--mint)] border border-[var(--line)]',
+                                'VENCIDO' => 'bg-[var(--bad-bg)] text-[var(--bad-strong)] border border-[var(--bad-border)]',
+                                'CONCLUÍDO' => 'bg-[var(--vio-bg)] text-[var(--vio)] border border-[var(--vio-border)]',
+                                'PENDENTE' => 'bg-[var(--warn-bg)] text-[var(--warn-2)] border border-[var(--warn-border)]',
                             ];
                             $cor = $cores[$situacao] ?? 'bg-[var(--hover-bg)] text-[var(--ink-2)] border border-[var(--line)]';
                         @endphp

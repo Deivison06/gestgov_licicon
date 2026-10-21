@@ -782,6 +782,39 @@ input[type="checkbox"], input[type="radio"] {
 .bg-orange-100 { background-color: var(--orange-bg) !important; }
 .text-orange-800 { color: var(--orange) !important; }
 
+/* 10b. Badges "tunados pro dark" (bg-X-900/NN, bg-X-500/NN, text-X-300/400) —
+   telas escritas direto pro tema escuro, com cor clara (legível só em fundo
+   escuro) e fundo translúcido escuro (vira uma mancha baça sobre fundo
+   branco). Pega por substring (classe pode ter o sufixo de opacidade /NN
+   ou vir acompanhada de outras classes), cobrindo qualquer tela que use
+   esse padrão, já corrigida ou não individualmente. */
+[class*="bg-emerald-900"], [class*="bg-green-900"], [class*="bg-emerald-500/"], [class*="bg-green-500/"] { background-color: var(--ok-bg) !important; }
+[class*="text-emerald-300"], [class*="text-emerald-400"], [class*="text-green-300"], [class*="text-green-400"] { color: var(--ok) !important; }
+[class*="border-emerald-500"], [class*="border-green-500"], [class*="border-emerald-300"], [class*="border-green-400"] { border-color: var(--ok) !important; }
+
+[class*="bg-amber-900"], [class*="bg-yellow-900"], [class*="bg-amber-500/"], [class*="bg-yellow-500/"] { background-color: var(--warn-bg) !important; }
+[class*="text-amber-300"], [class*="text-amber-400"], [class*="text-yellow-300"], [class*="text-yellow-400"] { color: var(--warn-2) !important; }
+[class*="border-amber-500"], [class*="border-yellow-500"], [class*="border-amber-400"], [class*="border-yellow-400"] { border-color: var(--warn-2) !important; }
+
+[class*="bg-red-900"], [class*="bg-rose-900"], [class*="bg-red-500/"], [class*="bg-rose-500/"] { background-color: var(--bad-bg) !important; }
+[class*="text-red-300"], [class*="text-red-400"], [class*="text-rose-300"], [class*="text-rose-400"] { color: var(--bad-strong) !important; }
+[class*="border-red-500"], [class*="border-rose-500"], [class*="border-red-400"], [class*="border-rose-400"] { border-color: var(--bad-strong) !important; }
+
+[class*="bg-blue-900"], [class*="bg-indigo-900"], [class*="bg-sky-900"], [class*="bg-blue-500/"], [class*="bg-indigo-500/"], [class*="bg-sky-500/"] { background-color: var(--info-bg) !important; }
+[class*="text-blue-300"], [class*="text-blue-400"], [class*="text-indigo-300"], [class*="text-indigo-400"], [class*="text-sky-300"], [class*="text-sky-400"] { color: var(--info) !important; }
+[class*="border-blue-500"], [class*="border-indigo-500"], [class*="border-sky-500"], [class*="border-blue-400"], [class*="border-blue-300"] { border-color: var(--info) !important; }
+
+[class*="bg-purple-900"], [class*="bg-violet-900"], [class*="bg-fuchsia-900"], [class*="bg-purple-500/"], [class*="bg-violet-500/"], [class*="bg-fuchsia-500/"] { background-color: var(--vio-bg) !important; }
+[class*="text-purple-300"], [class*="text-purple-400"], [class*="text-violet-300"], [class*="text-violet-400"], [class*="text-fuchsia-300"], [class*="text-fuchsia-400"] { color: var(--vio) !important; }
+[class*="border-purple-500"], [class*="border-violet-500"], [class*="border-purple-400"] { border-color: var(--vio) !important; }
+
+[class*="bg-orange-900"], [class*="bg-pink-900"], [class*="bg-orange-500/"], [class*="bg-pink-500/"] { background-color: var(--orange-bg) !important; }
+[class*="text-orange-300"], [class*="text-orange-400"], [class*="text-pink-300"], [class*="text-pink-400"] { color: var(--orange) !important; }
+[class*="border-orange-500"], [class*="border-pink-500"], [class*="border-orange-400"] { border-color: var(--orange) !important; }
+
+[class*="bg-teal-900"], [class*="bg-cyan-900"], [class*="bg-teal-500/"], [class*="bg-cyan-500/"] { background-color: var(--teal-dark-bg) !important; }
+[class*="text-teal-300"], [class*="text-teal-400"], [class*="text-cyan-300"], [class*="text-cyan-400"] { color: var(--teal-text) !important; }
+
 /* 11. Caixas de Alerta */
 .bg-green-50, .bg-emerald-50 {
   background-color: var(--ok-bg) !important;

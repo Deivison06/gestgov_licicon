@@ -243,10 +243,10 @@
 
                                             // Determinar classe da badge de modalidade
                                             $modalidadeBadgeClass = match($processo->modalidade->value) {
-                                                'pregão' => 'bg-blue-900/40 text-blue-300 border border-blue-500/30',
-                                                'concorrência' => 'bg-emerald-900/40 text-emerald-300 border border-emerald-500/30',
-                                                'dispensa' => 'bg-purple-900/40 text-purple-300 border border-purple-500/30',
-                                                'inexigibilidade' => 'bg-pink-900/40 text-pink-300 border border-pink-500/30',
+                                                'pregão' => 'bg-[var(--info-bg)] text-[var(--info)] border border-[var(--info)]/30',
+                                                'concorrência' => 'bg-[var(--ok-bg)] text-[var(--ok)] border border-[var(--ok)]/30',
+                                                'dispensa' => 'bg-[var(--vio-bg)] text-[var(--vio)] border border-[var(--vio-border)]',
+                                                'inexigibilidade' => 'bg-[var(--orange-bg)] text-[var(--orange)] border border-[var(--orange)]/30',
                                                 default => 'bg-[var(--hover-bg)] text-[var(--ink-2)] border border-[var(--line)]',
                                             };
                                         @endphp

@@ -112,14 +112,14 @@
                                     {{ $pca->itens->count() }} itens
                                 </span>
                                 <br>
-                                <span class="text-xs text-emerald-400 font-semibold">R$ {{ number_format($pca->itens->sum('valor_estimado'), 2, ',', '.') }}</span>
+                                <span class="text-xs text-[var(--ok)] font-semibold">R$ {{ number_format($pca->itens->sum('valor_estimado'), 2, ',', '.') }}</span>
                             </td>
                             <td class="px-4 py-3 text-sm">
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                    @if($pca->status === 'pendente') bg-amber-900/40 text-amber-300 border border-amber-500/30
-                                    @elseif($pca->status === 'em_analise') bg-blue-900/40 text-blue-300 border border-blue-500/30
-                                    @elseif($pca->status === 'aprovado') bg-emerald-900/40 text-emerald-300 border border-emerald-500/30
-                                    @elseif($pca->status === 'recusado') bg-red-900/40 text-red-300 border border-red-500/30
+                                    @if($pca->status === 'pendente') bg-[var(--warn-bg)] text-[var(--warn-2)] border border-[var(--warn-border)]
+                                    @elseif($pca->status === 'em_analise') bg-[var(--info-bg)] text-[var(--info)] border border-[var(--info)]/30
+                                    @elseif($pca->status === 'aprovado') bg-[var(--ok-bg)] text-[var(--ok)] border border-[var(--ok)]/30
+                                    @elseif($pca->status === 'recusado') bg-[var(--bad-bg)] text-[var(--bad-strong)] border border-[var(--bad-border)]
                                     @else bg-[var(--hover-bg)] text-[var(--ink-2)] border border-[var(--line)] @endif">
                                     {{ ucfirst(str_replace('_', ' ', $pca->status)) }}
                                 </span>
