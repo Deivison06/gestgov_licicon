@@ -136,8 +136,10 @@
         <div class="signature-block">
             ___________________________________<br>
             <strong>{{ mb_strtoupper($incidente->nome_parecerista ?? 'Assessor Jurídico / Parecerista') }}</strong><br>
-            {{ $incidente->cargo_parecerista ?? 'Assessor Jurídico / Parecerista' }}<br>
-            {{ $incidente->oab_parecerista ?? 'OAB/UF nº XXXXXX' }}
+            {{ $incidente->cargo_parecerista ?? 'Assessor Jurídico / Parecerista' }}
+            @if($incidente->oab_parecerista)
+                <br>{{ $incidente->oab_parecerista }}
+            @endif
         </div>
     @endif
 </body>

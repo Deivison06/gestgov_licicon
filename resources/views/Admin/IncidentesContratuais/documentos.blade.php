@@ -111,13 +111,21 @@
                                  style="width: {{ $docsPercent }}%"></div>
                         </div>
                     </div>
-                    <form action="{{ route("$rotaBase.destroy", ['contrato_id' => $contrato->id, 'incidente_id' => $incidente->id]) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja reverter e excluir este aditivo? Esta ação não pode ser desfeita.');" class="ml-0 lg:ml-4">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-red-600 transition-colors duration-200 bg-red-50 border border-red-200 rounded-md hover:bg-red-100 hover:text-red-700">
-                            <i class="fas fa-trash-alt"></i> Reverter Aditivo
-                        </button>
-                    </form>
+                    <div class="flex items-center gap-2 ml-0 lg:ml-4">
+                        @if($docsGerados > 0)
+                            <a href="{{ route("$rotaBase.baixar-todos", ['contrato_id' => $contrato->id, 'incidente_id' => $incidente->id]) }}"
+                               class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-white transition-colors duration-200 bg-[var(--mint)] rounded-md hover:bg-[var(--teal-dark-bg)]">
+                                <i class="fas fa-download"></i> Baixar Todos
+                            </a>
+                        @endif
+                        <form action="{{ route("$rotaBase.destroy", ['contrato_id' => $contrato->id, 'incidente_id' => $incidente->id]) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja reverter e excluir este aditivo? Esta ação não pode ser desfeita.');">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-red-600 transition-colors duration-200 bg-red-50 border border-red-200 rounded-md hover:bg-red-100 hover:text-red-700">
+                                <i class="fas fa-trash-alt"></i> Reverter Aditivo
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -230,7 +238,7 @@
                                             class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white transition-colors duration-200 bg-[var(--mint)] rounded-md hover:bg-[var(--teal-dark-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:ring-offset-2">
                                         <i class="fas fa-file-pdf"></i> Gerar PDF
                                     </button>
-                                    @if ($requerAssinatura)
+                                    @if ($requerAssinatura && !$ehManual)
                                         <x-botao-solicitar-assinatura
                                             :processo-id="$processo->id"
                                             :tipo="$tipo"
@@ -252,8 +260,12 @@
                                                          data-assinante-bridge
                                                          data-tipo="{{ $tipo }}"
                                                          data-incidente-id="{{ $incidente->id }}"
-                                                         data-obter-url="{{ route('admin.processos.assinatura.selecao.obter', $processo->id) }}"
-                                                         data-salvar-url="{{ route('admin.processos.assinatura.selecao.salvar', $processo->id) }}">
+                                                         data-obter-url="{{ $ehManual
+                                                             ? route('admin.incidentes-manual.assinante.obter', ['contrato_id' => $contrato->id, 'incidente_id' => $incidente->id])
+                                                             : route('admin.processos.assinatura.selecao.obter', $processo->id) }}"
+                                                         data-salvar-url="{{ $ehManual
+                                                             ? route('admin.incidentes-manual.assinante.salvar', ['contrato_id' => $contrato->id, 'incidente_id' => $incidente->id])
+                                                             : route('admin.processos.assinatura.selecao.salvar', $processo->id) }}">
                                                         <div class="flex flex-col gap-3 p-4 bg-white border border-gray-200 rounded-lg assinante-item">
                                                             <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
                                                                 <div class="flex-1 min-w-[180px]">
@@ -262,7 +274,7 @@
                                                                             class="block w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 unidade-select"
                                                                             onchange="updateResponsavel(this, '{{ $tipo }}-i{{ $incidente->id }}')">
                                                                         <option value="">Selecione a Unidade</option>
-                                                                        @foreach ($processo->prefeitura->unidades as $unidade)
+                                                                        @foreach ($prefeitura->unidades as $unidade)
                                                                             <option value="{{ $unidade->id }}">{{ $unidade->nome }}</option>
                                                                         @endforeach
                                                                     </select>
@@ -397,6 +409,77 @@
     @include('Admin.Processos.partials.assinante-bridge-script')
 
     <script>
+        const unidadesAssinantes = @json($unidadesData);
+
+        function updateResponsavel(select, chaveDocumento) {
+            const selectedUnidade = unidadesAssinantes.find(u => u.id == select.value);
+            const item = select.closest('.assinante-item');
+            const respInput  = item.querySelector('.responsavel-input');
+            const portInput  = item.querySelector('.portaria-input');
+            const dataInput  = item.querySelector('.data-portaria-input');
+            if (selectedUnidade) {
+                if (respInput)  respInput.value  = selectedUnidade.servidor_responsavel || '';
+                if (portInput)  portInput.value  = selectedUnidade.numero_portaria || '';
+                if (dataInput)  dataInput.value  = selectedUnidade.data_portaria || '';
+            } else {
+                if (respInput)  respInput.value  = '';
+                if (portInput)  portInput.value  = '';
+                if (dataInput)  dataInput.value  = '';
+            }
+        }
+
+        function adicionarAssinante(chaveDocumento) {
+            const container = document.getElementById(`assinantes-container-${chaveDocumento}`);
+            const novo = document.createElement('div');
+            novo.className = 'flex flex-col gap-3 p-4 bg-white border border-gray-200 rounded-lg assinante-item';
+            novo.innerHTML = `
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+                    <div class="flex-1 min-w-[180px]">
+                        <label class="block mb-1 text-xs font-medium text-gray-600">Unidade</label>
+                        <select name="assinante_unidade[]"
+                                class="block w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 unidade-select"
+                                onchange="updateResponsavel(this, '${chaveDocumento}')">
+                            <option value="">Selecione a Unidade</option>
+                            ${unidadesAssinantes.map(u => `<option value="${u.id}">${u.nome}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="flex flex-col flex-1 gap-2 sm:flex-row sm:items-center sm:gap-3">
+                        <div class="flex-1 min-w-[200px]">
+                            <label class="block mb-1 text-xs font-medium text-gray-600">Responsável</label>
+                            <input type="text" name="assinante_responsavel[]" placeholder="Nome do Responsável" readonly class="block w-full px-3 py-2 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded-md shadow-sm responsavel-input">
+                        </div>
+                        <div class="flex-1 min-w-[150px]">
+                            <label class="block mb-1 text-xs font-medium text-gray-600">Nº Portaria</label>
+                            <input type="text" name="assinante_portaria[]" placeholder="Número da Portaria" readonly class="block w-full px-3 py-2 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded-md shadow-sm portaria-input">
+                        </div>
+                        <div class="flex-1 min-w-[150px]">
+                            <label class="block mb-1 text-xs font-medium text-gray-600">Data Portaria</label>
+                            <input type="text" name="assinante_data_portaria[]" placeholder="Data da Portaria" readonly class="block w-full px-3 py-2 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded-md shadow-sm data-portaria-input">
+                        </div>
+                    </div>
+                    <div class="flex justify-end mt-1">
+                        <button type="button" onclick="removerAssinante(this, '${chaveDocumento}')"
+                                class="px-2 py-1 text-xs font-medium text-white bg-red-500 rounded-md hover:bg-red-600">
+                            <i class="fas fa-trash"></i> Remover
+                        </button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(novo);
+        }
+
+        function removerAssinante(botao, chaveDocumento) {
+            const container = document.getElementById(`assinantes-container-${chaveDocumento}`);
+            const item = botao.closest('.assinante-item');
+            if (container.querySelectorAll('.assinante-item').length > 1) {
+                item.remove();
+            } else {
+                showMessage('É obrigatório manter pelo menos um assinante.', 'error');
+            }
+        }
+    </script>
+
+    <script>
         function showMessage(message, type) {
             const container = document.getElementById('message-container');
             const alertClass = type === 'success' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-red-100 text-red-800 border-red-200';
@@ -480,16 +563,38 @@
         });
 
         async function gerarPdfAditivo(contratoId, incidenteId, tipo, dataSelecionada, btnElement) {
-            // Se houver script de assinaturas, tenta salvar as assinaturas primeiro
-            if (typeof window.salvarSelecaoAntesDeGerar === 'function') {
-                const tr = btnElement.closest('tr').nextElementSibling;
-                if (tr) {
-                    const bridgeContainer = tr.querySelector(`[data-assinante-bridge][data-tipo="${tipo}"]`);
-                    if (bridgeContainer) {
-                        try {
-                            await window.salvarSelecaoAntesDeGerar({{ $processo?->id ?? 'null' }}, tipo, null, null, incidenteId);
-                        } catch (e) { console.warn('Falha salvar assinaturas antes de gerar', e); }
-                    }
+            const ehManual = {{ $ehManual ? 'true' : 'false' }};
+            const tr = btnElement.closest('tr').nextElementSibling;
+            const bridgeContainer = tr ? tr.querySelector(`[data-assinante-bridge][data-tipo="${tipo}"]`) : null;
+
+            if (bridgeContainer) {
+                if (ehManual) {
+                    // Para contratos manuais: salvar assinantes diretamente via rota própria
+                    try {
+                        const assinantesItems = bridgeContainer.querySelectorAll('.assinante-item');
+                        const assinantes = [];
+                        assinantesItems.forEach(item => {
+                            const responsavel = item.querySelector('.responsavel-input')?.value ?? '';
+                            const unidadeNome = item.querySelector('.unidade-select option:checked')?.text ?? '';
+                            const portaria = item.querySelector('.portaria-input')?.value ?? '';
+                            const dataPortaria = item.querySelector('.data-portaria-input')?.value ?? '';
+                            if (responsavel) {
+                                assinantes.push({ responsavel, unidade_nome: unidadeNome, portaria, data_portaria: dataPortaria });
+                            }
+                        });
+                        if (assinantes.length > 0) {
+                            await fetch(bridgeContainer.dataset.salvarUrl, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                                body: JSON.stringify({ tipo_documento: tipo, assinantes })
+                            });
+                        }
+                    } catch (e) { console.warn('Falha salvar assinantes manual', e); }
+                } else if (typeof window.salvarSelecaoAntesDeGerar === 'function') {
+                    // Para contratos do sistema: usar o bridge script padrão
+                    try {
+                        await window.salvarSelecaoAntesDeGerar({{ $processo?->id ?? 'null' }}, tipo, null, null, incidenteId);
+                    } catch (e) { console.warn('Falha salvar assinaturas antes de gerar', e); }
                 }
             }
 

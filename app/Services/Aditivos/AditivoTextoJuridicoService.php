@@ -4,6 +4,7 @@ namespace App\Services\Aditivos;
 
 use App\Enums\ResponsabilidadeAtrasoEnum;
 use App\Helpers\ValorPorExtenso;
+use Carbon\Carbon;
 
 /**
  * Único lugar com a árvore de decisão textual dos documentos de aditivo
@@ -42,7 +43,25 @@ class AditivoTextoJuridicoService
 
         if ($vm->envolvePrazo()) {
             $artigo = $vm->artigoFundamentacaoPrazo();
-            $blocos['prazo'] = "prorrogar o prazo de vigência do instrumento contratual em referência, firmado entre as partes pactuantes, nos termos do {$artigo} da Lei Federal nº 14.133/2021";
+            $meses = (int) ($vm->incidente->meses_prorrogacao ?? 0);
+            $mesesExtenso = strtoupper(ValorPorExtenso::numero($meses));
+            $unidade = $vm->ehObras() ? 'dia' : 'mês';
+            $unidadePlural = $vm->ehObras() ? 'dias' : 'meses';
+            $unidadeTexto = $meses === 1 ? $unidade : $unidadePlural;
+
+            $dataBase = $vm->incidente->data_finalizacao_base
+                ? Carbon::parse($vm->incidente->data_finalizacao_base)
+                : null;
+
+            if ($dataBase && $meses > 0) {
+                $dataFim = $dataBase->copy()->addMonths($meses);
+                Carbon::setLocale('pt_BR');
+                $periodoTexto = ", compreendendo o período de {$dataBase->translatedFormat('d \d\e F \d\e Y')} a {$dataFim->translatedFormat('d \d\e F \d\e Y')}";
+            } else {
+                $periodoTexto = '';
+            }
+
+            $blocos['prazo'] = "prorrogar o prazo de vigência do instrumento contratual em referência, firmado entre as partes pactuantes, por mais {$meses} ({$mesesExtenso}) {$unidadeTexto}{$periodoTexto}, nos termos do {$artigo} da Lei Federal nº 14.133/2021";
         }
 
         if ($vm->envolveValor()) {

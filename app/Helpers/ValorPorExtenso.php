@@ -71,6 +71,19 @@ class ValorPorExtenso
         return trim($texto);
     }
 
+    /**
+     * Converte um número inteiro não-negativo para palavras em português.
+     * Exemplo: 12 → "doze", 24 → "vinte e quatro".
+     */
+    public static function numero(int $n): string
+    {
+        if ($n === 0) {
+            return 'zero';
+        }
+
+        return self::escreverNumero($n);
+    }
+
     private static function escreverNumero($numero)
     {
         if ($numero == 0) {

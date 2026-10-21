@@ -47,7 +47,12 @@
 
     <ul class="list-content">
         @if($vm->envolvePrazo())
-            <li>a prorrogação do prazo de execução e de vigência por mais {{ $incidente->meses_prorrogacao }} ({{ $incidente->meses_prorrogacao }}) {{ $vm->ehObras() ? 'dias' : 'meses' }};</li>
+            @php
+                $mesesNum = (int) ($incidente->meses_prorrogacao ?? 0);
+                $mesesExt = strtoupper(\App\Helpers\ValorPorExtenso::numero($mesesNum));
+                $unidade = $vm->ehObras() ? ($mesesNum === 1 ? 'dia' : 'dias') : ($mesesNum === 1 ? 'mês' : 'meses');
+            @endphp
+            <li>a prorrogação do prazo de execução e de vigência por mais {{ $mesesNum }} ({{ $mesesExt }}) {{ $unidade }};</li>
         @endif
         @if($vm->envolveValor())
             <li>
@@ -59,9 +64,11 @@
         @endif
     </ul>
 
+    @if(($resumo['valor_inicial_atualizado'] ?? 0) > 0)
     <div class="clause-content">
-        O valor inicial atualizado do contrato é de R$ {{ number_format($resumo['valor_inicial_atualizado'] ?? 0, 2, ',', '.') }}.
+        O valor inicial atualizado do contrato é de R$ {{ number_format($resumo['valor_inicial_atualizado'], 2, ',', '.') }}.
     </div>
+    @endif
 
     @if($vm->temAcrescimo())
         <div class="clause-content">
@@ -161,14 +168,24 @@
 
     <div class="page-break"></div>
 
+    @php
+        $orgaoSolicitante = $contrato->dados_contratante['orgao_responsavel'] ?? 'Secretaria';
+        $nomeOficio = (isset($documentoSelecao) && is_array($documentoSelecao->assinantes) && count($documentoSelecao->assinantes) > 0)
+            ? $documentoSelecao->assinantes[0]['responsavel']
+            : ($incidente->nome_solicitante ?? $orgaoSolicitante);
+        $cargoOficio = (isset($documentoSelecao) && is_array($documentoSelecao->assinantes) && count($documentoSelecao->assinantes) > 0)
+            ? ($documentoSelecao->assinantes[0]['unidade_nome'] ?? $orgaoSolicitante)
+            : ($incidente->cargo_solicitante ?? $orgaoSolicitante);
+    @endphp
+
     <div style="margin-top: 40px; font-size: 11pt;">
         <p>
-            <strong>De:</strong> {{ $prefeitura->autoridade_competente ?? 'Prefeito Municipal' }} <br>
+            <strong>De:</strong> {{ $orgaoSolicitante }} <br>
             <strong>Para:</strong> Procuradoria/Assessoria Jurídica
         </p>
         <p style="text-indent: 40px;">Sr. Procurador(a)/Assessor(a) Jurídico(a),</p>
         <p style="text-indent: 40px;">
-            Tendo em vista a solicitação da {{ $contrato->dados_contratante['orgao_responsavel'] ?? 'Secretaria' }}, sobre o Aditivo ao Contrato n. {{ $vm->numeroContrato }}, solicitamos a Vossa Senhoria que emita parecer jurídico sobre a legalidade do justificado e requerido.
+            Tendo em vista a solicitação da {{ $orgaoSolicitante }}, sobre o Aditivo ao Contrato n. {{ $vm->numeroContrato }}, solicitamos a Vossa Senhoria que emita parecer jurídico sobre a legalidade do justificado e requerido.
         </p>
         <p style="text-indent: 40px;">Sem mais, pedimos a maior brevidade possível.</p>
         <p style="text-indent: 40px;">Atenciosamente.</p>
@@ -176,8 +193,8 @@
 
     <div class="signature-block">
         ___________________________________<br>
-        <strong>{{ $prefeitura->autoridade_competente ?? 'Prefeito Municipal' }}</strong><br>
-        {{ $prefeitura->cargo_autoridade ?? 'Prefeito Municipal' }}
+        <strong>{{ mb_strtoupper($nomeOficio) }}</strong><br>
+        {{ $cargoOficio }}
     </div>
 </body>
 </html>

@@ -10,9 +10,11 @@ use App\Models\Documento;
 use App\Models\DocumentoSelecaoAssinantes;
 use App\Models\IncidenteContratual;
 use App\Models\LoteContratado;
+use App\Models\Unidade;
 use App\Services\Aditivos\AditivoCalculoFinanceiroService;
 use App\Services\IncidenteContratualService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 /**
@@ -447,7 +449,11 @@ class IncidenteContratualController extends Controller
         // assinatura eletrônica (que depende de processo_id). Os documentos saem para
         // assinatura física, como já ocorre no fluxo de Fiscalização.
         $processo = $contrato instanceof Contrato ? $contrato->processo : null;
+        $prefeitura = $processo?->prefeitura ?? $contrato->prefeitura;
         $temAssinaturaEletronica = $processo !== null;
+        // Manual ou sistema: sempre permitir selecionar assinante para impressão física.
+        // $temAssinaturaEletronica controla apenas o botão de assinatura eletrônica.
+        $permitirSelecaoAssinante = true;
 
         $documentos = [
             'capa_aditivo' => [
@@ -458,7 +464,7 @@ class IncidenteContratualController extends Controller
             'solicitacao_aditivo' => [
                 'titulo' => 'Solicitação do Aditivo',
                 'cor' => '#009496',
-                'requer_assinatura' => $temAssinaturaEletronica,
+                'requer_assinatura' => $permitirSelecaoAssinante,
                 'campos' => array_merge(
                     $this->camposValorSolicitacao($incidente),
                     [
@@ -501,7 +507,7 @@ class IncidenteContratualController extends Controller
             $documentos['parecer_tecnico_aditivo'] = [
                 'titulo' => 'Parecer Técnico',
                 'cor' => '#7c3aed', // roxo
-                'requer_assinatura' => $temAssinaturaEletronica,
+                'requer_assinatura' => $permitirSelecaoAssinante,
                 'campos' => $this->camposParecerTecnico($incidente),
             ];
         }
@@ -521,7 +527,7 @@ class IncidenteContratualController extends Controller
             'parecer_juridico_aditivo' => [
                 'titulo' => 'Parecer Jurídico',
                 'cor' => '#dc2626', // vermelho
-                'requer_assinatura' => $temAssinaturaEletronica,
+                'requer_assinatura' => $permitirSelecaoAssinante,
                 'campos' => [
                     [
                         'name' => 'nome_parecerista',
@@ -546,13 +552,13 @@ class IncidenteContratualController extends Controller
             'autorizacao_prefeito_aditivo' => [
                 'titulo' => 'Autorização do Prefeito',
                 'cor' => '#ea580c', // laranja
-                'requer_assinatura' => $temAssinaturaEletronica,
+                'requer_assinatura' => $permitirSelecaoAssinante,
                 'campos' => [],
             ],
             'termo_aditivo' => [
                 'titulo' => 'Termo Aditivo ao Contrato',
                 'cor' => '#0284c7', // azul
-                'requer_assinatura' => $temAssinaturaEletronica,
+                'requer_assinatura' => $permitirSelecaoAssinante,
                 'campos' => [],
             ],
         ];
@@ -586,9 +592,7 @@ class IncidenteContratualController extends Controller
         // para aditivos de Contrato Manual).
         $documentosGerados = Documento::where('incidente_id', $incidente->id)->get();
 
-        $resumoFinanceiro = in_array($incidente->tipo, ['valor', 'prazo_valor'])
-            ? $this->calculoFinanceiro->resumoFinanceiro($incidente, $contrato)
-            : null;
+        $resumoFinanceiro = $this->calculoFinanceiro->resumoFinanceiro($incidente, $contrato);
         $numeroOrdinal = $this->calculoFinanceiro->numeroOrdinal($incidente, $contrato);
         $dotacoesAtuais = $incidente->dotacoes()->get();
         $dotacaoSugerida = [
@@ -604,9 +608,25 @@ class IncidenteContratualController extends Controller
         $ehAditivoLegado = $incidente->ehAditivoLegado();
         $camposAberturaFaltantes = $incidente->camposAberturaTceFaltantes();
 
+        $unidadesData = $prefeitura?->unidades->map(function ($u) {
+            $dataPortaria = $u->data_portaria;
+            if ($dataPortaria && ! ($dataPortaria instanceof \Carbon\Carbon)) {
+                try { $dataPortaria = \Carbon\Carbon::parse($dataPortaria); } catch (\Exception $e) { $dataPortaria = null; }
+            }
+            return [
+                'id'                  => $u->id,
+                'nome'                => $u->nome,
+                'servidor_responsavel'=> $u->servidor_responsavel,
+                'cargo_responsavel'   => $u->cargo_responsavel,
+                'numero_portaria'     => $u->numero_portaria,
+                'data_portaria'       => $dataPortaria ? $dataPortaria->format('Y-m-d') : null,
+            ];
+        }) ?? collect();
+
         return view('Admin.IncidentesContratuais.documentos', compact(
-            'contrato', 'incidente', 'processo', 'documentos', 'documentosGerados', 'temAssinaturaEletronica',
-            'resumoFinanceiro', 'numeroOrdinal', 'dotacoesAtuais', 'dotacaoSugerida', 'ehAditivoLegado', 'camposAberturaFaltantes'
+            'contrato', 'incidente', 'processo', 'prefeitura', 'documentos', 'documentosGerados', 'temAssinaturaEletronica',
+            'resumoFinanceiro', 'numeroOrdinal', 'dotacoesAtuais', 'dotacaoSugerida', 'ehAditivoLegado', 'camposAberturaFaltantes',
+            'unidadesData'
         ));
     }
 
@@ -856,13 +876,11 @@ class IncidenteContratualController extends Controller
 
         $data_selecionada = $documento ? $documento->data_selecionada : null;
 
-        // Recupera a seleção de assinantes, se houver (só existe quando há Processo)
-        $documentoSelecao = $processo
-            ? DocumentoSelecaoAssinantes::where('processo_id', $processo->id)
-                ->where('incidente_id', $incidente->id)
-                ->where('tipo_documento', $tipo)
-                ->first()
-            : null;
+        // Recupera a seleção de assinantes, filtrada pelo incidente (processo_id pode ser nulo para manuais)
+        $documentoSelecao = DocumentoSelecaoAssinantes::where('incidente_id', $incidente->id)
+            ->where('tipo_documento', $tipo)
+            ->when($processo, fn ($q) => $q->where('processo_id', $processo->id))
+            ->first();
 
         // Marca como gerado
         if ($documento) {
@@ -882,7 +900,7 @@ class IncidenteContratualController extends Controller
         $vm = app(\App\Services\Aditivos\AditivoViewModelFactory::class)->build($incidente, $contrato, $objetoContrato);
         $textoJuridico = app(\App\Services\Aditivos\AditivoTextoJuridicoService::class);
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView($viewName, compact(
+        $pdfOutput = \Barryvdh\DomPDF\Facade\Pdf::loadView($viewName, compact(
             'contrato',
             'incidente',
             'processo',
@@ -893,9 +911,216 @@ class IncidenteContratualController extends Controller
             'documentoSelecao',
             'vm',
             'textoJuridico'
-        ))->setPaper('a4', 'portrait');
+        ))->setPaper('a4', 'portrait')->output();
 
-        return $pdf->stream($tituloArquivo.'.pdf');
+        // Mesclar arquivo PDF anexado nos documentos que têm essa opção
+        $pathAnexoMesclavel = null;
+        if ($tipo === 'aceite_documentacao_aditivo' && $incidente->arquivo_aceite_documentacao_path) {
+            $pathAnexoMesclavel = Storage::disk('public')->path($incidente->arquivo_aceite_documentacao_path);
+        } elseif ($tipo === 'solicitacao_aditivo' && $incidente->arquivo_solicitacao_path) {
+            $pathAnexoMesclavel = Storage::disk('public')->path($incidente->arquivo_solicitacao_path);
+        }
+
+        if ($pathAnexoMesclavel && file_exists($pathAnexoMesclavel)) {
+            $tmpDeclaracao = tempnam(sys_get_temp_dir(), 'adit_decl_') . '.pdf';
+            file_put_contents($tmpDeclaracao, $pdfOutput);
+
+            $tmpMesclado = tempnam(sys_get_temp_dir(), 'adit_merged_') . '.pdf';
+            exec('gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile=' . escapeshellarg($tmpMesclado)
+                . ' ' . escapeshellarg($tmpDeclaracao) . ' ' . escapeshellarg($pathAnexoMesclavel), $out, $exitCode);
+
+            @unlink($tmpDeclaracao);
+
+            if ($exitCode === 0 && file_exists($tmpMesclado) && filesize($tmpMesclado) > 0) {
+                $conteudoMesclado = file_get_contents($tmpMesclado);
+                @unlink($tmpMesclado);
+                return response($conteudoMesclado, 200, [
+                    'Content-Type'        => 'application/pdf',
+                    'Content-Disposition' => 'inline; filename="' . $tituloArquivo . '.pdf"',
+                ]);
+            }
+            @unlink($tmpMesclado);
+        }
+
+        return response($pdfOutput, 200, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . $tituloArquivo . '.pdf"',
+        ]);
+    }
+
+    /**
+     * GET: retorna a seleção de assinantes salva para um documento do aditivo
+     * de um ContratoManual (sem processo_id). Retorna JSON no mesmo formato
+     * que SelecaoAssinanteController::obter(), para reutilizar o bridge script.
+     */
+    public function assinanteObter(Request $request, $contrato_id, $incidente_id)
+    {
+        $contrato = $this->resolverContrato($contrato_id);
+        $incidente = $this->buscarIncidente($contrato, $incidente_id);
+
+        $tipo = $request->query('tipo_documento');
+
+        $selecao = DocumentoSelecaoAssinantes::where('incidente_id', $incidente->id)
+            ->where('tipo_documento', $tipo)
+            ->whereNull('processo_id')
+            ->first();
+
+        return response()->json([
+            'assinantes' => $selecao?->assinantes ?? [],
+        ]);
+    }
+
+    /**
+     * POST: salva a seleção de assinantes para um documento do aditivo
+     * de um ContratoManual (sem processo_id).
+     */
+    public function assinanteSalvar(Request $request, $contrato_id, $incidente_id)
+    {
+        $contrato = $this->resolverContrato($contrato_id);
+        $incidente = $this->buscarIncidente($contrato, $incidente_id);
+
+        $dados = $request->validate([
+            'tipo_documento' => 'required|string',
+            'assinantes'     => 'required|array',
+            'assinantes.*.responsavel'    => 'nullable|string',
+            'assinantes.*.unidade_nome'   => 'nullable|string',
+            'assinantes.*.portaria'       => 'nullable|string',
+            'assinantes.*.data_portaria'  => 'nullable|string',
+        ]);
+
+        // Enriquecer com o nome da unidade a partir do id, se vier apenas o id
+        $prefeitura = $contrato->prefeitura;
+        $assinantesEnriquecidos = collect($dados['assinantes'])->map(function ($a) use ($prefeitura) {
+            if (empty($a['unidade_nome']) && ! empty($a['unidade_id'])) {
+                $unidade = $prefeitura?->unidades()->find($a['unidade_id']);
+                $a['unidade_nome'] = $unidade?->nome ?? '';
+                $responsavel = $unidade?->responsavel;
+                if ($responsavel) {
+                    $a['responsavel']   = $a['responsavel']   ?? $responsavel->nome ?? '';
+                    $a['portaria']      = $a['portaria']      ?? $responsavel->portaria ?? '';
+                    $a['data_portaria'] = $a['data_portaria'] ?? ($responsavel->data_portaria?->format('d/m/Y') ?? '');
+                }
+            }
+            return $a;
+        })->values()->toArray();
+
+        DocumentoSelecaoAssinantes::updateOrCreate(
+            [
+                'processo_id'    => null,
+                'incidente_id'   => $incidente->id,
+                'tipo_documento' => $dados['tipo_documento'],
+                'homologacao_id' => null,
+                'vencedor_id'    => null,
+            ],
+            ['assinantes' => $assinantesEnriquecidos]
+        );
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * GET: gera e baixa todos os documentos do aditivo em um único PDF mesclado.
+     * Usa a mesma lógica de gerarDocumentoPdf() para cada tipo, salva temporariamente
+     * e mescla com Ghostscript.
+     */
+    public function baixarTodosDocumentos($contrato_id, $incidente_id)
+    {
+        $ehManual = request()->routeIs('admin.incidentes-manual.*');
+        $contrato = $ehManual
+            ? ContratoManual::with(['prefeitura', 'empresa'])->findOrFail($contrato_id)
+            : Contrato::with(['processo.prefeitura', 'processo.detalhe', 'processo.documentos'])->findOrFail($contrato_id);
+        $incidente = IncidenteContratual::with(['itens.loteContratado', 'dotacoes'])
+            ->where('contratavel_id', $contrato->id)
+            ->where('contratavel_type', get_class($contrato))
+            ->findOrFail($incidente_id);
+
+        $processo = $contrato instanceof Contrato ? $contrato->processo : null;
+        $prefeitura = $processo?->prefeitura ?? $contrato->prefeitura;
+        $detalhe = $processo?->detalhe;
+        $objetoContrato = $processo?->objeto ?? $contrato->objeto ?? '';
+
+        if ($contrato instanceof ContratoManual) {
+            $empresa = $contrato->empresa;
+            $contrato->dados_contratante = [
+                'razao_social'    => $empresa?->razao_social ?? 'CONTRATADA',
+                'cnpj'            => $empresa?->cnpj_formatado ?? $empresa?->cnpj ?? 'CNPJ',
+                'endereco'        => $empresa?->endereco ?? 'Endereço da Empresa',
+                'representante'   => $empresa?->representante ?? 'Representante não informado',
+                'cpf_representante' => 'CPF',
+                'orgao_responsavel' => $contrato->secretaria?->nome ?? 'Secretaria Municipal',
+            ];
+        }
+
+        $vm = app(\App\Services\Aditivos\AditivoViewModelFactory::class)->build($incidente, $contrato, $objetoContrato);
+        $textoJuridico = app(\App\Services\Aditivos\AditivoTextoJuridicoService::class);
+
+        $tiposView = [
+            'capa_aditivo'               => 'Admin.Processos.pdf.aditivos.capa',
+            'solicitacao_aditivo'        => 'Admin.Processos.pdf.aditivos.solicitacao',
+            'aceite_documentacao_aditivo' => 'Admin.Processos.pdf.aditivos.aceite_documentacao',
+            'parecer_juridico_aditivo'   => 'Admin.Processos.pdf.aditivos.parecer',
+            'autorizacao_prefeito_aditivo' => 'Admin.Processos.pdf.aditivos.autorizacao',
+            'termo_aditivo'              => $incidente->categoria === 'obras'
+                ? 'Admin.Processos.pdf.aditivos.termo_obras'
+                : 'Admin.Processos.pdf.aditivos.termo_compras',
+        ];
+
+        if ($incidente->categoria === 'obras') {
+            $tiposView = array_merge(['parecer_tecnico_aditivo' => 'Admin.Processos.pdf.aditivos.parecer_tecnico'], $tiposView);
+        }
+        if ($incidente->temAcrescimoDeValor()) {
+            $tiposView['dotacao_orcamentaria_aditivo'] = 'Admin.Processos.pdf.aditivos.dotacao_orcamentaria';
+        }
+
+        $arquivosTemp = [];
+
+        foreach ($tiposView as $tipo => $viewName) {
+            $documento = Documento::where('incidente_id', $incidente->id)
+                ->where('tipo_documento', $tipo)->first();
+            $data_selecionada = $documento?->data_selecionada ?? now()->toDateString();
+
+            $documentoSelecao = DocumentoSelecaoAssinantes::where('incidente_id', $incidente->id)
+                ->where('tipo_documento', $tipo)
+                ->when($processo, fn ($q) => $q->where('processo_id', $processo->id))
+                ->first();
+
+            $pdfOutput = \Barryvdh\DomPDF\Facade\Pdf::loadView($viewName, compact(
+                'contrato', 'incidente', 'processo', 'prefeitura', 'detalhe',
+                'objetoContrato', 'data_selecionada', 'documentoSelecao', 'vm', 'textoJuridico'
+            ))->setPaper('a4', 'portrait')->output();
+
+            $tmpPath = tempnam(sys_get_temp_dir(), 'aditivo_') . '.pdf';
+            file_put_contents($tmpPath, $pdfOutput);
+            $arquivosTemp[] = $tmpPath;
+
+            // Mesclar arquivo anexado ao aceite, se existir
+            if ($tipo === 'aceite_documentacao_aditivo' && $incidente->arquivo_aceite_documentacao_path) {
+                $pathAnexo = Storage::disk('public')->path($incidente->arquivo_aceite_documentacao_path);
+                if (file_exists($pathAnexo)) {
+                    $arquivosTemp[] = $pathAnexo;
+                }
+            }
+        }
+
+        if (empty($arquivosTemp)) {
+            return back()->withErrors(['pdf' => 'Nenhum documento gerado para baixar.']);
+        }
+
+        $outputPath = tempnam(sys_get_temp_dir(), 'aditivo_todos_') . '.pdf';
+        $listaArquivos = implode(' ', array_map('escapeshellarg', $arquivosTemp));
+        exec("gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile=" . escapeshellarg($outputPath) . " {$listaArquivos}", $saida, $status);
+
+        // Limpar temporários (exceto o do anexo, que não é nosso)
+        foreach ($arquivosTemp as $tmp) {
+            if (str_starts_with($tmp, sys_get_temp_dir()) && file_exists($tmp)) {
+                @unlink($tmp);
+            }
+        }
+
+        $numContratoSafe = str_replace(['/', '\\'], '-', $contrato->numero_contrato ?? 'Sem_Numero');
+        $nomeArquivo = "Aditivo_{$numContratoSafe}_Completo.pdf";
+
+        return response()->download($outputPath, $nomeArquivo)->deleteFileAfterSend();
     }
 
     public function destroy($contrato_id, $incidente_id)

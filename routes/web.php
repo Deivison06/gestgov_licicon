@@ -365,6 +365,8 @@ Route::prefix('admin')
                 ->name('incidentes.completar-dados-tce');
             Route::delete('/contratos/{contrato_id}/incidentes/{incidente_id}', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'destroy'])
                 ->name('incidentes.destroy');
+            Route::get('/contratos/{contrato_id}/incidentes/{incidente_id}/baixar-todos', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'baixarTodosDocumentos'])
+                ->name('incidentes.baixar-todos');
         });
 
         // Incidentes Contratuais (Aditivos) — Contratos Manuais/Externos (App\Models\ContratoManual,
@@ -393,6 +395,14 @@ Route::prefix('admin')
                 ->name('incidentes-manual.completar-dados-tce');
             Route::delete('/contratos-manuais/{contrato_id}/incidentes/{incidente_id}', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'destroy'])
                 ->name('incidentes-manual.destroy');
+            // Seleção de assinantes para assinatura física (sem assinatura eletrônica)
+            Route::get('/contratos-manuais/{contrato_id}/incidentes/{incidente_id}/assinante/obter', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'assinanteObter'])
+                ->name('incidentes-manual.assinante.obter');
+            Route::post('/contratos-manuais/{contrato_id}/incidentes/{incidente_id}/assinante/salvar', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'assinanteSalvar'])
+                ->name('incidentes-manual.assinante.salvar');
+            // Baixar todos os documentos do aditivo num único PDF
+            Route::get('/contratos-manuais/{contrato_id}/incidentes/{incidente_id}/baixar-todos', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'baixarTodosDocumentos'])
+                ->name('incidentes-manual.baixar-todos');
         });
 
         // ========================================

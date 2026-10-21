@@ -22,6 +22,7 @@ class IncidenteContratualService
                 'justificativa' => $dados['justificativa'] ?? $incidente->justificativa,
                 'arquivo_solicitacao_path' => $dados['arquivo_solicitacao_path'] ?? $incidente->arquivo_solicitacao_path,
                 'arquivo_orcamento_obra_path' => $dados['arquivo_orcamento_obra_path'] ?? $incidente->arquivo_orcamento_obra_path,
+                'arquivo_aceite_documentacao_path' => $dados['arquivo_aceite_documentacao_path'] ?? $incidente->arquivo_aceite_documentacao_path,
                 'nome_solicitante' => $dados['nome_solicitante'] ?? $incidente->nome_solicitante,
                 'cargo_solicitante' => $dados['cargo_solicitante'] ?? $incidente->cargo_solicitante,
                 'nome_parecerista' => $dados['nome_parecerista'] ?? $incidente->nome_parecerista,

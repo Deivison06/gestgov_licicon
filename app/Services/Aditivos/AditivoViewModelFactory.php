@@ -22,9 +22,7 @@ class AditivoViewModelFactory
     {
         $tipo = $incidente->tipo;
 
-        $resumoFinanceiro = in_array($tipo, ['valor', 'prazo_valor'], true)
-            ? $this->calculoFinanceiro->resumoFinanceiro($incidente, $contrato)
-            : [];
+        $resumoFinanceiro = $this->calculoFinanceiro->resumoFinanceiro($incidente, $contrato);
 
         return new AditivoViewModel(
             incidente: $incidente,

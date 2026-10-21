@@ -120,7 +120,7 @@
 
     <div class="clause-title">CLÁUSULA TERCEIRA – DA PUBLICAÇÃO</div>
     <div class="clause-content">
-        O Município de {{ $prefeitura->cidade ?? 'Cidade' }} – {{ $prefeitura->uf ?? 'PI' }} providenciará, sem ônus para a CONTRATADA, a publicação do presente Termo Aditivo nos meios legais.
+        O Município de {{ $prefeitura->cidade ?? 'Cidade' }} providenciará, sem ônus para a CONTRATADA, a publicação do presente Termo Aditivo nos meios legais.
     </div>
 
     <div class="clause-content" style="margin-top: 30px;">
@@ -174,7 +174,7 @@
             </tr>
             <tr>
                 <td style="padding:6px; font-weight:bold;">CONTRATANTE:</td>
-                <td style="padding:6px;">{{ $contrato->dados_contratante['orgao_responsavel'] ?? ($prefeitura->nome ?? 'Município') }}</td>
+                <td style="padding:6px;">{{ $prefeitura->nome ?? 'Município' }}</td>
             </tr>
             <tr>
                 <td style="padding:6px; font-weight:bold;">CONTRATADO:</td>
@@ -186,7 +186,13 @@
             </tr>
             <tr>
                 <td style="padding:6px; font-weight:bold;">ALTERAÇÃO:</td>
-                <td style="padding:6px;">{{ $vm->tituloTipoAlteracao() }}{{ $vm->envolveValor() ? ' — novo valor global: R$ '.number_format($resumo['valor_final_contrato'] ?? 0, 2, ',', '.') : '' }}{{ $vm->envolvePrazo() ? ' — prorrogação de '.$incidente->meses_prorrogacao.' meses' : '' }}.</td>
+                <td style="padding:6px;">
+                    @php
+                        $mesesExtratoNum = (int) ($incidente->meses_prorrogacao ?? 0);
+                        $mesesExtratoExt = strtoupper(\App\Helpers\ValorPorExtenso::numero($mesesExtratoNum));
+                    @endphp
+                    {{ $vm->tituloTipoAlteracao() }}{{ $vm->envolveValor() ? ' — novo valor global: R$ '.number_format($resumo['valor_final_contrato'] ?? 0, 2, ',', '.') : '' }}{{ $vm->envolvePrazo() && $mesesExtratoNum > 0 ? " — prorrogação de {$mesesExtratoNum} ({$mesesExtratoExt}) " . ($mesesExtratoNum === 1 ? 'mês' : 'meses') : '' }}.
+                </td>
             </tr>
             <tr>
                 <td style="padding:6px; font-weight:bold;">FUNDAMENTAÇÃO LEGAL:</td>
