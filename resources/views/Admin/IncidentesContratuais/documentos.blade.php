@@ -53,7 +53,7 @@
                 @if(in_array('tipo_objeto_contrato', $camposAberturaFaltantes))
                     <div>
                         <label class="block mb-1 text-xs font-medium text-gray-700">Tipo de Objeto do Contrato</label>
-                        <select name="tipo_objeto_contrato" class="block w-full px-3 py-2 text-sm border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">
+                        <select name="tipo_objeto_contrato" class="block w-full px-3 py-2 text-sm border-gray-300 rounded-md shadow-sm focus:ring-[var(--mint)] focus:border-[var(--mint)]">
                             <option value="">Selecione...</option>
                             <option value="compra">Compra (Fornecimento)</option>
                             <option value="servico">Serviço</option>
@@ -63,7 +63,7 @@
                 @if(in_array('contrato_continuo', $camposAberturaFaltantes))
                     <div>
                         <label class="block mb-1 text-xs font-medium text-gray-700">Contrato Contínuo?</label>
-                        <select name="contrato_continuo" class="block w-full px-3 py-2 text-sm border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">
+                        <select name="contrato_continuo" class="block w-full px-3 py-2 text-sm border-gray-300 rounded-md shadow-sm focus:ring-[var(--mint)] focus:border-[var(--mint)]">
                             <option value="">Selecione...</option>
                             <option value="1">Sim</option>
                             <option value="0">Não</option>
@@ -73,7 +73,7 @@
                 @if(in_array('natureza_alteracao', $camposAberturaFaltantes))
                     <div>
                         <label class="block mb-1 text-xs font-medium text-gray-700">Natureza da Alteração de Valor</label>
-                        <select name="natureza_alteracao" class="block w-full px-3 py-2 text-sm border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">
+                        <select name="natureza_alteracao" class="block w-full px-3 py-2 text-sm border-gray-300 rounded-md shadow-sm focus:ring-[var(--mint)] focus:border-[var(--mint)]">
                             <option value="">Selecione...</option>
                             <option value="acrescimo">Acréscimo</option>
                             <option value="supressao">Supressão</option>
@@ -82,7 +82,7 @@
                     </div>
                 @endif
                 <div class="sm:col-span-2">
-                    <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#009496] rounded-md hover:bg-[#007b85]">
+                    <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[var(--mint)] rounded-md hover:bg-[var(--teal-dark-bg)]">
                         <i class="fas fa-save"></i> Salvar Dados Complementares
                     </button>
                 </div>
@@ -107,7 +107,7 @@
                             </span>
                         </div>
                         <div class="w-full h-2 overflow-hidden bg-gray-200 rounded-full">
-                            <div class="h-2 rounded-full transition-all duration-300 {{ $docsPercent === 100 ? 'bg-green-500' : 'bg-[#009496]' }}"
+                            <div class="h-2 rounded-full transition-all duration-300 {{ $docsPercent === 100 ? 'bg-green-500' : 'bg-[var(--mint)]' }}"
                                  style="width: {{ $docsPercent }}%"></div>
                         </div>
                     </div>
@@ -191,7 +191,7 @@
                                 </div>
                                 @if ($temCampos || $requerAssinatura)
                                     <button type="button"
-                                            class="inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 text-xs font-medium text-[#009496] bg-[#009496]/10 rounded-md hover:bg-[#009496]/20 transition-colors"
+                                            class="inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 text-xs font-medium text-[var(--teal-text)] bg-[var(--mint)]/10 rounded-md hover:bg-[var(--mint)]/20 transition-colors"
                                             onclick="document.getElementById('{{ $accordionId }}').classList.toggle('hidden')">
                                         <i class="fas fa-sliders-h text-[10px]"></i>
                                         <span class="collapse-text">
@@ -210,7 +210,7 @@
                             <td class="flex items-center gap-2 px-6 py-4 text-center">
                                 <div class="relative">
                                     <input type="date"
-                                           class="w-40 px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#009496] focus:border-[#009496]"
+                                           class="w-40 px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)]"
                                            id="{{ $dataId }}"
                                            x-model="data_doc_{{ $tipo }}"
                                            @blur="saveField('data_doc_{{ $tipo }}')"
@@ -227,7 +227,7 @@
                                 <div class="flex justify-center space-x-2">
                                     <button type="button"
                                             onclick="gerarPdfAditivo('{{ $contrato->id }}', '{{ $incidente->id }}', '{{ $tipo }}', document.getElementById('{{ $dataId }}').value, this)"
-                                            class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white transition-colors duration-200 bg-[#009496] rounded-md hover:bg-[#007b85] focus:outline-none focus:ring-2 focus:ring-[#009496] focus:ring-offset-2">
+                                            class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white transition-colors duration-200 bg-[var(--mint)] rounded-md hover:bg-[var(--teal-dark-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:ring-offset-2">
                                         <i class="fas fa-file-pdf"></i> Gerar PDF
                                     </button>
                                     @if ($requerAssinatura)
@@ -314,7 +314,7 @@
                                                     </template>
                                                     <button type="button" @click="adicionarLinha()" class="inline-flex items-center gap-1 px-3 py-1.5 mb-4 text-xs font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600">+ Adicionar Linha</button>
                                                     <div class="flex justify-end">
-                                                        <button type="button" @click="salvar()" :disabled="salvando" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 bg-[#009496] rounded-md hover:bg-[#007b85] disabled:opacity-50">
+                                                        <button type="button" @click="salvar()" :disabled="salvando" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 bg-[var(--mint)] rounded-md hover:bg-[var(--teal-dark-bg)] disabled:opacity-50">
                                                             <i class="fas fa-save"></i> <span x-text="salvando ? 'Salvando...' : 'Salvar Dotação'"></span>
                                                         </button>
                                                     </div>
@@ -334,24 +334,24 @@
                                                         
                                                         @if($campo['tipo'] === 'textarea')
                                                             <div class="relative" x-data="{ openIA: false, queryIA: '{{ $campo['value'] }}', loadingIA: false }">
-                                                                <textarea name="{{ $campo['name'] }}" id="{{ $tipo }}_{{ $campo['name'] }}" class="block w-full px-3 py-2 text-sm border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]" rows="4" x-model="queryIA">{{ $campo['value'] }}</textarea>
+                                                                <textarea name="{{ $campo['name'] }}" id="{{ $tipo }}_{{ $campo['name'] }}" class="block w-full px-3 py-2 text-sm border-gray-300 rounded-md shadow-sm focus:ring-[var(--mint)] focus:border-[var(--mint)]" rows="4" x-model="queryIA">{{ $campo['value'] }}</textarea>
                                                                 @if(isset($campo['ia']) && $campo['ia'])
                                                                     <x-ia-popover name="{{ $tipo }}_{{ $campo['name'] }}" :iaCampo="$campo['ia_campo'] ?? $campo['name']" :processoId="$processo?->id" :incidenteContratualId="$incidente->id" />
                                                                 @endif
                                                             </div>
                                                         @elseif($campo['tipo'] === 'file')
-                                                            <input type="file" name="{{ $campo['name'] }}" id="{{ $tipo }}_{{ $campo['name'] }}" accept=".pdf" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#009496] file:text-white hover:file:bg-[#007b85]">
+                                                            <input type="file" name="{{ $campo['name'] }}" id="{{ $tipo }}_{{ $campo['name'] }}" accept=".pdf" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[var(--mint)] file:text-white hover:file:bg-[var(--teal-dark-bg)]">
                                                             @if($campo['value'])
                                                                 <a href="{{ Storage::url($campo['value']) }}" target="_blank" class="inline-block mt-2 text-xs font-medium text-blue-600 hover:underline">
                                                                     <i class="fas fa-file-pdf"></i> Visualizar arquivo atual
                                                                 </a>
                                                             @endif
                                                         @elseif($campo['tipo'] === 'number')
-                                                            <input type="number" name="{{ $campo['name'] }}" id="{{ $tipo }}_{{ $campo['name'] }}" step="{{ $campo['step'] ?? '1' }}" value="{{ $campo['value'] }}" class="block w-full px-3 py-2 text-sm border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">
+                                                            <input type="number" name="{{ $campo['name'] }}" id="{{ $tipo }}_{{ $campo['name'] }}" step="{{ $campo['step'] ?? '1' }}" value="{{ $campo['value'] }}" class="block w-full px-3 py-2 text-sm border-gray-300 rounded-md shadow-sm focus:ring-[var(--mint)] focus:border-[var(--mint)]">
                                                         @elseif($campo['tipo'] === 'string')
-                                                            <input type="text" name="{{ $campo['name'] }}" id="{{ $tipo }}_{{ $campo['name'] }}" value="{{ $campo['value'] }}" class="block w-full px-3 py-2 text-sm border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">
+                                                            <input type="text" name="{{ $campo['name'] }}" id="{{ $tipo }}_{{ $campo['name'] }}" value="{{ $campo['value'] }}" class="block w-full px-3 py-2 text-sm border-gray-300 rounded-md shadow-sm focus:ring-[var(--mint)] focus:border-[var(--mint)]">
                                                         @elseif($campo['tipo'] === 'select')
-                                                            <select name="{{ $campo['name'] }}" id="{{ $tipo }}_{{ $campo['name'] }}" class="block w-full px-3 py-2 text-sm border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">
+                                                            <select name="{{ $campo['name'] }}" id="{{ $tipo }}_{{ $campo['name'] }}" class="block w-full px-3 py-2 text-sm border-gray-300 rounded-md shadow-sm focus:ring-[var(--mint)] focus:border-[var(--mint)]">
                                                                 <option value="">Selecione...</option>
                                                                 @foreach($campo['opcoes'] as $opcao)
                                                                     <option value="{{ $opcao->value }}" @selected($campo['value'] === $opcao->value)>{{ $opcao->getDisplayName() }}</option>
@@ -360,14 +360,14 @@
                                                         @elseif($campo['tipo'] === 'checkbox')
                                                             <label class="flex items-center gap-2 text-sm text-gray-700">
                                                                 <input type="hidden" name="{{ $campo['name'] }}" value="0">
-                                                                <input type="checkbox" name="{{ $campo['name'] }}" id="{{ $tipo }}_{{ $campo['name'] }}" value="1" @checked($campo['value']) class="rounded border-gray-300 text-[#009496] focus:ring-[#009496]">
+                                                                <input type="checkbox" name="{{ $campo['name'] }}" id="{{ $tipo }}_{{ $campo['name'] }}" value="1" @checked($campo['value']) class="rounded border-gray-300 text-[var(--teal-text)] focus:ring-[var(--mint)]">
                                                                 Sim
                                                             </label>
                                                         @elseif($campo['tipo'] === 'checkboxes')
                                                             <div class="flex flex-wrap gap-3">
                                                                 @foreach($campo['opcoes'] as $opcao)
                                                                     <label class="inline-flex items-center gap-1.5 text-sm text-gray-700">
-                                                                        <input type="checkbox" name="{{ $campo['name'] }}[]" value="{{ $opcao->value }}" @checked(in_array($opcao->value, (array) $campo['value'])) class="rounded border-gray-300 text-[#009496] focus:ring-[#009496]">
+                                                                        <input type="checkbox" name="{{ $campo['name'] }}[]" value="{{ $opcao->value }}" @checked(in_array($opcao->value, (array) $campo['value'])) class="rounded border-gray-300 text-[var(--teal-text)] focus:ring-[var(--mint)]">
                                                                         {{ $opcao->getDisplayName() }}
                                                                     </label>
                                                                 @endforeach
@@ -377,7 +377,7 @@
                                                 @endforeach
                                             </div>
                                                 <div class="flex justify-end mt-4">
-                                                    <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 bg-[#009496] rounded-md hover:bg-[#007b85]">
+                                                    <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 bg-[var(--mint)] rounded-md hover:bg-[var(--teal-dark-bg)]">
                                                         <i class="fas fa-save"></i> Salvar Informações
                                                     </button>
                                                 </div>

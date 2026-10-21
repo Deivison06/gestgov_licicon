@@ -1,7 +1,7 @@
 <div class="overflow-x-auto">
     <table class="w-full text-left border-collapse">
         <thead>
-        <tr class="border-b border-[#24403c] bg-[#0a1514] text-xs font-semibold text-[#a2b9b5] uppercase tracking-wider">
+        <tr class="border-b border-[var(--line)] bg-[var(--bg)] text-xs font-semibold text-[var(--ink-2)] uppercase tracking-wider">
             @if(!$isPrefeituraUser)
                 <th class="px-4 py-3">Prefeitura</th>
             @endif
@@ -14,24 +14,24 @@
             <th class="px-4 py-3 text-center">Ações</th>
         </tr>
         </thead>
-        <tbody class="bg-[#10201e] divide-y divide-[#1a332f]">
+        <tbody class="bg-[var(--card)] divide-y divide-[var(--card-3)]">
         @forelse($contratos as $contrato)
             <!-- Linha principal -->
-            <tr class="hover:bg-[#142825] transition-colors duration-150">
+            <tr class="hover:bg-[var(--hover-bg)] transition-colors duration-150">
                 @if(!$isPrefeituraUser)
                     <td class="px-4 py-3 whitespace-nowrap">
-                        <div class="text-sm font-medium text-[#e6f0ee] max-w-[120px] truncate">
+                        <div class="text-sm font-medium text-[var(--ink)] max-w-[120px] truncate">
                             {{ $contrato->prefeitura->nome ?? '-' }}
                         </div>
                     </td>
                 @endif
 
                 <td class="px-4 py-3">
-                    <div class="text-sm font-bold text-[#e6f0ee]">
+                    <div class="text-sm font-bold text-[var(--ink)]">
                         {{ $contrato->numero_processo }}
                     </div>
                     @if($contrato->numero_procedimento)
-                        <div class="text-xs text-[#a2b9b5] mt-0.5">
+                        <div class="text-xs text-[var(--ink-2)] mt-0.5">
                             Proc: {{ $contrato->numero_procedimento }}
                         </div>
                     @endif
@@ -39,11 +39,11 @@
 
                 <td class="px-4 py-3">
                     <div class="flex flex-col">
-                        <span class="text-xs font-semibold text-[#e6f0ee]">
+                        <span class="text-xs font-semibold text-[var(--ink)]">
                             {{ $contrato->modalidade ? $contrato->modalidade->getDisplayName() : 'N/A' }}
                         </span>
                         @if($contrato->tipo_contrato)
-                            <span class="text-xs text-[#a2b9b5] mt-0.5">
+                            <span class="text-xs text-[var(--ink-2)] mt-0.5">
                                 {{ $contrato->tipo_contrato }}
                             </span>
                         @endif
@@ -52,11 +52,11 @@
 
                 <td class="px-4 py-3">
                     <div class="flex flex-col">
-                        <span class="text-sm font-bold text-[#e6f0ee]">
+                        <span class="text-sm font-bold text-[var(--ink)]">
                             {{ $contrato->numero_contrato ?? 'N/A' }}
                         </span>
                         @if($contrato->data_assinatura)
-                            <span class="text-xs text-[#a2b9b5] mt-0.5">
+                            <span class="text-xs text-[var(--ink-2)] mt-0.5">
                                 {{ $contrato->data_assinatura->format('d/m/Y') }}
                             </span>
                         @endif
@@ -65,11 +65,11 @@
 
                 <td class="px-4 py-3">
                     <div class="flex flex-col max-w-[150px]">
-                        <span class="text-sm font-medium text-[#e6f0ee] truncate">
+                        <span class="text-sm font-medium text-[var(--ink)] truncate">
                             {{ $contrato->empresa->razao_social ?? '-' }}
                         </span>
                         @if($contrato->empresa->cnpj ?? false)
-                            <span class="text-xs text-[#a2b9b5] mt-0.5">
+                            <span class="text-xs text-[var(--ink-2)] mt-0.5">
                                 {{ preg_replace('/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/', '$1.$2.$3/$4-$5', $contrato->empresa->cnpj) }}
                             </span>
                         @endif
@@ -91,7 +91,7 @@
                             'CONCLUÍDO' => 'bg-blue-900/40 text-blue-300 border border-blue-500/30',
                             'PENDENTE' => 'bg-amber-900/40 text-amber-300 border border-amber-500/30'
                         ];
-                        $cor = $cores[$situacao] ?? 'bg-[#142825] text-[#a2b9b5] border border-[#24403c]';
+                        $cor = $cores[$situacao] ?? 'bg-[var(--hover-bg)] text-[var(--ink-2)] border border-[var(--line)]';
                     @endphp
                     <span class="px-2.5 py-1 text-xs font-medium rounded-full {{ $cor }}">
                         {{ $situacao }}
@@ -101,7 +101,7 @@
                 <td class="px-4 py-3">
                     <div class="flex flex-wrap gap-1.5 justify-center">
                         <a href="{{ route('admin.contratos.show.manual', $contrato->id) }}"
-                           class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-[#041d1a] bg-[#2DC197] rounded hover:bg-[#26a883] transition-colors"
+                           class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-[var(--on-mint)] bg-[var(--mint)] rounded hover:bg-[var(--ok)] transition-colors"
                            title="Visualizar detalhes">
                             <i class="fas fa-eye text-[10px]"></i>
                             <span>Ver</span>
@@ -139,16 +139,16 @@
             </tr>
 
             <!-- Linha do objeto (expandida) -->
-            <tr class="border-b border-[#24403c] hover:bg-[#142825] transition-colors duration-150">
+            <tr class="border-b border-[var(--line)] hover:bg-[var(--hover-bg)] transition-colors duration-150">
                 <td colspan="{{ $isPrefeituraUser ? 8 : 9 }}"
-                    class="bg-[#0d1b19] hover:bg-[#142825] transition-colors duration-150 px-4 py-3">
+                    class="bg-[var(--card-2)] hover:bg-[var(--hover-bg)] transition-colors duration-150 px-4 py-3">
                     <div class="flex items-start">
-                        <i class="fas fa-info-circle text-[#2DC197] mt-0.5 mr-2 flex-shrink-0"></i>
-                        <div class="text-sm text-[#e6f0ee]">
-                            <span class="font-bold text-[#2DC197] text-xs uppercase mr-2">
+                        <i class="fas fa-info-circle text-[var(--mint)] mt-0.5 mr-2 flex-shrink-0"></i>
+                        <div class="text-sm text-[var(--ink)]">
+                            <span class="font-bold text-[var(--mint)] text-xs uppercase mr-2">
                                 Objeto:
                             </span>
-                            <span class="text-[#a2b9b5]">
+                            <span class="text-[var(--ink-2)]">
                                 {!! $contrato->objeto ?? 'Não informado' !!}
                             </span>
                         </div>
@@ -180,11 +180,11 @@
                 @php
                     $colspan = $isPrefeituraUser ? 8 : 9;
                 @endphp
-                <td colspan="{{ $colspan }}" class="px-6 py-12 text-center text-[#a2b9b5]">
+                <td colspan="{{ $colspan }}" class="px-6 py-12 text-center text-[var(--ink-2)]">
                     <div class="flex flex-col items-center justify-center">
-                        <i class="fas fa-file-signature text-4xl text-[#24403c] mb-3"></i>
+                        <i class="fas fa-file-signature text-4xl text-[var(--line)] mb-3"></i>
                         <p class="font-medium text-white">Nenhum contrato manual encontrado</p>
-                        <p class="text-sm mt-1 max-w-md text-[#a2b9b5]">
+                        <p class="text-sm mt-1 max-w-md text-[var(--ink-2)]">
                             Clique em "Novo Contrato Manual" para adicionar um novo contrato.
                         </p>
                     </div>

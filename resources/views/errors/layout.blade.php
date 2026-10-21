@@ -5,6 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
+    <script>
+        (function () {
+            try {
+                if (localStorage.getItem('sig-theme') === 'dark') {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            } catch (e) {}
+        })();
+    </script>
+
     <title>@yield('title', 'Erro') — Licicon</title>
     <link rel="icon" href="{{ asset('logo/minilogo-g-app-escuro-1024.png') }}">
 
@@ -131,7 +141,7 @@
         }
     </style>
 </head>
-<body class="bg-[#051e1c] font-['Plus_Jakarta_Sans',sans-serif] text-[#e6f0ee] antialiased min-h-screen flex flex-col justify-between selection:bg-[#2DC197] selection:text-[#06302d]">
+<body class="bg-[var(--side-3)] font-['Plus_Jakarta_Sans',sans-serif] text-[var(--ink)] antialiased min-h-screen flex flex-col justify-between selection:bg-[var(--mint)] selection:text-[var(--on-mint)]">
 
     <!-- Fundo Ambiental com Gradiente e Malha Oficial do Licicon -->
     <div class="fixed inset-0 pointer-events-none bg-[linear-gradient(160deg,#0b3b37_0%,#072926_55%,#051e1c_100%)] z-0"></div>
@@ -143,19 +153,19 @@
 
         <!-- Topo: Marca e Sistema -->
         <header class="flex w-full max-w-[1100px] items-center justify-between pb-4">
-            <a href="{{ auth()->check() ? route('admin.dashboard') : url('/') }}" class="inline-flex items-center gap-3 transition hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#5eead4] rounded-lg">
+            <a href="{{ auth()->check() ? route('admin.dashboard') : url('/') }}" class="inline-flex items-center gap-3 transition hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--teal-text)] rounded-lg">
                 <img src="{{ asset('logo/licicon-horizontal-colorida-para-fundo-escuro.png') }}"
                      alt="Licicon — GestGov"
                      class="h-8 sm:h-9 w-auto">
             </a>
 
             @if(auth()->check())
-                <div class="flex items-center gap-2.5 rounded-full border border-[#24403c] bg-[#10201e]/80 px-3.5 py-1.5 text-xs text-[#a8bdb9]">
-                    <span class="h-2 w-2 rounded-full bg-[#2DC197] animate-pulse"></span>
-                    <span class="font-medium text-[#e6f0ee] truncate max-w-[140px] sm:max-w-[200px]">{{ auth()->user()->name }}</span>
+                <div class="flex items-center gap-2.5 rounded-full border border-[var(--line)] bg-[var(--card)]/80 px-3.5 py-1.5 text-xs text-[var(--ink-2)]">
+                    <span class="h-2 w-2 rounded-full bg-[var(--mint)] animate-pulse"></span>
+                    <span class="font-medium text-[var(--ink)] truncate max-w-[140px] sm:max-w-[200px]">{{ auth()->user()->name }}</span>
                 </div>
             @else
-                <a href="{{ route('login') }}" class="text-xs font-semibold text-[#5eead4] hover:text-[#86efac] transition flex items-center gap-1.5">
+                <a href="{{ route('login') }}" class="text-xs font-semibold text-[var(--teal-text)] hover:text-[var(--ok)] transition flex items-center gap-1.5">
                     <span>Acessar o sistema</span>
                     <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                 </a>
@@ -175,18 +185,18 @@
                 </div>
 
                 <!-- Badge de Código de Erro -->
-                <div class="mb-3.5 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wider @yield('badge_classes', 'border-[#24403c] bg-[#0d1b19] text-[#5eead4]')">
+                <div class="mb-3.5 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wider @yield('badge_classes', 'border-[var(--line)] bg-[var(--card-2)] text-[var(--teal-text)]')">
                     <span class="h-1.5 w-1.5 rounded-full bg-current"></span>
                     <span>@yield('badge_text', 'Erro ' . ($exception?->getStatusCode() ?? 'HTTP'))</span>
                 </div>
 
                 <!-- Título do Erro -->
-                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#e6f0ee] mb-3">
+                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--ink)] mb-3">
                     @yield('title')
                 </h1>
 
                 <!-- Descrição Amigável -->
-                <p class="text-sm sm:text-base text-[#a8bdb9] leading-relaxed max-w-[460px] mx-auto mb-6">
+                <p class="text-sm sm:text-base text-[var(--ink-2)] leading-relaxed max-w-[460px] mx-auto mb-6">
                     @yield('message')
                 </p>
 
@@ -208,21 +218,21 @@
                 @endphp
 
                 @if(!empty($customMsg))
-                    <div class="mb-6 mx-auto max-w-[460px] rounded-xl border border-[#24403c] bg-[#0d1b19]/90 px-4 py-3 text-left flex items-start gap-3">
-                        <div class="mt-0.5 shrink-0 text-[#fcd34d]">
+                    <div class="mb-6 mx-auto max-w-[460px] rounded-xl border border-[var(--line)] bg-[var(--card-2)]/90 px-4 py-3 text-left flex items-start gap-3">
+                        <div class="mt-0.5 shrink-0 text-[var(--warn)]">
                             <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
                         </div>
                         <div class="min-w-0 flex-1">
-                            <span class="block text-[11px] font-bold uppercase tracking-wider text-[#8aa29d]">Informação Adicional</span>
-                            <p class="text-xs sm:text-sm font-medium text-[#e6f0ee] break-words mt-0.5">{{ $customMsg }}</p>
+                            <span class="block text-[11px] font-bold uppercase tracking-wider text-[var(--ink-3)]">Informação Adicional</span>
+                            <p class="text-xs sm:text-sm font-medium text-[var(--ink)] break-words mt-0.5">{{ $customMsg }}</p>
                         </div>
                     </div>
                 @endif
 
                 <!-- Bloco de Dica / Ação Recomendada -->
                 @hasSection('hint')
-                    <div class="mb-7 mx-auto max-w-[460px] rounded-xl border border-white/5 bg-white/[0.03] px-4 py-2.5 text-xs text-[#8aa29d] flex items-center justify-center gap-2">
-                        <svg class="h-4 w-4 shrink-0 text-[#2DC197]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="m4.93 4.93 2.83 2.83"/><path d="M2 12h4"/><path d="m4.93 19.07 2.83-2.83"/><path d="M12 22v-4"/><path d="m19.07 19.07-2.83-2.83"/><path d="M22 12h-4"/><path d="m19.07 4.93-2.83 2.83"/></svg>
+                    <div class="mb-7 mx-auto max-w-[460px] rounded-xl border border-white/5 bg-white/[0.03] px-4 py-2.5 text-xs text-[var(--ink-3)] flex items-center justify-center gap-2">
+                        <svg class="h-4 w-4 shrink-0 text-[var(--mint)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="m4.93 4.93 2.83 2.83"/><path d="M2 12h4"/><path d="m4.93 19.07 2.83-2.83"/><path d="M12 22v-4"/><path d="m19.07 19.07-2.83-2.83"/><path d="M22 12h-4"/><path d="m19.07 4.93-2.83 2.83"/></svg>
                         <span>@yield('hint')</span>
                     </div>
                 @endif
@@ -245,7 +255,7 @@
                         @endif
 
                         <button type="button" onclick="window.history.length > 1 ? window.history.back() : window.location.href='{{ auth()->check() ? route('admin.dashboard') : url('/') }}'" class="btn-licicon-secondary">
-                            <svg class="h-4 w-4 text-[#8aa29d]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+                            <svg class="h-4 w-4 text-[var(--ink-3)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
                             <span>Voltar à Página Anterior</span>
                         </button>
                     @endif
@@ -272,9 +282,9 @@
             <div class="flex items-center gap-3">
                 <a href="https://wa.me/558988060983" target="_blank" rel="noopener noreferrer"
                    style="background-color: #ffffff !important; color: #0f172a !important;"
-                   class="inline-flex items-center gap-2.5 rounded-full py-1.5 pl-4 pr-1.5 text-xs font-semibold shadow-[0_4px_14px_rgba(0,0,0,.3)] transition hover:opacity-90 hover:shadow-[0_6px_20px_rgba(0,0,0,.4)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5eead4]">
+                   class="inline-flex items-center gap-2.5 rounded-full py-1.5 pl-4 pr-1.5 text-xs font-semibold shadow-[0_4px_14px_rgba(0,0,0,.3)] transition hover:opacity-90 hover:shadow-[0_6px_20px_rgba(0,0,0,.4)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--teal-text)]">
                     <span style="color: #0f172a !important; font-weight: 600;">Dúvidas ou suporte? Fale conosco</span>
-                    <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#2DC197] text-[#06302d]">
+                    <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--mint)] text-[var(--on-mint)]">
                         <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
                     </span>
                 </a>

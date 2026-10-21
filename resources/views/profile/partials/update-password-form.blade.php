@@ -8,7 +8,7 @@
         <div>
             <label for="current_password" class="block mb-2 text-sm font-medium text-gray-700">Senha Atual</label>
             <input type="password" name="current_password" id="current_password"
-                   class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496] transition-colors"
+                   class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] transition-colors"
                    autocomplete="current-password">
             <x-input-error :messages="$errors->updatePassword->get('current_password')" class="mt-2" />
         </div>
@@ -16,7 +16,7 @@
         <div>
             <label for="password" class="block mb-2 text-sm font-medium text-gray-700">Nova Senha</label>
             <input type="password" name="password" id="password"
-                   class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496] transition-colors"
+                   class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] transition-colors"
                    autocomplete="new-password">
             <x-input-error :messages="$errors->updatePassword->get('password')" class="mt-2" />
         </div>
@@ -24,14 +24,14 @@
         <div>
             <label for="password_confirmation" class="block mb-2 text-sm font-medium text-gray-700">Confirmar Nova Senha</label>
             <input type="password" name="password_confirmation" id="password_confirmation"
-                   class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496] transition-colors"
+                   class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] transition-colors"
                    autocomplete="new-password">
             <x-input-error :messages="$errors->updatePassword->get('password_confirmation')" class="mt-2" />
         </div>
     </div>
 
     <div class="flex items-center gap-4">
-        <button type="submit" class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-[#009496] rounded-lg hover:bg-[#244853] transition-colors shadow-sm">
+        <button type="submit" class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-[var(--mint)] rounded-lg hover:bg-[var(--info-bg)] transition-colors shadow-sm">
             <i class="fas fa-key"></i>
             Alterar Senha
         </button>

@@ -44,7 +44,7 @@
                 <div class="px-6 py-3 border-b border-gray-200 flex items-center justify-between">
                     <h3 class="text-sm font-semibold text-gray-800">Documento para revisão</h3>
                     <a href="{{ $urlPdf }}" target="_blank"
-                       class="text-xs font-medium text-[#009496] hover:underline">
+                       class="text-xs font-medium text-[var(--teal-text)] hover:underline">
                         Abrir em nova aba ↗
                     </a>
                 </div>
@@ -113,7 +113,7 @@
 
                 {{-- Ações (somente se ainda assinável) --}}
                 @if ($solicitacao->podeSerAssinada())
-                    <div class="bg-white rounded-xl shadow-sm p-5 border-l-4 border-[#009496]">
+                    <div class="bg-white rounded-xl shadow-sm p-5 border-l-4 border-[var(--mint)]">
                         <h4 class="text-sm font-semibold text-gray-800 mb-2">Sua ação</h4>
                         <p class="text-xs text-gray-500 mb-4">
                             Ao assinar, você declara que revisou o documento e concorda com seu conteúdo.
@@ -124,7 +124,7 @@
                               onsubmit="return confirm('Confirma a assinatura digital deste documento?');">
                             @csrf
                             <button type="submit"
-                                    class="w-full px-4 py-3 text-sm font-semibold text-white bg-[#009496] rounded-md hover:bg-[#007779] flex items-center justify-center gap-2">
+                                    class="w-full px-4 py-3 text-sm font-semibold text-white bg-[var(--mint)] rounded-md hover:bg-[var(--teal-dark-bg)] flex items-center justify-center gap-2">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                 </svg>

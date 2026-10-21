@@ -19,8 +19,8 @@
 
         <div class="card !rounded-2xl overflow-hidden">
             <div class="card-h">
-                <h3 class="text-lg font-bold text-[#e6f0ee]">
-                    <i class="fas fa-user-plus mr-2 text-[#2DC197]"></i> Novo Assinante
+                <h3 class="text-lg font-bold text-[var(--ink)]">
+                    <i class="fas fa-user-plus mr-2 text-[var(--mint)]"></i> Novo Assinante
                 </h3>
             </div>
 
@@ -28,65 +28,65 @@
                   class="p-8 space-y-6">
                 @csrf
 
-                <h3 class="pb-3 mb-2 text-lg font-semibold text-[#e6f0ee] border-b border-[#24403c] flex items-center gap-2">
-                    <i class="fas fa-id-card text-[#2DC197]"></i> Dados pessoais
+                <h3 class="pb-3 mb-2 text-lg font-semibold text-[var(--ink)] border-b border-[var(--line)] flex items-center gap-2">
+                    <i class="fas fa-id-card text-[var(--mint)]"></i> Dados pessoais
                 </h3>
 
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div>
-                        <label class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">
+                        <label class="block mb-1.5 text-sm font-semibold text-[var(--ink-2)]">
                             Nome completo <span class="text-red-400">*</span>
                         </label>
                         <input type="text" name="name" value="{{ old('name') }}" required
-                               class="block w-full px-4 py-2.5 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] placeholder:text-[#a2b9b5]/40 transition-colors">
+                               class="block w-full px-4 py-2.5 text-sm bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] placeholder:text-[var(--ink-2)]/40 transition-colors">
                     </div>
 
                     <div>
-                        <label class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">
+                        <label class="block mb-1.5 text-sm font-semibold text-[var(--ink-2)]">
                             E-mail <span class="text-red-400">*</span>
                         </label>
                         <input type="email" name="email" value="{{ old('email') }}" required
-                               class="block w-full px-4 py-2.5 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] placeholder:text-[#a2b9b5]/40 transition-colors">
+                               class="block w-full px-4 py-2.5 text-sm bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] placeholder:text-[var(--ink-2)]/40 transition-colors">
                     </div>
 
                     <div>
-                        <label class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">CPF</label>
+                        <label class="block mb-1.5 text-sm font-semibold text-[var(--ink-2)]">CPF</label>
                         <input type="text" name="cpf" value="{{ old('cpf') }}" maxlength="18"
                                placeholder="000.000.000-00"
-                               class="block w-full px-4 py-2.5 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] placeholder:text-[#a2b9b5]/40 transition-colors">
+                               class="block w-full px-4 py-2.5 text-sm bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] placeholder:text-[var(--ink-2)]/40 transition-colors">
                     </div>
 
                     <div></div>
 
                     <div>
-                        <label class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">
+                        <label class="block mb-1.5 text-sm font-semibold text-[var(--ink-2)]">
                             Senha <span class="text-red-400">*</span>
                         </label>
                         <input type="password" name="password" required minlength="8"
-                               class="block w-full px-4 py-2.5 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors">
-                        <p class="mt-1 text-xs text-[#a2b9b5]">Mínimo 8 caracteres.</p>
+                               class="block w-full px-4 py-2.5 text-sm bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] transition-colors">
+                        <p class="mt-1 text-xs text-[var(--ink-2)]">Mínimo 8 caracteres.</p>
                     </div>
 
                     <div>
-                        <label class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">
+                        <label class="block mb-1.5 text-sm font-semibold text-[var(--ink-2)]">
                             Confirmar senha <span class="text-red-400">*</span>
                         </label>
                         <input type="password" name="password_confirmation" required minlength="8"
-                               class="block w-full px-4 py-2.5 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors">
+                               class="block w-full px-4 py-2.5 text-sm bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] transition-colors">
                     </div>
                 </div>
 
-                <h3 class="pt-6 pb-3 mb-2 text-lg font-semibold text-[#e6f0ee] border-b border-[#24403c] flex items-center gap-2">
-                    <i class="fas fa-building text-[#2DC197]"></i> Vínculo institucional
+                <h3 class="pt-6 pb-3 mb-2 text-lg font-semibold text-[var(--ink)] border-b border-[var(--line)] flex items-center gap-2">
+                    <i class="fas fa-building text-[var(--mint)]"></i> Vínculo institucional
                 </h3>
 
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div>
-                        <label class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">
+                        <label class="block mb-1.5 text-sm font-semibold text-[var(--ink-2)]">
                             Prefeitura <span class="text-red-400">*</span>
                         </label>
                         <select name="prefeitura_id" required
-                                class="block w-full px-4 py-2.5 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors">
+                                class="block w-full px-4 py-2.5 text-sm bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] transition-colors">
                             <option value="">Selecione...</option>
                             @foreach ($prefeituras as $p)
                                 <option value="{{ $p->id }}" {{ old('prefeitura_id') == $p->id ? 'selected' : '' }}>
@@ -97,9 +97,9 @@
                     </div>
 
                     <div>
-                        <label class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">Unidade / Setor</label>
+                        <label class="block mb-1.5 text-sm font-semibold text-[var(--ink-2)]">Unidade / Setor</label>
                         <select name="unidade_id"
-                                class="block w-full px-4 py-2.5 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors">
+                                class="block w-full px-4 py-2.5 text-sm bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] transition-colors">
                             <option value="">— Nenhuma —</option>
                             @foreach ($unidades as $u)
                                 <option value="{{ $u->id }}"
@@ -109,30 +109,30 @@
                                 </option>
                             @endforeach
                         </select>
-                        <p class="mt-1 text-xs text-[#a2b9b5]">Opcional — pode ficar vazio.</p>
+                        <p class="mt-1 text-xs text-[var(--ink-2)]">Opcional — pode ficar vazio.</p>
                     </div>
 
                     <div>
-                        <label class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">Número da Portaria</label>
+                        <label class="block mb-1.5 text-sm font-semibold text-[var(--ink-2)]">Número da Portaria</label>
                         <input type="text" name="numero_portaria" value="{{ old('numero_portaria') }}" maxlength="50"
                                placeholder="Ex.: 002/2025"
-                               class="block w-full px-4 py-2.5 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] placeholder:text-[#a2b9b5]/40 transition-colors">
+                               class="block w-full px-4 py-2.5 text-sm bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] placeholder:text-[var(--ink-2)]/40 transition-colors">
                     </div>
 
                     <div>
-                        <label class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">Data da Portaria</label>
+                        <label class="block mb-1.5 text-sm font-semibold text-[var(--ink-2)]">Data da Portaria</label>
                         <input type="date" name="data_portaria" value="{{ old('data_portaria') }}"
-                               class="block w-full px-4 py-2.5 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors">
+                               class="block w-full px-4 py-2.5 text-sm bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] transition-colors">
                     </div>
                 </div>
 
-                <div class="flex justify-end gap-3 pt-6 border-t border-[#24403c]">
+                <div class="flex justify-end gap-3 pt-6 border-t border-[var(--line)]">
                     <a href="{{ route('admin.assinantes.index') }}"
-                       class="px-5 py-2.5 text-sm font-semibold text-[#e6f0ee] bg-[#10201e] border border-[#24403c] rounded-xl hover:bg-[#142825] hover:text-[#2DC197] transition-colors shadow-sm">
+                       class="px-5 py-2.5 text-sm font-semibold text-[var(--ink)] bg-[var(--card)] border border-[var(--line)] rounded-xl hover:bg-[var(--hover-bg)] hover:text-[var(--mint)] transition-colors shadow-sm">
                         Cancelar
                     </a>
                     <button type="submit"
-                            class="px-6 py-2.5 text-sm font-bold text-[#041d1a] bg-[#2DC197] rounded-xl hover:bg-[#26aa84] transition-all shadow-sm hover:scale-105">
+                            class="px-6 py-2.5 text-sm font-bold text-[var(--on-mint)] bg-[var(--mint)] rounded-xl hover:bg-[var(--mint-h)] transition-all shadow-sm hover:scale-105">
                         <i class="fas fa-save mr-1.5"></i> Salvar
                     </button>
                 </div>

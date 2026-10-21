@@ -48,7 +48,7 @@
                 <label class="block mb-1 text-sm font-medium text-gray-700">Data do Aditivo <span class="text-red-500">*</span></label>
                 <input type="date" name="data_aditivo" required
                        value="{{ old('data_aditivo', optional($incidente->data_aditivo)->format('Y-m-d')) }}"
-                       class="block w-full max-w-xs px-3 py-2 text-sm border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">
+                       class="block w-full max-w-xs px-3 py-2 text-sm border-gray-300 rounded-md shadow-sm focus:ring-[var(--mint)] focus:border-[var(--mint)]">
             </div>
 
             @if($temPrazo)
@@ -56,7 +56,7 @@
                     <label class="block mb-1 text-sm font-medium text-gray-700">Meses de Prorrogação <span class="text-red-500">*</span></label>
                     <input type="number" name="meses_prorrogacao" min="1" required
                            value="{{ old('meses_prorrogacao', $incidente->meses_prorrogacao) }}"
-                           class="block w-full max-w-xs px-3 py-2 text-sm border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">
+                           class="block w-full max-w-xs px-3 py-2 text-sm border-gray-300 rounded-md shadow-sm focus:ring-[var(--mint)] focus:border-[var(--mint)]">
                     <p class="mt-1 text-xs text-gray-500">
                         Vencimento atual do contrato: {{ optional($contrato->data_finalizacao)->format('d/m/Y') ?? '—' }}
                     </p>
@@ -69,7 +69,7 @@
                         <label class="block mb-1 text-sm font-medium text-gray-700">Valor Acrescido (R$) <span class="text-red-500">*</span></label>
                         <input type="number" name="valor_acrescido" step="0.01" min="0.01" required
                                value="{{ old('valor_acrescido') }}"
-                               class="block w-full max-w-xs px-3 py-2 text-sm border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">
+                               class="block w-full max-w-xs px-3 py-2 text-sm border-gray-300 rounded-md shadow-sm focus:ring-[var(--mint)] focus:border-[var(--mint)]">
                         <p class="mt-1 text-xs text-gray-500">
                             Valor atual do contrato: R$ {{ number_format($contrato->valor_total ?? 0, 2, ',', '.') }}
                         </p>
@@ -100,7 +100,7 @@
                                                 <input type="number" step="0.0001" min="0"
                                                        name="itens[{{ $loop->index }}][quantidade_aditivada]"
                                                        value="{{ old("itens.{$loop->index}.quantidade_aditivada", $itemAtual->quantidade_aditivada ?? '') }}"
-                                                       class="block w-full px-2 py-1 text-sm text-right border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">
+                                                       class="block w-full px-2 py-1 text-sm text-right border-gray-300 rounded-md shadow-sm focus:ring-[var(--mint)] focus:border-[var(--mint)]">
                                             </td>
                                         </tr>
                                     @empty
@@ -118,7 +118,7 @@
             <div>
                 <label class="block mb-1 text-sm font-medium text-gray-700">Justificativa</label>
                 <textarea name="justificativa" rows="3"
-                          class="block w-full px-3 py-2 text-sm border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">{{ old('justificativa', $incidente->justificativa) }}</textarea>
+                          class="block w-full px-3 py-2 text-sm border-gray-300 rounded-md shadow-sm focus:ring-[var(--mint)] focus:border-[var(--mint)]">{{ old('justificativa', $incidente->justificativa) }}</textarea>
             </div>
 
             <div>
@@ -126,7 +126,7 @@
                     Anexo do Aditivo (PDF) @unless($incidente->arquivo_aditivo_externo_path)<span class="text-red-500">*</span>@endunless
                 </label>
                 <input type="file" name="arquivo_aditivo_externo" accept=".pdf"
-                       class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#009496] file:text-white hover:file:bg-[#007b85]">
+                       class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[var(--mint)] file:text-white hover:file:bg-[var(--teal-dark-bg)]">
                 @if($incidente->arquivo_aditivo_externo_path)
                     <a href="{{ Storage::url($incidente->arquivo_aditivo_externo_path) }}" target="_blank" class="inline-block mt-2 text-xs font-medium text-blue-600 hover:underline">
                         <i class="fas fa-file-pdf"></i> Visualizar anexo atual
@@ -135,7 +135,7 @@
             </div>
 
             <div class="flex justify-end pt-4 border-t border-gray-200">
-                <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white transition-colors duration-200 bg-[#009496] rounded-md hover:bg-[#007b85]">
+                <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white transition-colors duration-200 bg-[var(--mint)] rounded-md hover:bg-[var(--teal-dark-bg)]">
                     <i class="fas fa-save"></i> Salvar Aditivo Externo
                 </button>
             </div>

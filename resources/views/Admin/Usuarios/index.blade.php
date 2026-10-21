@@ -7,7 +7,7 @@
     <div class="flex items-center justify-between mb-8">
         <div></div> <!-- Espaçador -->
         <a href="{{ route('admin.usuarios.create') }}"
-            class="inline-flex items-center gap-3 px-6 py-3 text-sm font-bold text-[#041d1a] transition-all duration-200 bg-[#2DC197] rounded-xl hover:bg-[#26aa84] hover:shadow-lg hover:scale-105">
+            class="inline-flex items-center gap-3 px-6 py-3 text-sm font-bold text-[var(--on-mint)] transition-all duration-200 bg-[var(--mint)] rounded-xl hover:bg-[var(--mint-h)] hover:shadow-lg hover:scale-105">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6">
                 </path>
@@ -16,34 +16,34 @@
     </div>
 
     @if (session('success'))
-        <div class="p-4 mb-6 rounded-lg bg-[#0d2a23] border border-[#184e40] text-[#2DC197]">
+        <div class="p-4 mb-6 rounded-lg bg-[var(--card-3)] border border-[var(--line-3)] text-[var(--mint)]">
             <p class="text-sm font-medium">{{ session('success') }}</p>
         </div>
     @endif
 
     <!-- Filtros -->
-    <div class="p-6 mb-6 bg-[#10201e] border border-[#24403c] rounded-xl shadow-sm">
-        <h3 class="mb-4 text-lg font-semibold text-[#e6f0ee]">Filtros</h3>
+    <div class="p-6 mb-6 bg-[var(--card)] border border-[var(--line)] rounded-xl shadow-sm">
+        <h3 class="mb-4 text-lg font-semibold text-[var(--ink)]">Filtros</h3>
         
         <form method="GET" action="{{ route('admin.usuarios.index') }}" class="space-y-4">
             <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
                 <!-- Busca -->
                 <div>
-                    <label for="search" class="block mb-2 text-sm font-medium text-[#a2b9b5]">Buscar</label>
+                    <label for="search" class="block mb-2 text-sm font-medium text-[var(--ink-2)]">Buscar</label>
                     <input type="text" 
                            name="search" 
                            id="search" 
                            value="{{ $filters['search'] ?? '' }}"
-                           class="w-full px-4 py-2 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-lg focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197]"
+                           class="w-full px-4 py-2 bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-lg focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)]"
                            placeholder="Nome, Email ou CPF">
                 </div>
 
                 <!-- Filtro por Função -->
                 <div>
-                    <label for="role" class="block mb-2 text-sm font-medium text-[#a2b9b5]">Função</label>
+                    <label for="role" class="block mb-2 text-sm font-medium text-[var(--ink-2)]">Função</label>
                     <select name="role" 
                             id="role" 
-                            class="w-full px-4 py-2 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-lg focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197]">
+                            class="w-full px-4 py-2 bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-lg focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)]">
                         <option value="">Todas as funções</option>
                         @foreach($roles as $role)
                             <option value="{{ $role->id }}" {{ ($filters['role'] ?? '') == $role->id ? 'selected' : '' }}>
@@ -55,10 +55,10 @@
 
                 <!-- Filtro por Prefeitura -->
                 <div>
-                    <label for="prefeitura_id" class="block mb-2 text-sm font-medium text-[#a2b9b5]">Prefeitura</label>
+                    <label for="prefeitura_id" class="block mb-2 text-sm font-medium text-[var(--ink-2)]">Prefeitura</label>
                     <select name="prefeitura_id" 
                             id="prefeitura_id" 
-                            class="w-full px-4 py-2 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-lg focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197]">
+                            class="w-full px-4 py-2 bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-lg focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)]">
                         <option value="">Todas as prefeituras</option>
                         @foreach($prefeituras as $prefeitura)
                             <option value="{{ $prefeitura->id }}" {{ ($filters['prefeitura_id'] ?? '') == $prefeitura->id ? 'selected' : '' }}>
@@ -70,13 +70,13 @@
             </div>
 
             <!-- Botões dos Filtros -->
-            <div class="flex justify-end gap-3 pt-4 border-t border-[#24403c]">
+            <div class="flex justify-end gap-3 pt-4 border-t border-[var(--line)]">
                 <a href="{{ route('admin.usuarios.index') }}" 
-                   class="px-4 py-2 text-sm font-semibold text-[#a2b9b5] bg-[#142825] border border-[#24403c] rounded-lg hover:bg-[#1a332f] hover:text-[#e6f0ee]">
+                   class="px-4 py-2 text-sm font-semibold text-[var(--ink-2)] bg-[var(--hover-bg)] border border-[var(--line)] rounded-lg hover:bg-[var(--card-3)] hover:text-[var(--ink)]">
                     Limpar Filtros
                 </a>
                 <button type="submit" 
-                        class="px-4 py-2 text-sm font-semibold text-[#041d1a] bg-[#2DC197] rounded-lg hover:bg-[#26aa84] transition">
+                        class="px-4 py-2 text-sm font-semibold text-[var(--on-mint)] bg-[var(--mint)] rounded-lg hover:bg-[var(--mint-h)] transition">
                     Aplicar Filtros
                 </button>
             </div>
@@ -84,50 +84,50 @@
     </div>
 
     <!-- Tabela de Usuários -->
-    <div class="overflow-hidden bg-[#10201e] border border-[#24403c] shadow-sm rounded-xl">
-        <div class="px-6 py-4 border-b border-[#24403c] bg-[#0d1b19]">
+    <div class="overflow-hidden bg-[var(--card)] border border-[var(--line)] shadow-sm rounded-xl">
+        <div class="px-6 py-4 border-b border-[var(--line)] bg-[var(--card-2)]">
             <div class="flex items-center justify-between">
-                <h3 class="text-lg font-semibold text-[#e6f0ee]">Usuários Cadastrados</h3>
-                <span class="text-sm text-[#7ea29c]">
+                <h3 class="text-lg font-semibold text-[var(--ink)]">Usuários Cadastrados</h3>
+                <span class="text-sm text-[var(--ink-4)]">
                     Mostrando {{ $users->firstItem() }} - {{ $users->lastItem() }} de {{ $users->total() }} usuários
                 </span>
             </div>
         </div>
 
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-[#24403c]">
-                <thead class="bg-[#0a1514]">
+            <table class="min-w-full divide-y divide-[var(--line)]">
+                <thead class="bg-[var(--bg)]">
                     <tr>
-                        <th class="px-6 py-3 text-xs font-semibold text-left text-[#7ea29c] uppercase">Nome</th>
-                        <th class="px-6 py-3 text-xs font-semibold text-left text-[#7ea29c] uppercase">Email/CPF</th>
-                        <th class="px-6 py-3 text-xs font-semibold text-left text-[#7ea29c] uppercase">Função</th>
-                        <th class="px-6 py-3 text-xs font-semibold text-left text-[#7ea29c] uppercase">Prefeitura</th>
-                        <th class="px-6 py-3 text-xs font-semibold text-left text-[#7ea29c] uppercase">Permissões</th>
-                        <th class="px-6 py-3 text-xs font-semibold text-center text-[#7ea29c] uppercase">Ações</th>
+                        <th class="px-6 py-3 text-xs font-semibold text-left text-[var(--ink-4)] uppercase">Nome</th>
+                        <th class="px-6 py-3 text-xs font-semibold text-left text-[var(--ink-4)] uppercase">Email/CPF</th>
+                        <th class="px-6 py-3 text-xs font-semibold text-left text-[var(--ink-4)] uppercase">Função</th>
+                        <th class="px-6 py-3 text-xs font-semibold text-left text-[var(--ink-4)] uppercase">Prefeitura</th>
+                        <th class="px-6 py-3 text-xs font-semibold text-left text-[var(--ink-4)] uppercase">Permissões</th>
+                        <th class="px-6 py-3 text-xs font-semibold text-center text-[var(--ink-4)] uppercase">Ações</th>
                     </tr>
                 </thead>
-                <tbody class="bg-[#10201e] divide-y divide-[#1a332f]">
+                <tbody class="bg-[var(--card)] divide-y divide-[var(--card-3)]">
                     @forelse($users as $user)
-                        <tr class="hover:bg-[#142825] transition-colors">
+                        <tr class="hover:bg-[var(--hover-bg)] transition-colors">
                             <td class="px-6 py-4">
-                                <div class="font-medium text-[#e6f0ee]">{{ $user->name }}</div>
+                                <div class="font-medium text-[var(--ink)]">{{ $user->name }}</div>
                             </td>
                             <td class="px-6 py-4">
-                                <div class="text-sm text-[#e6f0ee]">{{ $user->email }}</div>
+                                <div class="text-sm text-[var(--ink)]">{{ $user->email }}</div>
                                 @if($user->cpf)
-                                    <div class="text-xs text-[#7ea29c]">CPF: {{ $user->cpf }}</div>
+                                    <div class="text-xs text-[var(--ink-4)]">CPF: {{ $user->cpf }}</div>
                                 @endif
                             </td>
                             <td class="px-6 py-4">
                                 @foreach($user->roles as $role)
-                                    <span class="inline-block px-2 py-1 text-xs font-medium rounded-full bg-[#009496]/20 text-[#244853] mb-1">
+                                    <span class="inline-block px-2 py-1 text-xs font-medium rounded-full bg-[var(--mint)]/20 text-[var(--info-bg)] mb-1">
                                         {{ $role->name }}
                                     </span>
                                 @endforeach
                             </td>
                             <td class="px-6 py-4">
                                 @if($user->prefeitura)
-                                    <span class="px-2 py-1 text-xs font-medium text-white bg-[#062F43] rounded">
+                                    <span class="px-2 py-1 text-xs font-medium text-white bg-[var(--info-bg)] rounded">
                                         {{ $user->prefeitura->nome }}
                                     </span>
                                 @else
@@ -223,7 +223,7 @@
                         <!-- Números de páginas -->
                         @foreach($users->getUrlRange(max(1, $users->currentPage() - 2), min($users->lastPage(), $users->currentPage() + 2)) as $page => $url)
                             @if($page == $users->currentPage())
-                                <span class="px-3 py-1 text-sm text-white bg-[#009496] rounded-lg">
+                                <span class="px-3 py-1 text-sm text-white bg-[var(--mint)] rounded-lg">
                                     {{ $page }}
                                 </span>
                             @else
@@ -263,7 +263,7 @@
                     <div class="flex items-center gap-2">
                         <span class="text-sm text-gray-700">Itens por página:</span>
                         <select onchange="changePerPage(this.value)" 
-                                class="px-2 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496]">
+                                class="px-2 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--mint)]">
                             <option value="10" {{ $users->perPage() == 10 ? 'selected' : '' }}>10</option>
                             <option value="25" {{ $users->perPage() == 25 ? 'selected' : '' }}>25</option>
                             <option value="50" {{ $users->perPage() == 50 ? 'selected' : '' }}>50</option>

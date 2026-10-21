@@ -39,7 +39,7 @@
     {{-- Botão Solicitar (renderiza só quando estado permitir) --}}
     <button type="button"
             data-btn-solicitar
-            class="hidden items-center gap-1.5 px-3 py-2 text-xs font-semibold text-white bg-[#009496] rounded-md shadow-sm hover:bg-[#007779] focus:outline-none focus:ring-2 focus:ring-[#009496] focus:ring-offset-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+            class="hidden items-center gap-1.5 px-3 py-2 text-xs font-semibold text-white bg-[var(--mint)] rounded-md shadow-sm hover:bg-[var(--teal-dark-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:ring-offset-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 12l2 2 4-4"></path>
             <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>

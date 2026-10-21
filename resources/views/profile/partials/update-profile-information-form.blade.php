@@ -9,7 +9,7 @@
             <div>
                 <label for="name" class="block mb-2 text-sm font-medium text-gray-700">Nome</label>
                 <input type="text" name="name" id="name" value="{{ old('name', $user->name) }}"
-                       class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496] transition-colors"
+                       class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] transition-colors"
                        required autofocus autocomplete="name">
                 <x-input-error class="mt-2" :messages="$errors->get('name')" />
             </div>
@@ -17,7 +17,7 @@
             <div>
                 <label for="email" class="block mb-2 text-sm font-medium text-gray-700">Email</label>
                 <input type="email" name="email" id="email" value="{{ old('email', $user->email) }}"
-                       class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496] transition-colors"
+                       class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] transition-colors"
                        required autocomplete="username">
                 <x-input-error class="mt-2" :messages="$errors->get('email')" />
             </div>
@@ -25,7 +25,7 @@
             <div>
                 <label for="cpf" class="block mb-2 text-sm font-medium text-gray-700">CPF</label>
                 <input type="cpf" name="cpf" id="cpf" value="{{ old('cpf', $user->cpf) }}"
-                       class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496] transition-colors"
+                       class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] transition-colors"
                        required autocomplete="username">
                 <x-input-error class="mt-2" :messages="$errors->get('cpf')" />
             </div>
@@ -51,7 +51,7 @@
     </div>
 
     <div class="flex items-center gap-4">
-        <button type="submit" class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-[#009496] rounded-lg hover:bg-[#244853] transition-colors shadow-sm">
+        <button type="submit" class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-[var(--mint)] rounded-lg hover:bg-[var(--info-bg)] transition-colors shadow-sm">
             <i class="fas fa-save"></i>
             Salvar
         </button>

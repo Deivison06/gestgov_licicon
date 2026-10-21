@@ -5,8 +5,8 @@
 @section('content')
 <div class="py-6">
     <div class="mb-6">
-        <h2 class="text-2xl font-bold text-[#e6f0ee]">Meu Perfil</h2>
-        <p class="mt-1 text-sm text-[#a2b9b5]">Gerencie suas informações de perfil e segurança</p>
+        <h2 class="text-2xl font-bold text-[var(--ink)]">Meu Perfil</h2>
+        <p class="mt-1 text-sm text-[var(--ink-2)]">Gerencie suas informações de perfil e segurança</p>
     </div>
 
         <div class="space-y-6">
@@ -35,8 +35,8 @@
                 <div class="overflow-hidden card !rounded-2xl border-l-4 border-l-[#2DC197]">
                     <div class="card-h">
                         <div>
-                            <h3 class="text-lg font-bold text-[#e6f0ee]">Dados de Assinatura</h3>
-                            <p class="mt-1 text-xs text-[#8aa29d]">
+                            <h3 class="text-lg font-bold text-[var(--ink)]">Dados de Assinatura</h3>
+                            <p class="mt-1 text-xs text-[var(--ink-3)]">
                                 Informações usadas no carimbo das suas assinaturas digitais.
                                 Para alterar, contate o administrador da prefeitura.
                             </p>

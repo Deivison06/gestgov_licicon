@@ -9,7 +9,7 @@
         {{-- Botão Voltar --}}
         <div class="mb-6">
             <a href="{{ route('admin.contratos.index', ['tipo' => 'manual']) }}"
-               class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-[#e6f0ee] bg-[#10201e] border border-[#24403c] rounded-xl hover:bg-[#142825] hover:text-[#2DC197] transition-colors shadow-sm">
+               class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-[var(--ink)] bg-[var(--card)] border border-[var(--line)] rounded-xl hover:bg-[var(--hover-bg)] hover:text-[var(--mint)] transition-colors shadow-sm">
                 <i class="fas fa-arrow-left"></i>
                 Voltar para Lista
             </a>
@@ -20,8 +20,8 @@
             <div class="card-h">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between w-full gap-4">
                     <div>
-                        <h2 class="text-2xl font-bold text-[#e6f0ee]">Contrato Manual</h2>
-                        <p class="mt-1 text-sm text-[#a2b9b5]">ID: {{ $contrato->id }}</p>
+                        <h2 class="text-2xl font-bold text-[var(--ink)]">Contrato Manual</h2>
+                        <p class="mt-1 text-sm text-[var(--ink-2)]">ID: {{ $contrato->id }}</p>
                     </div>
                     <div class="flex items-center gap-3">
                         {{-- Botão Concluir --}}
@@ -29,7 +29,7 @@
                             <form action="{{ route('admin.contratos.concluir.manual', $contrato->id) }}" method="POST" class="inline">
                                 @csrf
                                 @method('PUT')
-                                <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold text-[#b8a5f7] bg-[#1d1b38] border border-[#3b3267] rounded-xl hover:bg-[#28254c] transition-colors" onclick="return confirm('Deseja realmente concluir este contrato? Esta ação não poderá ser desfeita.')">
+                                <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold text-[var(--vio)] bg-[var(--vio-bg)] border border-[var(--vio-border)] rounded-xl hover:bg-[var(--vio-bg)] transition-colors" onclick="return confirm('Deseja realmente concluir este contrato? Esta ação não poderá ser desfeita.')">
                                     <i class="fas fa-check-circle"></i>
                                     Concluir Contrato
                                 </button>
@@ -39,7 +39,7 @@
                         @if($contrato->arquivo_contrato)
                             <a href="{{ asset($contrato->arquivo_contrato) }}"
                                target="_blank"
-                               class="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold text-[#041d1a] bg-[#2DC197] rounded-xl hover:bg-[#26aa84] transition-all shadow-sm hover:scale-105">
+                               class="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold text-[var(--on-mint)] bg-[var(--mint)] rounded-xl hover:bg-[var(--mint-h)] transition-all shadow-sm hover:scale-105">
                                 <i class="fas fa-download"></i>
                                 Download PDF
                             </a>
@@ -47,7 +47,7 @@
 
                         {{-- Botão Editar --}}
                         <a href="{{ route('admin.contratos.edit', $contrato->id) }}"
-                           class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-[#e6f0ee] bg-[#142825] border border-[#24403c] rounded-xl hover:bg-[#1a332f] hover:text-[#2DC197] transition-colors">
+                           class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-[var(--ink)] bg-[var(--hover-bg)] border border-[var(--line)] rounded-xl hover:bg-[var(--card-3)] hover:text-[var(--mint)] transition-colors">
                             <i class="fas fa-edit"></i>
                             Editar
                         </a>
@@ -60,32 +60,32 @@
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                     {{-- Coluna 1: Dados do Contrato --}}
                     <div>
-                        <h3 class="mb-4 text-lg font-bold text-[#e6f0ee]">Informações do Contrato</h3>
+                        <h3 class="mb-4 text-lg font-bold text-[var(--ink)]">Informações do Contrato</h3>
 
                         <div class="space-y-4">
                             <div>
-                                <label class="block text-xs font-semibold uppercase tracking-wider text-[#a2b9b5]">Prefeitura</label>
-                                <p class="mt-1 text-sm font-semibold text-[#e6f0ee]">{{ $contrato->prefeitura->nome ?? '-' }}</p>
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-[var(--ink-2)]">Prefeitura</label>
+                                <p class="mt-1 text-sm font-semibold text-[var(--ink)]">{{ $contrato->prefeitura->nome ?? '-' }}</p>
                             </div>
 
                             <div>
-                                <label class="block text-xs font-semibold uppercase tracking-wider text-[#a2b9b5]">Número do Processo</label>
-                                <p class="mt-1 text-sm font-semibold text-[#e6f0ee]">{{ $contrato->numero_processo }}</p>
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-[var(--ink-2)]">Número do Processo</label>
+                                <p class="mt-1 text-sm font-semibold text-[var(--ink)]">{{ $contrato->numero_processo }}</p>
                             </div>
 
                             <div>
-                                <label class="block text-xs font-semibold uppercase tracking-wider text-[#a2b9b5]">Número do Procedimento</label>
-                                <p class="mt-1 text-sm font-semibold text-[#e6f0ee]">{{ $contrato->numero_procedimento ?? '-' }}</p>
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-[var(--ink-2)]">Número do Procedimento</label>
+                                <p class="mt-1 text-sm font-semibold text-[var(--ink)]">{{ $contrato->numero_procedimento ?? '-' }}</p>
                             </div>
 
                             <div>
-                                <label class="block text-xs font-semibold uppercase tracking-wider text-[#a2b9b5]">Número do Contrato</label>
-                                <p class="mt-1 text-sm font-semibold text-[#e6f0ee]">{{ $contrato->numero_contrato ?? '-' }}</p>
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-[var(--ink-2)]">Número do Contrato</label>
+                                <p class="mt-1 text-sm font-semibold text-[var(--ink)]">{{ $contrato->numero_contrato ?? '-' }}</p>
                             </div>
 
                             <div>
-                                <label class="block text-xs font-semibold uppercase tracking-wider text-[#a2b9b5]">Modalidade</label>
-                                <p class="mt-1 text-sm font-semibold text-[#e6f0ee]">
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-[var(--ink-2)]">Modalidade</label>
+                                <p class="mt-1 text-sm font-semibold text-[var(--ink)]">
                                     @if($contrato->modalidade)
                                         {{ $contrato->modalidade->getDisplayName() }}
                                     @else
@@ -95,13 +95,13 @@
                             </div>
 
                             <div>
-                                <label class="block text-xs font-semibold uppercase tracking-wider text-[#a2b9b5]">Tipo de Contrato</label>
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-[var(--ink-2)]">Tipo de Contrato</label>
                                 @php
                                     $tipoContratoCores = [
-                                        'Serviço' => 'bg-[#1d1b38] text-[#b8a5f7] border border-[#3b3267]',
-                                        'Obra' => 'bg-[#331c14] text-[#fca566] border border-[#6b3524]',
+                                        'Serviço' => 'bg-[var(--vio-bg)] text-[var(--vio)] border border-[var(--vio-border)]',
+                                        'Obra' => 'bg-[var(--orange-bg)] text-[var(--orange)] border border-[var(--bad-border)]',
                                     ];
-                                    $corTipoContrato = $tipoContratoCores[$contrato->tipo_contrato] ?? 'bg-[#132d27] text-[#2DC197] border border-[#24403c]';
+                                    $corTipoContrato = $tipoContratoCores[$contrato->tipo_contrato] ?? 'bg-[var(--card-3)] text-[var(--mint)] border border-[var(--line)]';
                                 @endphp
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold {{ $corTipoContrato }} mt-1">
                                     {{ $contrato->tipo_contrato }}
@@ -109,27 +109,27 @@
                             </div>
 
                             <div>
-                                <label class="block text-xs font-semibold uppercase tracking-wider text-[#a2b9b5]">Valor Total</label>
-                                <p class="mt-1 text-xl font-bold text-[#2DC197]">R$ {{ number_format($contrato->valor_total, 2, ',', '.') }}</p>
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-[var(--ink-2)]">Valor Total</label>
+                                <p class="mt-1 text-xl font-bold text-[var(--mint)]">R$ {{ number_format($contrato->valor_total, 2, ',', '.') }}</p>
                             </div>
                         </div>
                     </div>
 
                     {{-- Coluna 2: Vigência e Contratante --}}
                     <div>
-                        <h3 class="mb-4 text-lg font-bold text-[#e6f0ee]">Vigência e Contratante</h3>
+                        <h3 class="mb-4 text-lg font-bold text-[var(--ink)]">Vigência e Contratante</h3>
 
                         <div class="space-y-4">
                             <div>
-                                <label class="block text-xs font-semibold uppercase tracking-wider text-[#a2b9b5]">Status de Vigência</label>
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-[var(--ink-2)]">Status de Vigência</label>
                                 @php
                                     $statusColors = [
-                                        'VIGENTE' => 'bg-[#132d27] text-[#2DC197] border border-[#24403c]',
-                                        'VENCIDO' => 'bg-[#2a1315] text-[#ff7b72] border border-[#5a2328]',
-                                        'CONCLUÍDO' => 'bg-[#1d1b38] text-[#b8a5f7] border border-[#3b3267]',
-                                        'PENDENTE' => 'bg-[#2f220d] text-[#e0a845] border border-[#5a431a]',
+                                        'VIGENTE' => 'bg-[var(--card-3)] text-[var(--mint)] border border-[var(--line)]',
+                                        'VENCIDO' => 'bg-[var(--bad-bg)] text-[var(--bad-strong)] border border-[var(--bad-border)]',
+                                        'CONCLUÍDO' => 'bg-[var(--vio-bg)] text-[var(--vio)] border border-[var(--vio-border)]',
+                                        'PENDENTE' => 'bg-[var(--warn-bg)] text-[var(--warn-2)] border border-[var(--warn-border)]',
                                     ];
-                                    $cor = $statusColors[$contrato->situacao] ?? 'bg-[#10201e] text-[#a2b9b5] border border-[#24403c]';
+                                    $cor = $statusColors[$contrato->situacao] ?? 'bg-[var(--card)] text-[var(--ink-2)] border border-[var(--line)]';
                                 @endphp
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold {{ $cor }} mt-1">
                                     {{ $contrato->situacao }}
@@ -137,23 +137,23 @@
                             </div>
 
                             <div>
-                                <label class="block text-xs font-semibold uppercase tracking-wider text-[#a2b9b5]">Data de Assinatura</label>
-                                <p class="mt-1 text-sm font-semibold text-[#e6f0ee]">{{ $contrato->data_assinatura ? $contrato->data_assinatura->format('d/m/Y') : '-' }}</p>
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-[var(--ink-2)]">Data de Assinatura</label>
+                                <p class="mt-1 text-sm font-semibold text-[var(--ink)]">{{ $contrato->data_assinatura ? $contrato->data_assinatura->format('d/m/Y') : '-' }}</p>
                             </div>
 
                             <div>
-                                <label class="block text-xs font-semibold uppercase tracking-wider text-[#a2b9b5]">Data de Início</label>
-                                <p class="mt-1 text-sm font-semibold text-[#e6f0ee]">{{ $contrato->data_inicio ? $contrato->data_inicio->format('d/m/Y') : '-' }}</p>
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-[var(--ink-2)]">Data de Início</label>
+                                <p class="mt-1 text-sm font-semibold text-[var(--ink)]">{{ $contrato->data_inicio ? $contrato->data_inicio->format('d/m/Y') : '-' }}</p>
                             </div>
 
                             <div>
-                                <label class="block text-xs font-semibold uppercase tracking-wider text-[#a2b9b5]">Data de Finalização</label>
-                                <p class="mt-1 text-sm font-semibold text-[#e6f0ee]">{{ $contrato->data_finalizacao ? $contrato->data_finalizacao->format('d/m/Y') : '-' }}</p>
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-[var(--ink-2)]">Data de Finalização</label>
+                                <p class="mt-1 text-sm font-semibold text-[var(--ink)]">{{ $contrato->data_finalizacao ? $contrato->data_finalizacao->format('d/m/Y') : '-' }}</p>
                             </div>
 
                             <div>
-                                <label class="block text-xs font-semibold uppercase tracking-wider text-[#a2b9b5]">Contratante (Secretaria)</label>
-                                <p class="mt-1 text-sm font-semibold text-[#e6f0ee]">{{ $contrato->secretaria->nome ?? '-' }}</p>
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-[var(--ink-2)]">Contratante (Secretaria)</label>
+                                <p class="mt-1 text-sm font-semibold text-[var(--ink)]">{{ $contrato->secretaria->nome ?? '-' }}</p>
                             </div>
                         </div>
                     </div>
@@ -161,35 +161,35 @@
 
                 {{-- Objeto --}}
                 <div class="mt-8">
-                    <h3 class="mb-2 text-lg font-bold text-[#e6f0ee]">Objeto do Contrato</h3>
-                    <div class="p-4 bg-[#0a1514] border border-[#24403c] rounded-xl">
-                        <p class="text-sm text-[#e6f0ee]">{{ $contrato->objeto }}</p>
+                    <h3 class="mb-2 text-lg font-bold text-[var(--ink)]">Objeto do Contrato</h3>
+                    <div class="p-4 bg-[var(--bg)] border border-[var(--line)] rounded-xl">
+                        <p class="text-sm text-[var(--ink)]">{{ $contrato->objeto }}</p>
                     </div>
                 </div>
 
                 {{-- Dados da Empresa --}}
                 <div class="mt-8">
-                    <h3 class="mb-4 text-lg font-bold text-[#e6f0ee]">Dados da Empresa Contratada</h3>
+                    <h3 class="mb-4 text-lg font-bold text-[var(--ink)]">Dados da Empresa Contratada</h3>
 
                     <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div>
-                            <label class="block text-xs font-semibold uppercase tracking-wider text-[#a2b9b5]">Razão Social</label>
-                            <p class="mt-1 text-sm font-semibold text-[#e6f0ee]">{{ $contrato->empresa->razao_social ?? '-' }}</p>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-[var(--ink-2)]">Razão Social</label>
+                            <p class="mt-1 text-sm font-semibold text-[var(--ink)]">{{ $contrato->empresa->razao_social ?? '-' }}</p>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-semibold uppercase tracking-wider text-[#a2b9b5]">CNPJ</label>
-                            <p class="mt-1 text-sm font-semibold text-[#e6f0ee]">{{ $contrato->empresa->cnpj_formatado ?? '-' }}</p>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-[var(--ink-2)]">CNPJ</label>
+                            <p class="mt-1 text-sm font-semibold text-[var(--ink)]">{{ $contrato->empresa->cnpj_formatado ?? '-' }}</p>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-semibold uppercase tracking-wider text-[#a2b9b5]">Representante</label>
-                            <p class="mt-1 text-sm font-semibold text-[#e6f0ee]">{{ $contrato->empresa->representante ?? '-' }}</p>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-[var(--ink-2)]">Representante</label>
+                            <p class="mt-1 text-sm font-semibold text-[var(--ink)]">{{ $contrato->empresa->representante ?? '-' }}</p>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-semibold uppercase tracking-wider text-[#a2b9b5]">Endereço</label>
-                            <p class="mt-1 text-sm font-semibold text-[#e6f0ee]">{{ $contrato->empresa->endereco ?? '-' }}</p>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-[var(--ink-2)]">Endereço</label>
+                            <p class="mt-1 text-sm font-semibold text-[var(--ink)]">{{ $contrato->empresa->endereco ?? '-' }}</p>
                         </div>
                     </div>
                 </div>
@@ -200,16 +200,16 @@
                         || auth()->user()->can('contratos')
                         || auth()->user()->hasRole(['prefeitura', 'Prefeitura - Personalizado']);
                 @endphp
-                <div class="mt-8 pt-8 border-t border-[#24403c]">
+                <div class="mt-8 pt-8 border-t border-[var(--line)]">
                     <div class="flex items-center justify-between mb-6">
-                        <h3 class="text-lg font-bold text-[#e6f0ee] flex items-center gap-2">
-                            <i class="fas fa-file-contract text-[#2DC197]"></i>
+                        <h3 class="text-lg font-bold text-[var(--ink)] flex items-center gap-2">
+                            <i class="fas fa-file-contract text-[var(--mint)]"></i>
                             Incidentes Contratuais (Aditivos)
                         </h3>
                         @if($podeAbrirAditivoManual)
                             <button type="button"
                                     onclick="document.getElementById('modalNovoAditivoManual').classList.remove('hidden')"
-                                    class="inline-flex items-center px-4 py-2 text-sm font-bold text-[#041d1a] bg-[#2DC197] rounded-xl hover:bg-[#26aa84] transition-all shadow-sm hover:scale-105">
+                                    class="inline-flex items-center px-4 py-2 text-sm font-bold text-[var(--on-mint)] bg-[var(--mint)] rounded-xl hover:bg-[var(--mint-h)] transition-all shadow-sm hover:scale-105">
                                 <i class="fas fa-plus mr-2"></i>
                                 Registrar Incidente Contratual
                             </button>
@@ -219,26 +219,26 @@
                     @if($contrato->incidentes && $contrato->incidentes->isNotEmpty())
                         <div class="space-y-3 mb-6">
                             @foreach($contrato->incidentes as $incidente)
-                                <div class="flex items-center justify-between p-3.5 text-sm bg-[#0a1514] border border-[#24403c] rounded-xl">
+                                <div class="flex items-center justify-between p-3.5 text-sm bg-[var(--bg)] border border-[var(--line)] rounded-xl">
                                     <div class="flex flex-col">
-                                        <span class="font-semibold text-[#e6f0ee]">
+                                        <span class="font-semibold text-[var(--ink)]">
                                             {{ ucfirst(str_replace('_', ' e ', $incidente->tipo)) }}
-                                            <span class="ml-1 text-xs font-normal text-[#a2b9b5]">
+                                            <span class="ml-1 text-xs font-normal text-[var(--ink-2)]">
                                                 ({{ $incidente->categoria === 'obras' ? 'Obras' : 'Compras e Serviços' }})
                                             </span>
                                         </span>
-                                        <span class="text-xs text-[#a2b9b5]">
+                                        <span class="text-xs text-[var(--ink-2)]">
                                             Registrado em {{ $incidente->created_at->format('d/m/Y') }}
                                         </span>
                                     </div>
                                     <div class="flex items-center gap-2">
-                                        <span class="px-2.5 py-1 text-[11px] font-bold text-[#2DC197] bg-[#132d27] border border-[#24403c] rounded-full">
+                                        <span class="px-2.5 py-1 text-[11px] font-bold text-[var(--mint)] bg-[var(--card-3)] border border-[var(--line)] rounded-full">
                                             Aditivo {{ $incidente->ehExterno() ? 'Externo' : '' }}
                                         </span>
                                         <a href="{{ $incidente->ehExterno()
                                                 ? route('admin.incidentes-manual.externo', ['contrato_id' => $contrato->id, 'incidente_id' => $incidente->id])
                                                 : route('admin.incidentes-manual.documentos', ['contrato_id' => $contrato->id, 'incidente_id' => $incidente->id]) }}"
-                                           class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#e6f0ee] bg-[#10201e] border border-[#24403c] rounded-lg hover:bg-[#142825] hover:text-[#2DC197] transition-colors"
+                                           class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[var(--ink)] bg-[var(--card)] border border-[var(--line)] rounded-lg hover:bg-[var(--hover-bg)] hover:text-[var(--mint)] transition-colors"
                                            title="{{ $incidente->ehExterno() ? 'Ver Aditivo Externo' : 'Gerenciar Documentos do Aditivo' }}">
                                             <i class="fas fa-file-alt"></i> {{ $incidente->ehExterno() ? 'Ver Aditivo' : 'Documentos' }}
                                         </a>
@@ -247,7 +247,7 @@
                             @endforeach
                         </div>
                     @else
-                        <div class="bg-[#0a1514] rounded-xl p-6 border border-[#24403c] mb-6 text-center text-[#a2b9b5]">
+                        <div class="bg-[var(--bg)] rounded-xl p-6 border border-[var(--line)] mb-6 text-center text-[var(--ink-2)]">
                             Nenhum incidente contratual registrado.
                         </div>
                     @endif
@@ -263,23 +263,23 @@
                 @endif
 
                 {{-- Acompanhamento da Execução Contratual --}}
-                <div class="mt-8 pt-8 border-t border-[#24403c]">
-                    <h3 class="mb-6 text-lg font-bold text-[#e6f0ee] flex items-center gap-2">
-                        <i class="fas fa-chart-line text-[#2DC197]"></i>
+                <div class="mt-8 pt-8 border-t border-[var(--line)]">
+                    <h3 class="mb-6 text-lg font-bold text-[var(--ink)] flex items-center gap-2">
+                        <i class="fas fa-chart-line text-[var(--mint)]"></i>
                         Acompanhamento da Execução (Fiscalizações & Ocorrências)
                     </h3>
 
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {{-- Painel de Fiscalizações --}}
-                        <div class="bg-[#0a1514] rounded-2xl p-5 border border-[#24403c]">
+                        <div class="bg-[var(--bg)] rounded-2xl p-5 border border-[var(--line)]">
                             <div class="flex items-center justify-between mb-4">
-                                <h4 class="font-bold text-[#e6f0ee] flex items-center gap-2">
-                                    <i class="fas fa-clipboard-check text-[#2DC197]"></i>
+                                <h4 class="font-bold text-[var(--ink)] flex items-center gap-2">
+                                    <i class="fas fa-clipboard-check text-[var(--mint)]"></i>
                                     Fiscalizações ({{ $contrato->fiscalizacoes->count() }})
                                 </h4>
                                 @can('fiscalizar contratos')
                                     <a href="{{ route('admin.fiscalizacoes.create', ['id' => $contrato->id, 'type' => get_class($contrato)]) }}"
-                                       class="text-xs font-bold text-[#2DC197] hover:underline flex items-center gap-1">
+                                       class="text-xs font-bold text-[var(--mint)] hover:underline flex items-center gap-1">
                                         <i class="fas fa-plus"></i> Nova Fiscalização
                                     </a>
                                 @endcan
@@ -288,7 +288,7 @@
                             @if($contrato->fiscalizacoes->isNotEmpty())
                                 <div class="overflow-x-auto">
                                     <table class="w-full text-xs text-left">
-                                        <thead class="text-xs font-semibold text-[#a2b9b5] uppercase bg-[#10201e] border-b border-[#24403c]">
+                                        <thead class="text-xs font-semibold text-[var(--ink-2)] uppercase bg-[var(--card)] border-b border-[var(--line)]">
                                             <tr>
                                                 <th class="px-3 py-2.5 rounded-l-lg">Nº</th>
                                                 <th class="px-3 py-2.5">Data</th>
@@ -296,13 +296,13 @@
                                                 <th class="px-3 py-2.5 text-right rounded-r-lg">Ações</th>
                                             </tr>
                                         </thead>
-                                        <tbody class="divide-y divide-[#24403c]/40">
+                                        <tbody class="divide-y divide-[var(--line)]/40">
                                             @foreach($contrato->fiscalizacoes as $fisc)
-                                                <tr class="hover:bg-[#10201e]/60 transition-colors">
-                                                    <td class="px-3 py-2.5 font-semibold text-[#e6f0ee]">
+                                                <tr class="hover:bg-[var(--card)]/60 transition-colors">
+                                                    <td class="px-3 py-2.5 font-semibold text-[var(--ink)]">
                                                         {{ $fisc->numero_fiscalizacao }}
                                                     </td>
-                                                    <td class="px-3 py-2.5 text-[#a2b9b5]">
+                                                    <td class="px-3 py-2.5 text-[var(--ink-2)]">
                                                         {{ $fisc->data_fiscalizacao?->format('d/m/Y') ?? '—' }}
                                                     </td>
                                                     <td class="px-3 py-2.5">
@@ -313,11 +313,11 @@
                                                     <td class="px-3 py-2.5 text-right">
                                                         <div class="flex items-center justify-end gap-1.5 font-medium">
                                                             <a href="{{ route('admin.fiscalizacoes.show', $fisc->id) }}"
-                                                               class="p-1.5 text-[#2DC197] hover:bg-[#132d27] rounded-lg transition-colors" title="Visualizar">
+                                                               class="p-1.5 text-[var(--mint)] hover:bg-[var(--card-3)] rounded-lg transition-colors" title="Visualizar">
                                                                 <i class="fas fa-eye"></i>
                                                             </a>
                                                             <a href="{{ route('admin.fiscalizacoes.edit', $fisc->id) }}"
-                                                               class="p-1.5 text-[#e0a845] hover:bg-[#2f220d] rounded-lg transition-colors" title="Editar">
+                                                               class="p-1.5 text-[var(--warn-2)] hover:bg-[var(--warn-bg)] rounded-lg transition-colors" title="Editar">
                                                                 <i class="fas fa-edit"></i>
                                                             </a>
                                                         </div>
@@ -328,23 +328,23 @@
                                     </table>
                                 </div>
                             @else
-                                <div class="text-center py-6 text-[#a2b9b5]">
-                                    <i class="fas fa-clipboard-check text-2xl mb-2 text-[#a2b9b5]/60"></i>
+                                <div class="text-center py-6 text-[var(--ink-2)]">
+                                    <i class="fas fa-clipboard-check text-2xl mb-2 text-[var(--ink-2)]/60"></i>
                                     <p class="text-xs">Nenhuma fiscalização registrada para este contrato.</p>
                                 </div>
                             @endif
                         </div>
 
                         {{-- Painel de Ocorrências --}}
-                        <div class="bg-[#0a1514] rounded-2xl p-5 border border-[#24403c]">
+                        <div class="bg-[var(--bg)] rounded-2xl p-5 border border-[var(--line)]">
                             <div class="flex items-center justify-between mb-4">
-                                <h4 class="font-bold text-[#e6f0ee] flex items-center gap-2">
-                                    <i class="fas fa-triangle-exclamation text-[#e0a845]"></i>
+                                <h4 class="font-bold text-[var(--ink)] flex items-center gap-2">
+                                    <i class="fas fa-triangle-exclamation text-[var(--warn-2)]"></i>
                                     Ocorrências ({{ $contrato->ocorrencias->count() }})
                                 </h4>
                                 @can('fiscalizar contratos')
                                     <a href="{{ route('admin.ocorrencias.create', ['id' => $contrato->id, 'type' => get_class($contrato)]) }}"
-                                       class="text-xs font-bold text-[#2DC197] hover:underline flex items-center gap-1">
+                                       class="text-xs font-bold text-[var(--mint)] hover:underline flex items-center gap-1">
                                         <i class="fas fa-plus"></i> Registrar Ocorrência
                                     </a>
                                 @endcan
@@ -353,7 +353,7 @@
                             @if($contrato->ocorrencias->isNotEmpty())
                                 <div class="overflow-x-auto">
                                     <table class="w-full text-xs text-left">
-                                        <thead class="text-xs font-semibold text-[#a2b9b5] uppercase bg-[#10201e] border-b border-[#24403c]">
+                                        <thead class="text-xs font-semibold text-[var(--ink-2)] uppercase bg-[var(--card)] border-b border-[var(--line)]">
                                             <tr>
                                                 <th class="px-3 py-2.5 rounded-l-lg">Nº</th>
                                                 <th class="px-3 py-2.5">Data</th>
@@ -361,13 +361,13 @@
                                                 <th class="px-3 py-2.5 text-right rounded-r-lg">Ações</th>
                                             </tr>
                                         </thead>
-                                        <tbody class="divide-y divide-[#24403c]/40">
+                                        <tbody class="divide-y divide-[var(--line)]/40">
                                             @foreach($contrato->ocorrencias as $ocor)
-                                                <tr class="hover:bg-[#10201e]/60 transition-colors">
-                                                    <td class="px-3 py-2.5 font-semibold text-[#e6f0ee]">
+                                                <tr class="hover:bg-[var(--card)]/60 transition-colors">
+                                                    <td class="px-3 py-2.5 font-semibold text-[var(--ink)]">
                                                         {{ $ocor->numero_ocorrencia }}
                                                     </td>
-                                                    <td class="px-3 py-2.5 text-[#a2b9b5]">
+                                                    <td class="px-3 py-2.5 text-[var(--ink-2)]">
                                                         {{ $ocor->data_ocorrencia?->format('d/m/Y') ?? '—' }}
                                                     </td>
                                                     <td class="px-3 py-2.5">
@@ -378,12 +378,12 @@
                                                     <td class="px-3 py-2.5 text-right font-medium">
                                                         <div class="flex items-center justify-end gap-1.5">
                                                             <a href="{{ route('admin.ocorrencias.show', $ocor->id) }}"
-                                                               class="p-1.5 text-[#2DC197] hover:bg-[#132d27] rounded-lg transition-colors" title="Visualizar">
+                                                               class="p-1.5 text-[var(--mint)] hover:bg-[var(--card-3)] rounded-lg transition-colors" title="Visualizar">
                                                                 <i class="fas fa-eye"></i>
                                                             </a>
                                                             @if($ocor->status->value !== 'concluida')
                                                                 <a href="{{ route('admin.ocorrencias.edit', $ocor->id) }}"
-                                                                   class="p-1.5 text-[#e0a845] hover:bg-[#2f220d] rounded-lg transition-colors" title="Editar">
+                                                                   class="p-1.5 text-[var(--warn-2)] hover:bg-[var(--warn-bg)] rounded-lg transition-colors" title="Editar">
                                                                     <i class="fas fa-edit"></i>
                                                                 </a>
                                                             @endif
@@ -395,8 +395,8 @@
                                     </table>
                                 </div>
                             @else
-                                <div class="text-center py-6 text-[#a2b9b5]">
-                                    <i class="fas fa-triangle-exclamation text-2xl mb-2 text-[#a2b9b5]/60"></i>
+                                <div class="text-center py-6 text-[var(--ink-2)]">
+                                    <i class="fas fa-triangle-exclamation text-2xl mb-2 text-[var(--ink-2)]/60"></i>
                                     <p class="text-xs">Nenhuma ocorrência registrada para este contrato.</p>
                                 </div>
                             @endif

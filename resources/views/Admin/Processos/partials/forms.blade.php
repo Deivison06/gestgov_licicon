@@ -15,7 +15,7 @@
                 <label for="unidade_setor" class="block mb-1 text-sm font-medium text-gray-700">
                     Unidade / Setor / Departamento
                 </label>
-                <select id="unidade_setor" x-model="unidade_setor" @change="onUnidadeChange" :disabled="confirmed.unidade_setor" class="block w-full mt-1 border-gray-300 rounded-lg shadow-sm focus:ring-[#009496] focus:border-[#009496] sm:text-sm">
+                <select id="unidade_setor" x-model="unidade_setor" @change="onUnidadeChange" :disabled="confirmed.unidade_setor" class="block w-full mt-1 border-gray-300 rounded-lg shadow-sm focus:ring-[var(--mint)] focus:border-[var(--mint)] sm:text-sm">
                     <option value="">Selecione uma unidade</option>
                     @foreach ($processo->prefeitura->unidades as $unidade)
                     <option value="{{ $unidade->nome }}" data-responsavel="{{ $unidade->servidor_responsavel }}" {{ ($processo->detalhe->unidade_setor ?? '') == $unidade->nome ? 'selected' : '' }}>
@@ -118,7 +118,7 @@
                 <label for="valor_estimado" class="block text-sm font-medium text-gray-700">Valor Estimado</label>
                 @if($processo->etp && in_array($processo->modalidade, [\App\Enums\ModalidadeEnum::DISPENSA, \App\Enums\ModalidadeEnum::PREGAO_ELETRONICO], true))
                 <button type="button" @click="puxarValorEstimadoPesquisaPreco()"
-                    class="flex items-center gap-1 px-2 py-1 text-xs font-medium text-white transition-colors rounded-md bg-[#009496] hover:bg-[#007779] shadow-sm"
+                    class="flex items-center gap-1 px-2 py-1 text-xs font-medium text-white transition-colors rounded-md bg-[var(--mint)] hover:bg-[var(--teal-dark-bg)] shadow-sm"
                     title="Preencher com o valor total da pesquisa de preço">
                     <i class="fas fa-sync-alt"></i><span>Puxar da Pesquisa de Preço</span>
                 </button>
@@ -126,7 +126,7 @@
             </div>
             <input type="text" id="valor_estimado" name="valor_estimado" x-model="valor_estimado"
                 :disabled="confirmed.valor_estimado"
-                class="block w-full mt-1 border-gray-300 rounded-lg shadow-sm sm:text-sm focus:ring-[#009496] focus:border-[#009496] disabled:bg-gray-100 disabled:cursor-not-allowed">
+                class="block w-full mt-1 border-gray-300 rounded-lg shadow-sm sm:text-sm focus:ring-[var(--mint)] focus:border-[var(--mint)] disabled:bg-gray-100 disabled:cursor-not-allowed">
         </div>
         <div class="flex pt-6 space-x-1">
             <button type="button" @click="saveField('valor_estimado')" x-show="!confirmed.valor_estimado"
@@ -387,7 +387,7 @@
                 </div>
                 <div class="flex items-end pb-1">
                     <button type="button" @click="abrirModalSelecaoEtp()"
-                            class="inline-flex items-center px-4 py-2.5 text-sm font-bold text-white bg-[#009496] rounded-lg hover:bg-[#007a7a] transition-all shadow-md group">
+                            class="inline-flex items-center px-4 py-2.5 text-sm font-bold text-white bg-[var(--mint)] rounded-lg hover:bg-[var(--teal-dark-bg)] transition-all shadow-md group">
                         <i class="fas fa-search-plus mr-2 group-hover:scale-110 transition-transform"></i>
                         Buscar ETP Inteligente
                     </button>
@@ -474,20 +474,20 @@
                 app(\App\Services\CotaReservadaService::class)->loteIdsAtivos($processo->detalhe?->lotes_cota_reservada ?? null)
             );
         @endphp
-        <div class="mt-2 p-3 bg-[#009496]/5 border border-[#009496]/20 rounded-xl flex items-center gap-3">
-            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-[#009496]/10 text-[#009496] flex items-center justify-center">
+        <div class="mt-2 p-3 bg-[var(--mint)]/5 border border-[var(--mint)]/20 rounded-xl flex items-center gap-3">
+            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--mint)]/10 text-[var(--teal-text)] flex items-center justify-center">
                 <i class="fas fa-balance-scale-right text-sm"></i>
             </div>
             <div class="flex-1 min-w-0">
-                <p class="text-xs font-bold text-[#007a7a]">Cota Reservada ME/EPP</p>
-                <p class="text-xs text-[#007a7a]/80">Divide os lotes marcados em Ampla Concorrência / Cota Reservada ao gerar este documento.</p>
+                <p class="text-xs font-bold text-[var(--teal-dark-bg)]">Cota Reservada ME/EPP</p>
+                <p class="text-xs text-[var(--teal-dark-bg)]/80">Divide os lotes marcados em Ampla Concorrência / Cota Reservada ao gerar este documento.</p>
             </div>
             <a href="{{ route('admin.processos.cota_reservada', $processo->id) }}" target="_blank"
-               class="flex-shrink-0 inline-flex items-center px-3 py-1.5 text-xs font-bold text-white bg-[#009496] rounded-lg hover:bg-[#007a7a] transition-all shadow-sm">
+               class="flex-shrink-0 inline-flex items-center px-3 py-1.5 text-xs font-bold text-white bg-[var(--mint)] rounded-lg hover:bg-[var(--teal-dark-bg)] transition-all shadow-sm">
                 <i class="fas fa-sliders-h mr-1.5"></i> Configurar
             </a>
             @if($qtdLotesReservados > 0)
-            <span class="flex-shrink-0 inline-flex items-center gap-1 px-2.5 py-1 bg-[#009496]/10 text-[#007a7a] text-xs font-bold rounded-full border border-[#009496]/20">
+            <span class="flex-shrink-0 inline-flex items-center gap-1 px-2.5 py-1 bg-[var(--mint)]/10 text-[var(--teal-dark-bg)] text-xs font-bold rounded-full border border-[var(--mint)]/20">
                 <i class="fas fa-check-circle"></i>
                 {{ $qtdLotesReservados }} {{ Str::plural('lote', $qtdLotesReservados) }}
             </span>
@@ -631,7 +631,7 @@
                     </div>
                     <div class="flex items-end pb-1">
                         <button type="button" @click="abrirModalSelecaoEtp()"
-                                class="inline-flex items-center px-4 py-2.5 text-sm font-bold text-white bg-[#009496] rounded-lg hover:bg-[#007a7a] transition-all shadow-md group">
+                                class="inline-flex items-center px-4 py-2.5 text-sm font-bold text-white bg-[var(--mint)] rounded-lg hover:bg-[var(--teal-dark-bg)] transition-all shadow-md group">
                             <i class="fas fa-search-plus mr-2 group-hover:scale-110 transition-transform"></i>
                             Buscar ETP Inteligente
                         </button>
@@ -1001,7 +1001,7 @@
                            name="anexo_pdf_analise_mercado"
                            :disabled="confirmed.anexo_pdf_analise_mercado"
                            accept="application/pdf"
-                           class="block w-full mt-1 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#009496] file:text-white hover:file:bg-[#007779]">
+                           class="block w-full mt-1 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[var(--mint)] file:text-white hover:file:bg-[var(--teal-dark-bg)]">
                 </div>
                 <div class="flex pt-6 space-x-1">
                     <button type="button" @click="saveField('anexo_pdf_analise_mercado')"

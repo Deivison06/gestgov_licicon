@@ -6,7 +6,7 @@
     <div class="py-8">
         <div class="mb-4">
             <a href="{{ route('admin.etps.index') }}"
-                class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#009496] rounded-lg hover:bg-[#007a7a] transition-all duration-200">
+                class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[var(--mint)] rounded-lg hover:bg-[var(--teal-dark-bg)] transition-all duration-200">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18">
                     </path>
@@ -45,12 +45,12 @@
                 <div class="w-full mb-8 relative">
                     <div class="absolute w-full h-1 bg-gray-200 rounded-full top-5"></div>
                     <div id="progress-bar"
-                        class="absolute w-1/3 h-1 bg-[#009496] rounded-full top-5 transition-all duration-300"></div>
+                        class="absolute w-1/3 h-1 bg-[var(--mint)] rounded-full top-5 transition-all duration-300"></div>
                     <div class="flex justify-between mx-auto items-center relative z-10">
                         <div class="text-center w-1/3">
-                            <div class="w-10 h-10 mx-auto bg-[#009496] rounded-full text-white flex items-center justify-center font-bold border-4 border-white shadow-sm"
+                            <div class="w-10 h-10 mx-auto bg-[var(--mint)] rounded-full text-white flex items-center justify-center font-bold border-4 border-white shadow-sm"
                                 id="indicator-1">1</div>
-                            <p class="mt-2 text-sm font-medium text-[#009496]" id="label-1">Dados Iniciais</p>
+                            <p class="mt-2 text-sm font-medium text-[var(--teal-text)]" id="label-1">Dados Iniciais</p>
                         </div>
                         <div class="text-center w-1/3">
                             <div class="w-10 h-10 mx-auto bg-gray-200 rounded-full text-gray-500 flex items-center justify-center font-bold border-4 border-white shadow-sm transition-colors duration-300"
@@ -75,7 +75,7 @@
                     <div class="mb-6">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Prefeitura *</label>
                         <select name="prefeitura_id" id="prefeitura_id"
-                            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent"
+                            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--mint)] focus:border-transparent"
                             required>
                             <option value="">Selecione a prefeitura...</option>
                             @foreach ($prefeituras as $pref)
@@ -91,7 +91,7 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Secretaria da Prefeitura *</label>
                             <select name="secretaria_id" id="secretaria_id"
-                                class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent"
+                                class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--mint)] focus:border-transparent"
                                 required>
                                 <option value="">Selecione...</option>
                                 @if(!$isSuperAdmin)
@@ -106,7 +106,7 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Servidor Responsável</label>
                             <input type="text" name="servidor_responsavel" id="servidor_responsavel"
-                                class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent"
+                                class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--mint)] focus:border-transparent"
                                 required>
                         </div>
                     </div>
@@ -114,7 +114,7 @@
                     <div class="mt-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Modalidade da Licitação *</label>
                         <select name="modalidade" id="modalidade"
-                            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent"
+                            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--mint)] focus:border-transparent"
                             required onchange="toggleModalidadeFields()">
                             <option value="">Selecione...</option>
                             <option value="pregao" {{ old('modalidade') == 'pregao' ? 'selected' : '' }}>Pregão
@@ -130,7 +130,7 @@
 
                     <div class="mt-8 flex justify-end">
                         <button type="button"
-                            class="btn-next px-6 py-2.5 text-sm font-medium text-white bg-[#009496] rounded-lg hover:bg-[#007a7a] transition-all"
+                            class="btn-next px-6 py-2.5 text-sm font-medium text-white bg-[var(--mint)] rounded-lg hover:bg-[var(--teal-dark-bg)] transition-all"
                             onclick="nextStep(2)">Próximo Passo <i class="fas fa-arrow-right ml-2"></i></button>
                     </div>
                 </div>
@@ -143,7 +143,7 @@
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Especificar o objeto da licitação *</label>
                         <textarea name="objeto_licitacao" id="objeto_licitacao" rows="5"
-                            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent resize-y"
+                            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--mint)] focus:border-transparent resize-y"
                             required>{{ old('objeto_licitacao') }}</textarea>
                         <p class="mt-1 text-xs text-gray-500">Descreva detalhadamente o que será adquirido ou contratado.</p>
                     </div>
@@ -152,7 +152,7 @@
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Justificativa da Necessidade *</label>
                         <textarea name="justificativa_necessidade" id="justificativa_necessidade" rows="4"
-                            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent resize-y"
+                            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--mint)] focus:border-transparent resize-y"
                             required>{{ old('justificativa_necessidade') }}</textarea>
                         <p class="mt-1 text-xs text-gray-500">Explique detalhadamente por que esta contratação é necessária.</p>
                     </div>
@@ -164,7 +164,7 @@
                             <i class="fas fa-arrow-left mr-2"></i> Voltar
                         </button>
                         <button type="button"
-                            class="px-6 py-2.5 text-sm font-medium text-white bg-[#009496] rounded-lg hover:bg-[#007a7a] transition-all"
+                            class="px-6 py-2.5 text-sm font-medium text-white bg-[var(--mint)] rounded-lg hover:bg-[var(--teal-dark-bg)] transition-all"
                             onclick="nextStep(3)">
                             Próximo Passo <i class="fas fa-arrow-right ml-2"></i>
                         </button>
@@ -186,14 +186,14 @@
                             <div id="tipo-opcoes-pregao" class="flex items-center space-x-6 hidden">
                                 <label class="inline-flex items-center cursor-pointer">
                                     <input type="radio" name="tipo_contratacao" value="item"
-                                        class="form-radio text-[#009496] w-5 h-5"
+                                        class="form-radio text-[var(--teal-text)] w-5 h-5"
                                         {{ old('tipo_contratacao') == 'item' ? 'checked' : '' }}
                                         onchange="toggleContratacaoTipo()">
                                     <span class="ml-2">Por Item</span>
                                 </label>
                                 <label class="inline-flex items-center cursor-pointer border-l pl-6 border-gray-200">
                                     <input type="radio" name="tipo_contratacao" value="lote"
-                                        class="form-radio text-[#009496] w-5 h-5"
+                                        class="form-radio text-[var(--teal-text)] w-5 h-5"
                                         {{ old('tipo_contratacao') == 'lote' ? 'checked' : '' }}
                                         onchange="toggleContratacaoTipo()">
                                     <span class="ml-2">Por Lote</span>
@@ -203,14 +203,14 @@
                             <div id="tipo-opcoes-dispensa" class="flex items-center space-x-6 hidden">
                                 <label class="inline-flex items-center cursor-pointer">
                                     <input type="radio" name="tipo_contratacao" value="servicos"
-                                        class="form-radio text-[#009496] w-5 h-5"
+                                        class="form-radio text-[var(--teal-text)] w-5 h-5"
                                         {{ old('tipo_contratacao') == 'servicos' ? 'checked' : '' }}
                                         onchange="toggleContratacaoTipo()">
                                     <span class="ml-2">Serviços</span>
                                 </label>
                                 <label class="inline-flex items-center cursor-pointer border-l pl-6 border-gray-200">
                                     <input type="radio" name="tipo_contratacao" value="compras"
-                                        class="form-radio text-[#009496] w-5 h-5"
+                                        class="form-radio text-[var(--teal-text)] w-5 h-5"
                                         {{ old('tipo_contratacao') == 'compras' ? 'checked' : '' }}
                                         onchange="toggleContratacaoTipo()">
                                     <span class="ml-2">Compras</span>
@@ -218,7 +218,7 @@
                                 <!-- NOVA OPÇÃO: OBRAS -->
                                 <label class="inline-flex items-center cursor-pointer border-l pl-6 border-gray-200">
                                     <input type="radio" name="tipo_contratacao" value="obras"
-                                        class="form-radio text-[#009496] w-5 h-5"
+                                        class="form-radio text-[var(--teal-text)] w-5 h-5"
                                         {{ old('tipo_contratacao') == 'obras' ? 'checked' : '' }}
                                         onchange="toggleContratacaoTipo()">
                                     <span class="ml-2">Obras</span>
@@ -229,14 +229,14 @@
                             <div id="modo-organizacao-dispensa" class="flex items-center space-x-6 mt-3 hidden">
                                 <label class="inline-flex items-center cursor-pointer">
                                     <input type="radio" name="organizacao_itens" value="item"
-                                        class="form-radio text-[#009496] w-5 h-5"
+                                        class="form-radio text-[var(--teal-text)] w-5 h-5"
                                         {{ old('organizacao_itens') == 'item' ? 'checked' : '' }}
                                         onchange="toggleOrganizacaoItens()">
                                     <span class="ml-2">Por Item</span>
                                 </label>
                                 <label class="inline-flex items-center cursor-pointer border-l pl-6 border-gray-200">
                                     <input type="radio" name="organizacao_itens" value="lote"
-                                        class="form-radio text-[#009496] w-5 h-5"
+                                        class="form-radio text-[var(--teal-text)] w-5 h-5"
                                         {{ old('organizacao_itens') == 'lote' ? 'checked' : '' }}
                                         onchange="toggleOrganizacaoItens()">
                                     <span class="ml-2">Por Lote</span>
@@ -270,7 +270,7 @@
                             <div class="mb-4 flex justify-between items-center">
                                 <h5 class="text-md font-semibold text-gray-700">Lotes da Contratação</h5>
                                 <button type="button" onclick="adicionarLote()"
-                                    class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-[#009496] rounded-lg hover:bg-[#007a7a] transition-all">
+                                    class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-[var(--mint)] rounded-lg hover:bg-[var(--teal-dark-bg)] transition-all">
                                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M12 4v16m8-8H4"></path>
@@ -297,7 +297,7 @@
                         <label class="block text-sm font-medium text-gray-700 mb-2">Prazo de Entrega *</label>
                         <input type="text" name="prazo_entrega" id="prazo_entrega"
                             value="{{ old('prazo_entrega') }}" placeholder="Ex: 30 dias após emissão da nota"
-                            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496]"
+                            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--mint)]"
                             required>
                     </div>
 
@@ -306,7 +306,7 @@
                         <label class="block text-sm font-medium text-gray-700 mb-2">Dotação Orçamentária *</label>
                         <textarea name="dotacao_orcamentaria" id="dotacao_orcamentaria" placeholder="Digite a dotação orçamentária"
                             rows="3"
-                            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent resize-y"
+                            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--mint)] focus:border-transparent resize-y"
                             required>{{ old('dotacao_orcamentaria') }}</textarea>
                     </div>
 
@@ -319,8 +319,8 @@
                             accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                             class="block w-full text-sm text-gray-500
                             file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0
-                            file:text-sm file:font-semibold file:bg-[#009496]/10 file:text-[#009496]
-                            hover:file:bg-[#009496]/20">
+                            file:text-sm file:font-semibold file:bg-[var(--mint)]/10 file:text-[var(--teal-text)]
+                            hover:file:bg-[var(--mint)]/20">
                         <p class="mt-1 text-xs text-gray-500">Máximo 10MB. Para concorrência ou inexigibilidade, anexe o
                             Projeto Básico.</p>
                     </div>
@@ -403,14 +403,14 @@
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Descrição do Item *</label>
                 <input type="text" id="novo_item_descricao" placeholder="Ex: Caneta esferográfica azul"
-                    class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent text-sm"
+                    class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--mint)] focus:border-transparent text-sm"
                     autocomplete="off">
             </div>
 
             <div class="grid grid-cols-2 gap-4 mt-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Unidade *</label>
-                    <select id="novo_item_unidade" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent text-sm">
+                    <select id="novo_item_unidade" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--mint)] focus:border-transparent text-sm">
                         @foreach($unidadesMedida as $value => $label)
                             <option value="{{ $value }}" {{ $value === 'UND' ? 'selected' : '' }}>{{ $label }}</option>
                         @endforeach
@@ -419,7 +419,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Quantidade *</label>
                     <input type="number" id="novo_item_quantidade" value="1" min="1"
-                        class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-transparent text-sm">
+                        class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--mint)] focus:border-transparent text-sm">
                 </div>
             </div>
 
@@ -436,7 +436,7 @@
                     Cancelar
                 </button>
                 <button type="button" id="btnConfirmarCriarItem" onclick="confirmarCriarItem()"
-                    class="px-5 py-2 text-sm font-semibold text-white bg-[#009496] rounded-lg hover:bg-[#007a7a] transition-all">
+                    class="px-5 py-2 text-sm font-semibold text-white bg-[var(--mint)] rounded-lg hover:bg-[var(--teal-dark-bg)] transition-all">
                     <i class="fas fa-plus mr-1"></i> Criar Item
                 </button>
             </div>
@@ -756,7 +756,7 @@
                     </button>
                     <div class="flex items-center gap-1 flex-shrink-0 ml-3">
                         <button type="button" onclick="duplicarLote(${idx})" title="Duplicar este lote"
-                            class="inline-flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-[#009496] hover:bg-[#009496]/10 transition">
+                            class="inline-flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-[var(--teal-text)] hover:bg-[var(--mint)]/10 transition">
                             <i class="fas fa-copy text-sm"></i>
                         </button>
                         <button type="button" onclick="removerLote(this)" title="Remover lote"
@@ -771,7 +771,7 @@
                         <input type="text" name="lotes[${idx}][nome]"
                             placeholder="Ex: Lote ${idx + 1} - Materiais de Escritório"
                             oninput="atualizarLabelLote(${idx}, this.value)"
-                            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496]" required>
+                            class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--mint)]" required>
                     </div>
                     ${gerarItensSelector(idx)}
                 </div>`;
@@ -797,7 +797,7 @@
                         <input type="checkbox" value="{{ $item->id }}"
                             data-descricao="{{ $item->descricao_item }}"
                             data-lote-index="${loteIndex}"
-                            class="item-checkbox w-4 h-4 text-[#009496]"
+                            class="item-checkbox w-4 h-4 text-[var(--teal-text)]"
                             onchange="toggleItemSelecionado(this, ${loteIndex})">
                         <span class="text-sm text-gray-700">{{ $item->descricao_item }}</span>
                     </label>`;
@@ -812,7 +812,7 @@
                                 <i class="fas fa-search text-xs"></i>
                             </span>
                             <input type="text" id="${buscaId}" placeholder="Buscar item já cadastrado no sistema..."
-                                class="buscar-item w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#009496] focus:border-[#009496] transition"
+                                class="buscar-item w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] transition"
                                 data-lista="${listaId}">
                         </div>
                         <button type="button" onclick="abrirModalCriarItem(${loteIndex})" 
@@ -820,7 +820,7 @@
                             <i class="fas fa-plus"></i> Novo Item Manual
                         </button>
                         <button type="button" onclick="openModalPncp(${loteIndex})" 
-                            class="inline-flex items-center justify-center px-4 py-2 text-sm font-bold text-white bg-[#009496] hover:bg-[#007a7a] rounded-lg transition shadow-sm whitespace-nowrap gap-2">
+                            class="inline-flex items-center justify-center px-4 py-2 text-sm font-bold text-white bg-[var(--mint)] hover:bg-[var(--teal-dark-bg)] rounded-lg transition shadow-sm whitespace-nowrap gap-2">
                             <i class="fas fa-globe"></i> Novo Item (PNCP)
                         </button>
                     </div>
@@ -857,15 +857,15 @@
                     const selectedQuantidade = overrideQuantidade || '';
 
                     container.insertAdjacentHTML('beforeend', `
-                    <div class="bg-white border border-gray-200 rounded-xl shadow-sm hover:border-[#009496]/30 transition overflow-hidden" id="item-${containerId}-${id}">
+                    <div class="bg-white border border-gray-200 rounded-xl shadow-sm hover:border-[var(--mint)]/30 transition overflow-hidden" id="item-${containerId}-${id}">
                         <div class="flex flex-col md:flex-row md:items-center justify-between p-4 gap-4 cursor-pointer" onclick="toggleAccordionItem('${containerId}-${id}')" title="Clique para expandir/recolher">
                             <div class="flex items-center gap-3 flex-1 min-w-0">
                                 <i class="fas fa-grip-vertical text-gray-300 hover:text-gray-500 cursor-grab px-1 drag-handle" title="Arrastar para reordenar" onclick="event.stopPropagation()"></i>
-                                <span class="item-numero inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#009496]/10 text-[#009496] text-xs font-bold flex-shrink-0 border border-[#009496]/20">0</span>
+                                <span class="item-numero inline-flex items-center justify-center w-7 h-7 rounded-full bg-[var(--mint)]/10 text-[var(--teal-text)] text-xs font-bold flex-shrink-0 border border-[var(--mint)]/20">0</span>
                                 <div class="min-w-0 flex-1 flex items-center gap-2">
                                     <p class="desc-item-${id} text-sm font-semibold text-gray-800 leading-relaxed truncate" title="${descricao}">${descricao}</p>
                                 </div>
-                                <button type="button" class="text-gray-400 hover:text-[#009496] focus:outline-none flex-shrink-0 transition-transform duration-200" id="chevron-item-${containerId}-${id}">
+                                <button type="button" class="text-gray-400 hover:text-[var(--teal-text)] focus:outline-none flex-shrink-0 transition-transform duration-200" id="chevron-item-${containerId}-${id}">
                                     <i class="fas fa-chevron-down"></i>
                                 </button>
                             </div>
@@ -878,12 +878,12 @@
                                 
                                 <div class="flex flex-col gap-1">
                                     <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Quantidade</span>
-                                    <input type="number" name="${namePrefix}[${id}][quantidade]" value="${selectedQuantidade}" placeholder="Qtd" min="1" required class="rounded-lg border-gray-300 text-xs py-1.5 focus:border-[#009496] focus:ring-[#009496] w-20 bg-gray-50/50 hover:bg-gray-50 transition">
+                                    <input type="number" name="${namePrefix}[${id}][quantidade]" value="${selectedQuantidade}" placeholder="Qtd" min="1" required class="rounded-lg border-gray-300 text-xs py-1.5 focus:border-[var(--mint)] focus:ring-[var(--mint)] w-20 bg-gray-50/50 hover:bg-gray-50 transition">
                                 </div>
 
                                 <div class="flex items-end self-end pb-0.5 gap-2">
                                     <input type="hidden" name="${namePrefix}[${id}][item_id]" value="${id}">
-                                    <button type="button" onclick="openModalItemQuickEdit(${id}, document.querySelector('#body-item-${containerId}-${id} .desc-item-${id}').textContent)" class="btn-edit-item-${id} inline-flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-[#009496] hover:bg-[#009496]/10 transition" title="Editar Descrição Completa">
+                                    <button type="button" onclick="openModalItemQuickEdit(${id}, document.querySelector('#body-item-${containerId}-${id} .desc-item-${id}').textContent)" class="btn-edit-item-${id} inline-flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-[var(--teal-text)] hover:bg-[var(--mint)]/10 transition" title="Editar Descrição Completa">
                                         <i class="fas fa-edit text-sm"></i>
                                     </button>
                                     <button type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-red-600 hover:bg-red-50 focus:outline-none transition" onclick="removerItemSelecionado(${id}, ${loteIndex})" title="Excluir Item">
@@ -1013,15 +1013,15 @@
 
                 itensDuplicar.forEach(({ id, descricao, unidade, quantidade }) => {
                     newContainer.insertAdjacentHTML('beforeend', `
-                    <div class="bg-white border border-gray-200 rounded-xl shadow-sm hover:border-[#009496]/30 transition overflow-hidden" id="item-itens-selecionados-lote-${newIndex}-${id}">
+                    <div class="bg-white border border-gray-200 rounded-xl shadow-sm hover:border-[var(--mint)]/30 transition overflow-hidden" id="item-itens-selecionados-lote-${newIndex}-${id}">
                         <div class="flex flex-col md:flex-row md:items-center justify-between p-4 gap-4 cursor-pointer" onclick="toggleAccordionItem('itens-selecionados-lote-${newIndex}-${id}')" title="Clique para expandir/recolher">
                             <div class="flex items-center gap-3 flex-1 min-w-0">
                                 <i class="fas fa-grip-vertical text-gray-300 hover:text-gray-500 cursor-grab px-1 drag-handle" title="Arrastar para reordenar" onclick="event.stopPropagation()"></i>
-                                <span class="item-numero inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#009496]/10 text-[#009496] text-xs font-bold flex-shrink-0 border border-[#009496]/20">0</span>
+                                <span class="item-numero inline-flex items-center justify-center w-7 h-7 rounded-full bg-[var(--mint)]/10 text-[var(--teal-text)] text-xs font-bold flex-shrink-0 border border-[var(--mint)]/20">0</span>
                                 <div class="min-w-0 flex-1 flex items-center gap-2">
                                     <p class="desc-item-${id} text-sm font-semibold text-gray-800 leading-relaxed truncate" title="${descricao}">${descricao}</p>
                                 </div>
-                                <button type="button" class="text-gray-400 hover:text-[#009496] focus:outline-none flex-shrink-0 transition-transform duration-200" id="chevron-item-itens-selecionados-lote-${newIndex}-${id}">
+                                <button type="button" class="text-gray-400 hover:text-[var(--teal-text)] focus:outline-none flex-shrink-0 transition-transform duration-200" id="chevron-item-itens-selecionados-lote-${newIndex}-${id}">
                                     <i class="fas fa-chevron-down"></i>
                                 </button>
                             </div>
@@ -1032,11 +1032,11 @@
                                 </div>
                                 <div class="flex flex-col gap-1">
                                     <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Quantidade</span>
-                                    <input type="number" name="${namePrefix}[${id}][quantidade]" value="${quantidade}" placeholder="Qtd" min="1" required class="rounded-lg border-gray-300 text-xs py-1.5 focus:border-[#009496] focus:ring-[#009496] w-20 bg-gray-50/50 hover:bg-gray-50 transition">
+                                    <input type="number" name="${namePrefix}[${id}][quantidade]" value="${quantidade}" placeholder="Qtd" min="1" required class="rounded-lg border-gray-300 text-xs py-1.5 focus:border-[var(--mint)] focus:ring-[var(--mint)] w-20 bg-gray-50/50 hover:bg-gray-50 transition">
                                 </div>
                                 <div class="flex items-end self-end pb-0.5 gap-2">
                                     <input type="hidden" name="${namePrefix}[${id}][item_id]" value="${id}">
-                                    <button type="button" onclick="openModalItemQuickEdit(${id}, document.querySelector('#body-item-itens-selecionados-lote-${newIndex}-${id} .desc-item-${id}').textContent)" class="btn-edit-item-${id} inline-flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-[#009496] hover:bg-[#009496]/10 transition" title="Editar Descrição Completa">
+                                    <button type="button" onclick="openModalItemQuickEdit(${id}, document.querySelector('#body-item-itens-selecionados-lote-${newIndex}-${id} .desc-item-${id}').textContent)" class="btn-edit-item-${id} inline-flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-[var(--teal-text)] hover:bg-[var(--mint)]/10 transition" title="Editar Descrição Completa">
                                         <i class="fas fa-edit text-sm"></i>
                                     </button>
                                     <button type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-red-600 hover:bg-red-50 focus:outline-none transition" onclick="removerItemSelecionado(${id}, ${newIndex})" title="Excluir Item">
@@ -1112,13 +1112,13 @@
                     const ind = document.getElementById('indicator-' + i);
                     const lbl = document.getElementById('label-' + i);
                     if (i <= step) {
-                        ind.classList.replace('bg-gray-200', 'bg-[#009496]');
+                        ind.classList.replace('bg-gray-200', 'bg-[var(--mint)]');
                         ind.classList.replace('text-gray-500', 'text-white');
-                        lbl.classList.replace('text-gray-400', 'text-[#009496]');
+                        lbl.classList.replace('text-gray-400', 'text-[var(--teal-text)]');
                     } else {
-                        ind.classList.replace('bg-[#009496]', 'bg-gray-200');
+                        ind.classList.replace('bg-[var(--mint)]', 'bg-gray-200');
                         ind.classList.replace('text-white', 'text-gray-500');
-                        lbl.classList.replace('text-[#009496]', 'text-gray-400');
+                        lbl.classList.replace('text-[var(--teal-text)]', 'text-gray-400');
                     }
                 }
             };
@@ -1405,7 +1405,7 @@
                 const notificacao = document.createElement('div');
                 
                 // Estilo Premium
-                const bgColor = tipo === 'success' ? 'bg-[#009496]' : 'bg-[#e11d48]';
+                const bgColor = tipo === 'success' ? 'bg-[var(--mint)]' : 'bg-[var(--bad-strong)]';
                 const icon = tipo === 'success' 
                     ? '<i class="fas fa-check-circle text-xl"></i>' 
                     : '<i class="fas fa-exclamation-circle text-xl"></i>';
@@ -1593,7 +1593,7 @@
                     <input type="checkbox" value="${item.id}"
                         data-descricao="${item.descricao_item}"
                         ${dataLoteIndex}
-                        class="item-checkbox w-4 h-4 text-[#009496]"
+                        class="item-checkbox w-4 h-4 text-[var(--teal-text)]"
                         ${onchange}>
                     <span class="text-sm text-gray-700">${item.descricao_item}</span>
                 </label>`;
@@ -1805,7 +1805,7 @@
                 const descSafe = item.descricao.replace(/"/g, '&quot;').replace(/</g, '&lt;');
                 li.innerHTML = `
                     <span class="drag-handle text-gray-400 hover:text-gray-600 flex-shrink-0 text-lg leading-none select-none" title="Arrastar para reordenar">⠿</span>
-                    <input type="text" class="item-desc-input flex-1 text-sm text-gray-800 border border-transparent hover:border-gray-300 focus:border-[#009496] focus:outline-none focus:ring-1 focus:ring-[#009496] rounded px-2 py-0.5 transition-colors bg-transparent" value="${descSafe}" title="Clique para editar a descrição">
+                    <input type="text" class="item-desc-input flex-1 text-sm text-gray-800 border border-transparent hover:border-gray-300 focus:border-[var(--mint)] focus:outline-none focus:ring-1 focus:ring-[var(--mint)] rounded px-2 py-0.5 transition-colors bg-transparent" value="${descSafe}" title="Clique para editar a descrição">
                     <span class="text-xs text-gray-500 whitespace-nowrap flex-shrink-0">${item.quantidade} ${item.unidade}</span>
                     <button type="button" class="flex-shrink-0 text-red-400 hover:text-red-600 transition-colors font-bold leading-none" onclick="removerItemPrevia(this)" title="Remover">✕</button>`;
                 listaIitensImportados.appendChild(li);
@@ -1883,7 +1883,7 @@
             if (!conhecidos.includes(val) && valorImportado) {
                 opts = `<option value="${valorImportado}" selected>${valorImportado}</option>` + opts;
             }
-            return `<select name="${name}" required class="rounded-lg border-gray-300 text-xs py-1.5 focus:border-[#009496] focus:ring-[#009496] w-32 bg-gray-50/50 hover:bg-gray-50 transition">${opts}</select>`;
+            return `<select name="${name}" required class="rounded-lg border-gray-300 text-xs py-1.5 focus:border-[var(--mint)] focus:ring-[var(--mint)] w-32 bg-gray-50/50 hover:bg-gray-50 transition">${opts}</select>`;
         }
 
         function buildItemSelecionadoHtml(containerId, id, descricao, loteIndex, unidade, quantidade) {
@@ -1893,17 +1893,17 @@
             const loteArg = (loteIndex !== null && loteIndex !== undefined) ? loteIndex : 'null';
             const descSafe = String(descricao).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
             return `
-            <div class="bg-white border border-gray-200 rounded-xl shadow-sm hover:border-[#009496]/30 transition overflow-hidden" id="item-${containerId}-${id}">
+            <div class="bg-white border border-gray-200 rounded-xl shadow-sm hover:border-[var(--mint)]/30 transition overflow-hidden" id="item-${containerId}-${id}">
                 <div class="flex flex-col md:flex-row md:items-center justify-between p-4 gap-4 cursor-pointer" onclick="toggleAccordionItem('${containerId}-${id}')" title="Clique para expandir/recolher">
                     <div class="flex items-center gap-3 flex-1 min-w-0">
                         <i class="fas fa-grip-vertical text-gray-300 hover:text-gray-500 cursor-grab px-1 drag-handle" title="Arrastar para reordenar" onclick="event.stopPropagation()"></i>
-                        <span class="item-numero inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#009496]/10 text-[#009496] text-xs font-bold flex-shrink-0 border border-[#009496]/20">0</span>
+                        <span class="item-numero inline-flex items-center justify-center w-7 h-7 rounded-full bg-[var(--mint)]/10 text-[var(--teal-text)] text-xs font-bold flex-shrink-0 border border-[var(--mint)]/20">0</span>
                         <div class="min-w-0 flex-1 flex flex-col gap-1">
                             <div class="flex items-center gap-2">
                                 <p class="desc-item-${id} text-sm font-semibold text-gray-800 leading-relaxed truncate" title="${descSafe}">${descSafe}</p>
                             </div>
                         </div>
-                        <button type="button" class="text-gray-400 hover:text-[#009496] focus:outline-none flex-shrink-0 transition-transform duration-200" id="chevron-item-${containerId}-${id}">
+                        <button type="button" class="text-gray-400 hover:text-[var(--teal-text)] focus:outline-none flex-shrink-0 transition-transform duration-200" id="chevron-item-${containerId}-${id}">
                             <i class="fas fa-chevron-down"></i>
                         </button>
                     </div>
@@ -1914,11 +1914,11 @@
                         </div>
                         <div class="flex flex-col gap-1">
                             <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Quantidade</span>
-                            <input type="number" name="${namePrefix}[${id}][quantidade]" value="${quantidade}" placeholder="Qtd" min="1" required class="rounded-lg border-gray-300 text-xs py-1.5 focus:border-[#009496] focus:ring-[#009496] w-20 bg-gray-50/50 hover:bg-gray-50 transition">
+                            <input type="number" name="${namePrefix}[${id}][quantidade]" value="${quantidade}" placeholder="Qtd" min="1" required class="rounded-lg border-gray-300 text-xs py-1.5 focus:border-[var(--mint)] focus:ring-[var(--mint)] w-20 bg-gray-50/50 hover:bg-gray-50 transition">
                         </div>
                         <div class="flex items-end self-end pb-0.5 gap-2">
                             <input type="hidden" name="${namePrefix}[${id}][item_id]" value="${id}">
-                            <button type="button" onclick="openModalItemQuickEdit(${id}, document.querySelector('#body-item-${containerId}-${id} .desc-item-${id}').textContent)" class="btn-edit-item-${id} inline-flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-[#009496] hover:bg-[#009496]/10 transition" title="Editar Descrição">
+                            <button type="button" onclick="openModalItemQuickEdit(${id}, document.querySelector('#body-item-${containerId}-${id} .desc-item-${id}').textContent)" class="btn-edit-item-${id} inline-flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-[var(--teal-text)] hover:bg-[var(--mint)]/10 transition" title="Editar Descrição">
                                 <i class="fas fa-edit text-sm"></i>
                             </button>
                             <button type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-red-600 hover:bg-red-50 focus:outline-none transition" onclick="removerItemSelecionado(${id}, ${loteArg})" title="Excluir Item">

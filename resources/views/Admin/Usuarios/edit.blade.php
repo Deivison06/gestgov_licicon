@@ -7,11 +7,11 @@
 @section('content')
 <div class="flex items-center justify-between mb-6">
     <div>
-        <h2 class="text-2xl font-bold text-[#e6f0ee]">Editar Usuário</h2>
-        <p class="mt-1 text-sm text-[#a2b9b5]">Atualize as informações do usuário</p>
+        <h2 class="text-2xl font-bold text-[var(--ink)]">Editar Usuário</h2>
+        <p class="mt-1 text-sm text-[var(--ink-2)]">Atualize as informações do usuário</p>
     </div>
     <a href="{{ route('admin.usuarios.index') }}"
-       class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-[#e6f0ee] bg-[#10201e] border border-[#24403c] rounded-xl hover:bg-[#142825] hover:text-[#2DC197] transition-colors shadow-sm">
+       class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-[var(--ink)] bg-[var(--card)] border border-[var(--line)] rounded-xl hover:bg-[var(--hover-bg)] hover:text-[var(--mint)] transition-colors shadow-sm">
         <i class="fas fa-arrow-left"></i>
         Voltar
     </a>
@@ -19,8 +19,8 @@
 
 <div class="overflow-hidden card !rounded-2xl">
     <div class="card-h">
-        <h3 class="text-lg font-bold text-[#e6f0ee] flex items-center gap-2">
-            <i class="fas fa-user-edit text-[#2DC197]"></i> Editando: {{ $usuario->name }}
+        <h3 class="text-lg font-bold text-[var(--ink)] flex items-center gap-2">
+            <i class="fas fa-user-edit text-[var(--mint)]"></i> Editando: {{ $usuario->name }}
         </h3>
     </div>
 
@@ -41,24 +41,24 @@
 
         <div class="grid grid-cols-1 gap-6 mb-6 md:grid-cols-2">
             <div>
-                <label for="name" class="block mb-2 text-sm font-semibold text-[#a2b9b5]">Nome completo <span class="text-red-400">*</span></label>
+                <label for="name" class="block mb-2 text-sm font-semibold text-[var(--ink-2)]">Nome completo <span class="text-red-400">*</span></label>
                 <input type="text" name="name" id="name" value="{{ old('name', $usuario->name) }}"
-                       class="w-full px-4 py-2.5 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] placeholder:text-[#a2b9b5]/40 transition-colors"
+                       class="w-full px-4 py-2.5 bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] placeholder:text-[var(--ink-2)]/40 transition-colors"
                        placeholder="Digite o nome completo" required>
             </div>
 
             <div>
-                <label for="email" class="block mb-2 text-sm font-semibold text-[#a2b9b5]">Email <span class="text-red-400">*</span></label>
+                <label for="email" class="block mb-2 text-sm font-semibold text-[var(--ink-2)]">Email <span class="text-red-400">*</span></label>
                 <input type="email" name="email" id="email" value="{{ old('email', $usuario->email) }}"
-                       class="w-full px-4 py-2.5 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] placeholder:text-[#a2b9b5]/40 transition-colors"
+                       class="w-full px-4 py-2.5 bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] placeholder:text-[var(--ink-2)]/40 transition-colors"
                        placeholder="Digite o email" required>
             </div>
 
             <!-- Campo de Prefeitura -->
             <div>
-                <label for="prefeitura_id" class="block mb-2 text-sm font-semibold text-[#a2b9b5]">Prefeitura</label>
+                <label for="prefeitura_id" class="block mb-2 text-sm font-semibold text-[var(--ink-2)]">Prefeitura</label>
                 <select name="prefeitura_id" id="prefeitura_id"
-                        class="w-full px-4 py-2.5 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors">
+                        class="w-full px-4 py-2.5 bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] transition-colors">
                     <option value="">Selecione uma prefeitura</option>
                     @foreach($prefeituras as $prefeitura)
                         <option value="{{ $prefeitura->id }}"
@@ -67,16 +67,16 @@
                         </option>
                     @endforeach
                 </select>
-                <p class="mt-1 text-xs text-[#a2b9b5]" id="prefeitura-info"
+                <p class="mt-1 text-xs text-[var(--ink-2)]" id="prefeitura-info"
                    style="{{ $usuario->hasRole('prefeitura') ? '' : 'display: none;' }}">
                    Obrigatório para usuários do tipo Prefeitura
                 </p>
             </div>
 
             <div id="div_unidade_id" style="{{ $usuario->hasPermissionTo('fiscalizar contratos') ? '' : 'display: none;' }}">
-                <label for="unidade_id" class="block mb-2 text-sm font-semibold text-[#a2b9b5]">Secretaria/Unidade Responsável</label>
+                <label for="unidade_id" class="block mb-2 text-sm font-semibold text-[var(--ink-2)]">Secretaria/Unidade Responsável</label>
                 <select name="unidade_id" id="unidade_id"
-                        class="w-full px-4 py-2.5 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors">
+                        class="w-full px-4 py-2.5 bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] transition-colors">
                     <option value="">Todas as Secretarias (Fiscal Geral)</option>
                     @foreach($unidades as $unidade)
                         <option value="{{ $unidade->id }}" data-prefeitura="{{ $unidade->prefeitura_id }}"
@@ -85,39 +85,39 @@
                         </option>
                     @endforeach
                 </select>
-                <p class="mt-1 text-xs text-[#a2b9b5]">Deixe em "Todas as Secretarias" para que o fiscal acompanhe contratos de todas as unidades da prefeitura</p>
+                <p class="mt-1 text-xs text-[var(--ink-2)]">Deixe em "Todas as Secretarias" para que o fiscal acompanhe contratos de todas as unidades da prefeitura</p>
             </div>
 
             <div>
-                <label for="password" class="block mb-2 text-sm font-semibold text-[#a2b9b5]">Nova Senha (opcional)</label>
+                <label for="password" class="block mb-2 text-sm font-semibold text-[var(--ink-2)]">Nova Senha (opcional)</label>
                 <input type="password" name="password" id="password"
-                       class="w-full px-4 py-2.5 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] placeholder:text-[#a2b9b5]/40 transition-colors"
+                       class="w-full px-4 py-2.5 bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] placeholder:text-[var(--ink-2)]/40 transition-colors"
                        placeholder="Deixe em branco para manter a atual">
             </div>
 
             <div>
-                <label for="password_confirmation" class="block mb-2 text-sm font-semibold text-[#a2b9b5]">Confirmar Nova Senha</label>
+                <label for="password_confirmation" class="block mb-2 text-sm font-semibold text-[var(--ink-2)]">Confirmar Nova Senha</label>
                 <input type="password" name="password_confirmation" id="password_confirmation"
-                       class="w-full px-4 py-2.5 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] placeholder:text-[#a2b9b5]/40 transition-colors"
+                       class="w-full px-4 py-2.5 bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] placeholder:text-[var(--ink-2)]/40 transition-colors"
                        placeholder="Confirme a nova senha">
             </div>
         </div>
 
         <div class="mb-6">
-            <label class="block mb-3 text-sm font-semibold text-[#a2b9b5]">Permissões e Funções</label>
+            <label class="block mb-3 text-sm font-semibold text-[var(--ink-2)]">Permissões e Funções</label>
 
             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <div class="p-5 bg-[#0d1b19] border border-[#24403c] rounded-xl">
-                    <h4 class="mb-3 text-sm font-bold text-[#e6f0ee] border-b border-[#24403c] pb-2 flex items-center gap-2">
-                        <i class="fas fa-user-tag text-[#2DC197]"></i> Funções (Roles)
+                <div class="p-5 bg-[var(--card-2)] border border-[var(--line)] rounded-xl">
+                    <h4 class="mb-3 text-sm font-bold text-[var(--ink)] border-b border-[var(--line)] pb-2 flex items-center gap-2">
+                        <i class="fas fa-user-tag text-[var(--mint)]"></i> Funções (Roles)
                     </h4>
                     <div class="space-y-2">
                         @foreach($roles as $role)
-                            <label for="role_{{ $role->id }}" class="flex items-center p-2 rounded-lg hover:bg-[#142825] cursor-pointer transition-colors">
+                            <label for="role_{{ $role->id }}" class="flex items-center p-2 rounded-lg hover:bg-[var(--hover-bg)] cursor-pointer transition-colors">
                                 <input type="radio" name="role" value="{{ $role->id }}" id="role_{{ $role->id }}"
-                                       class="h-4 w-4 text-[#2DC197] focus:ring-[#2DC197] border-[#24403c] bg-[#0a1514]"
+                                       class="h-4 w-4 text-[var(--mint)] focus:ring-[var(--mint)] border-[var(--line)] bg-[var(--bg)]"
                                        {{ ($usuario->roles->contains($role->id) || old('role') == $role->id) ? 'checked' : '' }}>
-                                <span class="ml-2.5 text-sm text-[#e6f0ee] font-medium">
+                                <span class="ml-2.5 text-sm text-[var(--ink)] font-medium">
                                     {{ $role->name }}
                                 </span>
                             </label>
@@ -125,9 +125,9 @@
                     </div>
                 </div>
 
-                <div class="p-5 bg-[#0d1b19] border border-[#24403c] rounded-xl">
-                    <h4 class="mb-3 text-sm font-bold text-[#e6f0ee] border-b border-[#24403c] pb-2 flex items-center gap-2">
-                        <i class="fas fa-key text-[#2DC197]"></i> Permissões Diretas
+                <div class="p-5 bg-[var(--card-2)] border border-[var(--line)] rounded-xl">
+                    <h4 class="mb-3 text-sm font-bold text-[var(--ink)] border-b border-[var(--line)] pb-2 flex items-center gap-2">
+                        <i class="fas fa-key text-[var(--mint)]"></i> Permissões Diretas
                     </h4>
                     @php
                         // Permissões diretas do usuário e permissões herdadas via role
@@ -142,15 +142,15 @@
                                 $isDirect  = in_array($permission->id, $userDirectPermissions);
                                 $isChecked = $isDirect;
                             @endphp
-                            <label for="permission_{{ $permission->id }}" class="flex items-center justify-between p-2 rounded-lg hover:bg-[#142825] cursor-pointer transition-colors">
+                            <label for="permission_{{ $permission->id }}" class="flex items-center justify-between p-2 rounded-lg hover:bg-[var(--hover-bg)] cursor-pointer transition-colors">
                                 <div class="flex items-center">
                                     <input type="checkbox"
                                         name="permissions[]"
                                         value="{{ $permission->id }}"
                                         id="permission_{{ $permission->id }}"
                                         {{ $isChecked ? 'checked' : '' }}
-                                        class="h-4 w-4 text-[#2DC197] focus:ring-[#2DC197] border-[#24403c] bg-[#0a1514] rounded">
-                                    <span class="ml-2.5 text-sm text-[#e6f0ee]">
+                                        class="h-4 w-4 text-[var(--mint)] focus:ring-[var(--mint)] border-[var(--line)] bg-[var(--bg)] rounded">
+                                    <span class="ml-2.5 text-sm text-[var(--ink)]">
                                         {{ $permission->name }}
                                     </span>
                                 </div>
@@ -172,13 +172,13 @@
             </div>
         </div>
 
-        <div class="flex justify-end gap-3 pt-6 border-t border-[#24403c]">
+        <div class="flex justify-end gap-3 pt-6 border-t border-[var(--line)]">
             <a href="{{ route('admin.usuarios.index') }}"
-               class="px-5 py-2.5 text-sm font-semibold text-[#e6f0ee] bg-[#10201e] border border-[#24403c] rounded-xl hover:bg-[#142825] hover:text-[#2DC197] transition-colors shadow-sm">
+               class="px-5 py-2.5 text-sm font-semibold text-[var(--ink)] bg-[var(--card)] border border-[var(--line)] rounded-xl hover:bg-[var(--hover-bg)] hover:text-[var(--mint)] transition-colors shadow-sm">
                 Cancelar
             </a>
             <button type="submit"
-                    class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-[#041d1a] bg-[#2DC197] rounded-xl hover:bg-[#26aa84] transition-all shadow-sm hover:scale-105">
+                    class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-[var(--on-mint)] bg-[var(--mint)] rounded-xl hover:bg-[var(--mint-h)] transition-all shadow-sm hover:scale-105">
                 <i class="fas fa-save"></i>
                 Atualizar Usuário
             </button>

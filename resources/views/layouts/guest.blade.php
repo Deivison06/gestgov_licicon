@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+{{-- data-theme="dark" fixo: a tela de login mantém a marca escura sempre,
+     independente da preferência clara/escura escolhida dentro do sistema. --}}
+<html lang="pt-BR" data-theme="dark">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -18,7 +20,7 @@
         }
     </style>
 </head>
-<body class="bg-[#051e1c] font-sans antialiased">
+<body class="bg-[var(--side-3)] font-sans antialiased">
 
 <div class="relative flex min-h-screen flex-col items-center gap-6 overflow-hidden bg-[linear-gradient(160deg,#0b3b37_0%,#072926_55%,#051e1c_100%)] px-6 pb-6 pt-8 text-white">
 
@@ -28,17 +30,17 @@
 
   <!-- ===================== MODAL ===================== -->
   <main class="relative flex w-full flex-1 flex-col items-center justify-center">
-    <div class="w-full max-w-[400px] flex flex-col rounded-[20px] text-[#e6f0ee] shadow-[0_30px_80px_rgba(0,0,0,.65)] border border-[#24403c] overflow-hidden">
+    <div class="w-full max-w-[400px] flex flex-col rounded-[20px] text-[var(--ink)] shadow-[0_30px_80px_rgba(0,0,0,.65)] border border-[var(--line)] overflow-hidden">
 
       <!-- Cabeçalho com a logo do sistema -->
-      <div class="flex items-center justify-center bg-[#0b3b37] px-8 py-2 border-b border-[#24403c]">
+      <div class="flex items-center justify-center bg-[var(--side-1)] px-8 py-2 border-b border-[var(--line)]">
         <img id="logo-sig"
              src="{{ asset('logo/licicon-horizontal-colorida-para-fundo-escuro.png') }}"
              alt="Licicon"
              class="block h-auto w-full max-w-[280px]">
       </div>
 
-      <div class="bg-[#10201e]">
+      <div class="bg-[var(--card)]">
         {{ $slot }}
       </div>
 
@@ -61,9 +63,9 @@
     </div>
 
     <a href="https://wa.me/558988060983" target="_blank" rel="noopener noreferrer"
-       class="inline-flex items-center gap-2.5 rounded-full bg-white py-1.5 pl-4 pr-1.5 text-[12.5px] font-medium text-slate-900 shadow-[0_4px_14px_rgba(0,0,0,.25)] transition hover:shadow-[0_6px_20px_rgba(0,0,0,.35)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#5eead4]">
+       class="inline-flex items-center gap-2.5 rounded-full bg-white py-1.5 pl-4 pr-1.5 text-[12.5px] font-medium text-slate-900 shadow-[0_4px_14px_rgba(0,0,0,.25)] transition hover:shadow-[0_6px_20px_rgba(0,0,0,.35)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--teal-text)]">
       Dificuldade no acesso? Fale conosco.
-      <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#2DC197] text-[#06302d]">
+      <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--mint)] text-[var(--on-mint)]">
         <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
       </span>
     </a>

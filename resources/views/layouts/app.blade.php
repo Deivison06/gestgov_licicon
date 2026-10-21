@@ -6,6 +6,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
+    <script>
+        // Aplica o tema salvo antes do primeiro paint, pra não piscar o tema errado.
+        // Padrão (sem nada salvo, ou leitura falhando) é claro — por isso só agimos
+        // quando o valor salvo é explicitamente 'dark'.
+        (function () {
+            try {
+                if (localStorage.getItem('sig-theme') === 'dark') {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            } catch (e) {}
+        })();
+    </script>
+
     <title>Licicon</title>
     <link rel="icon" href="{{ asset('logo/minilogo-g-app-escuro-1024.png') }}">
 
@@ -46,10 +59,17 @@
         function sigSetSidebarCollapsed(value) {
             try { localStorage.setItem('sig-sidebar-collapsed', value ? '1' : '0'); } catch (e) {}
         }
+        function sigGetTheme() {
+            try { return localStorage.getItem('sig-theme') === 'dark' ? 'dark' : 'light'; } catch (e) { return 'light'; }
+        }
+        function sigSetTheme(theme) {
+            try { localStorage.setItem('sig-theme', theme); } catch (e) {}
+            document.documentElement.setAttribute('data-theme', theme);
+        }
     </script>
 </head>
 
-<body class="bg-[#0a1514] font-['Plus_Jakarta_Sans'] text-[#e6f0ee] antialiased"
+<body class="bg-[var(--bg)] font-['Plus_Jakarta_Sans'] text-[var(--ink)] antialiased"
       x-data="{ sidebarOpen: false, collapsed: false, isDesktop: window.matchMedia('(min-width: 1024px)').matches }"
       x-init="
           collapsed = sigGetSidebarCollapsed();
@@ -58,23 +78,23 @@
       @keydown.escape.window="sidebarOpen = false">
 
     @php
-        $navItemBase = 'flex h-11 w-full items-center gap-3 rounded-xl px-3 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5eead4] group-[.is-collapsed]/sb:justify-center group-[.is-collapsed]/sb:px-0';
+        $navItemBase = 'flex h-11 w-full items-center gap-3 rounded-xl px-3 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--teal-text)] group-[.is-collapsed]/sb:justify-center group-[.is-collapsed]/sb:px-0';
         $navItemInactive = 'text-white/80 hover:bg-white/[.07] hover:text-white';
-        $navItemActive = 'bg-[#2DC197] text-[#06302d] shadow-[0_6px_16px_rgba(0,0,0,.25)] hover:bg-[#4bd2aa]';
+        $navItemActive = 'bg-[var(--mint)] text-[var(--on-mint)] shadow-[0_6px_16px_rgba(0,0,0,.25)] hover:bg-[var(--mint-h)]';
 
-        $toggleBase = 'flex h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-semibold transition hover:bg-white/[.07] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5eead4] group-[.is-collapsed]/sb:justify-center group-[.is-collapsed]/sb:px-0';
+        $toggleBase = 'flex h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-semibold transition hover:bg-white/[.07] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--teal-text)] group-[.is-collapsed]/sb:justify-center group-[.is-collapsed]/sb:px-0';
 
-        $subItemBase = 'group/sub flex h-10 w-full items-center gap-2.5 rounded-lg px-3 text-[13.5px] font-medium transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5eead4]';
-        $subItemDot = '<i class="h-1.5 w-1.5 shrink-0 rounded-full bg-white/30 transition group-hover/sub:bg-[#5eead4]"></i>';
+        $subItemBase = 'group/sub flex h-10 w-full items-center gap-2.5 rounded-lg px-3 text-[13.5px] font-medium transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--teal-text)]';
+        $subItemDot = '<i class="h-1.5 w-1.5 shrink-0 rounded-full bg-white/30 transition group-hover/sub:bg-[var(--teal-text)]"></i>';
         $subItemInactive = 'text-white/70 hover:bg-white/[.07] hover:text-white';
-        $subItemActive = 'bg-[#2DC197] text-[#06302d] font-semibold shadow-[0_4px_12px_rgba(0,0,0,.2)]';
+        $subItemActive = 'bg-[var(--mint)] text-[var(--on-mint)] font-semibold shadow-[0_4px_12px_rgba(0,0,0,.2)]';
 
-        $iconAtivo = 'h-5 w-5 shrink-0 text-[#06302d]';
-        $iconInativo = 'h-5 w-5 shrink-0 text-[#2DC197]';
+        $iconAtivo = 'h-5 w-5 shrink-0 text-[var(--on-mint)]';
+        $iconInativo = 'h-5 w-5 shrink-0 text-[var(--mint)]';
         $almoxAtivo = request()->is('almoxarifado*');
 
-        $navItemLocked = 'flex h-11 w-full cursor-not-allowed items-center gap-3 rounded-xl px-3 text-left text-sm font-semibold text-white/40 transition hover:bg-white/[.04] hover:text-white/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5eead4] group-[.is-collapsed]/sb:justify-center group-[.is-collapsed]/sb:px-0';
-        $iconLocked = 'h-5 w-5 shrink-0 text-[#2DC197]/35 transition group-hover/lk:text-[#2DC197]/50';
+        $navItemLocked = 'flex h-11 w-full cursor-not-allowed items-center gap-3 rounded-xl px-3 text-left text-sm font-semibold text-white/40 transition hover:bg-white/[.04] hover:text-white/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--teal-text)] group-[.is-collapsed]/sb:justify-center group-[.is-collapsed]/sb:px-0';
+        $iconLocked = 'h-5 w-5 shrink-0 text-[var(--mint)]/35 transition group-hover/lk:text-[var(--mint)]/50';
     @endphp
 
     <div class="flex min-h-screen">
@@ -87,7 +107,11 @@
              class="fixed inset-0 z-30 bg-black/50 lg:hidden"></div>
 
         {{-- ===================== MENU LATERAL ===================== --}}
+        {{-- A sidebar mantém a identidade visual escura fixa em ambos os temas
+             (igual ao login) — por isso fixa --teal-text no valor dark aqui,
+             já que esse token passou a variar com o tema claro/escuro. --}}
         <aside id="sidebar"
+               style="--teal-text: #5eead4;"
                class="group/sb fixed inset-y-0 left-0 z-40 flex w-[272px] max-w-[85vw] flex-col gap-2 overflow-y-auto bg-[linear-gradient(180deg,#0b3b37_0%,#072926_55%,#051e1c_100%)] px-3.5 pb-4 pt-5 transition-[width,transform] duration-200 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 lg:[&.is-collapsed]:w-[84px]"
                :class="{ '-translate-x-full': !sidebarOpen, 'is-collapsed': collapsed && isDesktop }">
 
@@ -110,7 +134,7 @@
                         @click="collapsed = !collapsed; sigSetSidebarCollapsed(collapsed)"
                         :aria-label="collapsed ? 'Expandir menu' : 'Recolher menu'"
                         :title="collapsed ? 'Expandir menu' : 'Recolher menu'"
-                        class="hidden h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/15 text-white/85 transition hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5eead4] lg:flex">
+                        class="hidden h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/15 text-white/85 transition hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--teal-text)] lg:flex">
                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></svg>
                 </button>
             </div>
@@ -198,7 +222,7 @@
                                         :aria-expanded="open"
                                         title="ETP Inteligente"
                                         class="{{ $toggleBase }} {{ $etpMenuActive ? 'text-white' : 'text-white/80' }}">
-                                    <svg class="h-5 w-5 shrink-0 {{ $etpMenuActive ? 'text-[#5eead4]' : 'text-[#2DC197]' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/></svg>
+                                    <svg class="h-5 w-5 shrink-0 {{ $etpMenuActive ? 'text-[var(--teal-text)]' : 'text-[var(--mint)]' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/></svg>
                                     <span class="flex-1 whitespace-nowrap text-left group-[.is-collapsed]/sb:hidden">ETP Inteligente</span>
                                     <i class="fas fa-chevron-down text-xs text-white/50 transition-transform group-[.is-collapsed]/sb:hidden" :class="{ 'rotate-180': open }"></i>
                                 </button>
@@ -324,17 +348,27 @@
             @auth
             <div class="mt-3 flex flex-col gap-3 rounded-[14px] border border-white/10 bg-white/[.07] p-3 group-[.is-collapsed]/sb:px-1 group-[.is-collapsed]/sb:py-2">
                 <div class="flex items-center gap-2.5 group-[.is-collapsed]/sb:justify-center">
-                    <div class="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-full bg-[#5eead4]/20 text-[#5eead4]">
+                    <div class="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-full bg-[var(--teal-text)]/20 text-[var(--teal-text)]">
                         <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                     </div>
                     <div class="min-w-0 group-[.is-collapsed]/sb:hidden">
                         <div class="truncate text-sm font-semibold text-white">{{ Auth::user()->name }}</div>
                     </div>
                 </div>
+                <div x-data="{ theme: sigGetTheme() }" x-init="theme = sigGetTheme()">
+                    <button type="button"
+                            @click="theme = (theme === 'dark' ? 'light' : 'dark'); sigSetTheme(theme)"
+                            title="Alternar tema claro/escuro" aria-label="Alternar tema claro/escuro"
+                            class="flex min-h-11 w-full items-center justify-center gap-2 rounded-[10px] border border-white/15 text-[13px] font-semibold text-white/85 transition hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--teal-text)]">
+                        <svg x-show="theme === 'dark'" class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+                        <svg x-show="theme !== 'dark'" x-cloak class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+                        <span class="group-[.is-collapsed]/sb:hidden" x-text="theme === 'dark' ? 'Modo claro' : 'Modo escuro'"></span>
+                    </button>
+                </div>
                 <div class="flex gap-2 group-[.is-collapsed]/sb:flex-col">
                     @can('perfil')
                         <a href="{{ route('profile.edit') }}" title="Meu perfil" aria-label="Meu perfil"
-                           class="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-[10px] border border-white/15 text-[13px] font-semibold text-white/85 transition hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5eead4]">
+                           class="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-[10px] border border-white/15 text-[13px] font-semibold text-white/85 transition hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--teal-text)]">
                             <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                             <span class="group-[.is-collapsed]/sb:hidden">Perfil</span>
                         </a>
@@ -342,7 +376,7 @@
                     <form method="POST" action="{{ route('logout') }}" class="flex-1">
                         @csrf
                         <button type="submit" title="Sair" aria-label="Sair"
-                                class="flex min-h-11 w-full items-center justify-center gap-2 rounded-[10px] border border-white/15 text-[13px] font-semibold text-white/85 transition hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5eead4]">
+                                class="flex min-h-11 w-full items-center justify-center gap-2 rounded-[10px] border border-white/15 text-[13px] font-semibold text-white/85 transition hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--teal-text)]">
                             <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
                             <span class="group-[.is-collapsed]/sb:hidden">Sair</span>
                         </button>
@@ -359,7 +393,7 @@
                 {{-- Botão do menu (só no celular) --}}
                 <div class="lg:hidden">
                     <button type="button" @click="sidebarOpen = true" aria-label="Abrir menu" aria-controls="sidebar"
-                            class="flex h-11 w-11 items-center justify-center rounded-xl bg-[#10201e] border border-[#24403c] text-[#e6f0ee] shadow-sm hover:border-[#5eead4] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5eead4]">
+                            class="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--card)] border border-[var(--line)] text-[var(--ink)] shadow-sm hover:border-[var(--teal-text)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--teal-text)]">
                         <i class="fas fa-bars"></i>
                     </button>
                 </div>
@@ -370,7 +404,7 @@
                         <p class="text-[15px] font-medium leading-relaxed opacity-95">@yield('page-subtitle', 'Bem-vindo ao ' . ($systemName ?? ''))</p>
                     </div>
                     <div class="relative hidden h-16 w-16 shrink-0 items-center justify-center rounded-[18px] bg-white/[.07] sm:flex">
-                        <i class="fas fa-@yield('page-icon', 'building-circle-check') text-[28px] text-[#2DC197]"></i>
+                        <i class="fas fa-@yield('page-icon', 'building-circle-check') text-[28px] text-[var(--mint)]"></i>
                     </div>
                 </section>
 

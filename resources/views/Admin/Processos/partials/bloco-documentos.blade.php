@@ -96,7 +96,7 @@
                     </div>
                     @if ($temCampos || $requerAssinatura)
                         <button type="button"
-                                class="inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 text-xs font-medium text-[#009496] bg-[#009496]/10 rounded-md hover:bg-[#009496]/20 transition-colors"
+                                class="inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 text-xs font-medium text-[var(--teal-text)] bg-[var(--mint)]/10 rounded-md hover:bg-[var(--mint)]/20 transition-colors"
                                 data-collapse-toggle="{{ $accordionId }}"
                                 aria-expanded="false"
                                 aria-controls="{{ $accordionId }}">
@@ -118,14 +118,14 @@
                         @if ($isAtaDinamica)
                             {{-- Ata por vencedor: bypass do Alpine state pra não conflitar com várias linhas. --}}
                             <input type="date"
-                                   class="w-40 px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#009496] focus:border-[#009496]"
+                                   class="w-40 px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)]"
                                    id="data_{{ $tipo }}{{ $idSuffix }}"
                                    onblur="saveCampoAta('data_doc_ata_registro_precos', this.value, {{ $homologacaoId ?? 'null' }}, {{ $vencedorIdDoc }})"
                                    value="{{ optional($documentoGerado)->data_selecionada ? \Carbon\Carbon::parse($documentoGerado->data_selecionada)->format('Y-m-d') : '' }}">
                         @else
                             <div class="relative">
                                 <input type="date"
-                                       class="w-40 px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#009496] focus:border-[#009496]"
+                                       class="w-40 px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)]"
                                        id="data_{{ $tipo }}{{ $idSuffix }}"
                                        x-model="data_doc_{{ $tipo }}"
                                        @blur="saveField('data_doc_{{ $tipo }}')"
@@ -171,7 +171,7 @@
                         @if ($requerAssinatura)
                             <button type="button"
                                     onclick="gerarPdf('{{ $processo->id }}', '{{ $tipo }}', document.getElementById('data_{{ $tipo }}{{ $idSuffix }}').value, event, '{{ $idSuffix }}', {{ $homologacaoId ?? 'null' }}, {{ $vencedorIdParam }})"
-                                    class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white transition-colors duration-200 bg-[#009496] rounded-md hover:bg-[#007b85] focus:outline-none focus:ring-2 focus:ring-[#009496] focus:ring-offset-2">
+                                    class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white transition-colors duration-200 bg-[var(--mint)] rounded-md hover:bg-[var(--teal-dark-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:ring-offset-2">
                                 <i class="fas fa-file-pdf"></i> Gerar PDF
                             </button>
 
@@ -183,7 +183,7 @@
                         @else
                             <button type="button"
                                     onclick="gerarPdfSemAssinatura('{{ $processo->id }}', '{{ $tipo }}', event, {{ $homologacaoId ?? 'null' }}, {{ $vencedorIdParam }})"
-                                    class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white transition-colors duration-200 bg-[#009496] rounded-md hover:bg-[#007b85] focus:outline-none focus:ring-2 focus:ring-[#009496] focus:ring-offset-2">
+                                    class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white transition-colors duration-200 bg-[var(--mint)] rounded-md hover:bg-[var(--teal-dark-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:ring-offset-2">
                                 <i class="fas fa-file-pdf"></i> Gerar PDF
                             </button>
                         @endif

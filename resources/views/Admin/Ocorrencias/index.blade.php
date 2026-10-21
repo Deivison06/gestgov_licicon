@@ -10,12 +10,12 @@
     <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
         <div>
             <h3 class="text-lg font-semibold text-gray-700">
-                <i class="fas fa-triangle-exclamation text-[#009496] mr-2"></i>Ocorrências Registradas
+                <i class="fas fa-triangle-exclamation text-[var(--teal-text)] mr-2"></i>Ocorrências Registradas
             </h3>
         </div>
         @can('fiscalizar contratos')
             <a href="{{ route('admin.ocorrencias.selecionar-contrato') }}"
-                class="flex items-center gap-2 px-4 py-2.5 text-sm font-bold text-[#041d1a] transition-all duration-200 bg-[#2DC197] rounded-lg hover:bg-[#26aa84] shadow-sm">
+                class="flex items-center gap-2 px-4 py-2.5 text-sm font-bold text-[var(--on-mint)] transition-all duration-200 bg-[var(--mint)] rounded-lg hover:bg-[var(--mint-h)] shadow-sm">
                 <i class="fas fa-plus"></i> Registrar Ocorrência
             </a>
         @endcan
@@ -27,13 +27,13 @@
             <div class="flex-1 min-w-[200px]">
                 <label class="block text-xs font-medium text-gray-500 mb-1">Pesquisar</label>
                 <input type="text" name="search" value="{{ request('search') }}"
-                       class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496]"
+                       class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)]"
                        placeholder="Nº ocorrência, descrição do fato...">
             </div>
             <div class="min-w-[160px]">
                 <label class="block text-xs font-medium text-gray-500 mb-1">Status</label>
                 <select name="status"
-                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496]">
+                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)]">
                     <option value="">Todos</option>
                     @foreach(\App\Enums\StatusOcorrenciaEnum::cases() as $status)
                         <option value="{{ $status->value }}" {{ request('status') == $status->value ? 'selected' : '' }}>
@@ -45,7 +45,7 @@
             <div class="min-w-[180px]">
                 <label class="block text-xs font-medium text-gray-500 mb-1">Situação</label>
                 <select name="situacao"
-                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496]">
+                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)]">
                     <option value="">Todas</option>
                     @foreach(\App\Enums\SituacaoOcorrenciaEnum::cases() as $situacao)
                         <option value="{{ $situacao->value }}" {{ request('situacao') == $situacao->value ? 'selected' : '' }}>
@@ -58,7 +58,7 @@
                 <div class="min-w-[200px]">
                     <label class="block text-xs font-medium text-gray-500 mb-1">Prefeitura</label>
                     <select name="prefeitura_id"
-                            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496]">
+                            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)]">
                         <option value="">Todas</option>
                         @foreach($prefeituras as $pref)
                             <option value="{{ $pref->id }}" {{ request('prefeitura_id') == $pref->id ? 'selected' : '' }}>
@@ -71,7 +71,7 @@
             <div class="min-w-[200px]" id="div_unidade_filtro">
                 <label class="block text-xs font-medium text-gray-500 mb-1">Secretaria/Unidade</label>
                 <select name="unidade_id" id="unidade_id_filtro"
-                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496]">
+                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)]">
                     <option value="">Todas</option>
                     @foreach($unidades as $un)
                         <option value="{{ $un->id }}" data-prefeitura="{{ $un->prefeitura_id }}"
@@ -83,7 +83,7 @@
             </div>
             <div class="flex gap-2">
                 <button type="submit"
-                        class="px-4 py-2 text-sm font-medium text-white bg-[#009496] rounded-lg hover:bg-[#244853] transition-colors">
+                        class="px-4 py-2 text-sm font-medium text-white bg-[var(--mint)] rounded-lg hover:bg-[var(--info-bg)] transition-colors">
                     <i class="fas fa-search mr-1"></i> Filtrar
                 </button>
                 <a href="{{ route('admin.ocorrencias.index') }}"

@@ -96,7 +96,7 @@
                         </span>
                     </div>
                     <div class="w-full h-2 overflow-hidden bg-gray-200 rounded-full">
-                        <div class="h-2 rounded-full transition-all duration-300 {{ $docsPercent === 100 ? 'bg-green-500' : 'bg-[#009496]' }}"
+                        <div class="h-2 rounded-full transition-all duration-300 {{ $docsPercent === 100 ? 'bg-green-500' : 'bg-[var(--mint)]' }}"
                              style="width: {{ $docsPercent }}%"></div>
                     </div>
                 </div>
@@ -173,7 +173,7 @@
                             {{-- Botão para expandir/colapsar o acordeão --}}
                             @if ($temCampos)
                                 <button type="button"
-                                        class="inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 text-xs font-medium text-[#009496] bg-[#009496]/10 rounded-md hover:bg-[#009496]/20 transition-colors"
+                                        class="inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 text-xs font-medium text-[var(--teal-text)] bg-[var(--mint)]/10 rounded-md hover:bg-[var(--mint)]/20 transition-colors"
                                         data-collapse-toggle="{{ $accordionId }}"
                                         aria-expanded="false"
                                         aria-controls="{{ $accordionId }}">
@@ -186,7 +186,7 @@
                         <td class="flex items-center gap-2 px-6 py-4 text-center">
                             <div class="relative">
                                 <input type="date"
-                                       class="w-40 px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#009496] focus:border-[#009496]"
+                                       class="w-40 px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)]"
                                        id="{{ $dataId }}"
                                        x-model="data_doc_{{ $tipo }}"
                                        @blur="saveField('data_doc_{{ $tipo }}')"
@@ -221,7 +221,7 @@
                                 @endphp
                                 <button type="button"
                                         onclick="gerarPdf('{{ $processo->id }}', '{{ $tipo }}', document.getElementById('{{ $dataId }}').value, event, {{ $documentoIdParam }})"
-                                        class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white transition-colors duration-200 bg-[#009496] rounded-md hover:bg-[#007b85] focus:outline-none focus:ring-2 focus:ring-[#009496] focus:ring-offset-2">
+                                        class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white transition-colors duration-200 bg-[var(--mint)] rounded-md hover:bg-[var(--teal-dark-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:ring-offset-2">
                                     <i class="fas fa-file-pdf"></i> Gerar PDF
                                 </button>
 
@@ -403,7 +403,7 @@
 
                     @if ($podeExportarBnc)
                         <a href="{{ route('admin.processos.exportar-bnc', $processo->id) }}"
-                           class="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white transition-colors duration-200 bg-[#009496] rounded-lg shadow-sm hover:bg-[#007b85] focus:outline-none focus:ring-2 focus:ring-[#009496] focus:ring-offset-2"
+                           class="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white transition-colors duration-200 bg-[var(--mint)] rounded-lg shadow-sm hover:bg-[var(--teal-dark-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:ring-offset-2"
                            title="Planilha de lotes/itens para importar na Bolsa Nacional de Compras">
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-6h6v6m-9 4h12a2 2 0 002-2V5a2 2 0 00-2-2H6a2 2 0 00-2 2v14a2 2 0 002 2z"/>
@@ -436,8 +436,8 @@
                 <!-- Header -->
                 <div class="card-h">
                     <div>
-                        <h3 class="text-lg font-bold text-[#e6f0ee]">Dados Gerais do Contrato</h3>
-                        <p class="mt-1 text-sm text-[#8aa29d]">Informações exclusivas que serão salvas e usadas na geração do contrato de inexigibilidade.</p>
+                        <h3 class="text-lg font-bold text-[var(--ink)]">Dados Gerais do Contrato</h3>
+                        <p class="mt-1 text-sm text-[var(--ink-3)]">Informações exclusivas que serão salvas e usadas na geração do contrato de inexigibilidade.</p>
                     </div>
                 </div>
 
@@ -559,7 +559,7 @@
             <div class="px-6 py-4 border-b border-gray-100 bg-white flex justify-between items-center shrink-0">
                 <div>
                     <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
-                        <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-[#009496]/10 text-[#009496]">
+                        <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-[var(--mint)]/10 text-[var(--teal-text)]">
                             <i class="fas fa-file-invoice"></i>
                         </span>
                         Selecionar ETP Inteligente
@@ -603,7 +603,7 @@
             const lista = document.getElementById('lista-etps-disponiveis');
             const alerta = document.getElementById('alerta-vazio-etp');
 
-            lista.innerHTML = '<div class="col-span-full py-12 text-center"><i class="fas fa-circle-notch fa-spin text-2xl text-[#009496] mb-3"></i><p class="text-gray-500 font-medium">Buscando ETPs disponíveis...</p></div>';
+            lista.innerHTML = '<div class="col-span-full py-12 text-center"><i class="fas fa-circle-notch fa-spin text-2xl text-[var(--teal-text)] mb-3"></i><p class="text-gray-500 font-medium">Buscando ETPs disponíveis...</p></div>';
             alerta.classList.add('hidden');
             modal.classList.remove('hidden');
 
@@ -618,10 +618,10 @@
                         }
 
                         lista.innerHTML = response.data.map(etp => `
-                            <div class="group flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white border border-gray-200 rounded-xl hover:border-[#009496]/50 hover:shadow-md transition-all gap-4">
+                            <div class="group flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white border border-gray-200 rounded-xl hover:border-[var(--mint)]/50 hover:shadow-md transition-all gap-4">
                                 <div class="flex-1 min-w-0">
                                     <div class="flex items-center gap-2 mb-1.5">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-semibold bg-[#009496]/10 text-[#009496] border border-[#009496]/20">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-semibold bg-[var(--mint)]/10 text-[var(--teal-text)] border border-[var(--mint)]/20">
                                             ${etp.identificador}
                                         </span>
                                         <span class="text-xs font-medium text-gray-500 truncate flex items-center gap-1">
@@ -644,7 +644,7 @@
                                         <i class="fas fa-eye mr-2"></i> Visualizar
                                     </a>
                                     <button type="button" onclick="vincularEtp(${etp.id})" 
-                                            class="w-full sm:w-auto inline-flex justify-center items-center px-5 py-2 text-sm font-semibold text-[#009496] bg-[#009496]/10 border border-[#009496]/20 rounded-lg hover:bg-[#009496] hover:text-white transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-[#009496]">
+                                            class="w-full sm:w-auto inline-flex justify-center items-center px-5 py-2 text-sm font-semibold text-[var(--teal-text)] bg-[var(--mint)]/10 border border-[var(--mint)]/20 rounded-lg hover:bg-[var(--mint)] hover:text-white transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-[var(--mint)]">
                                         <i class="fas fa-link mr-2"></i> Vincular
                                     </button>
                                 </div>

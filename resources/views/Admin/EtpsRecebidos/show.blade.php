@@ -45,33 +45,33 @@
 
         @if (session('success'))
             <div
-                class="p-4 mb-8 border border-[#184e40] shadow-sm rounded-2xl bg-[#0d2a23] text-[#2DC197]">
+                class="p-4 mb-8 border border-[var(--line-3)] shadow-sm rounded-2xl bg-[var(--card-3)] text-[var(--mint)]">
                 <div class="flex items-center">
-                    <svg class="w-5 h-5 mr-3 text-[#2DC197]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-5 h-5 mr-3 text-[var(--mint)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                     </svg>
-                    <p class="text-sm font-medium text-[#2DC197]">{{ session('success') }}</p>
+                    <p class="text-sm font-medium text-[var(--mint)]">{{ session('success') }}</p>
                 </div>
             </div>
         @endif
 
         @if (session('error'))
-            <div class="p-4 mb-8 border border-[#5a2328] shadow-sm rounded-2xl bg-[#2a1315] text-[#ff7b72]">
+            <div class="p-4 mb-8 border border-[var(--bad-border)] shadow-sm rounded-2xl bg-[var(--bad-bg)] text-[var(--bad-strong)]">
                 <div class="flex items-center">
-                    <svg class="w-5 h-5 mr-3 text-[#ff7b72]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-5 h-5 mr-3 text-[var(--bad-strong)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
-                    <p class="text-sm font-medium text-[#ff7b72]">{{ session('error') }}</p>
+                    <p class="text-sm font-medium text-[var(--bad-strong)]">{{ session('error') }}</p>
                 </div>
             </div>
         @endif
 
-        <div class="bg-[#10201e] border border-[#24403c] shadow-sm rounded-2xl overflow-hidden mb-8">
+        <div class="bg-[var(--card)] border border-[var(--line)] shadow-sm rounded-2xl overflow-hidden mb-8">
             <div
-                class="px-6 py-5 border-b border-[#24403c] bg-[#0d1b19] flex justify-between items-center">
-                <h3 class="text-xl font-semibold text-[#e6f0ee]">
-                    <i class="fas fa-file-alt mr-2 text-[#2DC197]"></i>
+                class="px-6 py-5 border-b border-[var(--line)] bg-[var(--card-2)] flex justify-between items-center">
+                <h3 class="text-xl font-semibold text-[var(--ink)]">
+                    <i class="fas fa-file-alt mr-2 text-[var(--mint)]"></i>
                     ETP-{{ str_pad($etp->id, 4, '0', STR_PAD_LEFT) }}/{{ $etp->created_at->format('Y') }}
                 </h3>
 
@@ -145,7 +145,7 @@
                     <!-- Informações Iniciais -->
                     <div class="bg-gray-50 p-6 rounded-xl border border-gray-200 shadow-sm">
                         <h4 class="text-lg font-bold text-gray-800 mb-4 border-b border-gray-200 pb-2"><i
-                                class="fas fa-info-circle mr-2 text-[#009496]"></i> Dados Gerais</h4>
+                                class="fas fa-info-circle mr-2 text-[var(--teal-text)]"></i> Dados Gerais</h4>
                         <ul class="space-y-4">
                             <li>
                                 <span
@@ -178,7 +178,7 @@
                                 <span class="text-gray-500 font-medium block text-xs uppercase tracking-wider mb-1">Tipo de
                                     Contratação</span>
                                 <span
-                                    class="inline-block bg-[#009496]/10 text-[#009496] px-3 py-1 rounded-md font-bold uppercase text-sm border border-[#009496]/20">{{ $etp->tipo_contratacao }}{{ $etp->organizacao_itens ? ' - ' . $etp->organizacao_itens : '' }}</span>
+                                    class="inline-block bg-[var(--mint)]/10 text-[var(--teal-text)] px-3 py-1 rounded-md font-bold uppercase text-sm border border-[var(--mint)]/20">{{ $etp->tipo_contratacao }}{{ $etp->organizacao_itens ? ' - ' . $etp->organizacao_itens : '' }}</span>
                             </li>
                             <li>
                                 <span class="text-gray-500 font-medium block text-xs uppercase tracking-wider mb-1">Prazo de
@@ -194,7 +194,7 @@
                     <!-- Objeto -->
                     <div class="bg-gray-50 p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col">
                         <h4 class="text-lg font-bold text-gray-800 mb-4 border-b border-gray-200 pb-2"><i
-                                class="fas fa-align-left mr-2 text-[#009496]"></i> Objeto da Licitação</h4>
+                                class="fas fa-align-left mr-2 text-[var(--teal-text)]"></i> Objeto da Licitação</h4>
                         <div class="flex-grow bg-white p-4 rounded-lg border border-gray-200 overflow-y-auto max-h-[300px]">
                             <p class="text-gray-700 whitespace-pre-wrap text-sm leading-relaxed">
                                 {{ $etp->objeto_licitacao }}
@@ -210,7 +210,7 @@
                         <div class="mb-8 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
                             <div class="border-b border-gray-200 mb-4 flex items-center justify-between">
                                 <h4 class="text-lg font-bold text-gray-800 mb-4 pb-2">
-                                    <i class="fas fa-boxes mr-2 text-[#009496]"></i> 
+                                    <i class="fas fa-boxes mr-2 text-[var(--teal-text)]"></i> 
                                     @if($etp->tipo_contratacao === 'servicos')
                                         Serviços Solicitados
                                     @elseif($etp->tipo_contratacao === 'compras')
@@ -240,7 +240,7 @@
                                             @foreach ($etp->itens as $item)
                                                 <tr class="bg-white hover:bg-gray-50 transition-colors">
                                                     <td class="px-4 py-4 text-center">
-                                                        <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#009496]/10 text-[#009496] text-xs font-bold">
+                                                        <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[var(--mint)]/10 text-[var(--teal-text)] text-xs font-bold">
                                                             {{ $loop->iteration }}
                                                         </span>
                                                     </td>
@@ -270,7 +270,7 @@
                         <div class="mb-8">
                             <div class="border-b border-gray-200 mb-4 flex items-center justify-between">
                                 <h4 class="text-lg font-bold text-gray-800 mb-4 pb-2">
-                                    <i class="fas fa-layer-group mr-2 text-[#009496]"></i> Lotes da Contratação
+                                    <i class="fas fa-layer-group mr-2 text-[var(--teal-text)]"></i> Lotes da Contratação
                                 </h4>
                                 <a href="{{ route('admin.etps.export-itens', $etp->id) }}"
                                     class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-all shadow-sm">
@@ -284,7 +284,7 @@
                                     <div class="border border-gray-200 rounded-xl overflow-hidden">
                                         <div class="bg-gray-100 px-6 py-4 border-b border-gray-200 flex items-center justify-between">
                                             <h5 class="text-md font-semibold text-gray-800">
-                                                <i class="fas fa-tag mr-2 text-[#009496]"></i> {{ $lote->nome }}
+                                                <i class="fas fa-tag mr-2 text-[var(--teal-text)]"></i> {{ $lote->nome }}
                                             </h5>
                                             <span class="text-xs font-medium text-gray-500">
                                                 {{ $lote->itens->count() }} {{ $lote->itens->count() === 1 ? 'item' : 'itens' }}
@@ -306,7 +306,7 @@
                                                             @foreach($lote->itens as $item)
                                                                 <tr class="bg-white border-b hover:bg-gray-50">
                                                                     <td class="px-4 py-4 text-center">
-                                                                        <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#009496]/10 text-[#009496] text-xs font-bold">
+                                                                        <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[var(--mint)]/10 text-[var(--teal-text)] text-xs font-bold">
                                                                             {{ $loop->iteration }} {{-- Isso reinicia em 1 para cada lote --}}
                                                                         </span>
                                                                     </td>
@@ -342,7 +342,7 @@
 
                     <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm mb-8">
                         <h4 class="text-lg font-bold text-gray-800 mb-4 border-b border-gray-200 pb-2">
-                            <i class="fas fa-paperclip mr-2 text-[#009496]"></i> Documentos Anexos
+                            <i class="fas fa-paperclip mr-2 text-[var(--teal-text)]"></i> Documentos Anexos
                         </h4>
 
                         @if ($isPdf)
@@ -360,7 +360,7 @@
                                 </div>
                                 <a href="{{ asset($etp->cotacao_path) }}"
                                     download
-                                    class="inline-flex items-center px-4 py-2 bg-[#009496] text-white rounded-lg hover:bg-[#007a7a] transition-all">
+                                    class="inline-flex items-center px-4 py-2 bg-[var(--mint)] text-white rounded-lg hover:bg-[var(--teal-dark-bg)] transition-all">
                                         <i class="fas fa-download mr-2"></i>
                                         Baixar PDF
                                 </a>

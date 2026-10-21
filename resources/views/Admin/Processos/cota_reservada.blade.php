@@ -22,7 +22,7 @@
 
     {{-- CARD DO PROCESSO --}}
     <div class="mb-6 p-4 bg-white border border-gray-200 rounded-xl shadow-sm flex items-center gap-5">
-        <div class="flex-shrink-0 w-12 h-12 rounded-full bg-[#009496]/10 text-[#009496] flex items-center justify-center">
+        <div class="flex-shrink-0 w-12 h-12 rounded-full bg-[var(--mint)]/10 text-[var(--teal-text)] flex items-center justify-center">
             <i class="fas fa-balance-scale-right text-lg"></i>
         </div>
         <div class="flex-1 min-w-0">
@@ -36,7 +36,7 @@
     </div>
 
     {{-- INSTRUÇÃO --}}
-    <div class="mb-4 p-3 bg-[#009496]/5 border border-[#009496]/20 rounded-lg text-xs text-[#007a7a]">
+    <div class="mb-4 p-3 bg-[var(--mint)]/5 border border-[var(--mint)]/20 rounded-lg text-xs text-[var(--teal-dark-bg)]">
         <i class="fas fa-info-circle mr-1"></i>
         Ao ativar um lote, os itens dele são divididos automaticamente (75% Ampla Concorrência / 25% Cota Reservada,
         arredondado para cima) apenas para fins de geração de documentos do processo (Termo de Referência/Edital) e
@@ -61,7 +61,7 @@
                     <label class="flex items-start gap-3 flex-1 cursor-pointer">
                         <input type="checkbox" name="lote_ids[]" value="{{ $lote['etp_lote_id'] }}"
                                {{ in_array($lote['etp_lote_id'], $loteIdsAtivos) ? 'checked' : '' }}
-                               class="mt-1 w-4 h-4 text-[#009496] border-gray-300 rounded focus:ring-[#009496]">
+                               class="mt-1 w-4 h-4 text-[var(--teal-text)] border-gray-300 rounded focus:ring-[var(--mint)]">
                         <div class="flex-1">
                             <span class="text-sm font-semibold text-gray-800">{{ $lote['nome'] }}</span>
                             <span class="text-xs text-gray-500 ml-1">({{ $lote['itens']->count() }} {{ Str::plural('item', $lote['itens']->count()) }})</span>
@@ -77,7 +77,7 @@
                     </label>
 
                     <button type="button" @click="abertoItens = !abertoItens"
-                            class="flex-shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-[#007a7a] bg-[#009496]/10 rounded-md hover:bg-[#009496]/20 transition-colors">
+                            class="flex-shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-[var(--teal-dark-bg)] bg-[var(--mint)]/10 rounded-md hover:bg-[var(--mint)]/20 transition-colors">
                         <span x-text="abertoItens ? 'Ocultar itens' : 'Ver itens'"></span>
                         <svg :class="abertoItens ? 'rotate-180' : ''" class="w-3.5 h-3.5 transition-transform duration-200"
                              fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -107,7 +107,7 @@
                                 <td class="px-3 py-2 text-right font-medium text-gray-700">{{ $item['quantidade'] }}</td>
                                 @if($item['divide'])
                                 <td class="px-3 py-2 text-right text-gray-700">{{ $item['quantidade_ampla'] }}</td>
-                                <td class="px-3 py-2 text-right font-semibold text-[#007a7a]">{{ $item['quantidade_reservada'] }}</td>
+                                <td class="px-3 py-2 text-right font-semibold text-[var(--teal-dark-bg)]">{{ $item['quantidade_reservada'] }}</td>
                                 @else
                                 <td class="px-3 py-2 text-right text-gray-400" colspan="2">
                                     <i class="fas fa-minus-circle mr-1"></i> não divide (qtd. abaixo do mínimo)
@@ -123,7 +123,7 @@
 
             <div class="flex items-center gap-3 pt-2">
                 <button type="submit" :disabled="salvando"
-                        class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-[#009496] rounded-lg hover:bg-[#007a7a] disabled:opacity-60 transition-all shadow-sm">
+                        class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-[var(--mint)] rounded-lg hover:bg-[var(--teal-dark-bg)] disabled:opacity-60 transition-all shadow-sm">
                     <i class="fas fa-save"></i>
                     <span x-text="salvando ? 'Salvando...' : 'Salvar'"></span>
                 </button>

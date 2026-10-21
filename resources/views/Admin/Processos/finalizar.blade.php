@@ -122,7 +122,7 @@
             <div class="mb-8 overflow-hidden card !rounded-2xl">
                 <div class="card-h">
                     <div>
-                        <h3 class="text-lg font-bold text-[#e6f0ee]">Documentos do Processo</h3>
+                        <h3 class="text-lg font-bold text-[var(--ink)]">Documentos do Processo</h3>
                     <p class="mt-1 text-xs text-gray-500">
                         @if ($ehHomologacaoUnica)
                             Todos os documentos do processo (sessão pública, propostas, habilitação, termo de homologação, publicações).
@@ -374,7 +374,7 @@
                             <button type="button"
                                     id="btn-gerar-nova-homologacao"
                                     onclick="gerarNovaHomologacao('{{ $processo->id }}')"
-                                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold text-[#041d1a] bg-[#2DC197] rounded-md shadow-sm hover:bg-[#26aa84] focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:ring-offset-2 transition-colors">
+                                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold text-[var(--on-mint)] bg-[var(--mint)] rounded-md shadow-sm hover:bg-[var(--mint-h)] focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:ring-offset-2 transition-colors">
                                 @if (!$temHomologacao)
                                     ➕ Gerar Primeira Homologação
                                 @else
@@ -438,7 +438,7 @@
                 @if ($podeExportarTce)
                     <button type="button"
                             onclick="abrirModalExportarTce()"
-                            class="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white transition-colors duration-200 bg-[#009496] rounded-lg shadow-sm hover:bg-[#007b85] focus:outline-none focus:ring-2 focus:ring-[#009496] focus:ring-offset-2"
+                            class="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white transition-colors duration-200 bg-[var(--mint)] rounded-lg shadow-sm hover:bg-[var(--teal-dark-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:ring-offset-2"
                             title="Planilha de itens homologados de um lote para importar no Licitações Web (TCE)">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-6h6v6m-9 4h12a2 2 0 002-2V5a2 2 0 00-2-2H6a2 2 0 00-2 2v14a2 2 0 002 2z"/>
@@ -478,7 +478,7 @@
                 <div class="overflow-hidden card !rounded-2xl">
                     <!-- Header -->
                     <div class="card-h w-full flex-col lg:flex-row lg:items-center lg:justify-between">
-                        <h3 class="text-xl font-bold text-[#e6f0ee]">Vencedores do Processo</h3>
+                        <h3 class="text-xl font-bold text-[var(--ink)]">Vencedores do Processo</h3>
                             <button type="button"
                                     onclick="abrirModalVencedor()"
                                     class="px-4 py-2 mt-2 text-sm font-medium text-white bg-green-600 rounded-md lg:mt-0 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
@@ -811,7 +811,7 @@
                 <div class="overflow-hidden card !rounded-2xl">
                     <!-- Header -->
                     <div class="card-h w-full flex-col lg:flex-row lg:items-center lg:justify-between">
-                        <h3 class="text-xl font-bold text-[#e6f0ee]">Empresas Reservas do Processo</h3>
+                        <h3 class="text-xl font-bold text-[var(--ink)]">Empresas Reservas do Processo</h3>
                             <button type="button"
                                     onclick="abrirModalReserva()"
                                     class="px-4 py-2 mt-2 text-sm font-medium text-white bg-yellow-600 rounded-md lg:mt-0 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2">
@@ -1157,7 +1157,7 @@
                     <div>
                         <label for="tceLoteSelecionado" class="block text-sm font-medium text-gray-700">Lote</label>
                         <select id="tceLoteSelecionado"
-                                class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496]">
+                                class="block w-full mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-[var(--mint)] focus:border-[var(--mint)]">
                             <option value="">Selecione o lote</option>
                         </select>
                     </div>
@@ -1166,7 +1166,7 @@
                 <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 sm:flex sm:flex-row-reverse">
                     <button type="button"
                             onclick="exportarPlanilhaTce()"
-                            class="inline-flex justify-center w-full px-4 py-2 text-base font-medium text-white bg-[#009496] border border-transparent rounded-md shadow-sm hover:bg-[#007b85] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#009496] sm:ml-3 sm:w-auto sm:text-sm">
+                            class="inline-flex justify-center w-full px-4 py-2 text-base font-medium text-white bg-[var(--mint)] border border-transparent rounded-md shadow-sm hover:bg-[var(--teal-dark-bg)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--mint)] sm:ml-3 sm:w-auto sm:text-sm">
                         Exportar
                     </button>
                     <button type="button"

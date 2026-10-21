@@ -18,7 +18,7 @@
         </div>
 
         <a href="{{ route('admin.assinantes.create') }}"
-           class="inline-flex items-center gap-3 px-6 py-3 text-sm font-bold text-[#041d1a] transition-all duration-200 bg-[#2DC197] rounded-xl hover:bg-[#26aa84] hover:shadow-lg hover:scale-105">
+           class="inline-flex items-center gap-3 px-6 py-3 text-sm font-bold text-[var(--on-mint)] transition-all duration-200 bg-[var(--mint)] rounded-xl hover:bg-[var(--mint-h)] hover:shadow-lg hover:scale-105">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
             </svg>
@@ -28,7 +28,7 @@
 
     {{-- Mensagens flash --}}
     @if (session('success'))
-        <div class="p-4 mb-6 rounded-lg bg-[#0d2a23] border border-[#184e40] text-[#2DC197]">
+        <div class="p-4 mb-6 rounded-lg bg-[var(--card-3)] border border-[var(--line-3)] text-[var(--mint)]">
             <p class="text-sm font-medium">{{ session('success') }}</p>
         </div>
     @endif
@@ -62,13 +62,13 @@
                     <label class="block mb-1 text-sm font-medium text-gray-700">Buscar</label>
                     <input type="text" name="search" value="{{ $filtros['search'] }}"
                            placeholder="Nome, e-mail ou nº portaria"
-                           class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#009496] focus:border-[#009496]">
+                           class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)]">
                 </div>
 
                 <div>
                     <label class="block mb-1 text-sm font-medium text-gray-700">Prefeitura</label>
                     <select name="prefeitura_id"
-                            class="block w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#009496]">
+                            class="block w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--mint)]">
                         <option value="">Todas</option>
                         @foreach ($prefeituras as $p)
                             <option value="{{ $p->id }}" {{ $filtros['prefeitura_id'] == $p->id ? 'selected' : '' }}>
@@ -81,7 +81,7 @@
                 <div>
                     <label class="block mb-1 text-sm font-medium text-gray-700">Status</label>
                     <select name="status"
-                            class="block w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#009496]">
+                            class="block w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--mint)]">
                         <option value="todos"  {{ $filtros['status'] === 'todos' ? 'selected' : '' }}>Todos</option>
                         <option value="ativo"  {{ $filtros['status'] === 'ativo' ? 'selected' : '' }}>Ativos</option>
                         <option value="inativo" {{ $filtros['status'] === 'inativo' ? 'selected' : '' }}>Inativos</option>
@@ -91,7 +91,7 @@
 
             <div class="flex gap-2">
                 <button type="submit"
-                        class="px-5 py-2 text-sm font-semibold text-white bg-[#009496] rounded-md hover:bg-[#007779]">
+                        class="px-5 py-2 text-sm font-semibold text-white bg-[var(--mint)] rounded-md hover:bg-[var(--teal-dark-bg)]">
                     Filtrar
                 </button>
                 <a href="{{ route('admin.assinantes.index') }}"

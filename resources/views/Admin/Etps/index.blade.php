@@ -5,7 +5,7 @@
 @section('content')
 <div class="py-8">
     <div class="flex justify-end mb-8">
-        <a href="{{ route('admin.etps.create') }}" class="inline-flex items-center gap-3 px-6 py-3 text-sm font-bold text-[#041d1a] transition-all duration-200 bg-[#2DC197] rounded-xl hover:bg-[#26aa84] hover:shadow-lg hover:scale-105">
+        <a href="{{ route('admin.etps.create') }}" class="inline-flex items-center gap-3 px-6 py-3 text-sm font-bold text-[var(--on-mint)] transition-all duration-200 bg-[var(--mint)] rounded-xl hover:bg-[var(--mint-h)] hover:shadow-lg hover:scale-105">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
             </svg>
@@ -14,40 +14,40 @@
     </div>
 
     @if (session('success'))
-    <div class="p-4 mb-8 border border-[#184e40] shadow-sm rounded-2xl bg-[#0d2a23] text-[#2DC197]">
+    <div class="p-4 mb-8 border border-[var(--line-3)] shadow-sm rounded-2xl bg-[var(--card-3)] text-[var(--mint)]">
         <div class="flex items-center">
-            <svg class="w-5 h-5 mr-3 text-[#2DC197]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5 mr-3 text-[var(--mint)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
             </svg>
-            <p class="text-sm font-medium text-[#2DC197]">{{ session('success') }}</p>
+            <p class="text-sm font-medium text-[var(--mint)]">{{ session('success') }}</p>
         </div>
     </div>
     @endif
     @if (session('error'))
-    <div class="p-4 mb-8 border border-[#5a2328] shadow-sm rounded-2xl bg-[#2a1315] text-[#ff7b72]">
+    <div class="p-4 mb-8 border border-[var(--bad-border)] shadow-sm rounded-2xl bg-[var(--bad-bg)] text-[var(--bad-strong)]">
         <div class="flex items-center">
-            <svg class="w-5 h-5 mr-3 text-[#ff7b72]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5 mr-3 text-[var(--bad-strong)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
-            <p class="text-sm font-medium text-[#ff7b72]">{{ session('error') }}</p>
+            <p class="text-sm font-medium text-[var(--bad-strong)]">{{ session('error') }}</p>
         </div>
     </div>
     @endif
 
     <!-- Filtros -->
-    <div class="mb-6 bg-[#10201e] border border-[#24403c] rounded-2xl shadow-sm overflow-hidden">
-        <div class="px-6 py-4 border-b border-[#24403c] bg-[#0d1b19] flex justify-between items-center cursor-pointer"
+    <div class="mb-6 bg-[var(--card)] border border-[var(--line)] rounded-2xl shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-[var(--line)] bg-[var(--card-2)] flex justify-between items-center cursor-pointer"
             onclick="document.getElementById('filtrosBody').classList.toggle('hidden')">
 
             <div>
-                <h4 class="text-lg font-semibold text-[#e6f0ee]">
-                    <i class="fas fa-filter mr-2 text-[#2DC197]"></i>
+                <h4 class="text-lg font-semibold text-[var(--ink)]">
+                    <i class="fas fa-filter mr-2 text-[var(--mint)]"></i>
                     Filtros de Busca
                 </h4>
-                <p class="text-sm text-[#7ea29c]">Clique para expandir ou recolher os filtros</p>
+                <p class="text-sm text-[var(--ink-4)]">Clique para expandir ou recolher os filtros</p>
             </div>
 
-            <i class="fas fa-chevron-down text-[#7ea29c]"></i>
+            <i class="fas fa-chevron-down text-[var(--ink-4)]"></i>
         </div>
 
         <form action="{{ route('admin.etps.index') }}" method="GET"
@@ -58,10 +58,10 @@
 
                 <!-- Status -->
                 <div>
-                    <label class="block mb-2 text-sm font-medium text-[#a2b9b5]">Status</label>
+                    <label class="block mb-2 text-sm font-medium text-[var(--ink-2)]">Status</label>
 
                     <select name="status"
-                        class="w-full px-3 py-2.5 bg-[#0d1b19] border border-[#24403c] text-[#e6f0ee] rounded-lg focus:ring-2 focus:ring-[#2DC197] text-sm">
+                        class="w-full px-3 py-2.5 bg-[var(--card-2)] border border-[var(--line)] text-[var(--ink)] rounded-lg focus:ring-2 focus:ring-[var(--mint)] text-sm">
 
                         <option value="">Todos os Status</option>
                         <option value="pendente" {{ request('status') == 'pendente' ? 'selected' : '' }}>Pendente</option>
@@ -76,10 +76,10 @@
                 @if($isSuperAdmin)
                 <!-- Prefeitura -->
                 <div>
-                    <label class="block mb-2 text-sm font-medium text-[#a2b9b5]">Prefeitura</label>
+                    <label class="block mb-2 text-sm font-medium text-[var(--ink-2)]">Prefeitura</label>
 
                     <select name="prefeitura_id"
-                        class="w-full px-3 py-2.5 bg-[#0d1b19] border border-[#24403c] text-[#e6f0ee] rounded-lg focus:ring-2 focus:ring-[#2DC197] text-sm">
+                        class="w-full px-3 py-2.5 bg-[var(--card-2)] border border-[var(--line)] text-[var(--ink)] rounded-lg focus:ring-2 focus:ring-[var(--mint)] text-sm">
 
                         <option value="">Todas as Prefeituras</option>
                         @foreach($prefeituras as $pref)
@@ -94,7 +94,7 @@
 
                 <!-- Período -->
                 <div class="{{ $isSuperAdmin ? 'lg:col-span-2' : 'lg:col-span-3' }}">
-                    <label class="block mb-2 text-sm font-medium text-[#a2b9b5]">
+                    <label class="block mb-2 text-sm font-medium text-[var(--ink-2)]">
                         Período de Solicitação
                     </label>
 
@@ -102,14 +102,14 @@
                         <input type="date"
                             name="data_inicio"
                             value="{{ request('data_inicio') }}"
-                            class="w-full px-3 py-2 bg-[#0d1b19] border border-[#24403c] text-[#e6f0ee] rounded-lg focus:ring-2 focus:ring-[#2DC197] text-sm">
+                            class="w-full px-3 py-2 bg-[var(--card-2)] border border-[var(--line)] text-[var(--ink)] rounded-lg focus:ring-2 focus:ring-[var(--mint)] text-sm">
 
-                        <span class="flex items-center text-[#7ea29c]">a</span>
+                        <span class="flex items-center text-[var(--ink-4)]">a</span>
 
                         <input type="date"
                             name="data_fim"
                             value="{{ request('data_fim') }}"
-                            class="w-full px-3 py-2 bg-[#0d1b19] border border-[#24403c] text-[#e6f0ee] rounded-lg focus:ring-2 focus:ring-[#2DC197] text-sm">
+                            class="w-full px-3 py-2 bg-[var(--card-2)] border border-[var(--line)] text-[var(--ink)] rounded-lg focus:ring-2 focus:ring-[var(--mint)] text-sm">
                     </div>
                 </div>
 
@@ -118,13 +118,13 @@
             <div class="mt-6 flex justify-end space-x-3">
                 @if(count(array_filter($filters)) > 0)
                 <a href="{{ route('admin.etps.index') }}"
-                    class="px-6 py-2.5 text-sm font-medium text-[#a2b9b5] bg-[#142825] border border-[#24403c] rounded-lg hover:bg-[#1a332f] hover:text-[#e6f0ee]">
+                    class="px-6 py-2.5 text-sm font-medium text-[var(--ink-2)] bg-[var(--hover-bg)] border border-[var(--line)] rounded-lg hover:bg-[var(--card-3)] hover:text-[var(--ink)]">
                     Limpar Filtros
                 </a>
                 @endif
 
                 <button type="submit"
-                    class="px-6 py-2.5 text-sm font-medium text-[#041d1a] font-semibold bg-[#2DC197] rounded-lg hover:bg-[#26aa84] transition">
+                    class="px-6 py-2.5 text-sm font-medium text-[var(--on-mint)] font-semibold bg-[var(--mint)] rounded-lg hover:bg-[var(--mint-h)] transition">
                     <i class="mr-2 fas fa-search"></i>
                     Filtrar Resultados
                 </button>
@@ -132,43 +132,43 @@
         </form>
     </div>
 
-    <div class="overflow-hidden transition-all duration-300 bg-[#10201e] border border-[#24403c] shadow-sm rounded-2xl">
-        <div class="px-6 py-5 border-b border-[#24403c] bg-[#0d1b19]">
-            <h3 class="text-xl font-semibold text-[#e6f0ee]">
+    <div class="overflow-hidden transition-all duration-300 bg-[var(--card)] border border-[var(--line)] shadow-sm rounded-2xl">
+        <div class="px-6 py-5 border-b border-[var(--line)] bg-[var(--card-2)]">
+            <h3 class="text-xl font-semibold text-[var(--ink)]">
                 Lista de Solicitações ETP
             </h3>
         </div>
 
         <div class="overflow-x-auto">
-            <table class="w-full overflow-hidden divide-y divide-[#24403c] rounded-lg shadow-sm">
-                <thead class="bg-[#0a1514]">
+            <table class="w-full overflow-hidden divide-y divide-[var(--line)] rounded-lg shadow-sm">
+                <thead class="bg-[var(--bg)]">
                     <tr>
-                        <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-[#7ea29c] uppercase">Nº</th>
+                        <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-[var(--ink-4)] uppercase">Nº</th>
                         @if($isSuperAdmin)
-                        <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-[#7ea29c] uppercase">Prefeitura</th>
+                        <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-[var(--ink-4)] uppercase">Prefeitura</th>
                         @endif
-                        <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-[#7ea29c] uppercase">Secretaria</th>
-                        <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-[#7ea29c] uppercase">Responsável</th>
-                        <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-[#7ea29c] uppercase">Modalidade</th>
-                        <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-[#7ea29c] uppercase">Status</th>
-                        <th class="px-4 py-3 text-xs font-semibold tracking-wider text-center text-[#7ea29c] uppercase">Ações</th>
+                        <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-[var(--ink-4)] uppercase">Secretaria</th>
+                        <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-[var(--ink-4)] uppercase">Responsável</th>
+                        <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-[var(--ink-4)] uppercase">Modalidade</th>
+                        <th class="px-4 py-3 text-xs font-semibold tracking-wider text-left text-[var(--ink-4)] uppercase">Status</th>
+                        <th class="px-4 py-3 text-xs font-semibold tracking-wider text-center text-[var(--ink-4)] uppercase">Ações</th>
                     </tr>
                 </thead>
-                <tbody class="bg-[#10201e] divide-y divide-[#1a332f]">
+                <tbody class="bg-[var(--card)] divide-y divide-[var(--card-3)]">
                     @forelse($etps as $etp)
-                    <tr class="transition-colors duration-200 hover:bg-[#142825]">
-                        <td class="px-4 py-3 font-mono text-sm text-[#e6f0ee] whitespace-nowrap align-top">ETP-{{ str_pad($etp->id, 4, '0', STR_PAD_LEFT) }}/{{ $etp->created_at->format('Y') }}</td>
+                    <tr class="transition-colors duration-200 hover:bg-[var(--hover-bg)]">
+                        <td class="px-4 py-3 font-mono text-sm text-[var(--ink)] whitespace-nowrap align-top">ETP-{{ str_pad($etp->id, 4, '0', STR_PAD_LEFT) }}/{{ $etp->created_at->format('Y') }}</td>
                         @if($isSuperAdmin)
-                        <td class="px-4 py-3 text-sm text-[#e6f0ee] align-top">{{ $etp->prefeitura->nome ?? 'N/A' }}</td>
+                        <td class="px-4 py-3 text-sm text-[var(--ink)] align-top">{{ $etp->prefeitura->nome ?? 'N/A' }}</td>
                         @endif
-                        <td class="px-4 py-3 text-sm text-[#e6f0ee] align-top">{{ $etp->secretaria->nome ?? 'N/A' }}</td>
-                        <td class="px-4 py-3 text-sm text-[#e6f0ee] align-top">{{ $etp->servidor_responsavel ?? 'N/A' }}</td>
-                        <td class="px-4 py-3 text-sm text-[#e6f0ee] uppercase align-top">{{ $etp->modalidade }}</td>
-                        <td class="px-4 py-3 text-sm text-[#e6f0ee] align-top">
+                        <td class="px-4 py-3 text-sm text-[var(--ink)] align-top">{{ $etp->secretaria->nome ?? 'N/A' }}</td>
+                        <td class="px-4 py-3 text-sm text-[var(--ink)] align-top">{{ $etp->servidor_responsavel ?? 'N/A' }}</td>
+                        <td class="px-4 py-3 text-sm text-[var(--ink)] uppercase align-top">{{ $etp->modalidade }}</td>
+                        <td class="px-4 py-3 text-sm text-[var(--ink)] align-top">
                             <span class="inline-flex items-center px-2.5 py-0.5 text-xs font-semibold rounded-full
                                 @if($etp->status === 'pendente') bg-amber-500/20 text-amber-300 border border-amber-500/30
                                 @elseif($etp->status === 'em_analise') bg-blue-500/20 text-blue-300 border border-blue-500/30
-                                @elseif($etp->status === 'aprovado') bg-[#2DC197]/20 text-[#2DC197] border border-[#2DC197]/30
+                                @elseif($etp->status === 'aprovado') bg-[var(--mint)]/20 text-[var(--mint)] border border-[var(--mint)]/30
                                 @elseif($etp->status === 'em_processo') bg-purple-500/20 text-purple-300 border border-purple-500/30
                                 @elseif($etp->status === 'concluido') bg-teal-500/20 text-teal-300 border border-teal-500/30
                                 @elseif($etp->status === 'recusado') bg-red-500/20 text-red-300 border border-red-500/30
@@ -179,13 +179,13 @@
                         <td class="px-4 py-3 text-center align-top">
                             <div class="flex items-center justify-center space-x-2">
                                 <a href="{{ route('admin.etps.show', $etp->id) }}" 
-                                class="inline-flex items-center justify-center w-8 h-8 text-[#2DC197] transition-colors duration-200 rounded-md hover:bg-[#142825] focus:outline-none" 
+                                class="inline-flex items-center justify-center w-8 h-8 text-[var(--mint)] transition-colors duration-200 rounded-md hover:bg-[var(--hover-bg)] focus:outline-none" 
                                 title="Visualizar ETP">
                                     <i class="fas fa-eye"></i>
                                 </a>
 
                                 <a href="{{ route('admin.etps.pdf', $etp->id) }}" 
-                                class="inline-flex items-center justify-center w-8 h-8 text-[#2DC197] transition-colors duration-200 rounded-md hover:bg-[#142825] focus:outline-none" 
+                                class="inline-flex items-center justify-center w-8 h-8 text-[var(--mint)] transition-colors duration-200 rounded-md hover:bg-[var(--hover-bg)] focus:outline-none" 
                                 title="Baixar PDF do ETP" target="_blank">
                                     <i class="fas fa-file-pdf"></i>
                                 </a>
@@ -197,7 +197,7 @@
 
                                 @if($podeEditar)
                                     <a href="{{ route('admin.etps.edit', $etp->id) }}" 
-                                    class="inline-flex items-center justify-center w-8 h-8 text-[#53b9ea] transition-colors duration-200 rounded-md hover:bg-[#142825] focus:outline-none" 
+                                    class="inline-flex items-center justify-center w-8 h-8 text-[var(--info)] transition-colors duration-200 rounded-md hover:bg-[var(--hover-bg)] focus:outline-none" 
                                     title="Editar ETP">
                                         <i class="fas fa-edit"></i>
                                     </a>
@@ -206,7 +206,7 @@
                                 @if($etp->status === 'pendente' || $etp->status === 'recusado')
                                     <button type="button" 
                                             onclick="confirmarExclusao('{{ $etp->id }}', 'ETP-{{ str_pad($etp->id, 4, '0', STR_PAD_LEFT) }}/{{ $etp->created_at->format('Y') }}')"
-                                            class="inline-flex items-center justify-center w-8 h-8 text-red-400 transition-colors duration-200 rounded-md hover:bg-[#142825] focus:outline-none" 
+                                            class="inline-flex items-center justify-center w-8 h-8 text-red-400 transition-colors duration-200 rounded-md hover:bg-[var(--hover-bg)] focus:outline-none" 
                                             title="Excluir ETP">
                                         <i class="fas fa-trash"></i>
                                     </button>
@@ -215,18 +215,18 @@
                         </td>
                     </tr>
                     <!-- Linha do Objeto -->
-                    <tr class="border-t-0 bg-[#0d1b19]/60">
-                        <td colspan="{{ $isSuperAdmin ? 7 : 6 }}" class="px-4 py-2 text-sm text-[#a2b9b5]">
+                    <tr class="border-t-0 bg-[var(--card-2)]/60">
+                        <td colspan="{{ $isSuperAdmin ? 7 : 6 }}" class="px-4 py-2 text-sm text-[var(--ink-2)]">
                             <div class="flex items-start gap-2">
-                                <span class="font-semibold text-[#e6f0ee] whitespace-nowrap">Objeto:</span>
-                                <span class="text-[#a2b9b5]" title="{{ $etp->objeto_licitacao }}">{{ $etp->objeto_licitacao }}</span>
+                                <span class="font-semibold text-[var(--ink)] whitespace-nowrap">Objeto:</span>
+                                <span class="text-[var(--ink-2)]" title="{{ $etp->objeto_licitacao }}">{{ $etp->objeto_licitacao }}</span>
                             </div>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="{{ $isSuperAdmin ? 7 : 6 }}" class="px-6 py-16 text-center text-[#7ea29c]">
-                            <p class="text-sm font-medium text-[#a2b9b5]">Nenhum ETP encontrado.</p>
+                        <td colspan="{{ $isSuperAdmin ? 7 : 6 }}" class="px-6 py-16 text-center text-[var(--ink-4)]">
+                            <p class="text-sm font-medium text-[var(--ink-2)]">Nenhum ETP encontrado.</p>
                         </td>
                     </tr>
                     @endforelse

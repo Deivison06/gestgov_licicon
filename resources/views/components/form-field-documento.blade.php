@@ -13,7 +13,7 @@
                 name="{{ $name }}"
                 x-model="{{ $name }}"
                 :disabled="confirmed.{{ $name }}"
-                class="block w-full mt-1 border-gray-300 rounded-lg shadow-sm focus:ring-[#009496] focus:border-[#009496] sm:text-sm"
+                class="block w-full mt-1 border-gray-300 rounded-lg shadow-sm focus:ring-[var(--mint)] focus:border-[var(--mint)] sm:text-sm"
                 rows="4"
             >{{ $value }}</textarea>
         @else
@@ -23,7 +23,7 @@
                 name="{{ $name }}"
                 x-model="{{ $name }}"
                 :disabled="confirmed.{{ $name }}"
-                class="block w-full mt-1 border-gray-300 rounded-lg shadow-sm focus:ring-[#009496] focus:border-[#009496] sm:text-sm"
+                class="block w-full mt-1 border-gray-300 rounded-lg shadow-sm focus:ring-[var(--mint)] focus:border-[var(--mint)] sm:text-sm"
                 value="{{ $value }}"
             >
         @endif

@@ -11,18 +11,18 @@
 <div class="py-6">
     <div class="card !rounded-2xl overflow-hidden">
         <div class="card-h">
-            <h3 class="text-lg font-bold text-[#e6f0ee] flex items-center gap-2">
-                <i class="fas fa-folder-plus text-[#2DC197]"></i> Informações do Processo
+            <h3 class="text-lg font-bold text-[var(--ink)] flex items-center gap-2">
+                <i class="fas fa-folder-plus text-[var(--mint)]"></i> Informações do Processo
             </h3>
         </div>
 
         <div class="p-8">
             @if ($etp)
-            <div class="flex items-center p-4 mb-6 border border-[#24403c] rounded-xl bg-[#132d27]/70 text-[#2DC197]">
-                <i class="mr-3 fas fa-link text-[#2DC197]"></i>
-                <p class="text-sm font-medium text-[#e6f0ee]">
+            <div class="flex items-center p-4 mb-6 border border-[var(--line)] rounded-xl bg-[var(--card-3)]/70 text-[var(--mint)]">
+                <i class="mr-3 fas fa-link text-[var(--mint)]"></i>
+                <p class="text-sm font-medium text-[var(--ink)]">
                     Este processo será criado já vinculado ao
-                    <span class="font-bold text-[#2DC197]">ETP-{{ str_pad($etp->id, 4, '0', STR_PAD_LEFT) }}/{{ $etp->created_at->format('y') }}</span>.
+                    <span class="font-bold text-[var(--mint)]">ETP-{{ str_pad($etp->id, 4, '0', STR_PAD_LEFT) }}/{{ $etp->created_at->format('y') }}</span>.
                 </p>
             </div>
             @endif
@@ -37,10 +37,10 @@
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                     {{-- PREFEITURA --}}
                     <div>
-                        <label for="prefeitura_id" class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">Prefeitura <span class="text-red-400">*</span></label>
+                        <label for="prefeitura_id" class="block mb-1.5 text-sm font-semibold text-[var(--ink-2)]">Prefeitura <span class="text-red-400">*</span></label>
                         <select name="prefeitura_id" id="prefeitura_id"
                             {{ $etp ? 'disabled' : '' }}
-                            class="block w-full px-4 py-2.5 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors {{ $etp ? 'opacity-60 cursor-not-allowed' : '' }}">
+                            class="block w-full px-4 py-2.5 text-sm bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] transition-colors {{ $etp ? 'opacity-60 cursor-not-allowed' : '' }}">
                             <option value="">Selecione a prefeitura</option>
                             @foreach ($prefeituras as $prefeitura)
                             <option value="{{ $prefeitura->id }}"
@@ -59,8 +59,8 @@
 
                     {{-- MODALIDADE --}}
                     <div>
-                        <label for="modalidade" class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">Modalidade <span class="text-red-400">*</span></label>
-                        <select name="modalidade" id="modalidade" class="block w-full px-4 py-2.5 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors">
+                        <label for="modalidade" class="block mb-1.5 text-sm font-semibold text-[var(--ink-2)]">Modalidade <span class="text-red-400">*</span></label>
+                        <select name="modalidade" id="modalidade" class="block w-full px-4 py-2.5 text-sm bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] transition-colors">
                             <option value="">Selecione a modalidade</option>
                             @foreach (\App\Enums\ModalidadeEnum::cases() as $modalidade)
                             <option value="{{ $modalidade->value }}" {{ old('modalidade') == $modalidade->value ? 'selected' : '' }}>
@@ -75,9 +75,9 @@
 
                     {{-- Nº PROCESSO --}}
                     <div>
-                        <label for="numero_processo" class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">Nº do Processo Administrativo <span class="text-red-400">*</span></label>
+                        <label for="numero_processo" class="block mb-1.5 text-sm font-semibold text-[var(--ink-2)]">Nº do Processo Administrativo <span class="text-red-400">*</span></label>
                         <input type="text" name="numero_processo" id="numero_processo" value="{{ old('numero_processo') }}"
-                            class="block w-full px-4 py-2.5 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors">
+                            class="block w-full px-4 py-2.5 text-sm bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] transition-colors">
                         @error('numero_processo')
                         <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                         @enderror
@@ -85,9 +85,9 @@
 
                     {{-- Nº PROCEDIMENTO --}}
                     <div>
-                        <label for="numero_procedimento" class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">Nº do Procedimento</label>
+                        <label for="numero_procedimento" class="block mb-1.5 text-sm font-semibold text-[var(--ink-2)]">Nº do Procedimento</label>
                         <input type="text" name="numero_procedimento" id="numero_procedimento" value="{{ old('numero_procedimento') }}"
-                            class="block w-full px-4 py-2.5 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors">
+                            class="block w-full px-4 py-2.5 text-sm bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] transition-colors">
                         @error('numero_procedimento')
                         <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                         @enderror
@@ -95,9 +95,9 @@
 
                     {{-- TIPO DE PROCEDIMENTO --}}
                     <div id="tipo_procedimento_wrapper">
-                        <label for="tipo_procedimento" class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">Tipo de Procedimento</label>
+                        <label for="tipo_procedimento" class="block mb-1.5 text-sm font-semibold text-[var(--ink-2)]">Tipo de Procedimento</label>
                         <select name="tipo_procedimento" id="tipo_procedimento"
-                            class="block w-full px-4 py-2.5 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors">
+                            class="block w-full px-4 py-2.5 text-sm bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] transition-colors">
                             <option value="">Selecione o tipo de procedimento</option>
                             @foreach (\App\Enums\TipoProcedimentoEnum::cases() as $enum)
                             <option value="{{ $enum->value }}" {{ old('tipo_procedimento') == $enum->value ? 'selected' : '' }}>
@@ -112,9 +112,9 @@
 
                     {{-- TIPO DE CONTRATAÇÃO --}}
                     <div id="tipo_contratacao_wrapper">
-                        <label for="tipo_contratacao" class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">Tipo de Contratação</label>
+                        <label for="tipo_contratacao" class="block mb-1.5 text-sm font-semibold text-[var(--ink-2)]">Tipo de Contratação</label>
                         <select name="tipo_contratacao" id="tipo_contratacao"
-                            class="block w-full px-4 py-2.5 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors">
+                            class="block w-full px-4 py-2.5 text-sm bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] transition-colors">
                             <option value="">Selecione o tipo de contratação</option>
                             @foreach (\App\Enums\TipoContratacaoEnum::cases() as $enum)
                             <option value="{{ $enum->value }}" {{ old('tipo_contratacao') == $enum->value ? 'selected' : '' }}>
@@ -128,16 +128,16 @@
                     </div>
 
                     {{-- RESPONSÁVEL POR NUMERAR O PROCESSO --}}
-                    <div class="md:col-span-2 p-5 bg-[#0d1b19] border border-[#24403c] rounded-xl">
-                        <h4 class="mb-3 text-sm font-bold text-[#e6f0ee] border-b border-[#24403c] pb-2 flex items-center gap-2">
-                            <i class="fas fa-sort-numeric-up text-[#2DC197]"></i> Responsável por Numerar o Processo
+                    <div class="md:col-span-2 p-5 bg-[var(--card-2)] border border-[var(--line)] rounded-xl">
+                        <h4 class="mb-3 text-sm font-bold text-[var(--ink)] border-b border-[var(--line)] pb-2 flex items-center gap-2">
+                            <i class="fas fa-sort-numeric-up text-[var(--mint)]"></i> Responsável por Numerar o Processo
                         </h4>
 
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
                             <div>
-                                <label for="unidade_numeracao" class="block mb-1 text-xs font-semibold text-[#a2b9b5]">Unidade</label>
+                                <label for="unidade_numeracao" class="block mb-1 text-xs font-semibold text-[var(--ink-2)]">Unidade</label>
                                 <select name="unidade_numeracao" id="unidade_numeracao"
-                                    class="block w-full px-3 py-2 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197]">
+                                    class="block w-full px-3 py-2 text-sm bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--mint)]">
                                     <option value="">Selecione a unidade</option>
                                 </select>
                                 @error('unidade_numeracao')
@@ -146,20 +146,20 @@
                             </div>
 
                             <div>
-                                <label for="responsavel_numeracao" class="block mb-1 text-xs font-semibold text-[#a2b9b5]">Responsável</label>
+                                <label for="responsavel_numeracao" class="block mb-1 text-xs font-semibold text-[var(--ink-2)]">Responsável</label>
                                 <input type="text" name="responsavel_numeracao" id="responsavel_numeracao"
                                     value="{{ old('responsavel_numeracao') }}"
-                                    class="block w-full px-3 py-2 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197]">
+                                    class="block w-full px-3 py-2 text-sm bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--mint)]">
                                 @error('responsavel_numeracao')
                                 <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                                 @enderror
                             </div>
 
                             <div>
-                                <label for="portaria_numeracao" class="block mb-1 text-xs font-semibold text-[#a2b9b5]">Portaria</label>
+                                <label for="portaria_numeracao" class="block mb-1 text-xs font-semibold text-[var(--ink-2)]">Portaria</label>
                                 <input type="text" name="portaria_numeracao" id="portaria_numeracao"
                                     value="{{ old('portaria_numeracao') }}"
-                                    class="block w-full px-3 py-2 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197]">
+                                    class="block w-full px-3 py-2 text-sm bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--mint)]">
                                 @error('portaria_numeracao')
                                 <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                                 @enderror
@@ -169,14 +169,14 @@
 
                     {{-- IDENTIFICAÇÃO DE CONTROLE / NOME RESUMIDO --}}
                     <div class="md:col-span-2">
-                        <label for="nome_resumido" class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">
+                        <label for="nome_resumido" class="block mb-1.5 text-sm font-semibold text-[var(--ink-2)]">
                             Identificação de Controle / Nome Resumido
-                            <span class="ml-1 text-xs text-[#a2b9b5]/60 font-normal">— utilizado no quadro de planejamento</span>
+                            <span class="ml-1 text-xs text-[var(--ink-2)]/60 font-normal">— utilizado no quadro de planejamento</span>
                         </label>
                         <input type="text" name="nome_resumido" id="nome_resumido"
                             value="{{ old('nome_resumido') }}"
                             placeholder="Ex: Reforma da Escola X, Aquisição de Computadores..."
-                            class="block w-full px-4 py-2.5 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] placeholder:text-[#a2b9b5]/40 transition-colors">
+                            class="block w-full px-4 py-2.5 text-sm bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] placeholder:text-[var(--ink-2)]/40 transition-colors">
                         @error('nome_resumido')
                         <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                         @enderror
@@ -187,25 +187,25 @@
                         <div class="bg-amber-950/30 border border-amber-500/30 p-4 rounded-xl">
                             <label class="flex items-center space-x-2 text-sm font-medium text-amber-300 cursor-pointer">
                                 <input type="checkbox" name="is_oriundo_fracassado" id="is_oriundo_fracassado" value="1"
-                                    class="rounded border-[#24403c] bg-[#0a1514] text-[#2DC197] focus:ring-[#2DC197] w-5 h-5">
+                                    class="rounded border-[var(--line)] bg-[var(--bg)] text-[var(--mint)] focus:ring-[var(--mint)] w-5 h-5">
                                 <span>Processo oriundo de certame fracassado (Art. 75, III, alínea "a")</span>
                             </label>
 
                             <div id="selecao_processo_fracassado" class="mt-4 hidden">
-                                <label for="processo_fracassado_id" class="block text-sm font-semibold text-[#a2b9b5] mb-1">Selecione ou Pesquise o Certame Fracassado</label>
+                                <label for="processo_fracassado_id" class="block text-sm font-semibold text-[var(--ink-2)] mb-1">Selecione ou Pesquise o Certame Fracassado</label>
                                 
-                                <select id="processo_fracassado_id" name="processo_fracassado_id" placeholder="Digite para buscar pelo número ou objeto..." class="mt-1 block w-full rounded-xl bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] text-sm">
+                                <select id="processo_fracassado_id" name="processo_fracassado_id" placeholder="Digite para buscar pelo número ou objeto..." class="mt-1 block w-full rounded-xl bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] text-sm">
                                 </select>
                                 
-                                <p class="mt-1 text-xs text-[#a2b9b5]">Ao selecionar, o tipo e objeto da contratação serão preenchidos automaticamente.</p>
+                                <p class="mt-1 text-xs text-[var(--ink-2)]">Ao selecionar, o tipo e objeto da contratação serão preenchidos automaticamente.</p>
                             </div>
                         </div>
                     </div>
 
                     {{-- OBJETO --}}
                     <div class="md:col-span-2">
-                        <label for="objeto" class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">Objeto</label>
-                        <textarea name="objeto" id="objeto" rows="4" class="block w-full px-4 py-2.5 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors">{{ old('objeto', $etp->objeto_licitacao ?? '') }}</textarea>
+                        <label for="objeto" class="block mb-1.5 text-sm font-semibold text-[var(--ink-2)]">Objeto</label>
+                        <textarea name="objeto" id="objeto" rows="4" class="block w-full px-4 py-2.5 text-sm bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] transition-colors">{{ old('objeto', $etp->objeto_licitacao ?? '') }}</textarea>
                         @error('objeto')
                         <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                         @enderror
@@ -213,11 +213,11 @@
                 </div>
 
                 {{-- BOTÕES --}}
-                <div class="flex justify-end gap-3 pt-6 mt-8 border-t border-[#24403c]">
-                    <a href="{{ route('admin.processos.index') }}" class="px-5 py-2.5 text-sm font-semibold text-[#e6f0ee] bg-[#10201e] border border-[#24403c] rounded-xl hover:bg-[#142825] hover:text-[#2DC197] transition-colors shadow-sm">
+                <div class="flex justify-end gap-3 pt-6 mt-8 border-t border-[var(--line)]">
+                    <a href="{{ route('admin.processos.index') }}" class="px-5 py-2.5 text-sm font-semibold text-[var(--ink)] bg-[var(--card)] border border-[var(--line)] rounded-xl hover:bg-[var(--hover-bg)] hover:text-[var(--mint)] transition-colors shadow-sm">
                         Cancelar
                     </a>
-                    <button type="submit" class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-[#041d1a] bg-[#2DC197] rounded-xl hover:bg-[#26aa84] transition-all shadow-sm hover:scale-105">
+                    <button type="submit" class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-[var(--on-mint)] bg-[var(--mint)] rounded-xl hover:bg-[var(--mint-h)] transition-all shadow-sm hover:scale-105">
                         <i class="fas fa-save"></i>
                         Salvar Processo
                     </button>

@@ -15,12 +15,12 @@
 @php
     // Classes centralizadas
     $fieldClasses = 'block w-full mt-1 border-gray-300 rounded-lg shadow-sm sm:text-sm ' .
-                    'focus:ring-[#009496] focus:border-[#009496] ' .
+                    'focus:ring-[var(--mint)] focus:border-[var(--mint)] ' .
                     'disabled:bg-gray-100 disabled:cursor-not-allowed ' .
                     'readonly:bg-gray-100';
 
     $selectClasses = $fieldClasses . ' cursor-pointer';
-    $fileClasses = 'block w-full mt-1 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#009496] file:text-white hover:file:bg-[#007779]';
+    $fileClasses = 'block w-full mt-1 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[var(--mint)] file:text-white hover:file:bg-[var(--teal-dark-bg)]';
 
     $buttonClasses = 'flex items-center justify-center w-8 h-8 transition-colors duration-200 rounded-lg';
     $saveButtonClasses = $buttonClasses . ' bg-green-500 hover:bg-green-600 text-white';
@@ -39,7 +39,7 @@
                 <div x-data="{ openIaModal: false, iaInstruction: '', iaReplace: true, iaLoading: false }" class="relative inline-block text-left">
                     <button type="button"
                         @click="openIaModal = !openIaModal; if(openIaModal) setTimeout(() => $refs.iaInput.focus(), 50)"
-                        class="flex items-center gap-1 px-2 py-1 text-xs font-medium text-white transition-colors rounded-md bg-[#009496] hover:bg-[#007779] shadow-sm"
+                        class="flex items-center gap-1 px-2 py-1 text-xs font-medium text-white transition-colors rounded-md bg-[var(--mint)] hover:bg-[var(--teal-dark-bg)] shadow-sm"
                         title="Gerar/Regenerar este texto com IA">
                         <span>✨</span><span>IA</span>
                     </button>
@@ -67,7 +67,7 @@
                             x-ref="iaInput"
                             x-model="iaInstruction" 
                             rows="3" 
-                            class="w-full p-2 mb-2 text-sm border border-gray-300 rounded-md shadow-sm focus:border-[#009496] focus:ring focus:ring-[#009496] focus:ring-opacity-50"
+                            class="w-full p-2 mb-2 text-sm border border-gray-300 rounded-md shadow-sm focus:border-[var(--mint)] focus:ring focus:ring-[var(--mint)] focus:ring-opacity-50"
                             placeholder="Ex: Compra de 200 cadeiras para 3 escolas municipais. Justifique a necessidade."
                             @keydown.enter.prevent="if(!iaLoading) { iaLoading = true; window.iaGerarCampoComInstrucao(document.getElementById('{{ $name }}'), iaInstruction, iaReplace, true).then(() => { openIaModal = false; iaLoading = false; }) }"
                         ></textarea>
@@ -78,7 +78,7 @@
                         </div>
 
                         <label class="flex items-center gap-2 mb-4 cursor-pointer">
-                            <input type="checkbox" x-model="iaReplace" class="text-[#009496] focus:ring-[#009496] border-gray-300 rounded">
+                            <input type="checkbox" x-model="iaReplace" class="text-[var(--teal-text)] focus:ring-[var(--mint)] border-gray-300 rounded">
                             <span class="text-sm text-gray-600">Substituir conteúdo atual do campo</span>
                         </label>
                         
@@ -89,7 +89,7 @@
                             <button type="button" 
                                 @click="iaLoading = true; window.iaGerarCampoComInstrucao(document.getElementById('{{ $name }}'), iaInstruction, iaReplace, true).then(() => { openIaModal = false; iaLoading = false; })"
                                 :disabled="iaLoading"
-                                class="px-4 py-1.5 text-sm font-medium text-white transition-colors bg-[#009496] rounded hover:bg-[#007779] disabled:opacity-50 flex items-center gap-1 shadow-sm">
+                                class="px-4 py-1.5 text-sm font-medium text-white transition-colors bg-[var(--mint)] rounded hover:bg-[var(--teal-dark-bg)] disabled:opacity-50 flex items-center gap-1 shadow-sm">
                                 <span x-show="iaLoading" class="animate-spin">
                                     <svg class="w-4 h-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                                 </span>
@@ -113,7 +113,7 @@
                         name="{{ $name }}_date"
                         x-model="{{ $name }}_date"
                         :disabled="confirmed.{{ $name }}"
-                        class="block w-full border-gray-300 rounded-lg shadow-sm focus:ring-[#009496] focus:border-[#009496] sm:text-sm"
+                        class="block w-full border-gray-300 rounded-lg shadow-sm focus:ring-[var(--mint)] focus:border-[var(--mint)] sm:text-sm"
                     >
                 </div>
                 <div>
@@ -124,7 +124,7 @@
                         name="{{ $name }}_time"
                         x-model="{{ $name }}_time"
                         :disabled="confirmed.{{ $name }}"
-                        class="block w-full border-gray-300 rounded-lg shadow-sm focus:ring-[#009496] focus:border-[#009496] sm:text-sm"
+                        class="block w-full border-gray-300 rounded-lg shadow-sm focus:ring-[var(--mint)] focus:border-[var(--mint)] sm:text-sm"
                     >
                 </div>
             </div>
@@ -194,7 +194,7 @@
                             x-model="{{ $name }}"
                             value="{{ $value }}"
                             :disabled="confirmed.{{ $name }}"
-                            class="text-[#009496] focus:ring-[#009496] border-gray-300"
+                            class="text-[var(--teal-text)] focus:ring-[var(--mint)] border-gray-300"
                         >
                         <span class="ml-2 text-sm text-gray-700">{{ $text }}</span>
                     </label>
@@ -212,7 +212,7 @@
                             x-model="{{ $name }}"
                             value="{{ $value }}"
                             :disabled="confirmed.{{ $name }}"
-                            class="rounded text-[#009496] focus:ring-[#009496] border-gray-300"
+                            class="rounded text-[var(--teal-text)] focus:ring-[var(--mint)] border-gray-300"
                         >
                         <span class="ml-2 text-sm text-gray-700">{{ $text }}</span>
                     </label>

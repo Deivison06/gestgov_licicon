@@ -7,46 +7,112 @@
    Referência: /var/www/Fridman/sit-prototipo-codigo
    ========================================================================== */
 
+/* ==========================================================================
+   Tema claro/escuro
+   :root = padrão claro. html[data-theme="dark"] redefine os mesmos tokens
+   (valores idênticos ao dark original, pixel a pixel) para quem ligar o
+   toggle. Ver resources/views/layouts/app.blade.php (sigGetTheme/sigSetTheme)
+   e o script inline no <head> que evita flash do tema errado no load.
+   ========================================================================== */
 :root {
   --font: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
-  
-  /* Gradientes & Identidade Institucional */
+
+  /* Gradientes & Identidade Institucional — fixos (não mudam com o tema;
+     usados só na sidebar/banners decorativos, que mantêm a marca escura) */
   --side-1: #0b3b37;
   --side-2: #072926;
   --side-3: #051e1c;
   --mint: #2DC197;
-  --mint-h: #4bd2aa;
+  --mint-h: #16996f;
   --on-mint: #06302d;
-  
-  /* Superfícies & Texto Dark (Padrão Obsidian Teal) */
+
+  /* Superfícies & Texto — Claro */
+  --bg: #f6f9f8;
+  --card: #ffffff;
+  --card-2: #eef3f1;
+  --card-3: #e4ece9;
+  --hover-bg: #eaf6f1;
+  --line: #d7e1de;
+  --line-2: #e6ece9;
+  --line-3: #cfe0db;
+
+  --ink: #0f201d;
+  --ink-2: #4a615c;
+  --ink-3: #74908a;
+  --ink-4: #5c7772;
+  --teal-text: #0f9488;
+  --teal-dark-bg: #cdebe4;
+
+  --ring: 0 1px 2px rgba(0,0,0,.08), 0 0 0 1px rgba(0,0,0,.04);
+  --unread: #f1f7f6;
+  --read: #8aa29d;
+
+  /* Status Semânticos — Claro */
+  --ok-bg: #e8f8ef;
+  --ok: #15803d;
+  --warn-bg: #fff6e0;
+  --warn: #92700a;
+  --warn-2: #92700a;
+  --warn-border: #f5dca0;
+  --bad-bg: #fdecec;
+  --bad: #b42318;
+  --bad-strong: #c0292b;
+  --bad-border: #f3b4b4;
+  --info-bg: #eaf2ff;
+  --info: #1d4ed8;
+  --orange-bg: #fff1e0;
+  --orange: #9a3412;
+  --gray-bg: #eef2f1;
+  --gray: #4b5f5b;
+  --vio-bg: #f1edfd;
+  --vio: #6d28d9;
+  --vio-border: #ddd6fe;
+  --hl: #fff6b8;
+
+  color-scheme: light;
+}
+
+html[data-theme="dark"] {
+  /* Superfícies & Texto — Escuro (Padrão Obsidian Teal, valores originais) */
   --bg: #0a1514;
   --card: #10201e;
   --card-2: #0d1b19;
+  --card-3: #132d27;
+  --hover-bg: #142825;
   --line: #24403c;
   --line-2: #1a302d;
-  
+  --line-3: #184e40;
+
   --ink: #e6f0ee;
-  --ink-2: #a8bdb9;
+  --ink-2: #a2b9b5;
   --ink-3: #8aa29d;
+  --ink-4: #7ea29c;
   --teal-text: #5eead4;
-  
+  --teal-dark-bg: #007a7a;
+
   --ring: 0 1px 2px rgba(0,0,0,.3), 0 0 0 1px rgba(255,255,255,.05);
-  --unread: #f1f7f6;
   --read: #8aa29d;
-  
-  /* Status Semânticos Dark */
+
+  /* Status Semânticos — Escuro */
   --ok-bg: #12352a;
   --ok: #86efac;
   --warn-bg: #3a2c0b;
   --warn: #fcd34d;
-  --bad-bg: #3b1515;
+  --warn-2: #e0a845;
+  --warn-border: #594214;
+  --bad-bg: #2a1315;
   --bad: #fca5a5;
+  --bad-strong: #ff7b72;
+  --bad-border: #5a2328;
   --info-bg: #132a4a;
   --info: #93c5fd;
+  --orange-bg: #3b2310;
+  --orange: #fdba74;
   --gray-bg: #1b2c2a;
   --gray: #b6c6c3;
   --vio-bg: #2a1f4a;
   --vio: #c4b5fd;
+  --vio-border: #3b3267;
   --hl: #665c12;
 
   color-scheme: dark;
@@ -59,7 +125,7 @@ html {
   background-color: var(--bg);
   color: var(--ink);
   font-family: var(--font);
-  color-scheme: dark;
+  color-scheme: inherit;
 }
 
 body {
@@ -363,7 +429,7 @@ table.t td {
   color: var(--ink) !important;
 }
 table.t tr:hover td {
-  background: #142825 !important;
+  background: var(--hover-bg) !important;
 }
 table.t tr:last-child td {
   border-bottom: 0;
@@ -552,7 +618,7 @@ tr[class*="hover\:bg-"]:hover,
 .hover\:bg-slate-50:hover,
 .hover\:bg-gray-100:hover,
 .hover\:bg-slate-100:hover {
-  background-color: #142825 !important;
+  background-color: var(--hover-bg) !important;
   background-image: none !important;
 }
 
@@ -596,7 +662,7 @@ nav[role="navigation"] a {
   color: var(--ink) !important;
 }
 nav[role="navigation"] a:hover {
-  background-color: #142825 !important;
+  background-color: var(--hover-bg) !important;
   border-color: var(--teal-text) !important;
   color: #fff !important;
 }
@@ -668,7 +734,7 @@ input[type="checkbox"], input[type="radio"] {
   color: var(--ink) !important;
 }
 [x-show="open"] a:hover, [x-show="open"] button:hover, .dropdown-menu a:hover, .dropdown-menu button:hover {
-  background-color: #142825 !important;
+  background-color: var(--hover-bg) !important;
   color: var(--teal-text) !important;
 }
 
@@ -710,8 +776,8 @@ input[type="checkbox"], input[type="radio"] {
 .bg-purple-100, .bg-violet-100 { background-color: var(--vio-bg) !important; }
 .text-purple-800, .text-purple-700, .text-violet-800 { color: var(--vio) !important; }
 
-.bg-orange-100 { background-color: #3b2310 !important; }
-.text-orange-800 { color: #fdba74 !important; }
+.bg-orange-100 { background-color: var(--orange-bg) !important; }
+.text-orange-800 { color: var(--orange) !important; }
 
 /* 11. Caixas de Alerta */
 .bg-green-50, .bg-emerald-50 {
@@ -771,7 +837,7 @@ table.dataTable tbody tr {
   background-color: var(--card) !important;
 }
 table.dataTable tbody tr:hover {
-  background-color: #142825 !important;
+  background-color: var(--hover-bg) !important;
 }
 table.dataTable tbody td {
   border-bottom: 1px solid var(--line-2) !important;
@@ -838,5 +904,5 @@ table.dataTable tbody td {
   color: var(--ink) !important;
 }
 .ck.ck-button:hover {
-  background: #142825 !important;
+  background: var(--hover-bg) !important;
 }

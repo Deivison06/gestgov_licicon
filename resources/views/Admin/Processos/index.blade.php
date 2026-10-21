@@ -8,7 +8,7 @@
         <!-- Botão Novo Processo -->
         <div class="flex justify-end mb-8">
             <a href="{{ route('admin.processos.create') }}"
-               class="inline-flex items-center gap-3 px-6 py-3 text-sm font-bold text-[#041d1a] transition-all duration-200 bg-[#2DC197] rounded-xl hover:bg-[#26aa84] hover:shadow-lg hover:scale-105">
+               class="inline-flex items-center gap-3 px-6 py-3 text-sm font-bold text-[var(--on-mint)] transition-all duration-200 bg-[var(--mint)] rounded-xl hover:bg-[var(--mint-h)] hover:shadow-lg hover:scale-105">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
@@ -18,9 +18,9 @@
 
         <!-- Mensagem de Sucesso -->
         @if (session('success'))
-            <div class="p-4 mb-8 border border-[#184e40] shadow-sm rounded-2xl bg-[#0d2a23] text-[#2DC197]">
+            <div class="p-4 mb-8 border border-[var(--line-3)] shadow-sm rounded-2xl bg-[var(--card-3)] text-[var(--mint)]">
                 <div class="flex items-center">
-                    <svg class="w-5 h-5 mr-3 text-[#2DC197]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-5 h-5 mr-3 text-[var(--mint)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M5 13l4 4L19 7"></path>
                     </svg>
@@ -33,7 +33,7 @@
         @if(request('prefeitura_id'))
             <div class="mb-4">
                 <a href="{{ route('admin.processos.index') }}"
-                   class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#009496] rounded-lg hover:bg-[#007a7a] transition-all duration-200">
+                   class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[var(--mint)] rounded-lg hover:bg-[var(--teal-dark-bg)] transition-all duration-200">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                     </svg>
@@ -49,28 +49,28 @@
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     @foreach ($prefeituras as $prefeitura)
                         <a href="{{ route('admin.processos.index', ['prefeitura_id' => $prefeitura->id]) }}"
-                           class="prefeitura-card group relative p-6 bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg hover:border-[#009496] transition-all duration-300 transform hover:-translate-y-1 cursor-pointer block">
+                           class="prefeitura-card group relative p-6 bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg hover:border-[var(--mint)] transition-all duration-300 transform hover:-translate-y-1 cursor-pointer block">
                             <div class="absolute transition-opacity duration-300 opacity-0 top-4 right-4 group-hover:opacity-100">
-                                <svg class="w-5 h-5 text-[#009496]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-5 h-5 text-[var(--teal-text)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                           d="M9 5l7 7-7 7"></path>
                                 </svg>
                             </div>
                             <div class="flex items-center mb-3">
-                                <div class="p-2 rounded-lg bg-[#009496]/10">
-                                    <svg class="w-6 h-6 text-[#009496]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <div class="p-2 rounded-lg bg-[var(--mint)]/10">
+                                    <svg class="w-6 h-6 text-[var(--teal-text)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                               d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-6 0H5m2 0h4M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
                                         </path>
                                     </svg>
                                 </div>
                             </div>
-                            <h3 class="text-base font-semibold text-gray-800 group-hover:text-[#009496] transition-colors duration-300">
+                            <h3 class="text-base font-semibold text-gray-800 group-hover:text-[var(--teal-text)] transition-colors duration-300">
                                 {{ $prefeitura->nome }}
                             </h3>
                             <p class="mt-1 text-xs text-gray-500">{{ $prefeitura->email }}</p>
                             <div class="pt-3 mt-3 border-t border-gray-100">
-                    <span class="text-xs font-medium text-[#009496] bg-[#009496]/10 px-2 py-1 rounded-full">
+                    <span class="text-xs font-medium text-[var(--teal-text)] bg-[var(--mint)]/10 px-2 py-1 rounded-full">
                         {{ $prefeitura->processos_count }} processos
                     </span>
                             </div>
@@ -94,8 +94,8 @@
             <div class="mb-6 card !rounded-2xl">
                 <div class="card-h">
                     <div>
-                        <h4 class="text-lg font-bold text-[#e6f0ee]">Filtros Avançados</h4>
-                        <p class="text-sm text-[#8aa29d]">Encontre processos específicos usando múltiplos critérios</p>
+                        <h4 class="text-lg font-bold text-[var(--ink)]">Filtros Avançados</h4>
+                        <p class="text-sm text-[var(--ink-3)]">Encontre processos específicos usando múltiplos critérios</p>
                     </div>
                 </div>
 
@@ -119,7 +119,7 @@
                                        value="{{ request('search') }}"
                                        placeholder="Nº do processo, nº do procedimento ou objeto..."
                                        class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg
-                                              focus:ring-2 focus:ring-[#009496] focus:border-transparent
+                                              focus:ring-2 focus:ring-[var(--mint)] focus:border-transparent
                                               placeholder-gray-500 text-sm transition-all duration-200">
                             </div>
                             <p class="mt-1 text-xs text-gray-500">Procura no número do processo/procedimento e no objeto</p>
@@ -132,7 +132,7 @@
                             </label>
                             <select name="modalidade" id="modalidade"
                                     class="w-full px-3 py-2.5 border border-gray-300 rounded-lg
-                                           focus:ring-2 focus:ring-[#009496] focus:border-transparent text-sm
+                                           focus:ring-2 focus:ring-[var(--mint)] focus:border-transparent text-sm
                                            transition-all duration-200">
                                 <option value="">Todas as Modalidades</option>
                                 @foreach(\App\Enums\ModalidadeEnum::cases() as $modalidade)
@@ -151,7 +151,7 @@
                             </label>
                             <select name="status" id="status"
                                     class="w-full px-3 py-2.5 border border-gray-300 rounded-lg
-                                           focus:ring-2 focus:ring-[#009496] focus:border-transparent text-sm
+                                           focus:ring-2 focus:ring-[var(--mint)] focus:border-transparent text-sm
                                            transition-all duration-200">
                                 @php
                                     $defaultStatus = $filtrosAplicados ? request('status') : 'EM_ANDAMENTO';
@@ -173,7 +173,7 @@
                             </label>
                             <select name="republicado" id="republicado"
                                     class="w-full px-3 py-2.5 border border-gray-300 rounded-lg
-                                           focus:ring-2 focus:ring-[#009496] focus:border-transparent text-sm
+                                           focus:ring-2 focus:ring-[var(--mint)] focus:border-transparent text-sm
                                            transition-all duration-200">
                                 <option value="" {{ request('republicado') === null || request('republicado') === '' ? 'selected' : '' }}>Todos</option>
                                 <option value="1" {{ request('republicado') === '1' ? 'selected' : '' }}>Somente republicados</option>
@@ -195,14 +195,14 @@
                                        id="data_inicio"
                                        value="{{ request('data_inicio') }}"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg
-                                              focus:ring-2 focus:ring-[#009496] focus:border-transparent text-sm">
+                                              focus:ring-2 focus:ring-[var(--mint)] focus:border-transparent text-sm">
                                 <span class="flex items-center text-gray-400">a</span>
                                 <input type="date"
                                        name="data_fim"
                                        id="data_fim"
                                        value="{{ request('data_fim') }}"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg
-                                              focus:ring-2 focus:ring-[#009496] focus:border-transparent text-sm">
+                                              focus:ring-2 focus:ring-[var(--mint)] focus:border-transparent text-sm">
                             </div>
                         </div>
 
@@ -217,16 +217,16 @@
                                    value="{{ request('responsavel') }}"
                                    placeholder="Nome do responsável..."
                                    class="block w-full px-3 py-2.5 border border-gray-300 rounded-lg
-                                          focus:ring-2 focus:ring-[#009496] focus:border-transparent
+                                          focus:ring-2 focus:ring-[var(--mint)] focus:border-transparent
                                           placeholder-gray-500 text-sm">
                         </div>
 
                         <!-- Botões de ação -->
                         <div class="flex items-end space-x-3">
                             <button type="submit"
-                                    class="flex-1 px-6 py-2.5 text-sm font-medium text-white bg-[#009496] rounded-lg
-                                           hover:bg-[#007a7a] transition-all duration-200
-                                           focus:outline-none focus:ring-2 focus:ring-[#009496] focus:ring-offset-2
+                                    class="flex-1 px-6 py-2.5 text-sm font-medium text-white bg-[var(--mint)] rounded-lg
+                                           hover:bg-[var(--teal-dark-bg)] transition-all duration-200
+                                           focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:ring-offset-2
                                            flex items-center justify-center">
                                 <i class="mr-2 fas fa-search"></i>
                                 Aplicar Filtros
@@ -320,28 +320,28 @@
                 <div class="card-h">
                     <div class="flex flex-col items-start justify-between lg:flex-row lg:items-center w-full">
                         <div>
-                            <h3 class="text-xl font-bold text-[#e6f0ee]">
+                            <h3 class="text-xl font-bold text-[var(--ink)]">
                                 Processos da Prefeitura: {{ $prefeituras->find(request('prefeitura_id'))->nome ?? 'Selecionada' }}
                             </h3>
                             @if($processos->total() > 0)
-                                <p class="mt-1 text-sm text-[#8aa29d]">
-                                    Mostrando <span class="font-semibold text-[#e6f0ee]">{{ $processos->firstItem() }}</span>
-                                    a <span class="font-semibold text-[#e6f0ee]">{{ $processos->lastItem() }}</span>
-                                    de <span class="font-semibold text-[#e6f0ee]">{{ $processos->total() }}</span> processos
+                                <p class="mt-1 text-sm text-[var(--ink-3)]">
+                                    Mostrando <span class="font-semibold text-[var(--ink)]">{{ $processos->firstItem() }}</span>
+                                    a <span class="font-semibold text-[var(--ink)]">{{ $processos->lastItem() }}</span>
+                                    de <span class="font-semibold text-[var(--ink)]">{{ $processos->total() }}</span> processos
                                 </p>
                             @endif
                         </div>
                         <div class="flex items-center mt-2 space-x-3 lg:mt-0">
-                            <div class="text-sm text-[#8aa29d]">
+                            <div class="text-sm text-[var(--ink-3)]">
                                 @if($processos->total() > 0)
-                                    <i class="mr-1 fas fa-clipboard-list text-[#2DC197]"></i>
+                                    <i class="mr-1 fas fa-clipboard-list text-[var(--mint)]"></i>
                                     {{ $processos->total() }} processo(s) encontrado(s)
                                 @endif
                             </div>
 {{--                            @if($processos->total() > 0)--}}
 {{--                                <button type="button"--}}
 {{--                                        onclick="exportarResultados()"--}}
-{{--                                        class="inline-flex items-center px-4 py-2 text-sm font-medium text-[#009496] bg-white border border-[#009496] rounded-lg hover:bg-[#009496] hover:text-white transition-all duration-200">--}}
+{{--                                        class="inline-flex items-center px-4 py-2 text-sm font-medium text-[var(--teal-text)] bg-white border border-[var(--mint)] rounded-lg hover:bg-[var(--mint)] hover:text-white transition-all duration-200">--}}
 {{--                                    <i class="mr-2 fas fa-file-export"></i>--}}
 {{--                                    Exportar--}}
 {{--                                </button>--}}
@@ -386,9 +386,9 @@
                             </th>
                         </tr>
                         </thead>
-                        <tbody class="bg-[#10201e] divide-y divide-[#1a302d]">
+                        <tbody class="bg-[var(--card)] divide-y divide-[var(--line-2)]">
                         @forelse($processos as $processo)
-                            <tr class="transition-colors duration-200 hover:bg-[#142825]">
+                            <tr class="transition-colors duration-200 hover:bg-[var(--hover-bg)]">
                                 @php
                                     $status = $processo->status instanceof \App\Enums\ProcessoStatusEnum
                                         ? $processo->status
@@ -534,12 +534,12 @@
                                             <a href="{{ $etapa['rota'] }}" title="{{ $etapa['label'] }}" class="inline-flex flex-col items-center group">
                                                 <span class="flex items-center justify-center rounded-full w-7 h-7 text-xs transition
                                                     @if($etapa['estado'] === 'concluida') bg-green-100 text-green-700
-                                                    @elseif($etapa['estado'] === 'atual') bg-[#062F43] text-white ring-2 ring-[#062F43]/20
+                                                    @elseif($etapa['estado'] === 'atual') bg-[var(--info-bg)] text-white ring-2 ring-[var(--info-bg)]/20
                                                     @else bg-gray-100 text-gray-400 group-hover:bg-gray-200 @endif">
                                                     <i class="fas {{ $etapa['icon'] }}"></i>
                                                 </span>
                                                 <span class="mt-1 text-[10px] font-medium leading-tight
-                                                    @if($etapa['estado'] === 'atual') text-[#062F43]
+                                                    @if($etapa['estado'] === 'atual') text-[var(--info-bg)]
                                                     @elseif($etapa['estado'] === 'concluida') text-green-700
                                                     @else text-gray-400 @endif">{{ $etapa['label'] }}</span>
                                             </a>
@@ -608,7 +608,7 @@
                                                 <p class="mt-1 text-sm text-gray-500">Tente ajustar os critérios de busca.</p>
                                             </div>
                                             <a href="{{ route('admin.processos.index', ['prefeitura_id' => request('prefeitura_id')]) }}"
-                                               class="inline-flex items-center px-4 py-2 text-sm font-medium text-[#009496] bg-[#009496]/10 rounded-lg hover:bg-[#009496]/20 transition-colors">
+                                               class="inline-flex items-center px-4 py-2 text-sm font-medium text-[var(--teal-text)] bg-[var(--mint)]/10 rounded-lg hover:bg-[var(--mint)]/20 transition-colors">
                                                 <i class="mr-2 fas fa-times"></i>
                                                 Limpar filtros
                                             </a>
@@ -898,7 +898,7 @@
                                                        name="status"
                                                        value="{{ $status->value }}"
                                                        id="status_{{ $status->value }}"
-                                                       class="w-4 h-4 text-[#009496] border-gray-300 focus:ring-[#009496]">
+                                                       class="w-4 h-4 text-[var(--teal-text)] border-gray-300 focus:ring-[var(--mint)]">
                                                 <label for="status_{{ $status->value }}"
                                                        class="block ml-3 text-sm text-gray-900 cursor-pointer">
                                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
@@ -962,7 +962,7 @@
 
                             <div class="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
                                 <button type="submit"
-                                        class="inline-flex justify-center w-full px-4 py-2 text-base font-medium text-white bg-[#009496] border border-transparent rounded-md shadow-sm hover:bg-[#007a7a] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#009496] sm:col-start-2 sm:text-sm">
+                                        class="inline-flex justify-center w-full px-4 py-2 text-base font-medium text-white bg-[var(--mint)] border border-transparent rounded-md shadow-sm hover:bg-[var(--teal-dark-bg)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--mint)] sm:col-start-2 sm:text-sm">
                                     Atualizar Status
                                 </button>
                                 <button type="button"

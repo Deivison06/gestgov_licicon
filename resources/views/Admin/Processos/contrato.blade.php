@@ -81,17 +81,17 @@
             <div class="space-y-6 md:space-y-8">
 
                 <!-- Painel 1: Resumo do Processo -->
-                <div class="bg-[#10201e] border border-[#24403c] shadow-sm rounded-xl overflow-hidden">
-                    <div class="px-6 py-4 border-b border-[#24403c] bg-[#0d1b19]">
+                <div class="bg-[var(--card)] border border-[var(--line)] shadow-sm rounded-xl overflow-hidden">
+                    <div class="px-6 py-4 border-b border-[var(--line)] bg-[var(--card-2)]">
                         <div class="flex items-center">
-                            <div class="flex items-center justify-center w-10 h-10 mr-3 bg-[#142825] border border-[#24403c] rounded-lg shadow-sm">
-                                <svg class="w-5 h-5 text-[#2DC197]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="flex items-center justify-center w-10 h-10 mr-3 bg-[var(--hover-bg)] border border-[var(--line)] rounded-lg shadow-sm">
+                                <svg class="w-5 h-5 text-[var(--mint)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                 </svg>
                             </div>
                             <div>
-                                <h2 class="text-lg font-semibold text-[#e6f0ee]">Resumo do Processo</h2>
-                                <p class="text-sm text-[#7ea29c]">Informações básicas do processo licitatório</p>
+                                <h2 class="text-lg font-semibold text-[var(--ink)]">Resumo do Processo</h2>
+                                <p class="text-sm text-[var(--ink-4)]">Informações básicas do processo licitatório</p>
                             </div>
                         </div>
                     </div>
@@ -212,18 +212,18 @@
                     )
                     && $processo->tipo_procedimento !== \App\Enums\TipoProcedimentoEnum::OBRA
                 )
-                    <div class="bg-[#10201e] border border-[#24403c] shadow-sm rounded-xl overflow-hidden">
-                        <div class="px-6 py-4 border-b border-[#24403c] bg-[#0d1b19]">
+                    <div class="bg-[var(--card)] border border-[var(--line)] shadow-sm rounded-xl overflow-hidden">
+                        <div class="px-6 py-4 border-b border-[var(--line)] bg-[var(--card-2)]">
                             <div class="flex flex-col justify-between md:flex-row md:items-center">
                                 <div class="flex items-center">
-                                    <div class="flex items-center justify-center w-10 h-10 mr-3 bg-[#142825] border border-[#24403c] rounded-lg shadow-sm">
+                                    <div class="flex items-center justify-center w-10 h-10 mr-3 bg-[var(--hover-bg)] border border-[var(--line)] rounded-lg shadow-sm">
                                         <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
                                         </svg>
                                     </div>
                                     <div>
-                                        <h2 class="text-lg font-semibold text-[#e6f0ee]">Contratação de Itens</h2>
-                                        <p class="text-sm text-[#7ea29c]">Gerencie os itens a serem contratados</p>
+                                        <h2 class="text-lg font-semibold text-[var(--ink)]">Contratação de Itens</h2>
+                                        <p class="text-sm text-[var(--ink-4)]">Gerencie os itens a serem contratados</p>
                                     </div>
                                 </div>
                                 <button type="button"
@@ -500,17 +500,17 @@
                     </div>
                 @endif
                 <!-- Painel 3: Geração de Contrato -->
-                <div class="bg-[#10201e] border border-[#24403c] shadow-sm rounded-xl overflow-hidden">
-                    <div class="px-6 py-4 border-b border-[#24403c] bg-[#0d1b19]">
+                <div class="bg-[var(--card)] border border-[var(--line)] shadow-sm rounded-xl overflow-hidden">
+                    <div class="px-6 py-4 border-b border-[var(--line)] bg-[var(--card-2)]">
                         <div class="flex items-center">
-                            <div class="flex items-center justify-center w-10 h-10 mr-3 bg-[#142825] border border-[#24403c] rounded-lg shadow-sm">
-                                <svg class="w-5 h-5 text-[#2DC197]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="flex items-center justify-center w-10 h-10 mr-3 bg-[var(--hover-bg)] border border-[var(--line)] rounded-lg shadow-sm">
+                                <svg class="w-5 h-5 text-[var(--mint)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                 </svg>
                             </div>
                             <div>
-                                <h2 class="text-lg font-semibold text-[#e6f0ee]">Gerar Contrato</h2>
-                                <p class="text-sm text-[#7ea29c]">Gere os documentos necessários para o processo</p>
+                                <h2 class="text-lg font-semibold text-[var(--ink)]">Gerar Contrato</h2>
+                                <p class="text-sm text-[var(--ink-4)]">Gere os documentos necessários para o processo</p>
                             </div>
                         </div>
                     </div>
@@ -615,7 +615,7 @@
                                                 <div class="flex space-x-2">
                                                     <button type="button"
                                                             onclick="gerarContrato('{{ $processo->id }}', document.getElementById('data_contrato_{{ $tipo }}').value, event, '{{ $tipo }}')"
-                                                            class="flex items-center px-4 py-2 text-sm font-bold text-[#041d1a] bg-[#2DC197] rounded-lg hover:bg-[#26aa84] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2DC197] transition-colors">
+                                                            class="flex items-center px-4 py-2 text-sm font-bold text-[var(--on-mint)] bg-[var(--mint)] rounded-lg hover:bg-[var(--mint-h)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--mint)] transition-colors">
                                                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                                         </svg>
@@ -945,7 +945,7 @@
                                                         @can('fiscalizar contratos')
                                                             <button type="button"
                                                                     onclick="abrirModalAditivo({{ $contratoItem->id }})"
-                                                                    class="px-3 py-1.5 text-xs font-medium text-white bg-[#009496] rounded-lg hover:bg-[#007779]">
+                                                                    class="px-3 py-1.5 text-xs font-medium text-white bg-[var(--mint)] rounded-lg hover:bg-[var(--teal-dark-bg)]">
                                                                 Aditivo
                                                             </button>
                                                         @endcan
@@ -982,7 +982,7 @@
                                                 <div class="px-4 py-3 border-t border-gray-100 bg-gray-50/50">
                                                     <div class="flex items-center justify-between mb-2">
                                                         <h5 class="text-xs font-semibold text-gray-900 flex items-center gap-1">
-                                                            <i class="fas fa-file-contract text-[#009496]"></i>
+                                                            <i class="fas fa-file-contract text-[var(--teal-text)]"></i>
                                                             Incidentes Contratuais (Aditivos)
                                                         </h5>
                                                     </div>
@@ -999,13 +999,13 @@
                                                                         </span>
                                                                     </div>
                                                                     <div class="flex items-center gap-2">
-                                                                        <span class="px-2 py-1 text-[10px] font-bold text-[#009496] bg-[#009496]/10 rounded-full">
+                                                                        <span class="px-2 py-1 text-[10px] font-bold text-[var(--teal-text)] bg-[var(--mint)]/10 rounded-full">
                                                                             Aditivo {{ $incidente->ehExterno() ? 'Externo' : '' }}
                                                                         </span>
                                                                         <a href="{{ $incidente->ehExterno()
                                                                                 ? route('admin.incidentes.externo', ['contrato_id' => $contratoItem->id, 'incidente_id' => $incidente->id])
                                                                                 : route('admin.incidentes.documentos', ['contrato_id' => $contratoItem->id, 'incidente_id' => $incidente->id]) }}"
-                                                                           class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#009496] bg-[#009496]/10 border border-[#009496]/20 rounded-md hover:bg-[#009496] hover:text-white transition-colors"
+                                                                           class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[var(--teal-text)] bg-[var(--mint)]/10 border border-[var(--mint)]/20 rounded-md hover:bg-[var(--mint)] hover:text-white transition-colors"
                                                                            title="{{ $incidente->ehExterno() ? 'Ver Aditivo Externo' : 'Gerenciar Documentos do Aditivo' }}">
                                                                             <i class="fas fa-file-alt"></i> {{ $incidente->ehExterno() ? 'Ver Aditivo' : 'Documentos' }}
                                                                         </a>

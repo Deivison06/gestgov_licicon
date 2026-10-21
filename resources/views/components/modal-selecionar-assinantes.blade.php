@@ -28,7 +28,7 @@
                     <button type="button"
                             @click="modo = 'paralelo'; syncPai()"
                             :class="modo === 'paralelo'
-                                ? 'bg-[#009496] text-white border-[#009496] shadow-sm'
+                                ? 'bg-[var(--mint)] text-white border-[var(--mint)] shadow-sm'
                                 : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'"
                             class="px-3 py-2.5 text-sm font-medium border rounded-md transition-all text-left">
                         <div class="font-semibold">Paralelo</div>
@@ -37,7 +37,7 @@
                     <button type="button"
                             @click="modo = 'sequencial'; syncPai()"
                             :class="modo === 'sequencial'
-                                ? 'bg-[#009496] text-white border-[#009496] shadow-sm'
+                                ? 'bg-[var(--mint)] text-white border-[var(--mint)] shadow-sm'
                                 : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'"
                             class="px-3 py-2.5 text-sm font-medium border rounded-md transition-all text-left">
                         <div class="font-semibold">Sequencial</div>
@@ -49,7 +49,7 @@
             <div>
                 <label class="block mb-2 text-sm font-medium text-gray-700">Prazo (dias)</label>
                 <input type="number" x-model.number="prazoDias" @change="syncPai()" min="1" max="60"
-                       class="block w-full px-3 py-2.5 text-sm bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#009496] focus:border-[#009496]">
+                       class="block w-full px-3 py-2.5 text-sm bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)]">
                 <p class="mt-1.5 text-xs text-gray-500">Expira após este período.</p>
             </div>
         </div>
@@ -64,7 +64,7 @@
                 <div class="flex-1 min-w-[180px]">
                     <label class="block mb-1 text-xs font-medium text-gray-600">Unidade</label>
                     <select x-model="selecionadaId" @change="aoSelecionarUnidade()"
-                            class="block w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#009496] focus:border-[#009496]">
+                            class="block w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[var(--mint)] focus:border-[var(--mint)]">
                         <option value="">Selecione a Unidade</option>
                         <template x-for="unidade in unidades" :key="unidade.id">
                             <option :value="unidade.id" x-text="unidade.nome"></option>
@@ -74,21 +74,21 @@
                 <div class="flex-1 min-w-[160px]">
                     <label class="block mb-1 text-xs font-medium text-gray-600">Responsável</label>
                     <input type="text" x-model="formResp" placeholder="Nome do Responsável" 
-                           class="block w-full px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-[#009496]">
+                           class="block w-full px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-[var(--mint)]">
                 </div>
                 <div class="flex-1 min-w-[120px]">
                     <label class="block mb-1 text-xs font-medium text-gray-600">Nº Portaria</label>
                     <input type="text" x-model="formPortaria" placeholder="Opcional" 
-                           class="block w-full px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-[#009496]">
+                           class="block w-full px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-[var(--mint)]">
                 </div>
                 <div class="flex-1 min-w-[120px]">
                     <label class="block mb-1 text-xs font-medium text-gray-600">Data Portaria</label>
                     <input type="text" x-model="formDataPortaria" placeholder="Opcional" 
-                           class="block w-full px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-[#009496]">
+                           class="block w-full px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-[var(--mint)]">
                 </div>
                 <div>
                     <button type="button" @click="adicionarSelecionada()" :disabled="!selecionadaId || !formResp"
-                            class="flex items-center justify-center w-full px-4 py-2 text-sm font-semibold text-white transition-colors bg-[#009496] rounded-md shadow disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#007779]">
+                            class="flex items-center justify-center w-full px-4 py-2 text-sm font-semibold text-white transition-colors bg-[var(--mint)] rounded-md shadow disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[var(--teal-dark-bg)]">
                         + Adicionar
                     </button>
                 </div>

@@ -21,20 +21,20 @@
 
 @php
     $cls = $dark ? [
-        'overlay' => 'fixed inset-0 transition-opacity bg-[#040807]/80 backdrop-blur-sm',
-        'painel' => 'inline-block overflow-hidden text-left align-bottom transition-all transform bg-[#10201e] border border-[#24403c] rounded-2xl shadow-2xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full',
-        'corpo' => 'px-5 pt-6 pb-5 bg-[#10201e] sm:p-6 sm:pb-5',
-        'icone_bg' => 'flex items-center justify-center flex-shrink-0 w-12 h-12 mx-auto bg-[#132d27] border border-[#24403c] rounded-xl sm:mx-0 sm:h-10 sm:w-10',
-        'icone' => 'text-[#2DC197] fas fa-file-contract',
-        'titulo' => 'text-lg font-bold leading-6 text-[#e6f0ee]',
-        'label' => 'block text-sm font-semibold text-[#a2b9b5]',
-        'select' => 'block w-full mt-1.5 px-4 py-2.5 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] sm:text-sm',
-        'radio' => 'text-[#2DC197] focus:ring-[#2DC197] bg-[#0a1514] border-[#24403c]',
-        'radio_label' => 'inline-flex items-center gap-1.5 text-sm text-[#e6f0ee] cursor-pointer',
-        'rodape' => 'px-5 py-4 bg-[#0d1b19] border-t border-[#24403c] sm:px-6 sm:flex sm:flex-row-reverse',
-        'btn_submit' => 'inline-flex justify-center w-full px-5 py-2.5 text-sm font-bold text-[#041d1a] bg-[#2DC197] rounded-xl hover:bg-[#26aa84] transition-all shadow-sm sm:ml-3 sm:w-auto hover:scale-105',
-        'btn_cancelar' => 'inline-flex justify-center w-full px-4 py-2.5 mt-3 text-sm font-semibold text-[#e6f0ee] bg-[#10201e] border border-[#24403c] rounded-xl hover:bg-[#142825] hover:text-[#2DC197] transition-colors sm:mt-0 sm:ml-3 sm:w-auto',
-        'info' => 'text-xs text-[#a2b9b5]',
+        'overlay' => 'fixed inset-0 transition-opacity bg-[var(--bg)]/80 backdrop-blur-sm',
+        'painel' => 'inline-block overflow-hidden text-left align-bottom transition-all transform bg-[var(--card)] border border-[var(--line)] rounded-2xl shadow-2xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full',
+        'corpo' => 'px-5 pt-6 pb-5 bg-[var(--card)] sm:p-6 sm:pb-5',
+        'icone_bg' => 'flex items-center justify-center flex-shrink-0 w-12 h-12 mx-auto bg-[var(--card-3)] border border-[var(--line)] rounded-xl sm:mx-0 sm:h-10 sm:w-10',
+        'icone' => 'text-[var(--mint)] fas fa-file-contract',
+        'titulo' => 'text-lg font-bold leading-6 text-[var(--ink)]',
+        'label' => 'block text-sm font-semibold text-[var(--ink-2)]',
+        'select' => 'block w-full mt-1.5 px-4 py-2.5 bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] sm:text-sm',
+        'radio' => 'text-[var(--mint)] focus:ring-[var(--mint)] bg-[var(--bg)] border-[var(--line)]',
+        'radio_label' => 'inline-flex items-center gap-1.5 text-sm text-[var(--ink)] cursor-pointer',
+        'rodape' => 'px-5 py-4 bg-[var(--card-2)] border-t border-[var(--line)] sm:px-6 sm:flex sm:flex-row-reverse',
+        'btn_submit' => 'inline-flex justify-center w-full px-5 py-2.5 text-sm font-bold text-[var(--on-mint)] bg-[var(--mint)] rounded-xl hover:bg-[var(--mint-h)] transition-all shadow-sm sm:ml-3 sm:w-auto hover:scale-105',
+        'btn_cancelar' => 'inline-flex justify-center w-full px-4 py-2.5 mt-3 text-sm font-semibold text-[var(--ink)] bg-[var(--card)] border border-[var(--line)] rounded-xl hover:bg-[var(--hover-bg)] hover:text-[var(--mint)] transition-colors sm:mt-0 sm:ml-3 sm:w-auto',
+        'info' => 'text-xs text-[var(--ink-2)]',
     ] : [
         'overlay' => 'fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75',
         'painel' => 'inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full',
@@ -43,11 +43,11 @@
         'icone' => 'text-teal-600 fas fa-file-contract',
         'titulo' => 'text-lg font-medium leading-6 text-gray-900',
         'label' => 'block text-sm font-medium text-gray-700',
-        'select' => 'block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-[#009496] focus:border-[#009496] sm:text-sm',
-        'radio' => 'text-[#009496] focus:ring-[#009496]',
+        'select' => 'block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-[var(--mint)] focus:border-[var(--mint)] sm:text-sm',
+        'radio' => 'text-[var(--teal-text)] focus:ring-[var(--mint)]',
         'radio_label' => 'inline-flex items-center gap-1.5 text-sm text-gray-700',
         'rodape' => 'px-4 py-3 bg-gray-50 sm:px-6 sm:flex sm:flex-row-reverse',
-        'btn_submit' => 'inline-flex justify-center w-full px-4 py-2 text-base font-bold text-[#041d1a] bg-[#2DC197] border border-transparent rounded-md shadow-sm hover:bg-[#26aa84] focus:outline-none sm:ml-3 sm:w-auto sm:text-sm transition-colors',
+        'btn_submit' => 'inline-flex justify-center w-full px-4 py-2 text-base font-bold text-[var(--on-mint)] bg-[var(--mint)] border border-transparent rounded-md shadow-sm hover:bg-[var(--mint-h)] focus:outline-none sm:ml-3 sm:w-auto sm:text-sm transition-colors',
         'btn_cancelar' => 'inline-flex justify-center w-full px-4 py-2 mt-3 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm',
         'info' => 'text-xs text-gray-500',
     ];
@@ -69,7 +69,7 @@
                             <h3 class="{{ $cls['titulo'] }}" id="{{ $modalId }}-title">Iniciar Novo Aditivo</h3>
 
                             @if($dark)
-                                <p class="mt-1 text-xs text-[#e0a845]">
+                                <p class="mt-1 text-xs text-[var(--warn-2)]">
                                     <i class="fas fa-circle-info"></i> Contrato Manual/Externo: os documentos serão gerados para assinatura física.
                                 </p>
                             @endif

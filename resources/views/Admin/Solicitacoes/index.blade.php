@@ -5,9 +5,9 @@
 @section('content')
 <div class="py-8">
     @if (session('success'))
-    <div class="p-4 mb-8 border border-[#184e40] shadow-sm rounded-2xl bg-[#0d2a23] text-[#2DC197]">
+    <div class="p-4 mb-8 border border-[var(--line-3)] shadow-sm rounded-2xl bg-[var(--card-3)] text-[var(--mint)]">
         <div class="flex items-center">
-            <svg class="w-5 h-5 mr-3 text-[#2DC197]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5 mr-3 text-[var(--mint)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
             </svg>
             <p class="text-sm font-medium">{{ session('success') }}</p>
@@ -16,16 +16,16 @@
     @endif
 
     <div class="flex justify-end mb-6">
-        <a href="{{ route('admin.solicitacoes.create') }}" class="inline-flex items-center gap-3 px-6 py-3 text-sm font-bold text-[#041d1a] transition-all duration-200 bg-[#2DC197] rounded-xl hover:bg-[#26aa84] hover:shadow-lg hover:scale-105">
+        <a href="{{ route('admin.solicitacoes.create') }}" class="inline-flex items-center gap-3 px-6 py-3 text-sm font-bold text-[var(--on-mint)] transition-all duration-200 bg-[var(--mint)] rounded-xl hover:bg-[var(--mint-h)] hover:shadow-lg hover:scale-105">
             <i class="fas fa-plus"></i> Nova Solicitação
         </a>
     </div>
 
     <div class="overflow-hidden transition-all duration-300 card !rounded-2xl">
         <div class="card-h w-full">
-            <h3 class="text-lg font-bold text-[#e6f0ee]">
-                <i class="fas fa-list mr-2 text-[#2DC197]"></i> Todas as Solicitações
-                <span class="ml-2 text-sm font-normal text-[#8aa29d]">({{ $solicitacoes->total() }} encontradas)</span>
+            <h3 class="text-lg font-bold text-[var(--ink)]">
+                <i class="fas fa-list mr-2 text-[var(--mint)]"></i> Todas as Solicitações
+                <span class="ml-2 text-sm font-normal text-[var(--ink-3)]">({{ $solicitacoes->total() }} encontradas)</span>
             </h3>
         </div>
 
@@ -85,7 +85,7 @@
                         </td>
                         <td class="px-6 py-4 text-center whitespace-nowrap">
                             <a href="{{ route('admin.solicitacoes.show', $solicitacao->id) }}" 
-                               class="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold text-[#041d1a] transition-all duration-200 bg-[#2DC197] rounded-xl hover:bg-[#26aa84] hover:shadow-lg hover:scale-105">
+                               class="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold text-[var(--on-mint)] transition-all duration-200 bg-[var(--mint)] rounded-xl hover:bg-[var(--mint-h)] hover:shadow-lg hover:scale-105">
                                 <i class="fas fa-comments mr-1"></i> Abrir
                             </a>
                         </td>

@@ -49,7 +49,7 @@
 
             <div>
                 <h4 class="text-lg font-semibold text-gray-800">
-                    <i class="fas fa-filter mr-2 text-[#009496]"></i>
+                    <i class="fas fa-filter mr-2 text-[var(--teal-text)]"></i>
                     Filtros de Busca
                 </h4>
                 <p class="text-sm text-gray-500">Clique para expandir ou recolher os filtros</p>
@@ -69,7 +69,7 @@
                     <label class="block mb-2 text-sm font-medium text-gray-700">Status</label>
 
                     <select name="status"
-                        class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] text-sm">
+                        class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--mint)] text-sm">
 
                         <option value="">Todos os Status</option>
 
@@ -89,7 +89,7 @@
                     <label class="block mb-2 text-sm font-medium text-gray-700">Modalidade</label>
 
                     <select name="modalidade"
-                        class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] text-sm">
+                        class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--mint)] text-sm">
 
                         <option value="">Todas as Modalidades</option>
                         <option value="pregao" {{ request('modalidade') == 'pregao' ? 'selected' : '' }}>Pregão</option>
@@ -105,7 +105,7 @@
                     <label class="block mb-2 text-sm font-medium text-gray-700">Prefeitura</label>
 
                     <select name="prefeitura_id"
-                        class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] text-sm">
+                        class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--mint)] text-sm">
 
                         <option value="">Todas as Prefeituras</option>
 
@@ -131,14 +131,14 @@
                         <input type="date"
                             name="data_inicio"
                             value="{{ request('data_inicio') }}"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] text-sm">
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--mint)] text-sm">
 
                         <span class="flex items-center text-gray-400">a</span>
 
                         <input type="date"
                             name="data_fim"
                             value="{{ request('data_fim') }}"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] text-sm">
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--mint)] text-sm">
 
                     </div>
                 </div>
@@ -155,7 +155,7 @@
                 @endif
 
                 <button type="submit"
-                    class="px-6 py-2.5 text-sm font-medium text-white bg-[#009496] rounded-lg hover:bg-[#007a7a]">
+                    class="px-6 py-2.5 text-sm font-medium text-white bg-[var(--mint)] rounded-lg hover:bg-[var(--teal-dark-bg)]">
 
                     <i class="mr-2 fas fa-search"></i>
                     Filtrar Resultados
@@ -171,7 +171,7 @@
     <div class="overflow-hidden card !rounded-2xl">
 
         <div class="card-h">
-            <h3 class="text-xl font-bold text-[#e6f0ee]">
+            <h3 class="text-xl font-bold text-[var(--ink)]">
                 Lista Global de ETPs
             </h3>
         </div>
@@ -223,7 +223,7 @@
                         <td class="px-4 py-3 font-mono text-sm font-bold">
 
                             <a href="{{ route('admin.etps_recebidos.show', $etp->id) }}"
-                                class="text-[#009496] hover:underline">
+                                class="text-[var(--teal-text)] hover:underline">
 
                                 ETP-{{ str_pad($etp->id, 4, '0', STR_PAD_LEFT) }}/{{ $etp->created_at->format('y') }}
 
@@ -265,7 +265,7 @@
                             <div class="flex items-center justify-center gap-1.5">
 
                                 <a href="{{ route('admin.etps_recebidos.show', $etp->id) }}"
-                                    class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-[#062F43] rounded-md hover:bg-[#065f8b]">
+                                    class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-[var(--info-bg)] rounded-md hover:bg-[var(--teal-dark-bg)]">
 
                                     Analisar
                                     <i class="fas fa-arrow-right ml-1"></i>
@@ -297,7 +297,7 @@
                                 @elseif(!is_null($etp->processo_id))
 
                                 <a href="{{ route('admin.processos.show', $etp->processo_id) }}"
-                                    class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-[#009496] rounded-md hover:bg-[#007a7a]">
+                                    class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-[var(--mint)] rounded-md hover:bg-[var(--teal-dark-bg)]">
 
                                     <i class="mr-1 fas fa-eye"></i>
                                     Ver Processo

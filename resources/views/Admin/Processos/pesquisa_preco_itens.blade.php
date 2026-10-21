@@ -29,9 +29,9 @@
     </div>
 
     {{-- ── CARD DO PROCESSO (STICKY) ─────────────────────────────────── --}}
-    <div class="sticky top-0 z-20 mb-6 py-2 bg-[#f8fafc]/80 backdrop-blur-sm">
+    <div class="sticky top-0 z-20 mb-6 py-2 bg-[var(--card)]/80 backdrop-blur-sm">
         <div class="p-4 bg-white border border-gray-200 rounded-xl shadow-sm flex items-center gap-5">
-            <div class="flex-shrink-0 w-12 h-12 rounded-full bg-[#009496]/10 text-[#009496] flex items-center justify-center">
+            <div class="flex-shrink-0 w-12 h-12 rounded-full bg-[var(--mint)]/10 text-[var(--teal-text)] flex items-center justify-center">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -110,7 +110,7 @@
         <p class="text-base font-semibold">Nenhum item encontrado</p>
         <p class="text-sm mt-1">Vincule um ETP ou importe um arquivo XLS no processo para usar esta funcionalidade.</p>
         <a href="{{ route('admin.processos.iniciar', $processo->id) }}"
-           class="mt-5 inline-flex items-center gap-2 px-4 py-2.5 text-sm font-bold text-white bg-[#009496] rounded-lg hover:bg-[#007a7a] transition-all">
+           class="mt-5 inline-flex items-center gap-2 px-4 py-2.5 text-sm font-bold text-white bg-[var(--mint)] rounded-lg hover:bg-[var(--teal-dark-bg)] transition-all">
             Ir para o Processo
         </a>
     </div>
@@ -128,7 +128,7 @@
                 </span>
                 <input type="text" id="filtroItens" 
                        placeholder="Filtrar por descrição..." 
-                       class="block w-full pl-9 pr-3 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-[#009496] focus:border-[#009496] transition-all">
+                       class="block w-full pl-9 pr-3 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-[var(--mint)] focus:border-[var(--mint)] transition-all">
             </div>
         </div>
 
@@ -156,7 +156,7 @@
                             @foreach($lote['itens'] as $idx => $item)
                             <tr class="bg-white hover:bg-gray-50/70 transition-colors group item-row">
                                 <td class="px-4 py-3.5 text-center">
-                                    <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#009496]/10 text-[#009496] text-xs font-bold">
+                                    <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[var(--mint)]/10 text-[var(--teal-text)] text-xs font-bold">
                                         {{ $globalIdx++ }}
                                     </span>
                                 </td>
@@ -204,7 +204,7 @@
                         @foreach($itens as $idx => $item)
                         <tr class="bg-white hover:bg-gray-50/70 transition-colors group item-row">
                             <td class="px-4 py-3.5 text-center">
-                                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#009496]/10 text-[#009496] text-xs font-bold">
+                                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[var(--mint)]/10 text-[var(--teal-text)] text-xs font-bold">
                                     {{ $idx + 1 }}
                                 </span>
                             </td>

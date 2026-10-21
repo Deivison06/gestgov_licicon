@@ -20,12 +20,12 @@
 <div class="card !rounded-2xl overflow-hidden">
     {{-- Error Messages --}}
     @if($errors->any())
-        <div class="p-4 mb-6 bg-[#2a1315] border border-[#5a2328] rounded-xl">
+        <div class="p-4 mb-6 bg-[var(--bad-bg)] border border-[var(--bad-border)] rounded-xl">
             <div class="flex items-center">
-                <i class="mr-2 text-[#ff7b72] fas fa-exclamation-triangle"></i>
-                <h3 class="font-semibold text-[#ff7b72]">Erros no Formulário</h3>
+                <i class="mr-2 text-[var(--bad-strong)] fas fa-exclamation-triangle"></i>
+                <h3 class="font-semibold text-[var(--bad-strong)]">Erros no Formulário</h3>
             </div>
-            <ul class="mt-2 ml-5 text-sm text-[#ff9b9b] list-disc">
+            <ul class="mt-2 ml-5 text-sm text-[var(--bad-strong)] list-disc">
                 @foreach($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
@@ -37,9 +37,9 @@
         @csrf
 
         {{-- SEÇÃO 1: DADOS DO CONTRATO --}}
-        <div class="pb-6 border-b border-[#24403c]">
-            <h3 class="flex items-center gap-2 text-lg font-bold text-[#e6f0ee]">
-                <i class="fas fa-file-signature text-[#2DC197]"></i> Dados do Contrato
+        <div class="pb-6 border-b border-[var(--line)]">
+            <h3 class="flex items-center gap-2 text-lg font-bold text-[var(--ink)]">
+                <i class="fas fa-file-signature text-[var(--mint)]"></i> Dados do Contrato
             </h3>
             
             {{-- PREFEITURA --}}
@@ -48,22 +48,22 @@
                     $isPrefeituraUser = auth()->user()->hasRole('prefeitura') && auth()->user()->prefeitura_id;
                 @endphp
                 
-                <label for="prefeitura_id" class="block text-sm font-semibold text-[#a2b9b5]">Prefeitura</label>
+                <label for="prefeitura_id" class="block text-sm font-semibold text-[var(--ink-2)]">Prefeitura</label>
                 
                 @if($isPrefeituraUser)
                     <input type="hidden" name="prefeitura_id" value="{{ auth()->user()->prefeitura_id }}" id="hidden_prefeitura_id">
-                    <select disabled class="block w-full mt-1.5 px-4 py-2.5 bg-[#0a1514] border border-[#24403c] rounded-xl text-[#a2b9b5] cursor-not-allowed">
+                    <select disabled class="block w-full mt-1.5 px-4 py-2.5 bg-[var(--bg)] border border-[var(--line)] rounded-xl text-[var(--ink-2)] cursor-not-allowed">
                         <option value="{{ $prefeituras->first()->id }}" selected>
                             {{ $prefeituras->first()->nome }}
                         </option>
                     </select>
-                    <p class="mt-1.5 text-xs text-[#a2b9b5]">
-                        <i class="mr-1 text-[#2DC197] fas fa-info-circle"></i>
+                    <p class="mt-1.5 text-xs text-[var(--ink-2)]">
+                        <i class="mr-1 text-[var(--mint)] fas fa-info-circle"></i>
                         Você está criando um contrato para sua própria prefeitura
                     </p>
                 @else
                     <select name="prefeitura_id" id="prefeitura_id" 
-                            class="block w-full mt-1.5 px-4 py-2.5 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors"
+                            class="block w-full mt-1.5 px-4 py-2.5 bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] transition-colors"
                             required>
                         <option value="">Selecione a prefeitura</option>
                         @foreach ($prefeituras as $prefeitura)
@@ -75,7 +75,7 @@
                 @endif
                 
                 @error('prefeitura_id')
-                    <p class="mt-1 text-xs text-[#ff7b72]">
+                    <p class="mt-1 text-xs text-[var(--bad-strong)]">
                         <i class="mr-1 fas fa-exclamation-circle"></i>{{ $message }}
                     </p>
                 @enderror
@@ -84,45 +84,45 @@
             {{-- Linha 1: Identificação --}}
             <div class="grid grid-cols-1 gap-6 mt-6 md:grid-cols-3">
                 <div>
-                    <label class="block mb-2 text-sm font-semibold text-[#a2b9b5]">
-                        <span class="text-[#2DC197]">*</span> Nº Processo
+                    <label class="block mb-2 text-sm font-semibold text-[var(--ink-2)]">
+                        <span class="text-[var(--mint)]">*</span> Nº Processo
                     </label>
                     <input required
-                           class="w-full px-4 py-2.5 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] placeholder:text-[#a2b9b5]/40 transition-colors"
+                           class="w-full px-4 py-2.5 bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] placeholder:text-[var(--ink-2)]/40 transition-colors"
                            type="text"
                            name="numero_processo"
                            value="{{ old('numero_processo') }}"
                            placeholder="Ex: 123/2024">
                     @error('numero_processo')
-                        <p class="mt-1 text-xs text-[#ff7b72]">
+                        <p class="mt-1 text-xs text-[var(--bad-strong)]">
                             <i class="mr-1 fas fa-exclamation-circle"></i>{{ $message }}
                         </p>
                     @enderror
                 </div>
 
                 <div>
-                    <label class="block mb-2 text-sm font-semibold text-[#a2b9b5]">Nº Procedimento</label>
-                    <input class="w-full px-4 py-2.5 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] placeholder:text-[#a2b9b5]/40 transition-colors"
+                    <label class="block mb-2 text-sm font-semibold text-[var(--ink-2)]">Nº Procedimento</label>
+                    <input class="w-full px-4 py-2.5 bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] placeholder:text-[var(--ink-2)]/40 transition-colors"
                            type="text"
                            name="numero_procedimento"
                            value="{{ old('numero_procedimento') }}"
                            placeholder="Ex: 001/2024">
                     @error('numero_procedimento')
-                        <p class="mt-1 text-xs text-[#ff7b72]">
+                        <p class="mt-1 text-xs text-[var(--bad-strong)]">
                             <i class="mr-1 fas fa-exclamation-circle"></i>{{ $message }}
                         </p>
                     @enderror
                 </div>
 
                 <div>
-                    <label class="block mb-2 text-sm font-semibold text-[#a2b9b5]">Nº Contrato</label>
-                    <input class="w-full px-4 py-2.5 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] placeholder:text-[#a2b9b5]/40 transition-colors"
+                    <label class="block mb-2 text-sm font-semibold text-[var(--ink-2)]">Nº Contrato</label>
+                    <input class="w-full px-4 py-2.5 bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] placeholder:text-[var(--ink-2)]/40 transition-colors"
                            type="text" 
                            name="numero_contrato" 
                            value="{{ old('numero_contrato') }}" 
                            placeholder="Ex: 001/2024">
                     @error('numero_contrato')
-                        <p class="mt-1 text-xs text-[#ff7b72]">
+                        <p class="mt-1 text-xs text-[var(--bad-strong)]">
                             <i class="mr-1 fas fa-exclamation-circle"></i>{{ $message }}
                         </p>
                     @enderror
@@ -133,10 +133,10 @@
             <div class="grid grid-cols-1 gap-6 mt-6 md:grid-cols-2">
                 {{-- MODALIDADE --}}
                 <div>
-                    <label for="modalidade" class="block text-sm font-semibold text-[#a2b9b5]">Modalidade</label>
+                    <label for="modalidade" class="block text-sm font-semibold text-[var(--ink-2)]">Modalidade</label>
                     <select name="modalidade" 
                             id="modalidade" 
-                            class="block w-full mt-1.5 px-4 py-2.5 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors">
+                            class="block w-full mt-1.5 px-4 py-2.5 bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] transition-colors">
                         <option value="">Selecione a modalidade</option>
                         @foreach (\App\Enums\ModalidadeEnum::cases() as $modalidade)
                         <option value="{{ $modalidade->value }}" {{ old('modalidade') == $modalidade->value ? 'selected' : '' }}>
@@ -145,7 +145,7 @@
                         @endforeach
                     </select>
                     @error('modalidade')
-                        <p class="mt-1 text-xs text-[#ff7b72]">
+                        <p class="mt-1 text-xs text-[var(--bad-strong)]">
                             <i class="mr-1 fas fa-exclamation-circle"></i>{{ $message }}
                         </p>
                     @enderror
@@ -153,15 +153,15 @@
 
                 {{-- SECRETARIA --}}
                 <div>
-                    <label class="block mb-2 text-sm font-semibold text-[#a2b9b5]">
-                        <span class="text-[#2DC197]">*</span> Secretaria / Órgão Contratante
+                    <label class="block mb-2 text-sm font-semibold text-[var(--ink-2)]">
+                        <span class="text-[var(--mint)]">*</span> Secretaria / Órgão Contratante
                     </label>
                     
                     <select required
                             name="unidade_id"
                             id="unidade_id"
                             data-old="{{ old('unidade_id') ?? '' }}"
-                            class="w-full px-4 py-2.5 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors select-required">
+                            class="w-full px-4 py-2.5 bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] transition-colors select-required">
                         <option value="">Selecione a secretaria</option>
                         {{-- Para usuários prefeitura, as opções são carregadas diretamente --}}
                         @if($isPrefeituraUser && $secretarias->isNotEmpty())
@@ -175,7 +175,7 @@
                     </select>
 
                     @error('unidade_id')
-                        <p class="mt-1 text-xs text-[#ff7b72]">
+                        <p class="mt-1 text-xs text-[var(--bad-strong)]">
                             <i class="mr-1 fas fa-exclamation-circle"></i>{{ $message }}
                         </p>
                     @enderror
@@ -184,11 +184,11 @@
 
             {{-- Linha 3: TIPO DE CONTRATO --}}
             <div class="mt-6">
-                <label class="block mb-2 text-sm font-semibold text-[#a2b9b5]">
-                    <span class="text-[#2DC197]">*</span> Tipo de Contrato
+                <label class="block mb-2 text-sm font-semibold text-[var(--ink-2)]">
+                    <span class="text-[var(--mint)]">*</span> Tipo de Contrato
                 </label>
                 <select required 
-                        class="w-full px-4 py-2.5 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors"
+                        class="w-full px-4 py-2.5 bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] transition-colors"
                         name="tipo_contrato">
                     <option value="">Selecione</option>
                     <option value="Compras" {{ old('tipo_contrato') == 'Compras' ? 'selected' : '' }}>Compras</option>
@@ -196,7 +196,7 @@
                     <option value="Obra" {{ old('tipo_contrato') == 'Obra' ? 'selected' : '' }}>Obra</option>
                 </select>
                 @error('tipo_contrato')
-                    <p class="mt-1 text-xs text-[#ff7b72]">
+                    <p class="mt-1 text-xs text-[var(--bad-strong)]">
                         <i class="mr-1 fas fa-exclamation-circle"></i>{{ $message }}
                     </p>
                 @enderror
@@ -204,16 +204,16 @@
 
             {{-- Objeto --}}
             <div class="mt-6">
-                <label class="block mb-2 text-sm font-semibold text-[#a2b9b5]">
-                    <span class="text-[#2DC197]">*</span> Objeto do Contrato
+                <label class="block mb-2 text-sm font-semibold text-[var(--ink-2)]">
+                    <span class="text-[var(--mint)]">*</span> Objeto do Contrato
                 </label>
                 <textarea required 
-                          class="w-full px-4 py-2.5 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] placeholder:text-[#a2b9b5]/40 transition-colors"
+                          class="w-full px-4 py-2.5 bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] placeholder:text-[var(--ink-2)]/40 transition-colors"
                           rows="3" 
                           name="objeto" 
                           placeholder="Descrição detalhada do objeto...">{{ old('objeto') }}</textarea>
                 @error('objeto')
-                    <p class="mt-1 text-xs text-[#ff7b72]">
+                    <p class="mt-1 text-xs text-[var(--bad-strong)]">
                         <i class="mr-1 fas fa-exclamation-circle"></i>{{ $message }}
                     </p>
                 @enderror
@@ -221,51 +221,51 @@
         </div>
 
         {{-- SEÇÃO 2: VIGÊNCIA E VALORES --}}
-        <div class="py-6 border-b border-[#24403c]">
-            <h3 class="flex items-center gap-2 text-lg font-bold text-[#e6f0ee]">
-                <i class="fas fa-calendar-alt text-[#2DC197]"></i> Vigência e Valores
+        <div class="py-6 border-b border-[var(--line)]">
+            <h3 class="flex items-center gap-2 text-lg font-bold text-[var(--ink)]">
+                <i class="fas fa-calendar-alt text-[var(--mint)]"></i> Vigência e Valores
             </h3>
             <div class="grid grid-cols-1 gap-6 mt-4 md:grid-cols-3">
                 <div>
-                    <label class="block mb-2 text-sm font-semibold text-[#a2b9b5]">
-                        <span class="text-[#2DC197]">*</span> Valor Total (R$)
+                    <label class="block mb-2 text-sm font-semibold text-[var(--ink-2)]">
+                        <span class="text-[var(--mint)]">*</span> Valor Total (R$)
                     </label>
                     <input required 
-                           class="w-full px-4 py-2.5 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors money-mask"
+                           class="w-full px-4 py-2.5 bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] transition-colors money-mask"
                            type="text" 
                            name="valor_total" 
                            value="{{ old('valor_total') }}" 
                            placeholder="R$ 0,00">
                     @error('valor_total')
-                        <p class="mt-1 text-xs text-[#ff7b72]">
+                        <p class="mt-1 text-xs text-[var(--bad-strong)]">
                             <i class="mr-1 fas fa-exclamation-circle"></i>{{ $message }}
                         </p>
                     @enderror
                 </div>
                 <div>
-                    <label class="block mb-2 text-sm font-semibold text-[#a2b9b5]">Data Início</label>
-                    <input class="w-full px-4 py-2.5 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors"
+                    <label class="block mb-2 text-sm font-semibold text-[var(--ink-2)]">Data Início</label>
+                    <input class="w-full px-4 py-2.5 bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] transition-colors"
                            type="date" 
                            name="data_inicio" 
                            value="{{ old('data_inicio') }}">
                     @error('data_inicio')
-                        <p class="mt-1 text-xs text-[#ff7b72]">
+                        <p class="mt-1 text-xs text-[var(--bad-strong)]">
                             <i class="mr-1 fas fa-exclamation-circle"></i>{{ $message }}
                         </p>
                     @enderror
                 </div>
 
                 <div>
-                    <label class="block mb-2 text-sm font-semibold text-[#a2b9b5]">
-                        <span class="text-[#2DC197]">*</span> Data Finalização
+                    <label class="block mb-2 text-sm font-semibold text-[var(--ink-2)]">
+                        <span class="text-[var(--mint)]">*</span> Data Finalização
                     </label>
                     <input required 
-                           class="w-full px-4 py-2.5 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors"
+                           class="w-full px-4 py-2.5 bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] transition-colors"
                            type="date" 
                            name="data_finalizacao" 
                            value="{{ old('data_finalizacao') }}">
                     @error('data_finalizacao')
-                        <p class="mt-1 text-xs text-[#ff7b72]">
+                        <p class="mt-1 text-xs text-[var(--bad-strong)]">
                             <i class="mr-1 fas fa-exclamation-circle"></i>{{ $message }}
                         </p>
                     @enderror
@@ -274,13 +274,13 @@
 
             {{-- Data de Assinatura --}}
             <div class="mt-6">
-                <label class="block mb-2 text-sm font-semibold text-[#a2b9b5]">Data de Assinatura</label>
-                <input class="w-full px-4 py-2.5 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors"
+                <label class="block mb-2 text-sm font-semibold text-[var(--ink-2)]">Data de Assinatura</label>
+                <input class="w-full px-4 py-2.5 bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] transition-colors"
                        type="date" 
                        name="data_assinatura" 
                        value="{{ old('data_assinatura') }}">
                 @error('data_assinatura')
-                    <p class="mt-1 text-xs text-[#ff7b72]">
+                    <p class="mt-1 text-xs text-[var(--bad-strong)]">
                         <i class="mr-1 fas fa-exclamation-circle"></i>{{ $message }}
                     </p>
                 @enderror
@@ -288,20 +288,20 @@
             
             {{-- Upload do Arquivo PDF do Contrato --}}
             <div class="mt-6">
-                <label class="block mb-2 text-sm font-semibold text-[#a2b9b5]">Arquivo do Contrato (PDF)</label>
+                <label class="block mb-2 text-sm font-semibold text-[var(--ink-2)]">Arquivo do Contrato (PDF)</label>
                 <div class="flex items-center gap-4">
                     <input type="file" 
                            name="arquivo_contrato" 
                            id="arquivo_contrato" 
-                           class="block w-full px-3 py-2 text-sm text-[#a2b9b5] bg-[#0a1514] border border-[#24403c] rounded-xl file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-[#2DC197] file:text-[#041d1a] hover:file:bg-[#26aa84] transition-colors cursor-pointer focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197]"
+                           class="block w-full px-3 py-2 text-sm text-[var(--ink-2)] bg-[var(--bg)] border border-[var(--line)] rounded-xl file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-[var(--mint)] file:text-[var(--on-mint)] hover:file:bg-[var(--mint-h)] transition-colors cursor-pointer focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)]"
                            accept=".pdf">
                 </div>
-                <p class="mt-2 text-xs text-[#a2b9b5]">
-                    <i class="mr-1 text-[#2DC197] fas fa-info-circle"></i>
+                <p class="mt-2 text-xs text-[var(--ink-2)]">
+                    <i class="mr-1 text-[var(--mint)] fas fa-info-circle"></i>
                     Apenas arquivos PDF, tamanho máximo: 5MB
                 </p>
                 @error('arquivo_contrato')
-                    <p class="mt-1 text-xs text-[#ff7b72]">
+                    <p class="mt-1 text-xs text-[var(--bad-strong)]">
                         <i class="mr-1 fas fa-exclamation-circle"></i>{{ $message }}
                     </p>
                 @enderror
@@ -310,71 +310,71 @@
 
         {{-- SEÇÃO 3: EMPRESA --}}
         <div class="pt-6 space-y-6">
-            <h3 class="flex items-center gap-2 text-lg font-bold text-[#e6f0ee]">
-                <i class="fas fa-building text-[#2DC197]"></i> Informações da Empresa
+            <h3 class="flex items-center gap-2 text-lg font-bold text-[var(--ink)]">
+                <i class="fas fa-building text-[var(--mint)]"></i> Informações da Empresa
             </h3>
 
             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <div>
-                    <label class="block mb-2 text-sm font-semibold text-[#a2b9b5]">
-                        <span class="text-[#2DC197]">*</span> Razão Social
+                    <label class="block mb-2 text-sm font-semibold text-[var(--ink-2)]">
+                        <span class="text-[var(--mint)]">*</span> Razão Social
                     </label>
                     <input required 
-                           class="w-full px-4 py-2.5 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] placeholder:text-[#a2b9b5]/40 transition-colors"
+                           class="w-full px-4 py-2.5 bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] placeholder:text-[var(--ink-2)]/40 transition-colors"
                            type="text" 
                            name="empresa[razao_social]" 
                            value="{{ old('empresa.razao_social') }}" 
                            placeholder="Razão Social">
                     @error('empresa.razao_social')
-                        <p class="mt-1 text-xs text-[#ff7b72]">
+                        <p class="mt-1 text-xs text-[var(--bad-strong)]">
                             <i class="mr-1 fas fa-exclamation-circle"></i>{{ $message }}
                         </p>
                     @enderror
                 </div>
 
                 <div>
-                    <label class="block mb-2 text-sm font-semibold text-[#a2b9b5]">
-                        <span class="text-[#2DC197]">*</span> CNPJ
+                    <label class="block mb-2 text-sm font-semibold text-[var(--ink-2)]">
+                        <span class="text-[var(--mint)]">*</span> CNPJ
                     </label>
                     <input required 
-                           class="w-full px-4 py-2.5 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] placeholder:text-[#a2b9b5]/40 transition-colors cnpj-mask"
+                           class="w-full px-4 py-2.5 bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] placeholder:text-[var(--ink-2)]/40 transition-colors cnpj-mask"
                            type="text" 
                            name="empresa[cnpj]" 
                            value="{{ old('empresa.cnpj') }}" 
                            placeholder="00.000.000/0000-00">
                     @error('empresa.cnpj')
-                        <p class="mt-1 text-xs text-[#ff7b72]">
+                        <p class="mt-1 text-xs text-[var(--bad-strong)]">
                             <i class="mr-1 fas fa-exclamation-circle"></i>{{ $message }}
                         </p>
                     @enderror
                 </div>
 
                 <div>
-                    <label class="block mb-2 text-sm font-semibold text-[#a2b9b5]">Representante</label>
-                    <input class="w-full px-4 py-2.5 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] placeholder:text-[#a2b9b5]/40 transition-colors"
+                    <label class="block mb-2 text-sm font-semibold text-[var(--ink-2)]">Representante</label>
+                    <input class="w-full px-4 py-2.5 bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] placeholder:text-[var(--ink-2)]/40 transition-colors"
                            type="text" 
                            name="empresa[representante]" 
                            value="{{ old('empresa.representante') }}" 
                            placeholder="Nome do representante">
                     @error('empresa.representante')
-                        <p class="mt-1 text-xs text-[#ff7b72]">
+                        <p class="mt-1 text-xs text-[var(--bad-strong)]">
                             <i class="mr-1 fas fa-exclamation-circle"></i>{{ $message }}
                         </p>
                     @enderror
                 </div>
 
                 <div>
-                    <label class="block mb-2 text-sm font-semibold text-[#a2b9b5]">
-                        <span class="text-[#2DC197]">*</span> Endereço
+                    <label class="block mb-2 text-sm font-semibold text-[var(--ink-2)]">
+                        <span class="text-[var(--mint)]">*</span> Endereço
                     </label>
                     <input required 
-                           class="w-full px-4 py-2.5 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] placeholder:text-[#a2b9b5]/40 transition-colors"
+                           class="w-full px-4 py-2.5 bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] placeholder:text-[var(--ink-2)]/40 transition-colors"
                            type="text" 
                            name="empresa[endereco]" 
                            value="{{ old('empresa.endereco') }}" 
                            placeholder="Endereço completo">
                     @error('empresa.endereco')
-                        <p class="mt-1 text-xs text-[#ff7b72]">
+                        <p class="mt-1 text-xs text-[var(--bad-strong)]">
                             <i class="mr-1 fas fa-exclamation-circle"></i>{{ $message }}
                         </p>
                     @enderror
@@ -383,14 +383,14 @@
         </div>
 
         {{-- BOTÕES DE AÇÃO --}}
-        <div class="flex justify-end gap-3 pt-6 mt-6 border-t border-[#24403c]">
+        <div class="flex justify-end gap-3 pt-6 mt-6 border-t border-[var(--line)]">
             <a href="{{ route('admin.contratos.index') }}"
-               class="flex items-center justify-center px-4 py-2.5 text-sm font-semibold text-[#e6f0ee] transition-colors bg-[#10201e] border border-[#24403c] rounded-xl hover:bg-[#142825] hover:text-[#2DC197] shadow-sm">
+               class="flex items-center justify-center px-4 py-2.5 text-sm font-semibold text-[var(--ink)] transition-colors bg-[var(--card)] border border-[var(--line)] rounded-xl hover:bg-[var(--hover-bg)] hover:text-[var(--mint)] shadow-sm">
                 <i class="mr-2 fas fa-times"></i>
                 Cancelar
             </a>
             <button type="submit"
-                    class="flex items-center justify-center px-5 py-2.5 text-sm font-bold text-[#041d1a] transition-all bg-[#2DC197] rounded-xl hover:bg-[#26aa84] shadow-sm hover:scale-105">
+                    class="flex items-center justify-center px-5 py-2.5 text-sm font-bold text-[var(--on-mint)] transition-all bg-[var(--mint)] rounded-xl hover:bg-[var(--mint-h)] shadow-sm hover:scale-105">
                 <i class="mr-2 fas fa-save"></i>
                 Salvar Contrato
             </button>

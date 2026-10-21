@@ -92,12 +92,12 @@
 <div class="card !rounded-2xl overflow-hidden">
 
     @if($errors->any())
-        <div class="p-4 mb-4 bg-[#2a1315] border border-[#5a2328] rounded-xl mx-6 mt-6">
+        <div class="p-4 mb-4 bg-[var(--bad-bg)] border border-[var(--bad-border)] rounded-xl mx-6 mt-6">
             <div class="flex items-center">
-                <i class="mr-2 text-[#ff7b72] fas fa-exclamation-triangle"></i>
-                <h3 class="font-semibold text-[#ff7b72]">Erros no Formulário</h3>
+                <i class="mr-2 text-[var(--bad-strong)] fas fa-exclamation-triangle"></i>
+                <h3 class="font-semibold text-[var(--bad-strong)]">Erros no Formulário</h3>
             </div>
-            <ul class="mt-2 ml-5 text-sm text-[#ff7b72]/90 list-disc">
+            <ul class="mt-2 ml-5 text-sm text-[var(--bad-strong)]/90 list-disc">
                 @foreach($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
@@ -112,11 +112,11 @@
         {{-- ============================================================ --}}
         {{-- SEÇÃO 1: BUSCA E SELEÇÃO DE CONTRATO                       --}}
         {{-- ============================================================ --}}
-        <div class="pb-6 border-b border-[#24403c]">
-            <h3 class="flex items-center gap-2 text-lg font-bold text-[#e6f0ee]">
-                <i class="fas fa-search text-[#2DC197]"></i> Buscar Contrato
+        <div class="pb-6 border-b border-[var(--line)]">
+            <h3 class="flex items-center gap-2 text-lg font-bold text-[var(--ink)]">
+                <i class="fas fa-search text-[var(--mint)]"></i> Buscar Contrato
             </h3>
-            <p class="mt-1 text-sm text-[#a2b9b5]">Busque pelo número do contrato, objeto, processo ou nome/CNPJ da empresa</p>
+            <p class="mt-1 text-sm text-[var(--ink-2)]">Busque pelo número do contrato, objeto, processo ou nome/CNPJ da empresa</p>
 
             <div class="mt-4 search-wrapper" id="searchWrapper">
                 <div class="search-input-container" id="searchInputContainer">
@@ -154,47 +154,47 @@
         {{-- ============================================================ --}}
         {{-- SEÇÃO 2: DADOS DO CONTRATO (READONLY — preenchidos via JS)  --}}
         {{-- ============================================================ --}}
-        <div class="py-6 border-b border-[#24403c]" id="secao_dados_contrato" style="display: none;">
-            <h3 class="flex items-center gap-2 text-lg font-bold text-[#e6f0ee]">
-                <i class="fas fa-file-contract text-[#2DC197]"></i> Dados do Contrato
-                <span id="badge_origem" class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-[#142825] border border-[#24403c] text-[#2DC197]"></span>
+        <div class="py-6 border-b border-[var(--line)]" id="secao_dados_contrato" style="display: none;">
+            <h3 class="flex items-center gap-2 text-lg font-bold text-[var(--ink)]">
+                <i class="fas fa-file-contract text-[var(--mint)]"></i> Dados do Contrato
+                <span id="badge_origem" class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-[var(--hover-bg)] border border-[var(--line)] text-[var(--mint)]"></span>
             </h3>
 
             <div class="grid grid-cols-1 gap-4 mt-4 md:grid-cols-2 lg:grid-cols-3">
                 <div>
-                    <label class="block text-sm font-semibold text-[#a2b9b5]">Secretaria</label>
+                    <label class="block text-sm font-semibold text-[var(--ink-2)]">Secretaria</label>
                     <input type="text" id="info_secretaria" class="w-full mt-1 px-3 py-2 rounded-xl readonly-field" readonly>
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold text-[#a2b9b5]">Nº Contrato</label>
+                    <label class="block text-sm font-semibold text-[var(--ink-2)]">Nº Contrato</label>
                     <input type="text" id="info_numero_contrato" class="w-full mt-1 px-3 py-2 rounded-xl readonly-field" readonly>
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold text-[#a2b9b5]">Nº Processo</label>
+                    <label class="block text-sm font-semibold text-[var(--ink-2)]">Nº Processo</label>
                     <input type="text" id="info_numero_processo" class="w-full mt-1 px-3 py-2 rounded-xl readonly-field" readonly>
                 </div>
                 <div class="md:col-span-2 lg:col-span-3">
-                    <label class="block text-sm font-semibold text-[#a2b9b5]">Objeto</label>
+                    <label class="block text-sm font-semibold text-[var(--ink-2)]">Objeto</label>
                     <textarea id="info_objeto" class="w-full mt-1 px-3 py-2 rounded-xl readonly-field" rows="2" readonly></textarea>
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold text-[#a2b9b5]">Modalidade</label>
+                    <label class="block text-sm font-semibold text-[var(--ink-2)]">Modalidade</label>
                     <input type="text" id="info_modalidade" class="w-full mt-1 px-3 py-2 rounded-xl readonly-field" readonly>
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold text-[#a2b9b5]">Razão Social</label>
+                    <label class="block text-sm font-semibold text-[var(--ink-2)]">Razão Social</label>
                     <input type="text" id="info_razao_social" class="w-full mt-1 px-3 py-2 rounded-xl readonly-field" readonly>
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold text-[#a2b9b5]">CNPJ</label>
+                    <label class="block text-sm font-semibold text-[var(--ink-2)]">CNPJ</label>
                     <input type="text" id="info_cnpj" class="w-full mt-1 px-3 py-2 rounded-xl readonly-field" readonly>
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold text-[#a2b9b5]">Endereço</label>
+                    <label class="block text-sm font-semibold text-[var(--ink-2)]">Endereço</label>
                     <input type="text" id="info_endereco" class="w-full mt-1 px-3 py-2 rounded-xl readonly-field" readonly>
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold text-[#a2b9b5]">Responsável pela Empresa</label>
+                    <label class="block text-sm font-semibold text-[var(--ink-2)]">Responsável pela Empresa</label>
                     <input type="text" id="info_representante" class="w-full mt-1 px-3 py-2 rounded-xl readonly-field" readonly>
                 </div>
             </div>
@@ -203,89 +203,89 @@
         {{-- ============================================================ --}}
         {{-- SEÇÃO 3: DADOS DA OCORRÊNCIA                                --}}
         {{-- ============================================================ --}}
-        <div class="py-6 border-b border-[#24403c]">
-            <h3 class="flex items-center gap-2 text-lg font-bold text-[#e6f0ee]">
-                <i class="fas fa-triangle-exclamation text-[#2DC197]"></i> Dados da Ocorrência
+        <div class="py-6 border-b border-[var(--line)]">
+            <h3 class="flex items-center gap-2 text-lg font-bold text-[var(--ink)]">
+                <i class="fas fa-triangle-exclamation text-[var(--mint)]"></i> Dados da Ocorrência
             </h3>
 
             <div class="grid grid-cols-1 gap-6 mt-4 md:grid-cols-3">
                 <div>
-                    <label class="block mb-2 text-sm font-semibold text-[#a2b9b5]">
+                    <label class="block mb-2 text-sm font-semibold text-[var(--ink-2)]">
                         <span class="text-red-400">*</span> Número da Ocorrência
                     </label>
                     <input type="text" name="numero_ocorrencia" required
-                           class="w-full px-4 py-2.5 border border-[#24403c] rounded-xl bg-[#0a1514] text-[#e6f0ee] focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] outline-none transition-colors"
+                           class="w-full px-4 py-2.5 border border-[var(--line)] rounded-xl bg-[var(--bg)] text-[var(--ink)] focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] outline-none transition-colors"
                            value="{{ old('numero_ocorrencia') }}" placeholder="Ex: 001/2026">
                     @error('numero_ocorrencia')
-                        <p class="mt-1 text-sm text-[#ff7b72]"><i class="mr-1 fas fa-exclamation-circle"></i>{{ $message }}</p>
+                        <p class="mt-1 text-sm text-[var(--bad-strong)]"><i class="mr-1 fas fa-exclamation-circle"></i>{{ $message }}</p>
                     @enderror
                 </div>
 
                 <div>
-                    <label class="block mb-2 text-sm font-semibold text-[#a2b9b5]">
+                    <label class="block mb-2 text-sm font-semibold text-[var(--ink-2)]">
                         <span class="text-red-400">*</span> Data da Ocorrência
                     </label>
                     <input type="date" name="data_ocorrencia" required
-                           class="w-full px-4 py-2.5 border border-[#24403c] rounded-xl bg-[#0a1514] text-[#e6f0ee] focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] outline-none transition-colors"
+                           class="w-full px-4 py-2.5 border border-[var(--line)] rounded-xl bg-[var(--bg)] text-[var(--ink)] focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] outline-none transition-colors"
                            value="{{ old('data_ocorrencia') }}">
                     @error('data_ocorrencia')
-                        <p class="mt-1 text-sm text-[#ff7b72]"><i class="mr-1 fas fa-exclamation-circle"></i>{{ $message }}</p>
+                        <p class="mt-1 text-sm text-[var(--bad-strong)]"><i class="mr-1 fas fa-exclamation-circle"></i>{{ $message }}</p>
                     @enderror
                 </div>
 
                 <div>
-                    <label class="block mb-2 text-sm font-semibold text-[#a2b9b5]">Local</label>
+                    <label class="block mb-2 text-sm font-semibold text-[var(--ink-2)]">Local</label>
                     <input type="text" name="local"
-                           class="w-full px-4 py-2.5 border border-[#24403c] rounded-xl bg-[#0a1514] text-[#e6f0ee] focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] outline-none transition-colors"
+                           class="w-full px-4 py-2.5 border border-[var(--line)] rounded-xl bg-[var(--bg)] text-[var(--ink)] focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] outline-none transition-colors"
                            value="{{ old('local') }}" placeholder="Ex: Sede da Secretaria de Obras">
                 </div>
             </div>
 
             <div class="mt-4">
-                <label class="block mb-2 text-sm font-semibold text-[#a2b9b5]">
+                <label class="block mb-2 text-sm font-semibold text-[var(--ink-2)]">
                     <span class="text-red-400">*</span> Descrição do Fato
                 </label>
                 <textarea name="descricao_fato" rows="4" required
-                          class="w-full px-4 py-2.5 border border-[#24403c] rounded-xl bg-[#0a1514] text-[#e6f0ee] focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] outline-none transition-colors"
+                          class="w-full px-4 py-2.5 border border-[var(--line)] rounded-xl bg-[var(--bg)] text-[var(--ink)] focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] outline-none transition-colors"
                           placeholder="Descreva detalhadamente o fato observado...">{{ old('descricao_fato') }}</textarea>
                 @error('descricao_fato')
-                    <p class="mt-1 text-sm text-[#ff7b72]"><i class="mr-1 fas fa-exclamation-circle"></i>{{ $message }}</p>
+                    <p class="mt-1 text-sm text-[var(--bad-strong)]"><i class="mr-1 fas fa-exclamation-circle"></i>{{ $message }}</p>
                 @enderror
             </div>
 
             <div class="mt-4">
-                <label class="block mb-2 text-sm font-semibold text-[#a2b9b5]">
-                    <i class="mr-1 fas fa-paperclip text-[#2DC197]"></i> Anexar Fotografias ou Documentos (PDF)
+                <label class="block mb-2 text-sm font-semibold text-[var(--ink-2)]">
+                    <i class="mr-1 fas fa-paperclip text-[var(--mint)]"></i> Anexar Fotografias ou Documentos (PDF)
                 </label>
                 <input type="file" name="anexos_fato[]" multiple accept=".pdf,.jpg,.jpeg,.png,.webp"
-                       class="block w-full px-3 py-2 text-sm text-[#a2b9b5] border border-[#24403c] rounded-xl bg-[#0a1514] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-[#2DC197] file:text-[#041d1a] hover:file:bg-[#26aa84] transition-colors cursor-pointer focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197]">
-                <p class="mt-2 text-xs text-[#a2b9b5]/70">
-                    <i class="mr-1 fas fa-info-circle text-[#2DC197]"></i> Opcional. Formatos aceitos: PDF, JPEG, PNG ou WEBP, até 10MB por arquivo.
+                       class="block w-full px-3 py-2 text-sm text-[var(--ink-2)] border border-[var(--line)] rounded-xl bg-[var(--bg)] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-[var(--mint)] file:text-[var(--on-mint)] hover:file:bg-[var(--mint-h)] transition-colors cursor-pointer focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)]">
+                <p class="mt-2 text-xs text-[var(--ink-2)]/70">
+                    <i class="mr-1 fas fa-info-circle text-[var(--mint)]"></i> Opcional. Formatos aceitos: PDF, JPEG, PNG ou WEBP, até 10MB por arquivo.
                 </p>
             </div>
 
             <div class="mt-4">
-                <label class="block mb-2 text-sm font-semibold text-[#a2b9b5]">Obrigação Descumprida</label>
+                <label class="block mb-2 text-sm font-semibold text-[var(--ink-2)]">Obrigação Descumprida</label>
                 <textarea name="obrigacao_descumprida" rows="3"
-                          class="w-full px-4 py-2.5 border border-[#24403c] rounded-xl bg-[#0a1514] text-[#e6f0ee] focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] outline-none transition-colors"
+                          class="w-full px-4 py-2.5 border border-[var(--line)] rounded-xl bg-[var(--bg)] text-[var(--ink)] focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] outline-none transition-colors"
                           placeholder="Descreva a obrigação contratual descumprida...">{{ old('obrigacao_descumprida') }}</textarea>
             </div>
 
             <div class="mt-4">
-                <label class="block mb-2 text-sm font-semibold text-[#a2b9b5]">Prazo para Resposta / Solução</label>
+                <label class="block mb-2 text-sm font-semibold text-[var(--ink-2)]">Prazo para Resposta / Solução</label>
                 <input type="text" name="prazo_resposta"
-                       class="w-full px-4 py-2.5 border border-[#24403c] rounded-xl bg-[#0a1514] text-[#e6f0ee] focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] outline-none transition-colors"
+                       class="w-full px-4 py-2.5 border border-[var(--line)] rounded-xl bg-[var(--bg)] text-[var(--ink)] focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] outline-none transition-colors"
                        value="{{ old('prazo_resposta') }}" placeholder="Ex: 10 dias úteis">
             </div>
 
             {{-- Meio de Comprovação --}}
-            <div class="p-4 mt-4 border border-[#24403c] rounded-xl bg-[#0a1514]">
-                <p class="mb-3 text-sm font-semibold text-[#a2b9b5]">Meio de Comprovação</p>
+            <div class="p-4 mt-4 border border-[var(--line)] rounded-xl bg-[var(--bg)]">
+                <p class="mb-3 text-sm font-semibold text-[var(--ink-2)]">Meio de Comprovação</p>
                 <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
                     @foreach(\App\Models\Ocorrencia::TIPOS_COMPROVACAO as $chave => $rotulo)
-                        <label class="flex items-start gap-2 text-sm text-[#e6f0ee] cursor-pointer">
+                        <label class="flex items-start gap-2 text-sm text-[var(--ink)] cursor-pointer">
                             <input type="checkbox" name="tipo_comprovacao[{{ $chave }}]" value="1"
-                                   class="mt-0.5 rounded bg-[#10201e] border-[#24403c] text-[#2DC197] focus:ring-[#2DC197]"
+                                   class="mt-0.5 rounded bg-[var(--card)] border-[var(--line)] text-[var(--mint)] focus:ring-[var(--mint)]"
                                    {{ old('tipo_comprovacao.'.$chave) ? 'checked' : '' }}
                                    {{ $chave === 'outros' ? 'id=tipo_comprovacao_outros_check' : '' }}>
                             {{ $rotulo }}
@@ -294,21 +294,21 @@
                 </div>
                 <div class="mt-3 campo-variavel {{ old('tipo_comprovacao.outros') ? '' : 'campo-oculto' }}" id="campo_outros_descricao">
                     <input type="text" name="tipo_comprovacao_outro"
-                           class="w-full px-4 py-2.5 border border-[#24403c] rounded-xl bg-[#10201e] text-[#e6f0ee] focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] outline-none transition-colors"
+                           class="w-full px-4 py-2.5 border border-[var(--line)] rounded-xl bg-[var(--card)] text-[var(--ink)] focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] outline-none transition-colors"
                            value="{{ old('tipo_comprovacao_outro') }}" placeholder="Especifique o outro meio de comprovação">
                 </div>
             </div>
 
             {{-- Situação --}}
             <div class="mt-6">
-                <label class="block mb-2 text-sm font-semibold text-[#a2b9b5]">Situação</label>
+                <label class="block mb-2 text-sm font-semibold text-[var(--ink-2)]">Situação</label>
                 <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
                     @foreach(\App\Enums\SituacaoOcorrenciaEnum::cases() as $situacao)
-                        <label class="flex items-center gap-2 p-3 border-2 border-[#24403c] rounded-xl cursor-pointer hover:border-[#2DC197] transition-all has-[:checked]:border-[#2DC197] has-[:checked]:bg-[#142825] bg-[#0a1514]">
+                        <label class="flex items-center gap-2 p-3 border-2 border-[var(--line)] rounded-xl cursor-pointer hover:border-[var(--mint)] transition-all has-[:checked]:border-[var(--mint)] has-[:checked]:bg-[var(--hover-bg)] bg-[var(--bg)]">
                             <input type="radio" name="situacao" value="{{ $situacao->value }}"
-                                   class="text-[#2DC197] focus:ring-[#2DC197]"
+                                   class="text-[var(--mint)] focus:ring-[var(--mint)]"
                                    {{ old('situacao') === $situacao->value ? 'checked' : '' }}>
-                            <span class="text-sm font-medium text-[#e6f0ee]">{{ $situacao->getDisplayName() }}</span>
+                            <span class="text-sm font-medium text-[var(--ink)]">{{ $situacao->getDisplayName() }}</span>
                         </label>
                     @endforeach
                 </div>
@@ -320,15 +320,15 @@
         {{-- ============================================================ --}}
         <div class="flex justify-end gap-3 pt-6">
             <a href="{{ route('admin.ocorrencias.selecionar-contrato') }}"
-                class="flex items-center justify-center px-5 py-2.5 text-sm font-semibold text-[#e6f0ee] transition-colors bg-[#10201e] border border-[#24403c] rounded-xl hover:bg-[#142825] hover:text-[#2DC197] shadow-sm">
+                class="flex items-center justify-center px-5 py-2.5 text-sm font-semibold text-[var(--ink)] transition-colors bg-[var(--card)] border border-[var(--line)] rounded-xl hover:bg-[var(--hover-bg)] hover:text-[var(--mint)] shadow-sm">
                 <i class="mr-2 fas fa-times"></i> Cancelar
             </a>
             <button type="submit" onclick="document.getElementById('status_input').value = 'rascunho';"
-                    class="flex items-center justify-center px-5 py-2.5 text-sm font-semibold text-[#e6f0ee] transition-colors bg-[#142825] border border-[#24403c] rounded-xl hover:bg-[#1a3531] shadow-sm">
+                    class="flex items-center justify-center px-5 py-2.5 text-sm font-semibold text-[var(--ink)] transition-colors bg-[var(--hover-bg)] border border-[var(--line)] rounded-xl hover:bg-[var(--card-3)] shadow-sm">
                 <i class="mr-2 fas fa-file-pen"></i> Salvar Rascunho
             </button>
             <button type="submit" onclick="document.getElementById('status_input').value = 'registrada';"
-                    class="flex items-center justify-center px-5 py-2.5 text-sm font-bold text-[#041d1a] transition-all bg-[#2DC197] rounded-xl hover:bg-[#26aa84] shadow-sm hover:scale-105">
+                    class="flex items-center justify-center px-5 py-2.5 text-sm font-bold text-[var(--on-mint)] transition-all bg-[var(--mint)] rounded-xl hover:bg-[var(--mint-h)] shadow-sm hover:scale-105">
                 <i class="mr-2 fas fa-save"></i> Registrar Ocorrência
             </button>
         </div>

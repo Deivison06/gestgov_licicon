@@ -29,7 +29,7 @@
         <div class="mt-6">
             <label for="password" class="block mb-2 text-sm font-medium text-gray-700">Digite sua senha para confirmar</label>
             <input type="password" name="password" id="password"
-                   class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#009496] focus:border-[#009496] transition-colors"
+                   class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] transition-colors"
                    placeholder="Sua senha">
             <x-input-error :messages="$errors->userDeletion->get('password')" class="mt-2" />
         </div>

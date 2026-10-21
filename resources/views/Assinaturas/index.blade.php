@@ -49,8 +49,8 @@
     <div class="mb-8 overflow-hidden card !rounded-2xl">
         <div class="card-h">
             <div>
-                <h3 class="text-lg font-bold text-[#e6f0ee]">Solicitações Pendentes</h3>
-                <p class="mt-1 text-xs text-[#8aa29d]">Ordenadas por urgência (prazo mais próximo no topo)</p>
+                <h3 class="text-lg font-bold text-[var(--ink)]">Solicitações Pendentes</h3>
+                <p class="mt-1 text-xs text-[var(--ink-3)]">Ordenadas por urgência (prazo mais próximo no topo)</p>
             </div>
         </div>
 
@@ -148,7 +148,7 @@
                                 </td>
                                 <td class="px-6 py-3 text-center">
                                     <a href="{{ route('minhas-assinaturas.show', $sol->id) }}"
-                                       class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-[#009496] rounded-md hover:bg-[#007779]">
+                                       class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-[var(--mint)] rounded-md hover:bg-[var(--teal-dark-bg)]">
                                         Revisar e assinar
                                     </a>
                                 </td>

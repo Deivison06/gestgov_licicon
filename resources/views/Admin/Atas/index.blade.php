@@ -11,7 +11,7 @@
             <div class="flex flex-col items-start justify-between mb-6 lg:flex-row lg:items-center">
                 <div>
                     <h1 class="text-2xl font-bold text-white">Atas de Contratação</h1>
-                    <p class="mt-1 text-sm text-[#a2b9b5]">Gerencie e visualize atas de registro de preços dos processos</p>
+                    <p class="mt-1 text-sm text-[var(--ink-2)]">Gerencie e visualize atas de registro de preços dos processos</p>
                 </div>
                 <div class="mt-4 lg:mt-0">
 
@@ -20,23 +20,23 @@
 
             <!-- Card de Filtros -->
             <div class="mb-6">
-                <div class="p-6 bg-[#10201e] border border-[#24403c] rounded-lg shadow-sm">
+                <div class="p-6 bg-[var(--card)] border border-[var(--line)] rounded-lg shadow-sm">
                     <div class="mb-4">
                         <h3 class="text-lg font-medium text-white">Filtrar Processos</h3>
-                        <p class="mt-1 text-sm text-[#a2b9b5]">Use os filtros abaixo para encontrar processos específicos</p>
+                        <p class="mt-1 text-sm text-[var(--ink-2)]">Use os filtros abaixo para encontrar processos específicos</p>
                     </div>
 
                     <form method="GET" action="{{ route('admin.atas.index') }}" class="space-y-4">
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <!-- Prefeitura -->
                             <div>
-                                <label for="prefeitura_id" class="block text-sm font-medium text-[#a2b9b5]">
+                                <label for="prefeitura_id" class="block text-sm font-medium text-[var(--ink-2)]">
                                     Prefeitura
                                 </label>
                                 <div class="mt-1">
                                     <select name="prefeitura_id" id="prefeitura_id"
                                             {{ auth()->user()->prefeitura_id ? 'disabled' : '' }}
-                                            class="block w-full px-3 py-2 text-base bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-md shadow-sm focus:outline-none focus:ring-[#2DC197] focus:border-[#2DC197] sm:text-sm">
+                                            class="block w-full px-3 py-2 text-base bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-md shadow-sm focus:outline-none focus:ring-[var(--mint)] focus:border-[var(--mint)] sm:text-sm">
                                         @if(!auth()->user()->prefeitura_id)
                                             <option value="">Todas as Prefeituras</option>
                                         @endif
@@ -54,12 +54,12 @@
 
                             <!-- Processo -->
                             <div>
-                                <label for="processo_id" class="block text-sm font-medium text-[#a2b9b5]">
+                                <label for="processo_id" class="block text-sm font-medium text-[var(--ink-2)]">
                                     Processo
                                 </label>
                                 <div class="mt-1">
                                     <select name="processo_id" id="processo_id"
-                                            class="block w-full px-3 py-2 text-base bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-md shadow-sm focus:outline-none focus:ring-[#2DC197] focus:border-[#2DC197] sm:text-sm">
+                                            class="block w-full px-3 py-2 text-base bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-md shadow-sm focus:outline-none focus:ring-[var(--mint)] focus:border-[var(--mint)] sm:text-sm">
                                         <option value="">Todos os Processos</option>
                                         @foreach($processos as $proc)
                                             <option value="{{ $proc->id }}" {{ $processoId == $proc->id ? 'selected' : '' }}>
@@ -73,13 +73,13 @@
 
                         <!-- Campo de Pesquisa Livre -->
                         <div>
-                            <label for="search" class="block text-sm font-medium text-[#a2b9b5]">
+                            <label for="search" class="block text-sm font-medium text-[var(--ink-2)]">
                                 Pesquisa Livre
                             </label>
                             <div class="mt-1">
                                 <div class="relative">
                                     <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                        <svg class="w-5 h-5 text-[#a2b9b5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-5 h-5 text-[var(--ink-2)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                         </svg>
                                     </div>
@@ -88,9 +88,9 @@
                                            id="search"
                                            value="{{ $search ?? '' }}"
                                            placeholder="Pesquise por objeto, número do processo, nome do contratado..."
-                                           class="block w-full pl-10 pr-3 py-2 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] placeholder-[#a2b9b5]/60 rounded-md shadow-sm focus:ring-[#2DC197] focus:border-[#2DC197] sm:text-sm">
+                                           class="block w-full pl-10 pr-3 py-2 bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] placeholder-[var(--ink-2)]/60 rounded-md shadow-sm focus:ring-[var(--mint)] focus:border-[var(--mint)] sm:text-sm">
                                 </div>
-                                <p class="mt-1 text-xs text-[#a2b9b5]/80">
+                                <p class="mt-1 text-xs text-[var(--ink-2)]/80">
                                     Busca por: parte do objeto, número do processo/procedimento, nome do contratado ou prefeitura
                                 </p>
                             </div>
@@ -99,7 +99,7 @@
                         <!-- Botões de Ação -->
                         <div class="flex flex-wrap gap-3 pt-2">
                             <button type="submit"
-                                    class="inline-flex items-center px-4 py-2 text-sm font-semibold text-[#041d1a] bg-[#2DC197] border border-transparent rounded-md shadow-sm hover:bg-[#26a883] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2DC197]">
+                                    class="inline-flex items-center px-4 py-2 text-sm font-semibold text-[var(--on-mint)] bg-[var(--mint)] border border-transparent rounded-md shadow-sm hover:bg-[var(--ok)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--mint)]">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                                 </svg>
@@ -107,7 +107,7 @@
                             </button>
 
                             <a href="{{ route('admin.atas.index') }}"
-                               class="inline-flex items-center px-4 py-2 text-sm font-medium text-[#a2b9b5] bg-[#142825] border border-[#24403c] rounded-md shadow-sm hover:bg-[#1c3834] hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2DC197]">
+                               class="inline-flex items-center px-4 py-2 text-sm font-medium text-[var(--ink-2)] bg-[var(--hover-bg)] border border-[var(--line)] rounded-md shadow-sm hover:bg-[var(--card-3)] hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--mint)]">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                 </svg>
@@ -126,16 +126,16 @@
 
                         <!-- Mostrar filtros ativos -->
                         @if($prefeituraId || $processoId || !empty($search))
-                            <div class="pt-4 mt-4 border-t border-[#24403c]">
+                            <div class="pt-4 mt-4 border-t border-[var(--line)]">
                                 <div class="flex flex-wrap items-center gap-2">
-                                    <span class="text-sm font-medium text-[#a2b9b5]">Filtros aplicados:</span>
+                                    <span class="text-sm font-medium text-[var(--ink-2)]">Filtros aplicados:</span>
 
                                     @if($prefeituraId)
                                         @php
                                             $prefeituraSelecionada = $prefeituras->find($prefeituraId);
                                         @endphp
                                         @if($prefeituraSelecionada)
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#142825] border border-[#24403c] text-[#2DC197]">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[var(--hover-bg)] border border-[var(--line)] text-[var(--mint)]">
                                     <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-6 0H5m2 0h4M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                     </svg>
@@ -149,7 +149,7 @@
                                             $processoSelecionado = $processos->find($processoId);
                                         @endphp
                                         @if($processoSelecionado)
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#142825] border border-[#24403c] text-emerald-400">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[var(--hover-bg)] border border-[var(--line)] text-emerald-400">
                                     <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                     </svg>
@@ -159,7 +159,7 @@
                                     @endif
 
                                     @if(!empty($search))
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#142825] border border-[#24403c] text-purple-400">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[var(--hover-bg)] border border-[var(--line)] text-purple-400">
                                     <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                     </svg>
@@ -174,17 +174,17 @@
             </div>
 
             <!-- Card de Resultados -->
-            <div class="overflow-hidden bg-[#10201e] border border-[#24403c] rounded-lg shadow-sm">
+            <div class="overflow-hidden bg-[var(--card)] border border-[var(--line)] rounded-lg shadow-sm">
                 <!-- Header do Card -->
-                <div class="px-6 py-4 border-b border-[#24403c] bg-[#0d1b19]">
+                <div class="px-6 py-4 border-b border-[var(--line)] bg-[var(--card-2)]">
                     <div class="flex flex-col items-start justify-between md:flex-row md:items-center">
                         <div>
                             <h3 class="text-lg font-medium text-white">Processos Disponíveis</h3>
-                            <p class="mt-1 text-sm text-[#a2b9b5]">
+                            <p class="mt-1 text-sm text-[var(--ink-2)]">
                                 {{ $processos->count() }} {{ Str::plural('processo', $processos->count()) }} encontrado{{ $processos->count() !== 1 ? 's' : '' }}
                             </p>
                             @if(!empty($search))
-                                <p class="text-xs text-[#a2b9b5]/80">
+                                <p class="text-xs text-[var(--ink-2)]/80">
                                     Resultados da pesquisa por: "<strong class="text-white">{{ $search }}</strong>"
                                 </p>
                             @endif
@@ -192,7 +192,7 @@
 
                         @if($processos->count() > 0)
                             <div class="mt-2 md:mt-0">
-                    <span class="inline-flex items-center px-3 py-1 text-sm font-medium text-[#2DC197] bg-[#142825] border border-[#24403c] rounded-full">
+                    <span class="inline-flex items-center px-3 py-1 text-sm font-medium text-[var(--mint)] bg-[var(--hover-bg)] border border-[var(--line)] rounded-full">
                         <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
@@ -206,35 +206,35 @@
                 <!-- Conteúdo -->
                 <div class="p-6">
                     @if($processos->count() > 0)
-                        <div class="overflow-hidden border border-[#24403c] rounded-lg">
+                        <div class="overflow-hidden border border-[var(--line)] rounded-lg">
                             <div class="min-w-full overflow-x-auto">
-                                <table class="min-w-full divide-y divide-[#24403c]">
-                                    <thead class="bg-[#0a1514]">
+                                <table class="min-w-full divide-y divide-[var(--line)]">
+                                    <thead class="bg-[var(--bg)]">
                                     <tr>
-                                        <th scope="col" class="px-6 py-3 text-xs font-semibold tracking-wider text-left text-[#a2b9b5] uppercase">
+                                        <th scope="col" class="px-6 py-3 text-xs font-semibold tracking-wider text-left text-[var(--ink-2)] uppercase">
                                             Prefeitura
                                         </th>
-                                        <th scope="col" class="px-6 py-3 text-xs font-semibold tracking-wider text-left text-[#a2b9b5] uppercase">
+                                        <th scope="col" class="px-6 py-3 text-xs font-semibold tracking-wider text-left text-[var(--ink-2)] uppercase">
                                             Modalidade
                                         </th>
-                                        <th scope="col" class="px-6 py-3 text-xs font-semibold tracking-wider text-left text-[#a2b9b5] uppercase">
+                                        <th scope="col" class="px-6 py-3 text-xs font-semibold tracking-wider text-left text-[var(--ink-2)] uppercase">
                                             Nº Processo
                                         </th>
-                                        <th scope="col" class="px-6 py-3 text-xs font-semibold tracking-wider text-left text-[#a2b9b5] uppercase">
+                                        <th scope="col" class="px-6 py-3 text-xs font-semibold tracking-wider text-left text-[var(--ink-2)] uppercase">
                                             Nº Procedimento
                                         </th>
-                                        <th scope="col" class="px-6 py-3 text-xs font-semibold tracking-wider text-left text-[#a2b9b5] uppercase">
+                                        <th scope="col" class="px-6 py-3 text-xs font-semibold tracking-wider text-left text-[var(--ink-2)] uppercase">
                                             Itens/Contratações
                                         </th>
-                                        <th scope="col" class="px-6 py-3 text-xs font-semibold tracking-wider text-left text-[#a2b9b5] uppercase">
+                                        <th scope="col" class="px-6 py-3 text-xs font-semibold tracking-wider text-left text-[var(--ink-2)] uppercase">
                                             Status
                                         </th>
-                                        <th scope="col" class="px-6 py-3 text-xs font-semibold tracking-wider text-left text-[#a2b9b5] uppercase">
+                                        <th scope="col" class="px-6 py-3 text-xs font-semibold tracking-wider text-left text-[var(--ink-2)] uppercase">
                                             Ações
                                         </th>
                                     </tr>
                                     </thead>
-                                    <tbody class="bg-[#10201e] divide-y divide-[#24403c]">
+                                    <tbody class="bg-[var(--card)] divide-y divide-[var(--line)]">
                                     @foreach($processos as $processo)
                                         @php
                                             $lotesContratados = $processo->lotesContratados->count();
@@ -247,17 +247,17 @@
                                                 'concorrência' => 'bg-emerald-900/40 text-emerald-300 border border-emerald-500/30',
                                                 'dispensa' => 'bg-purple-900/40 text-purple-300 border border-purple-500/30',
                                                 'inexigibilidade' => 'bg-pink-900/40 text-pink-300 border border-pink-500/30',
-                                                default => 'bg-[#142825] text-[#a2b9b5] border border-[#24403c]',
+                                                default => 'bg-[var(--hover-bg)] text-[var(--ink-2)] border border-[var(--line)]',
                                             };
                                         @endphp
 
                                         <!-- Primeira linha: informações principais -->
-                                        <tr class="transition-colors duration-200 hover:bg-[#142825]">
+                                        <tr class="transition-colors duration-200 hover:bg-[var(--hover-bg)]">
                                             <!-- Prefeitura -->
                                             <td class="px-6 py-4">
                                                 <div class="flex items-center">
-                                                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-[#142825] border border-[#24403c] flex items-center justify-center">
-                                                        <svg class="w-4 h-4 text-[#2DC197]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--hover-bg)] border border-[var(--line)] flex items-center justify-center">
+                                                        <svg class="w-4 h-4 text-[var(--mint)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                                   d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-6 0H5m2 0h4M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
                                                             </path>
@@ -267,7 +267,7 @@
                                                         <div class="text-sm font-medium text-white">
                                                             {{ $processo->prefeitura->cidade }}
                                                         </div>
-                                                        <div class="text-xs text-[#a2b9b5]">
+                                                        <div class="text-xs text-[var(--ink-2)]">
                                                             {{ $processo->prefeitura->uf }}
                                                         </div>
                                                     </div>
@@ -287,20 +287,20 @@
                                             </td>
 
                                             <!-- Número do Procedimento -->
-                                            <td class="px-6 py-4 font-mono text-sm text-[#e6f0ee]">
+                                            <td class="px-6 py-4 font-mono text-sm text-[var(--ink)]">
                                                 {{ $processo->numero_procedimento }}
                                             </td>
 
                                             <!-- Itens/Contratações -->
                                             <td class="px-6 py-4">
                                                 <div class="flex items-center">
-                                                    <svg class="w-4 h-4 mr-2 text-[#a2b9b5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <svg class="w-4 h-4 mr-2 text-[var(--ink-2)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                                                     </svg>
                                                     <div>
                                                         <div class="text-sm font-medium text-white">{{ $totalLotes }} lotes</div>
                                                         @if($hasContratacoes)
-                                                            <div class="text-xs text-[#2DC197] font-semibold">{{ $lotesContratados }} com contratação</div>
+                                                            <div class="text-xs text-[var(--mint)] font-semibold">{{ $lotesContratados }} com contratação</div>
                                                         @endif
                                                     </div>
                                                 </div>
@@ -309,14 +309,14 @@
                                             <!-- Status -->
                                             <td class="px-6 py-4">
                                                 @if($hasContratacoes)
-                                                    <span class="inline-flex items-center px-2.5 py-0.5 text-xs font-medium rounded-full bg-[#142825] border border-[#24403c] text-[#2DC197]">
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 text-xs font-medium rounded-full bg-[var(--hover-bg)] border border-[var(--line)] text-[var(--mint)]">
                                                     <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                                         <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
                                                     </svg>
                                                     Com Contratações
                                                 </span>
                                                 @else
-                                                    <span class="inline-flex items-center px-2.5 py-0.5 text-xs font-medium rounded-full bg-[#142825] border border-[#24403c] text-[#a2b9b5]">
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 text-xs font-medium rounded-full bg-[var(--hover-bg)] border border-[var(--line)] text-[var(--ink-2)]">
                                                     <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                     </svg>
@@ -329,7 +329,7 @@
                                             <td class="px-6 py-4">
                                                 <div class="flex space-x-2">
                                                     <a href="{{ route('admin.atas.show', $processo) }}"
-                                                       class="inline-flex items-center px-3 py-1.5 text-xs font-semibold text-[#041d1a] bg-[#2DC197] rounded-md hover:bg-[#26a883] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2DC197] transition-colors duration-150">
+                                                       class="inline-flex items-center px-3 py-1.5 text-xs font-semibold text-[var(--on-mint)] bg-[var(--mint)] rounded-md hover:bg-[var(--ok)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--mint)] transition-colors duration-150">
                                                         <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -341,14 +341,14 @@
                                         </tr>
 
                                         <!-- Segunda linha: objeto (com colspan) -->
-                                        <tr class="bg-[#0d1b19] border-b border-[#24403c]">
-                                            <td colspan="7" class="px-6 py-4 text-sm text-[#e6f0ee]">
+                                        <tr class="bg-[var(--card-2)] border-b border-[var(--line)]">
+                                            <td colspan="7" class="px-6 py-4 text-sm text-[var(--ink)]">
                                                 <div class="space-y-1">
                                                     <div>
-                                                        <strong class="text-[#2DC197]">Objeto:</strong> {!! strip_tags($processo->objeto) !!}
+                                                        <strong class="text-[var(--mint)]">Objeto:</strong> {!! strip_tags($processo->objeto) !!}
                                                     </div>
                                                     @if($processo->user)
-                                                        <div class="text-xs text-[#a2b9b5]">
+                                                        <div class="text-xs text-[var(--ink-2)]">
                                                             <svg class="inline w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                                             </svg>
@@ -356,7 +356,7 @@
                                                         </div>
                                                     @endif
                                                     @if($processo->vencedores->count() > 0)
-                                                        <div class="text-xs text-[#a2b9b5]">
+                                                        <div class="text-xs text-[var(--ink-2)]">
                                                             <svg class="inline w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                                             </svg>
@@ -378,7 +378,7 @@
                     @else
                         <!-- Estado Vazio -->
                         <div class="py-12 text-center">
-                            <svg class="w-16 h-16 mx-auto text-[#a2b9b5]/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-16 h-16 mx-auto text-[var(--ink-2)]/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                             <h3 class="mt-4 text-lg font-medium text-white">
@@ -388,7 +388,7 @@
                                     Nenhum processo disponível para atas
                                 @endif
                             </h3>
-                            <p class="mt-2 text-sm text-[#a2b9b5]">
+                            <p class="mt-2 text-sm text-[var(--ink-2)]">
                                 @if(!empty($search))
                                     Nenhum resultado encontrado para a pesquisa "{{ $search }}"
                                 @elseif($prefeituraId || $processoId)
@@ -399,7 +399,7 @@
                             </p>
                             <div class="mt-6">
                                 <a href="{{ route('admin.atas.index') }}"
-                                   class="inline-flex items-center px-4 py-2 text-sm font-semibold text-[#041d1a] bg-[#2DC197] border border-transparent rounded-md hover:bg-[#26a883] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2DC197]">
+                                   class="inline-flex items-center px-4 py-2 text-sm font-semibold text-[var(--on-mint)] bg-[var(--mint)] border border-transparent rounded-md hover:bg-[var(--ok)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--mint)]">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                     </svg>

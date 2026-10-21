@@ -18,8 +18,8 @@
 
             <div class="card !rounded-2xl overflow-hidden">
                 <div class="card-h">
-                    <h3 class="text-lg font-bold text-[#e6f0ee] flex items-center gap-2">
-                        <i class="fas fa-building text-[#2DC197]"></i> Informações da Prefeitura
+                    <h3 class="text-lg font-bold text-[var(--ink)] flex items-center gap-2">
+                        <i class="fas fa-building text-[var(--mint)]"></i> Informações da Prefeitura
                     </h3>
                 </div>
                 <div class="p-8">
@@ -27,10 +27,10 @@
 
                         {{-- Nome --}}
                         <div>
-                            <label for="nome" class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">Nome <span class="text-red-400">*</span></label>
+                            <label for="nome" class="block mb-1.5 text-sm font-semibold text-[var(--ink-2)]">Nome <span class="text-red-400">*</span></label>
                             <input type="text" name="nome" id="nome"
                                 value="{{ old('nome', $prefeitura->nome) }}" required
-                                class="block w-full px-4 py-2.5 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors">
+                                class="block w-full px-4 py-2.5 text-sm bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] transition-colors">
                             @error('nome')
                                 <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                             @enderror
@@ -38,10 +38,10 @@
 
                         {{-- CNPJ --}}
                         <div>
-                            <label for="cnpj" class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">CNPJ <span class="text-red-400">*</span></label>
+                            <label for="cnpj" class="block mb-1.5 text-sm font-semibold text-[var(--ink-2)]">CNPJ <span class="text-red-400">*</span></label>
                             <input type="text" name="cnpj" id="cnpj"
                                 value="{{ old('cnpj', $prefeitura->cnpj) }}" required
-                                class="block w-full px-4 py-2.5 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors">
+                                class="block w-full px-4 py-2.5 text-sm bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] transition-colors">
                             @error('cnpj')
                                 <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                             @enderror
@@ -49,10 +49,10 @@
 
                         {{-- Endereço --}}
                         <div>
-                            <label for="endereco" class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">Endereço</label>
+                            <label for="endereco" class="block mb-1.5 text-sm font-semibold text-[var(--ink-2)]">Endereço</label>
                             <input type="text" name="endereco" id="endereco"
                                 value="{{ old('endereco', $prefeitura->endereco) }}"
-                                class="block w-full px-4 py-2.5 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors">
+                                class="block w-full px-4 py-2.5 text-sm bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] transition-colors">
                             @error('endereco')
                                 <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                             @enderror
@@ -60,10 +60,10 @@
 
                         {{-- Cidade --}}
                         <div>
-                            <label for="cidade" class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">Nome da Cidade <span class="text-red-400">*</span></label>
+                            <label for="cidade" class="block mb-1.5 text-sm font-semibold text-[var(--ink-2)]">Nome da Cidade <span class="text-red-400">*</span></label>
                             <input type="text" name="cidade" id="cidade"
                                 value="{{ old('cidade', $prefeitura->cidade) }}" required
-                                class="block w-full px-4 py-2.5 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors">
+                                class="block w-full px-4 py-2.5 text-sm bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] transition-colors">
                             @error('cidade')
                                 <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                             @enderror
@@ -71,10 +71,10 @@
 
                         {{-- Telefone --}}
                         <div>
-                            <label for="telefone" class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">Telefone</label>
+                            <label for="telefone" class="block mb-1.5 text-sm font-semibold text-[var(--ink-2)]">Telefone</label>
                             <input type="text" name="telefone" id="telefone"
                                 value="{{ old('telefone', $prefeitura->telefone) }}"
-                                class="block w-full px-4 py-2.5 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors">
+                                class="block w-full px-4 py-2.5 text-sm bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] transition-colors">
                             @error('telefone')
                                 <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                             @enderror
@@ -82,10 +82,10 @@
 
                         {{-- Email --}}
                         <div>
-                            <label for="email" class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">Email</label>
+                            <label for="email" class="block mb-1.5 text-sm font-semibold text-[var(--ink-2)]">Email</label>
                             <input type="email" name="email" id="email"
                                 value="{{ old('email', $prefeitura->email) }}"
-                                class="block w-full px-4 py-2.5 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors">
+                                class="block w-full px-4 py-2.5 text-sm bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] transition-colors">
                             @error('email')
                                 <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                             @enderror
@@ -94,10 +94,10 @@
                         {{-- Autoridade Competente --}}
                         <div>
                             <label for="autoridade_competente"
-                                class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">Autoridade Competente</label>
+                                class="block mb-1.5 text-sm font-semibold text-[var(--ink-2)]">Autoridade Competente</label>
                             <input type="text" name="autoridade_competente" id="autoridade_competente"
                                 value="{{ old('autoridade_competente', $prefeitura->autoridade_competente) }}"
-                                class="block w-full px-4 py-2.5 text-sm bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-[#2DC197] transition-colors">
+                                class="block w-full px-4 py-2.5 text-sm bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:border-[var(--mint)] transition-colors">
                             @error('autoridade_competente')
                                 <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                             @enderror
@@ -105,15 +105,15 @@
 
                         {{-- Capa --}}
                         <div>
-                            <label for="capa" class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">Capa</label>
+                            <label for="capa" class="block mb-1.5 text-sm font-semibold text-[var(--ink-2)]">Capa</label>
                             <input type="file" name="capa" id="capa"
-                                class="block w-full text-sm text-[#a2b9b5]
+                                class="block w-full text-sm text-[var(--ink-2)]
                                        file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0
                                        file:text-sm file:font-bold
-                                       file:bg-[#2DC197] file:text-[#041d1a] hover:file:bg-[#26aa84]
+                                       file:bg-[var(--mint)] file:text-[var(--on-mint)] hover:file:bg-[var(--mint-h)]
                                        file:cursor-pointer transition-colors">
                             @if ($prefeitura->capa)
-                                <div class="mt-3 p-2 bg-[#0a1514] border border-[#24403c] rounded-xl inline-block">
+                                <div class="mt-3 p-2 bg-[var(--bg)] border border-[var(--line)] rounded-xl inline-block">
                                     <img src="{{ asset($prefeitura->capa) }}" alt="Capa atual"
                                         class="h-16 rounded-lg object-contain">
                                 </div>
@@ -125,15 +125,15 @@
 
                         {{-- Timbre --}}
                         <div>
-                            <label for="timbre" class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">Timbre</label>
+                            <label for="timbre" class="block mb-1.5 text-sm font-semibold text-[var(--ink-2)]">Timbre</label>
                             <input type="file" name="timbre" id="timbre"
-                                class="block w-full text-sm text-[#a2b9b5]
+                                class="block w-full text-sm text-[var(--ink-2)]
                                        file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0
                                        file:text-sm file:font-bold
-                                       file:bg-[#2DC197] file:text-[#041d1a] hover:file:bg-[#26aa84]
+                                       file:bg-[var(--mint)] file:text-[var(--on-mint)] hover:file:bg-[var(--mint-h)]
                                        file:cursor-pointer transition-colors">
                             @if ($prefeitura->timbre)
-                                <div class="mt-3 p-2 bg-[#0a1514] border border-[#24403c] rounded-xl inline-block">
+                                <div class="mt-3 p-2 bg-[var(--bg)] border border-[var(--line)] rounded-xl inline-block">
                                     <img src="{{ asset($prefeitura->timbre) }}" alt="Timbre atual"
                                         class="h-16 rounded-lg object-contain">
                                 </div>
@@ -145,15 +145,15 @@
 
                         {{-- Capa Edital --}}
                         <div>
-                            <label for="capa_edital" class="block mb-1.5 text-sm font-semibold text-[#a2b9b5]">Capa Edital</label>
+                            <label for="capa_edital" class="block mb-1.5 text-sm font-semibold text-[var(--ink-2)]">Capa Edital</label>
                             <input type="file" name="capa_edital" id="capa_edital"
-                                class="block w-full text-sm text-[#a2b9b5]
+                                class="block w-full text-sm text-[var(--ink-2)]
                                        file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0
                                        file:text-sm file:font-bold
-                                       file:bg-[#2DC197] file:text-[#041d1a] hover:file:bg-[#26aa84]
+                                       file:bg-[var(--mint)] file:text-[var(--on-mint)] hover:file:bg-[var(--mint-h)]
                                        file:cursor-pointer transition-colors">
                             @if ($prefeitura->capa_edital)
-                                <div class="mt-3 p-2 bg-[#0a1514] border border-[#24403c] rounded-xl inline-block">
+                                <div class="mt-3 p-2 bg-[var(--bg)] border border-[var(--line)] rounded-xl inline-block">
                                     <img src="{{ asset($prefeitura->capa_edital) }}" alt="Capa edital atual"
                                         class="h-16 rounded-lg object-contain">
                                 </div>
@@ -164,13 +164,13 @@
                         </div>
                     </div>
 
-                    <div class="flex justify-end gap-3 pt-6 mt-8 border-t border-[#24403c]">
+                    <div class="flex justify-end gap-3 pt-6 mt-8 border-t border-[var(--line)]">
                         <a href="{{ route('admin.prefeituras.index') }}"
-                            class="px-5 py-2.5 text-sm font-semibold text-[#e6f0ee] bg-[#10201e] border border-[#24403c] rounded-xl hover:bg-[#142825] hover:text-[#2DC197] transition-colors shadow-sm">
+                            class="px-5 py-2.5 text-sm font-semibold text-[var(--ink)] bg-[var(--card)] border border-[var(--line)] rounded-xl hover:bg-[var(--hover-bg)] hover:text-[var(--mint)] transition-colors shadow-sm">
                             Cancelar
                         </a>
                         <button type="submit"
-                            class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-[#041d1a] bg-[#2DC197] rounded-xl hover:bg-[#26aa84] transition-all shadow-sm hover:scale-105">
+                            class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-[var(--on-mint)] bg-[var(--mint)] rounded-xl hover:bg-[var(--mint-h)] transition-all shadow-sm hover:scale-105">
                             <i class="fas fa-save"></i>
                             Atualizar Prefeitura
                         </button>
@@ -181,36 +181,36 @@
 
 
             <!-- Seção para Unidades/Setores/Departamentos -->
-            <div class="mt-6 overflow-hidden bg-[#10201e] border border-[#24403c] shadow-sm rounded-xl">
-                <div class="px-6 py-4 border-b border-[#24403c] bg-[#0d1b19]">
+            <div class="mt-6 overflow-hidden bg-[var(--card)] border border-[var(--line)] shadow-sm rounded-xl">
+                <div class="px-6 py-4 border-b border-[var(--line)] bg-[var(--card-2)]">
                     <div class="flex items-center justify-between">
                         <h3 class="text-lg font-semibold text-white">Unidades/Setores/Departamentos</h3>
                         <button type="button" id="btn-add-unidade"
-                            class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-[#041d1a] bg-[#2DC197] rounded-lg hover:bg-[#26a883] transition-colors shadow-sm">
+                            class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-[var(--on-mint)] bg-[var(--mint)] rounded-lg hover:bg-[var(--ok)] transition-colors shadow-sm">
                             Adicionar Unidade
                         </button>
                     </div>
                 </div>
                 <div class="p-6">
                     @if ($prefeitura->unidades->count() > 0)
-                        <div class="overflow-x-auto border border-[#24403c] rounded-lg">
-                            <table class="min-w-full divide-y divide-[#24403c]">
-                                <thead class="bg-[#0a1514]">
+                        <div class="overflow-x-auto border border-[var(--line)] rounded-lg">
+                            <table class="min-w-full divide-y divide-[var(--line)]">
+                                <thead class="bg-[var(--bg)]">
                                     <tr>
-                                        <th class="px-6 py-3 text-xs font-semibold text-left text-[#a2b9b5] uppercase">Nome</th>
-                                        <th class="px-6 py-3 text-xs font-semibold text-left text-[#a2b9b5] uppercase">Servidor Responsável</th>
-                                        <th class="px-6 py-3 text-xs font-semibold text-left text-[#a2b9b5] uppercase">Nº Portaria</th>
-                                        <th class="px-6 py-3 text-xs font-semibold text-left text-[#a2b9b5] uppercase">Data da Portaria</th>
-                                        <th class="px-6 py-3 text-xs font-semibold text-center text-[#a2b9b5] uppercase">Ações</th>
+                                        <th class="px-6 py-3 text-xs font-semibold text-left text-[var(--ink-2)] uppercase">Nome</th>
+                                        <th class="px-6 py-3 text-xs font-semibold text-left text-[var(--ink-2)] uppercase">Servidor Responsável</th>
+                                        <th class="px-6 py-3 text-xs font-semibold text-left text-[var(--ink-2)] uppercase">Nº Portaria</th>
+                                        <th class="px-6 py-3 text-xs font-semibold text-left text-[var(--ink-2)] uppercase">Data da Portaria</th>
+                                        <th class="px-6 py-3 text-xs font-semibold text-center text-[var(--ink-2)] uppercase">Ações</th>
                                     </tr>
                                 </thead>
-                                <tbody class="bg-[#10201e] divide-y divide-[#24403c]" id="unidades-table-body">
+                                <tbody class="bg-[var(--card)] divide-y divide-[var(--line)]" id="unidades-table-body">
                                     @foreach ($prefeitura->unidades as $unidade)
-                                        <tr id="unidade-row-{{ $unidade->id }}" class="hover:bg-[#142825] transition-colors">
+                                        <tr id="unidade-row-{{ $unidade->id }}" class="hover:bg-[var(--hover-bg)] transition-colors">
                                             <td class="px-6 py-4 text-white font-medium">{{ $unidade->nome }}</td>
-                                            <td class="px-6 py-4 text-[#e6f0ee]">{{ $unidade->servidor_responsavel }}</td>
-                                            <td class="px-6 py-4 text-[#a2b9b5]">{{ $unidade->numero_portaria ?? '—' }}</td>
-                                            <td class="px-6 py-4 text-[#a2b9b5]">
+                                            <td class="px-6 py-4 text-[var(--ink)]">{{ $unidade->servidor_responsavel }}</td>
+                                            <td class="px-6 py-4 text-[var(--ink-2)]">{{ $unidade->numero_portaria ?? '—' }}</td>
+                                            <td class="px-6 py-4 text-[var(--ink-2)]">
                                                 {{ $unidade->data_portaria ? \Carbon\Carbon::parse($unidade->data_portaria)->format('d/m/Y') : '—' }}
                                             </td>
                                             <td class="px-6 py-4 text-center space-x-2">
@@ -227,7 +227,7 @@
                             </table>
                         </div>
                     @else
-                        <p class="text-sm text-[#a2b9b5]">Nenhuma unidade cadastrada.</p>
+                        <p class="text-sm text-[var(--ink-2)]">Nenhuma unidade cadastrada.</p>
                     @endif
             </div>
         </div>
@@ -245,14 +245,14 @@
 
             <!-- Conteúdo do Modal -->
             <div
-                class="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-[#10201e] border border-[#24403c] shadow-2xl rounded-2xl sm:align-middle">
+                class="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-[var(--card)] border border-[var(--line)] shadow-2xl rounded-2xl sm:align-middle">
                 <!-- Header do Modal -->
-                <div class="flex items-center justify-between pb-4 border-b border-[#24403c]">
-                    <h3 class="text-xl font-semibold text-[#e6f0ee]" id="modal-title">
-                        <span class="text-[#2DC197]">+</span> Adicionar Unidade
+                <div class="flex items-center justify-between pb-4 border-b border-[var(--line)]">
+                    <h3 class="text-xl font-semibold text-[var(--ink)]" id="modal-title">
+                        <span class="text-[var(--mint)]">+</span> Adicionar Unidade
                     </h3>
                     <button type="button" id="btn-close-modal"
-                        class="text-[#a2b9b5] transition-colors duration-200 hover:text-white">
+                        class="text-[var(--ink-2)] transition-colors duration-200 hover:text-white">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M6 18L18 6M6 6l12 12"></path>
@@ -267,12 +267,12 @@
 
                     <!-- Campo Nome -->
                     <div class="space-y-2">
-                        <label for="unidade-nome" class="block text-sm font-medium text-[#a2b9b5]">
-                            <span class="text-[#2DC197]">*</span> Nome da Unidade
+                        <label for="unidade-nome" class="block text-sm font-medium text-[var(--ink-2)]">
+                            <span class="text-[var(--mint)]">*</span> Nome da Unidade
                         </label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                <svg class="w-5 h-5 text-[#527771]" fill="none" stroke="currentColor"
+                                <svg class="w-5 h-5 text-[var(--ink-4)]" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-6 0H5m2 0h4M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
@@ -280,7 +280,7 @@
                                 </svg>
                             </div>
                             <input type="text" name="nome" id="unidade-nome"
-                                class="block w-full pl-10 pr-3 py-3 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-lg shadow-sm placeholder-[#527771] focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-transparent transition-all duration-200"
+                                class="block w-full pl-10 pr-3 py-3 bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-lg shadow-sm placeholder-[var(--ink-4)] focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:border-transparent transition-all duration-200"
                                 placeholder="Ex: Secretaria de Educação">
                         </div>
                         <p id="unidade-nome-error" class="hidden text-sm text-red-400 animate-pulse"></p>
@@ -288,19 +288,19 @@
 
                     <!-- Campo Servidor Responsável -->
                     <div class="space-y-2">
-                        <label for="unidade-servidor" class="block text-sm font-medium text-[#a2b9b5]">
-                            <span class="text-[#2DC197]">*</span> Servidor Responsável
+                        <label for="unidade-servidor" class="block text-sm font-medium text-[var(--ink-2)]">
+                            <span class="text-[var(--mint)]">*</span> Servidor Responsável
                         </label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                <svg class="w-5 h-5 text-[#527771]" fill="none" stroke="currentColor"
+                                <svg class="w-5 h-5 text-[var(--ink-4)]" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                                 </svg>
                             </div>
                             <input type="text" name="servidor_responsavel" id="unidade-servidor"
-                                class="block w-full pl-10 pr-3 py-3 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-lg shadow-sm placeholder-[#527771] focus:outline-none focus:ring-2 focus:ring-[#2DC197] focus:border-transparent transition-all duration-200"
+                                class="block w-full pl-10 pr-3 py-3 bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-lg shadow-sm placeholder-[var(--ink-4)] focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:border-transparent transition-all duration-200"
                                 placeholder="Ex: João da Silva">
                         </div>
                         <p id="unidade-servidor-error" class="hidden text-sm text-red-400 animate-pulse"></p>
@@ -308,11 +308,11 @@
 
                     {{-- Nº PORTARIA --}}
                     <div>
-                        <label for="numero_portaria" class="block text-sm font-medium text-[#a2b9b5]">Nº da
+                        <label for="numero_portaria" class="block text-sm font-medium text-[var(--ink-2)]">Nº da
                             Portaria</label>
                         <input type="text" name="numero_portaria" id="numero_portaria"
                             value="{{ old('numero_portaria') }}"
-                            class="block w-full mt-1 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-md shadow-sm focus:ring-[#2DC197] focus:border-[#2DC197]">
+                            class="block w-full mt-1 bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-md shadow-sm focus:ring-[var(--mint)] focus:border-[var(--mint)]">
                         @error('numero_portaria')
                             <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                         @enderror
@@ -320,24 +320,24 @@
 
                     {{-- DATA DA PORTARIA --}}
                     <div>
-                        <label for="data_portaria" class="block text-sm font-medium text-[#a2b9b5]">Data da
+                        <label for="data_portaria" class="block text-sm font-medium text-[var(--ink-2)]">Data da
                             Portaria</label>
                         <input type="date" name="data_portaria" id="data_portaria"
                             value="{{ old('data_portaria') }}"
-                            class="block w-full mt-1 bg-[#0a1514] border border-[#24403c] text-[#e6f0ee] rounded-md shadow-sm focus:ring-[#2DC197] focus:border-[#2DC197]">
+                            class="block w-full mt-1 bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-md shadow-sm focus:ring-[var(--mint)] focus:border-[var(--mint)]">
                         @error('data_portaria')
                             <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <!-- Footer do Modal -->
-                    <div class="flex items-center justify-end pt-6 space-x-3 border-t border-[#24403c]">
+                    <div class="flex items-center justify-end pt-6 space-x-3 border-t border-[var(--line)]">
                         <button type="button" id="btn-cancel-modal"
-                            class="px-6 py-2.5 text-sm font-medium text-[#a2b9b5] bg-[#142825] border border-[#24403c] rounded-lg shadow-sm hover:bg-[#1c3834] hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#24403c] transition-all duration-200">
+                            class="px-6 py-2.5 text-sm font-medium text-[var(--ink-2)] bg-[var(--hover-bg)] border border-[var(--line)] rounded-lg shadow-sm hover:bg-[var(--card-3)] hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--line)] transition-all duration-200">
                             Cancelar
                         </button>
                         <button type="submit"
-                            class="px-6 py-2.5 text-sm font-bold text-[#041d1a] bg-[#2DC197] rounded-lg shadow-sm hover:bg-[#26aa84] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2DC197] transition-all duration-200 transform hover:-translate-y-0.5 hover:scale-105">
+                            class="px-6 py-2.5 text-sm font-bold text-[var(--on-mint)] bg-[var(--mint)] rounded-lg shadow-sm hover:bg-[var(--mint-h)] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--mint)] transition-all duration-200 transform hover:-translate-y-0.5 hover:scale-105">
                             <span class="flex items-center">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -417,7 +417,7 @@
 
             // Abrir modal para adicionar
             document.getElementById('btn-add-unidade').addEventListener('click', function() {
-                modalTitle.innerHTML = '<span class="text-[#009496]">+</span> Adicionar Unidade';
+                modalTitle.innerHTML = '<span class="text-[var(--teal-text)]">+</span> Adicionar Unidade';
                 form.reset();
                 unidadeId.value = '';
                 openModal();
@@ -432,7 +432,7 @@
                         .then(response => response.json())
                         .then(data => {
                             modalTitle.innerHTML =
-                                '<span class="text-[#009496]">✏️</span> Editar Unidade';
+                                '<span class="text-[var(--teal-text)]">✏️</span> Editar Unidade';
                             unidadeId.value = data.id;
                             unidadeNome.value = data.nome;
                             unidadeServidor.value = data.servidor_responsavel;

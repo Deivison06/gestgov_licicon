@@ -5,11 +5,11 @@
 @section('content')
 <div class="py-8">
     <div class="flex justify-end mb-8 space-x-3">
-        <button type="button" onclick="openModalPncp('main')" class="inline-flex items-center gap-3 px-6 py-3 text-sm font-semibold text-[#2DC197] transition-all duration-200 bg-[#142825] border border-[#24403c] rounded-xl hover:bg-[#1a332f] hover:scale-105">
+        <button type="button" onclick="openModalPncp('main')" class="inline-flex items-center gap-3 px-6 py-3 text-sm font-semibold text-[var(--mint)] transition-all duration-200 bg-[var(--hover-bg)] border border-[var(--line)] rounded-xl hover:bg-[var(--card-3)] hover:scale-105">
             <i class="fas fa-search text-lg"></i>
             Buscar no PNCP
         </button>
-        <button type="button" onclick="openModalCreate(true)" class="inline-flex items-center gap-3 px-6 py-3 text-sm font-bold text-[#041d1a] transition-all duration-200 bg-[#2DC197] rounded-xl hover:bg-[#26aa84] hover:shadow-lg hover:scale-105">
+        <button type="button" onclick="openModalCreate(true)" class="inline-flex items-center gap-3 px-6 py-3 text-sm font-bold text-[var(--on-mint)] transition-all duration-200 bg-[var(--mint)] rounded-xl hover:bg-[var(--mint-h)] hover:shadow-lg hover:scale-105">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
             </svg>
@@ -18,9 +18,9 @@
     </div>
 
     @if (session('success'))
-    <div class="p-4 mb-8 border border-[#184e40] shadow-sm rounded-2xl bg-[#0d2a23] text-[#2DC197]">
+    <div class="p-4 mb-8 border border-[var(--line-3)] shadow-sm rounded-2xl bg-[var(--card-3)] text-[var(--mint)]">
         <div class="flex items-center">
-            <svg class="w-5 h-5 mr-3 text-[#2DC197]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5 mr-3 text-[var(--mint)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
             </svg>
             <p class="text-sm font-medium">{{ session('success') }}</p>
@@ -28,9 +28,9 @@
     </div>
     @endif
     @if (session('error'))
-    <div class="p-4 mb-8 border border-[#5a2328] shadow-sm rounded-2xl bg-[#2a1315] text-[#ff7b72]">
+    <div class="p-4 mb-8 border border-[var(--bad-border)] shadow-sm rounded-2xl bg-[var(--bad-bg)] text-[var(--bad-strong)]">
         <div class="flex items-center">
-            <svg class="w-5 h-5 mr-3 text-[#ff7b72]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5 mr-3 text-[var(--bad-strong)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
             <p class="text-sm font-medium">{{ session('error') }}</p>
@@ -38,7 +38,7 @@
     </div>
     @endif
     @if ($errors->any())
-        <div class="p-4 mb-8 border border-[#5a2328] shadow-sm rounded-2xl bg-[#2a1315] text-[#ff7b72]">
+        <div class="p-4 mb-8 border border-[var(--bad-border)] shadow-sm rounded-2xl bg-[var(--bad-bg)] text-[var(--bad-strong)]">
             <ul class="ml-8 list-disc text-sm">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
@@ -54,12 +54,12 @@
                 name="descricao" 
                 value="{{ $descricao ?? '' }}"
                 placeholder="Buscar por descrição..."
-                class="w-full rounded-xl border-gray-300 shadow-sm focus:border-[#009496] focus:ring-[#009496]"
+                class="w-full rounded-xl border-gray-300 shadow-sm focus:border-[var(--mint)] focus:ring-[var(--mint)]"
             >
 
             <button 
                 type="submit"
-                class="px-5 py-2 bg-[#009496] text-white rounded-xl font-semibold hover:bg-[#007f7c] transition"
+                class="px-5 py-2 bg-[var(--mint)] text-white rounded-xl font-semibold hover:bg-[var(--teal-dark-bg)] transition"
             >
                 Buscar
             </button>
@@ -75,7 +75,7 @@
 
     <div class="overflow-hidden transition-all duration-300 card !rounded-2xl flex flex-col items-start justify-between">
         <div class="card-h w-full">
-            <h3 class="text-xl font-bold text-[#e6f0ee]">Catálogo de Itens</h3>
+            <h3 class="text-xl font-bold text-[var(--ink)]">Catálogo de Itens</h3>
         </div>
 
         <div class="w-full overflow-x-auto">
@@ -145,15 +145,15 @@
                 <div class="mb-4">
                     <div class="flex justify-between items-center mb-2">
                         <label class="block text-sm font-medium leading-6 text-gray-900">Descrição do Item *</label>
-                        <button type="button" onclick="openModalPncp('create')" class="text-xs text-[#009496] hover:underline flex items-center gap-1 font-semibold focus:outline-none">
+                        <button type="button" onclick="openModalPncp('create')" class="text-xs text-[var(--teal-text)] hover:underline flex items-center gap-1 font-semibold focus:outline-none">
                             <i class="fas fa-search"></i> Buscar no PNCP
                         </button>
                     </div>
-                    <textarea name="descricao_item" id="create_descricao_item" rows="4" class="block w-full rounded-md border-0 py-2.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#009496] sm:text-sm sm:leading-6" required></textarea>
+                    <textarea name="descricao_item" id="create_descricao_item" rows="4" class="block w-full rounded-md border-0 py-2.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[var(--mint)] sm:text-sm sm:leading-6" required></textarea>
                 </div>
                 <div class="mb-4">
                     <label class="block text-sm font-medium leading-6 text-gray-900 mb-2">Unidade de Medida</label>
-                    <select name="unidade_medida" id="create_unidade_medida" class="block w-full rounded-md border-0 py-2.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-[#009496] sm:text-sm sm:leading-6">
+                    <select name="unidade_medida" id="create_unidade_medida" class="block w-full rounded-md border-0 py-2.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-[var(--mint)] sm:text-sm sm:leading-6">
                         <option value="">Selecione...</option>
                         @foreach($unidadesMedida as $value => $label)
                             <option value="{{ $value }}">{{ $label }}</option>
@@ -163,7 +163,7 @@
             </div>
             <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end">
                 <button type="button" onclick="closeModalCreate()" class="mr-4 text-sm text-gray-600 hover:text-gray-900 font-medium px-4 py-2 hover:bg-gray-200 rounded-md transition-colors duration-200">Cancelar</button>
-                <button type="submit" class="rounded-md bg-[#009496] px-6 py-2 text-sm font-semibold text-white shadow-sm hover:focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#009496] transition-colors duration-200 flex justify-center whitespace-nowrap">Salvar Item</button>
+                <button type="submit" class="rounded-md bg-[var(--mint)] px-6 py-2 text-sm font-semibold text-white shadow-sm hover:focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--teal-text)] transition-colors duration-200 flex justify-center whitespace-nowrap">Salvar Item</button>
             </div>
         </form>
     </div>
@@ -185,15 +185,15 @@
                 <div class="mb-4">
                     <div class="flex justify-between items-center mb-2">
                         <label class="block text-sm font-medium leading-6 text-gray-900">Descrição do Item *</label>
-                        <button type="button" onclick="openModalPncp('edit')" class="text-xs text-[#009496] hover:underline flex items-center gap-1 font-semibold focus:outline-none">
+                        <button type="button" onclick="openModalPncp('edit')" class="text-xs text-[var(--teal-text)] hover:underline flex items-center gap-1 font-semibold focus:outline-none">
                             <i class="fas fa-search"></i> Buscar no PNCP
                         </button>
                     </div>
-                    <textarea name="descricao_item" id="input_descricao_item" rows="4" class="block w-full rounded-md border-0 py-2.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#009496] sm:text-sm sm:leading-6" required></textarea>
+                    <textarea name="descricao_item" id="input_descricao_item" rows="4" class="block w-full rounded-md border-0 py-2.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[var(--mint)] sm:text-sm sm:leading-6" required></textarea>
                 </div>
                 <div class="mb-4">
                     <label class="block text-sm font-medium leading-6 text-gray-900 mb-2">Unidade de Medida</label>
-                    <select name="unidade_medida" id="input_unidade_medida" class="block w-full rounded-md border-0 py-2.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-[#009496] sm:text-sm sm:leading-6">
+                    <select name="unidade_medida" id="input_unidade_medida" class="block w-full rounded-md border-0 py-2.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-[var(--mint)] sm:text-sm sm:leading-6">
                         <option value="">Selecione...</option>
                         @foreach($unidadesMedida as $value => $label)
                             <option value="{{ $value }}">{{ $label }}</option>
@@ -229,12 +229,12 @@
                     type="text" 
                     id="pncp-modal-search-input" 
                     placeholder="Digite o nome do item para buscar... (mínimo 3 caracteres)"
-                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-[#009496] focus:ring-[#009496] text-sm"
+                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-[var(--mint)] focus:ring-[var(--mint)] text-sm"
                 >
                 <button 
                     type="button" 
                     id="pncp-modal-search-btn"
-                    class="px-5 py-2 bg-[#009496] text-white rounded-md font-semibold hover:bg-[#007f7c] transition text-sm flex items-center gap-2 whitespace-nowrap"
+                    class="px-5 py-2 bg-[var(--mint)] text-white rounded-md font-semibold hover:bg-[var(--teal-dark-bg)] transition text-sm flex items-center gap-2 whitespace-nowrap"
                 >
                     <i class="fas fa-search"></i> Buscar
                 </button>
@@ -248,7 +248,7 @@
                 <!-- Estado Inicial -->
                 <div class="flex flex-col items-center justify-center h-full py-16 text-gray-400" id="pncp-modal-placeholder">
                     <div class="p-4 bg-white rounded-full shadow-sm mb-3">
-                        <i class="fas fa-cloud text-3xl text-[#009496]/40"></i>
+                        <i class="fas fa-cloud text-3xl text-[var(--teal-text)]/40"></i>
                     </div>
                     <p class="text-sm font-medium">Digite um termo para iniciar a busca no PNCP</p>
                     <p class="text-xs text-gray-400 mt-1">Ex: Papel sulfite, Cesta básica, Pintura predial</p>
@@ -256,7 +256,7 @@
 
                 <!-- Loading Spinner -->
                 <div class="hidden flex-col items-center justify-center h-full py-16" id="pncp-modal-loading">
-                    <div class="w-10 h-10 border-4 border-[#009496]/20 border-t-[#009496] rounded-full animate-spin mb-3"></div>
+                    <div class="w-10 h-10 border-4 border-[var(--mint)]/20 border-t-[#009496] rounded-full animate-spin mb-3"></div>
                     <p class="text-sm text-gray-500 animate-pulse" id="pncp-modal-loading-msg">Consultando contratações...</p>
                 </div>
 
@@ -475,7 +475,7 @@
             const cacheIndex = pncpDescriptionsCache.length - 1;
 
             const card = document.createElement('div');
-            card.className = 'bg-white border border-gray-100 rounded-xl p-4 shadow-sm hover:border-[#009496]/40 transition duration-200 flex flex-col justify-between';
+            card.className = 'bg-white border border-gray-100 rounded-xl p-4 shadow-sm hover:border-[var(--mint)]/40 transition duration-200 flex flex-col justify-between';
             
             const tipo = item.tipoItem || (item.materialOuServicoNome) || '';
             const isMaterial = tipo.toLowerCase().includes('material') || tipo === 'M';
@@ -488,7 +488,7 @@
                     <button 
                         type="button" 
                         onclick="selectPncpDescription(${cacheIndex})" 
-                        class="px-4 py-2 text-xs font-bold text-white bg-[#009496] hover:bg-[#007f7c] rounded-lg transition-all duration-200 shadow-sm hover:shadow whitespace-nowrap"
+                        class="px-4 py-2 text-xs font-bold text-white bg-[var(--mint)] hover:bg-[var(--teal-dark-bg)] rounded-lg transition-all duration-200 shadow-sm hover:shadow whitespace-nowrap"
                     >
                         Selecionar
                     </button>
@@ -517,7 +517,7 @@
             if (currentPncpPage > 1) {
                 const prevBtn = document.createElement('button');
                 prevBtn.type = 'button';
-                prevBtn.className = `${btnClass} bg-white text-gray-600 border-gray-200 hover:border-[#009496] hover:text-[#009496]`;
+                prevBtn.className = `${btnClass} bg-white text-gray-600 border-gray-200 hover:border-[var(--mint)] hover:text-[var(--teal-text)]`;
                 prevBtn.innerHTML = '← Anterior';
                 prevBtn.onclick = () => executePncpSearch(currentPncpPage - 1);
                 paginationContainer.appendChild(prevBtn);
@@ -531,7 +531,7 @@
             if (currentPncpPage < meta.totalPaginas) {
                 const nextBtn = document.createElement('button');
                 nextBtn.type = 'button';
-                nextBtn.className = `${btnClass} bg-white text-gray-600 border-gray-200 hover:border-[#009496] hover:text-[#009496]`;
+                nextBtn.className = `${btnClass} bg-white text-gray-600 border-gray-200 hover:border-[var(--mint)] hover:text-[var(--teal-text)]`;
                 nextBtn.innerHTML = 'Próxima →';
                 nextBtn.onclick = () => executePncpSearch(currentPncpPage + 1);
                 paginationContainer.appendChild(nextBtn);
