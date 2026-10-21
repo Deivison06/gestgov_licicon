@@ -656,7 +656,17 @@ class FiscalizacaoController extends Controller
                     abort(403, 'Acesso negado: Este contrato manual pertence a outra unidade.');
                 }
             } elseif ($fiscalizavel instanceof Contrato) {
-                if ($fiscalizavel->processo->user->unidade_id != $user->unidade_id) {
+                // A secretaria "dona" do contrato é identificada por unidade_numeracao OU
+                // detalhe->secretaria (mesmo critério usado na listagem, selecionarContrato()),
+                // não pelo unidade_id de quem criou o processo — esse costuma ser o
+                // Pregoeiro/Agente de Contratação, que atende várias secretarias e muitas
+                // vezes nem tem unidade_id preenchido.
+                $processo = $fiscalizavel->processo;
+                $unidadeNome = $user->unidade?->nome;
+                $pertenceAUnidade = $unidadeNome !== null
+                    && ($processo->unidade_numeracao === $unidadeNome || $processo->detalhe?->secretaria === $unidadeNome);
+
+                if (! $pertenceAUnidade) {
                     abort(403, 'Acesso negado: Este contrato do sistema pertence a outra unidade.');
                 }
             }

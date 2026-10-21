@@ -72,7 +72,15 @@ class OcorrenciaController extends Controller
             ->has('contrato')
             ->when($prefeituraId, fn ($q) => $q->where('prefeitura_id', $prefeituraId))
             ->when($user->unidade_id && ! $isLiciconAdmin, function ($q) use ($user) {
-                return $q->whereHas('user', fn ($u) => $u->where('unidade_id', $user->unidade_id));
+                // Ver comentário em FiscalizacaoController::selecionarContrato(): a secretaria
+                // dona do contrato vem de unidade_numeracao OU detalhe->secretaria, não do
+                // unidade_id de quem criou o processo (Pregoeiro/Agente de Contratação).
+                $unidadeNome = $user->unidade?->nome;
+
+                return $q->where(function ($q2) use ($unidadeNome) {
+                    $q2->where('unidade_numeracao', $unidadeNome)
+                        ->orWhereHas('detalhe', fn ($d) => $d->where('secretaria', $unidadeNome));
+                });
             })
             ->get()
             ->map(function ($item) {
@@ -470,7 +478,15 @@ class OcorrenciaController extends Controller
                     abort(403, 'Acesso negado: Este contrato manual pertence a outra unidade.');
                 }
             } elseif ($fiscalizavel instanceof Contrato) {
-                if ($fiscalizavel->processo->user->unidade_id != $user->unidade_id) {
+                // Ver comentário em FiscalizacaoController::authorizeAccess(): a secretaria
+                // dona do contrato vem de unidade_numeracao OU detalhe->secretaria, não do
+                // unidade_id de quem criou o processo (Pregoeiro/Agente de Contratação).
+                $processo = $fiscalizavel->processo;
+                $unidadeNome = $user->unidade?->nome;
+                $pertenceAUnidade = $unidadeNome !== null
+                    && ($processo->unidade_numeracao === $unidadeNome || $processo->detalhe?->secretaria === $unidadeNome);
+
+                if (! $pertenceAUnidade) {
                     abort(403, 'Acesso negado: Este contrato do sistema pertence a outra unidade.');
                 }
             }
