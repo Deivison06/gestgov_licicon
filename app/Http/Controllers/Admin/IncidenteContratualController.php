@@ -16,6 +16,7 @@ use App\Services\IncidenteContratualService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use setasign\Fpdi\Tcpdf\Fpdi;
 
 /**
  * Gerencia o fluxo de Aditivo (IncidenteContratual), que pode pertencer tanto a um
@@ -1106,11 +1107,10 @@ class IncidenteContratualController extends Controller
             return back()->withErrors(['pdf' => 'Nenhum documento gerado para baixar.']);
         }
 
-        $outputPath = tempnam(sys_get_temp_dir(), 'aditivo_todos_') . '.pdf';
+        $mergedPath = tempnam(sys_get_temp_dir(), 'aditivo_merged_') . '.pdf';
         $listaArquivos = implode(' ', array_map('escapeshellarg', $arquivosTemp));
-        exec("gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile=" . escapeshellarg($outputPath) . " {$listaArquivos}", $saida, $status);
+        exec("gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile=" . escapeshellarg($mergedPath) . " {$listaArquivos}", $saida, $status);
 
-        // Limpar temporários (exceto o do anexo, que não é nosso)
         foreach ($arquivosTemp as $tmp) {
             if (str_starts_with($tmp, sys_get_temp_dir()) && file_exists($tmp)) {
                 @unlink($tmp);
@@ -1120,7 +1120,88 @@ class IncidenteContratualController extends Controller
         $numContratoSafe = str_replace(['/', '\\'], '-', $contrato->numero_contrato ?? 'Sem_Numero');
         $nomeArquivo = "Aditivo_{$numContratoSafe}_Completo.pdf";
 
-        return response()->download($outputPath, $nomeArquivo)->deleteFileAfterSend();
+        // Aplicar carimbo lateral com numeração de páginas
+        $outputPath = tempnam(sys_get_temp_dir(), 'aditivo_carimbado_') . '.pdf';
+        $carimbado = $this->aplicarCarimboNumeracao($mergedPath, $outputPath, $prefeitura);
+        @unlink($mergedPath);
+
+        if (! $carimbado) {
+            // Fallback: retorna sem carimbo se o FPDI falhar
+            $outputPath = $mergedPath;
+        }
+
+        $conteudo = file_get_contents($outputPath);
+        @unlink($outputPath);
+
+        return response($conteudo, 200, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . $nomeArquivo . '"',
+        ]);
+    }
+
+    /**
+     * Abre o PDF mesclado com FPDI e adiciona o carimbo lateral de numeração de páginas
+     * em todas as páginas, igual ao ProcessoPdfService::adicionarCarimbo() para processos,
+     * mas sem depender de um objeto Processo.
+     * Retorna true se o arquivo de saída foi gerado com sucesso.
+     */
+    private function aplicarCarimboNumeracao(string $inputPath, string $outputPath, $prefeitura): bool
+    {
+        try {
+            $fpdi = new Fpdi;
+
+            $fontPath = public_path('storage/app/public/fonts/Aptos.ttf');
+            if (file_exists($fontPath)) {
+                $fpdi->AddFont('Aptos', '', 'Aptos.ttf', true);
+                $fpdi->SetFont('Aptos', '', 8);
+            } else {
+                $fpdi->SetFont('helvetica', '', 6);
+            }
+
+            $totalPages = $fpdi->setSourceFile($inputPath);
+
+            for ($pagina = 1; $pagina <= $totalPages; $pagina++) {
+                $tplId = $fpdi->importPage($pagina);
+                $size  = $fpdi->getTemplateSize($tplId);
+                $orientation = $size['width'] > $size['height'] ? 'L' : 'P';
+                $fpdi->AddPage($orientation, [$size['width'], $size['height']]);
+                $fpdi->useTemplate($tplId);
+
+                // Carimbo lateral direito
+                $pageWidth  = $fpdi->GetPageWidth();
+                $pageHeight = $fpdi->GetPageHeight();
+                $boxWidth   = 8;
+                $boxHeight  = 150;
+                $x = $pageWidth  - $boxWidth - 1;
+                $y = ($pageHeight - $boxHeight) / 2;
+
+                $fpdi->SetDrawColor(0, 0, 0);
+                $fpdi->Rect($x, $y, $boxWidth, $boxHeight, 'D');
+                $fpdi->SetTextColor(0, 0, 0);
+
+                $codigoAut  = ($prefeitura->id ?? '0') . now()->format('HisdmY');
+                $textoCarimbo = "Documento numerado | Pág. {$pagina}/{$totalPages} | " .
+                    "Plataforma GestGov - Licenciado para Prefeitura de " . ($prefeitura->cidade ?? 'Município') .
+                    ". Cod. de Autenticação: {$codigoAut} - Para autenticar acesse gestgov.com.br/autenticacao";
+
+                $fpdi->StartTransform();
+                $rotateX = $x + ($boxWidth / 2);
+                $rotateY = $y + ($boxHeight / 2);
+                $fpdi->Rotate(90, $rotateX, $rotateY);
+                $textX = $rotateX - ($boxHeight / 2);
+                $textY = $rotateY - ($boxWidth / 2);
+                $fpdi->SetXY($textX, $textY);
+                $fpdi->MultiCell($boxHeight, $boxWidth, $textoCarimbo, 0, 'C', false, 1, '', '', true, 0, false, true, 0, 'T', false);
+                $fpdi->StopTransform();
+            }
+
+            $fpdi->Output($outputPath, 'F');
+
+            return file_exists($outputPath) && filesize($outputPath) > 0;
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Erro ao aplicar carimbo no aditivo', ['erro' => $e->getMessage()]);
+            return false;
+        }
     }
 
     public function destroy($contrato_id, $incidente_id)
