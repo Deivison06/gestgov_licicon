@@ -385,7 +385,7 @@
                     </div>
                     <div class="flex items-center gap-3 shrink-0">
                         <a href="{{ route('admin.processos.iniciar', $processo) }}"
-                            class="inline-flex items-center gap-1.5 text-xs font-semibold bg-[var(--side-3)] hover:bg-[var(--card-3)] text-white rounded-lg px-3 py-1.5 transition-colors shadow-sm">
+                            class="inline-flex items-center gap-1.5 text-xs font-semibold bg-[var(--side-3)] hover:bg-[var(--side-2)] text-white rounded-lg px-3 py-1.5 transition-colors shadow-sm">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                             </svg>

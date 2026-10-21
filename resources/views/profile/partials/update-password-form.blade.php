@@ -31,7 +31,7 @@
     </div>
 
     <div class="flex items-center gap-4">
-        <button type="submit" class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-[var(--mint)] rounded-lg hover:bg-[var(--info-bg)] transition-colors shadow-sm">
+        <button type="submit" class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-[var(--mint)] rounded-lg hover:bg-[var(--info-solid)] transition-colors shadow-sm">
             <i class="fas fa-key"></i>
             Alterar Senha
         </button>

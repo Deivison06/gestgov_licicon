@@ -127,7 +127,7 @@
                             </td>
                             <td class="px-6 py-4">
                                 @if($user->prefeitura)
-                                    <span class="px-2 py-1 text-xs font-medium text-white bg-[var(--info-bg)] rounded">
+                                    <span class="px-2 py-1 text-xs font-medium text-white bg-[var(--info-solid)] rounded">
                                         {{ $user->prefeitura->nome }}
                                     </span>
                                 @else

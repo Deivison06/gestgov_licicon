@@ -265,7 +265,7 @@
                             <div class="flex items-center justify-center gap-1.5">
 
                                 <a href="{{ route('admin.etps_recebidos.show', $etp->id) }}"
-                                    class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-[var(--info-bg)] rounded-md hover:bg-[var(--teal-dark-bg)]">
+                                    class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-[var(--info-solid)] rounded-md hover:bg-[var(--teal-dark-bg)]">
 
                                     Analisar
                                     <i class="fas fa-arrow-right ml-1"></i>

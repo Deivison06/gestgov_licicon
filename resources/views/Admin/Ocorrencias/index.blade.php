@@ -83,7 +83,7 @@
             </div>
             <div class="flex gap-2">
                 <button type="submit"
-                        class="px-4 py-2 text-sm font-medium text-white bg-[var(--mint)] rounded-lg hover:bg-[var(--info-bg)] transition-colors">
+                        class="px-4 py-2 text-sm font-medium text-white bg-[var(--mint)] rounded-lg hover:bg-[var(--info-solid)] transition-colors">
                     <i class="fas fa-search mr-1"></i> Filtrar
                 </button>
                 <a href="{{ route('admin.ocorrencias.index') }}"

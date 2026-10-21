@@ -25,6 +25,7 @@
   --mint: #2DC197;
   --mint-h: #16996f;
   --on-mint: #06302d;
+  --info-solid: #2563eb;
 
   /* Superfícies & Texto — Claro */
   --bg: #f6f9f8;
@@ -252,6 +253,9 @@ body {
 }
 .kpi.dark .lab {
   color: var(--mint) !important;
+}
+.kpi.dark .num {
+  color: #fff !important;
 }
 .kpi.dark .desc {
   color: rgba(255,255,255,.75) !important;
@@ -613,7 +617,6 @@ tr[class*="hover\:bg-"]:hover,
 [class*="hover\:bg-gray"]:hover,
 [class*="hover\:bg-slate"]:hover,
 [class*="hover\:bg-zinc"]:hover,
-[class*="hover\:bg-white"]:hover,
 .hover\:bg-gray-50:hover,
 .hover\:bg-slate-50:hover,
 .hover\:bg-gray-100:hover,

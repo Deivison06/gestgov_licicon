@@ -333,7 +333,7 @@
                     <!-- Footer do Modal -->
                     <div class="flex items-center justify-end pt-6 space-x-3 border-t border-[var(--line)]">
                         <button type="button" id="btn-cancel-modal"
-                            class="px-6 py-2.5 text-sm font-medium text-[var(--ink-2)] bg-[var(--hover-bg)] border border-[var(--line)] rounded-lg shadow-sm hover:bg-[var(--card-3)] hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--line)] transition-all duration-200">
+                            class="px-6 py-2.5 text-sm font-medium text-[var(--ink-2)] bg-[var(--hover-bg)] border border-[var(--line)] rounded-lg shadow-sm hover:bg-[var(--card-3)] hover:text-[var(--ink)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--line)] transition-all duration-200">
                             Cancelar
                         </button>
                         <button type="submit"

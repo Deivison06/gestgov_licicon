@@ -469,7 +469,7 @@
                 </template>
                 <div class="flex justify-end">
                     <button type="submit" :disabled="salvando"
-                            class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-[var(--info-bg)] rounded-lg hover:bg-[var(--mint)] transition-colors disabled:opacity-60 shadow-sm">
+                            class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-[var(--info-solid)] rounded-lg hover:bg-[var(--mint)] transition-colors disabled:opacity-60 shadow-sm">
                         <i class="fas fa-save"></i> Salvar Assinantes
                     </button>
                 </div>

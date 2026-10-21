@@ -534,12 +534,12 @@
                                             <a href="{{ $etapa['rota'] }}" title="{{ $etapa['label'] }}" class="inline-flex flex-col items-center group">
                                                 <span class="flex items-center justify-center rounded-full w-7 h-7 text-xs transition
                                                     @if($etapa['estado'] === 'concluida') bg-green-100 text-green-700
-                                                    @elseif($etapa['estado'] === 'atual') bg-[var(--info-bg)] text-white ring-2 ring-[var(--info-bg)]/20
+                                                    @elseif($etapa['estado'] === 'atual') bg-[var(--info-solid)] text-white ring-2 ring-[var(--info-solid)]/20
                                                     @else bg-gray-100 text-gray-400 group-hover:bg-gray-200 @endif">
                                                     <i class="fas {{ $etapa['icon'] }}"></i>
                                                 </span>
                                                 <span class="mt-1 text-[10px] font-medium leading-tight
-                                                    @if($etapa['estado'] === 'atual') text-[var(--info-bg)]
+                                                    @if($etapa['estado'] === 'atual') text-[var(--info-solid)]
                                                     @elseif($etapa['estado'] === 'concluida') text-green-700
                                                     @else text-gray-400 @endif">{{ $etapa['label'] }}</span>
                                             </a>
