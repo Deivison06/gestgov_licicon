@@ -1645,7 +1645,11 @@ class ProcessoController extends AbstractController
         } catch (\Throwable $e) {
             Log::error('Erro ao importar Memória de Cálculo', ['processo_id' => $processo->id, 'erro' => $e->getMessage()]);
 
-            return back()->with('error', 'Não foi possível importar a planilha: '.$e->getMessage());
+            $mensagem = $e instanceof \Illuminate\Database\QueryException
+                ? 'erro ao gravar os dados no banco. Verifique o conteúdo da planilha ou contate o suporte.'
+                : $e->getMessage();
+
+            return back()->with('error', 'Não foi possível importar a planilha: '.$mensagem);
         }
     }
 
