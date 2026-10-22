@@ -490,7 +490,7 @@ class IncidenteContratualController extends Controller
             'aceite_documentacao_aditivo' => [
                 'titulo' => 'Aceite e Documentação de Regularidade da Contratada',
                 'cor' => '#16a34a', // verde
-                'requer_assinatura' => false,
+                'requer_assinatura' => $permitirSelecaoAssinante,
                 'campos' => [
                     [
                         'name' => 'arquivo_aceite_documentacao',
@@ -883,6 +883,27 @@ class IncidenteContratualController extends Controller
             ->when($processo, fn ($q) => $q->where('processo_id', $processo->id))
             ->first();
 
+        // Fallback automático: se não há seleção manual, tenta popular pelo orgao_responsavel
+        // da unidade cadastrada na prefeitura (evita mostrar "Secretário(a)" genérico no PDF)
+        if (! $documentoSelecao && $prefeitura && in_array($tipo, ['solicitacao_aditivo', 'aceite_documentacao_aditivo'])) {
+            $orgaoNome = $contrato->dados_contratante['orgao_responsavel'] ?? null;
+            if ($orgaoNome) {
+                $unidadeMatch = $prefeitura->unidades()
+                    ->where(fn ($q) => $q->where('nome', $orgaoNome)->orWhere('nome', 'like', '%'.$orgaoNome.'%'))
+                    ->first();
+                if ($unidadeMatch && $unidadeMatch->servidor_responsavel) {
+                    $documentoSelecao = (object) [
+                        'assinantes' => [[
+                            'responsavel'  => $unidadeMatch->servidor_responsavel,
+                            'unidade_nome' => $unidadeMatch->nome,
+                            'portaria'     => $unidadeMatch->numero_portaria ?? '',
+                            'data_portaria' => '',
+                        ]],
+                    ];
+                }
+            }
+        }
+
         // Marca como gerado
         if ($documento) {
             $documento->update(['gerado_em' => now()]);
@@ -967,7 +988,10 @@ class IncidenteContratualController extends Controller
             ->first();
 
         return response()->json([
-            'assinantes' => $selecao?->assinantes ?? [],
+            'success' => true,
+            'data'    => [
+                'assinantes' => $selecao?->assinantes ?? [],
+            ],
         ]);
     }
 
@@ -1084,6 +1108,25 @@ class IncidenteContratualController extends Controller
                 ->where('tipo_documento', $tipo)
                 ->when($processo, fn ($q) => $q->where('processo_id', $processo->id))
                 ->first();
+
+            if (! $documentoSelecao && $prefeitura && in_array($tipo, ['solicitacao_aditivo', 'aceite_documentacao_aditivo'])) {
+                $orgaoNome = $contrato->dados_contratante['orgao_responsavel'] ?? null;
+                if ($orgaoNome) {
+                    $unidadeMatch = $prefeitura->unidades()
+                        ->where(fn ($q) => $q->where('nome', $orgaoNome)->orWhere('nome', 'like', '%'.$orgaoNome.'%'))
+                        ->first();
+                    if ($unidadeMatch && $unidadeMatch->servidor_responsavel) {
+                        $documentoSelecao = (object) [
+                            'assinantes' => [[
+                                'responsavel'  => $unidadeMatch->servidor_responsavel,
+                                'unidade_nome' => $unidadeMatch->nome,
+                                'portaria'     => $unidadeMatch->numero_portaria ?? '',
+                                'data_portaria' => '',
+                            ]],
+                        ];
+                    }
+                }
+            }
 
             $pdfOutput = \Barryvdh\DomPDF\Facade\Pdf::loadView($viewName, compact(
                 'contrato', 'incidente', 'processo', 'prefeitura', 'detalhe',

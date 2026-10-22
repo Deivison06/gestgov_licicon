@@ -251,7 +251,7 @@
                         @if ($temCampos || $requerAssinatura)
                             <tr>
                                 <td colspan="3" class="p-0">
-                                    <div id="{{ $accordionId }}" class="hidden">
+                                    <div id="{{ $accordionId }}" class="{{ $requerAssinatura ? '' : 'hidden' }}">
                                         <div class="p-4 border-t border-gray-200 bg-gray-50">
                                             @if ($requerAssinatura)
                                                 <div class="pb-4 mb-6 border-b border-gray-200">
