@@ -27,7 +27,7 @@
     <div class="section-title">I – RELATÓRIO</div>
     <div class="clause-content">
         Trata-se de solicitação de manifestação jurídica acerca da possibilidade legal de celebração de {{ $vm->tituloTipoAlteracao() }}
-        ao Contrato nº {{ $vm->numeroContrato }}, firmado entre o Município de {{ $prefeitura->cidade ?? 'Município' }} – {{ $prefeitura->uf ?? 'PI' }}
+        ao Contrato nº {{ $vm->numeroContrato }}, firmado entre o Município de {{ $prefeitura->cidade ?? 'Município' }}
         e a empresa {{ $contrato->dados_contratante['razao_social'] ?? 'CONTRATADA' }}, cujo objeto é {{ $vm->objetoContrato }}.
     </div>
 
@@ -135,8 +135,8 @@
     @else
         <div class="signature-block">
             ___________________________________<br>
-            <strong>{{ mb_strtoupper($incidente->nome_parecerista ?? 'Assessor Jurídico / Parecerista') }}</strong><br>
-            {{ $incidente->cargo_parecerista ?? 'Assessor Jurídico / Parecerista' }}
+            <strong>{{ mb_strtoupper($incidente->nome_parecerista ?? '') }}</strong><br>
+            {{ $incidente->cargo_parecerista ?? '' }}
             @if($incidente->oab_parecerista)
                 <br>{{ $incidente->oab_parecerista }}
             @endif

@@ -24,20 +24,20 @@
             font-size: 14pt; font-family: 'Aptos', sans-serif;
             background-image: url('{{ public_path($prefeitura->timbre ?? '') }}');
             background-repeat: no-repeat; background-position: top left; background-size: cover;
-            text-align: center; line-height: 1.5;
+            text-align: center; line-height: 1.3;
         }
 
         .title {
-            font-weight: bold; font-size: 18pt; margin-top: 50px; margin-bottom: 80px;
+            font-weight: bold; font-size: 18pt; margin-top: 20px; margin-bottom: 40px;
             font-family: 'AptosExtraBold', sans-serif; text-transform: uppercase;
         }
 
         table {
-            width: 100%; border-collapse: collapse; margin-top: 30px; font-size: 14pt;
+            width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14pt;
         }
 
         td {
-            border: 1px solid #000; padding: 15px; text-align: left; vertical-align: middle;
+            border: 1px solid #000; padding: 8px 10px; text-align: left; vertical-align: middle;
         }
 
         .td-label {

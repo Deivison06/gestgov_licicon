@@ -19,8 +19,8 @@
         $itensSuprimidos = $incidente->itens->filter(fn ($i) => $i->quantidade_aditivada < 0);
 
         $assinaturaContratanteExtrato = (isset($documentoSelecao) && is_array($documentoSelecao->assinantes) && count($documentoSelecao->assinantes) > 0)
-            ? mb_strtoupper($documentoSelecao->assinantes[0]['responsavel'])
-            : mb_strtoupper($prefeitura->autoridade_competente ?? 'Prefeito');
+            ? mb_convert_case($documentoSelecao->assinantes[0]['responsavel'], MB_CASE_TITLE)
+            : mb_convert_case($prefeitura->autoridade_competente ?? 'Prefeito', MB_CASE_TITLE);
 
         $fundamentacaoLegalExtrato = collect([
             $vm->envolvePrazo() ? ($vm->artigoFundamentacaoPrazo().' da Lei nº 14.133/2021') : null,
@@ -190,8 +190,14 @@
                     @php
                         $mesesExtratoNum = (int) ($incidente->meses_prorrogacao ?? 0);
                         $mesesExtratoExt = strtoupper(\App\Helpers\ValorPorExtenso::numero($mesesExtratoNum));
+                        $periodoExtratoTexto = '';
+                        if ($vm->envolvePrazo() && $mesesExtratoNum > 0 && $incidente->data_finalizacao_base) {
+                            $dataBaseExtrato = \Carbon\Carbon::parse($incidente->data_finalizacao_base);
+                            $dataFimExtrato = $dataBaseExtrato->copy()->addMonths($mesesExtratoNum);
+                            $periodoExtratoTexto = ', de ' . $dataBaseExtrato->translatedFormat('d/m/Y') . ' a ' . $dataFimExtrato->translatedFormat('d/m/Y');
+                        }
                     @endphp
-                    {{ $vm->tituloTipoAlteracao() }}{{ $vm->envolveValor() ? ' — novo valor global: R$ '.number_format($resumo['valor_final_contrato'] ?? 0, 2, ',', '.') : '' }}{{ $vm->envolvePrazo() && $mesesExtratoNum > 0 ? " — prorrogação de {$mesesExtratoNum} ({$mesesExtratoExt}) " . ($mesesExtratoNum === 1 ? 'mês' : 'meses') : '' }}.
+                    {{ $vm->tituloTipoAlteracao() }}{{ $vm->envolveValor() ? ' — novo valor global: R$ '.number_format($resumo['valor_final_contrato'] ?? 0, 2, ',', '.') : '' }}{{ $vm->envolvePrazo() && $mesesExtratoNum > 0 ? " — prorrogação de {$mesesExtratoNum} ({$mesesExtratoExt}) " . ($mesesExtratoNum === 1 ? 'mês' : 'meses') . $periodoExtratoTexto : '' }}.
                 </td>
             </tr>
             <tr>

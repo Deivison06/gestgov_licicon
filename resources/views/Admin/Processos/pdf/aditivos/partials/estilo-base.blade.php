@@ -20,7 +20,7 @@ body {
     font-size: 12pt; font-family: 'Aptos', sans-serif;
     background-image: url('{{ public_path($prefeitura->timbre ?? '') }}');
     background-repeat: no-repeat; background-position: top left; background-size: cover;
-    text-align: justify; text-justify: inter-word; line-height: 1.5;
+    text-align: justify; text-justify: inter-word; line-height: 1.3;
 }
 
 .page-break { page-break-after: always; }

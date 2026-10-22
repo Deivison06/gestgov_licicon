@@ -180,7 +180,7 @@
 
     <div style="margin-top: 40px; font-size: 11pt;">
         <p>
-            <strong>De:</strong> {{ $orgaoSolicitante }} <br>
+            <strong>De:</strong> {{ $prefeitura->autoridade_competente ?? 'Prefeito Municipal' }} <br>
             <strong>Para:</strong> Procuradoria/Assessoria Jurídica
         </p>
         <p style="text-indent: 40px;">Sr. Procurador(a)/Assessor(a) Jurídico(a),</p>
@@ -193,8 +193,8 @@
 
     <div class="signature-block">
         ___________________________________<br>
-        <strong>{{ mb_strtoupper($nomeOficio) }}</strong><br>
-        {{ $cargoOficio }}
+        <strong>{{ mb_strtoupper($prefeitura->autoridade_competente ?? 'Prefeito Municipal') }}</strong><br>
+        Prefeito Municipal
     </div>
 </body>
 </html>
