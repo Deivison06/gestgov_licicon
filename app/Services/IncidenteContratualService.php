@@ -19,6 +19,11 @@ class IncidenteContratualService
                 'categoria' => $dados['categoria'],
                 'meses_prorrogacao' => $dados['meses_prorrogacao'] ?? $incidente->meses_prorrogacao,
                 'percentual_valor' => $dados['percentual_valor'] ?? $incidente->percentual_valor,
+                'natureza_alteracao' => $dados['natureza_alteracao'] ?? $incidente->natureza_alteracao,
+                'percentual_acrescimo' => array_key_exists('percentual_acrescimo', $dados) ? $dados['percentual_acrescimo'] : $incidente->percentual_acrescimo,
+                'percentual_supressao' => array_key_exists('percentual_supressao', $dados) ? $dados['percentual_supressao'] : $incidente->percentual_supressao,
+                'tem_valor_periodo_prorrogado' => array_key_exists('tem_valor_periodo_prorrogado', $dados) ? $dados['tem_valor_periodo_prorrogado'] : $incidente->tem_valor_periodo_prorrogado,
+                'valor_periodo_prorrogado' => array_key_exists('valor_periodo_prorrogado', $dados) ? $dados['valor_periodo_prorrogado'] : $incidente->valor_periodo_prorrogado,
                 'justificativa' => $dados['justificativa'] ?? $incidente->justificativa,
                 'arquivo_solicitacao_path' => $dados['arquivo_solicitacao_path'] ?? $incidente->arquivo_solicitacao_path,
                 'arquivo_orcamento_obra_path' => $dados['arquivo_orcamento_obra_path'] ?? $incidente->arquivo_orcamento_obra_path,
@@ -28,6 +33,18 @@ class IncidenteContratualService
                 'nome_parecerista' => $dados['nome_parecerista'] ?? $incidente->nome_parecerista,
                 'cargo_parecerista' => $dados['cargo_parecerista'] ?? $incidente->cargo_parecerista,
                 'oab_parecerista' => $dados['oab_parecerista'] ?? $incidente->oab_parecerista,
+                // Campos do Parecer Técnico (Obras)
+                'nome_engenheiro_parecer_tecnico' => $dados['nome_engenheiro_parecer_tecnico'] ?? $incidente->nome_engenheiro_parecer_tecnico,
+                'cargo_engenheiro_parecer_tecnico' => $dados['cargo_engenheiro_parecer_tecnico'] ?? $incidente->cargo_engenheiro_parecer_tecnico,
+                'registro_profissional_parecer_tecnico' => $dados['registro_profissional_parecer_tecnico'] ?? $incidente->registro_profissional_parecer_tecnico,
+                'percentual_execucao_fisica' => array_key_exists('percentual_execucao_fisica', $dados) ? $dados['percentual_execucao_fisica'] : $incidente->percentual_execucao_fisica,
+                'situacao_execucao_contratual' => $dados['situacao_execucao_contratual'] ?? $incidente->situacao_execucao_contratual,
+                'fatores_atraso' => array_key_exists('fatores_atraso', $dados) ? $dados['fatores_atraso'] : $incidente->fatores_atraso,
+                'descricao_fatores_atraso' => $dados['descricao_fatores_atraso'] ?? $incidente->descricao_fatores_atraso,
+                'responsabilidade_atraso' => $dados['responsabilidade_atraso'] ?? $incidente->responsabilidade_atraso,
+                'texto_vantajosidade_tecnica' => $dados['texto_vantajosidade_tecnica'] ?? $incidente->texto_vantajosidade_tecnica,
+                'conclusao_tecnica' => $dados['conclusao_tecnica'] ?? $incidente->conclusao_tecnica,
+                'limite_legal_aditivo_obras' => $dados['limite_legal_aditivo_obras'] ?? $incidente->limite_legal_aditivo_obras,
             ]);
 
             // Clear previous items to avoid duplication if user changes the percentage
