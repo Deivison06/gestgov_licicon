@@ -759,9 +759,21 @@ class IncidenteContratualController extends Controller
         // completarDadosTce()) vs. aditivo novo ainda no meio do preenchimento
         // normal do fluxo (basta continuar preenchendo os cards acima).
         if (! $incidente->dadosTceCompletos()) {
+            $nomesCampos = [
+                'natureza_alteracao'         => 'Natureza da Alteração',
+                'percentual_acrescimo'       => 'Percentual de Acréscimo',
+                'percentual_supressao'       => 'Percentual de Supressão',
+                'limite_legal_aditivo_obras' => 'Limite Legal Aplicável',
+                'contrato_continuo'          => 'Contrato Contínuo',
+                'tipo_objeto_contrato'       => 'Tipo de Objeto do Contrato',
+            ];
+            $faltantes = collect($incidente->camposTceFaltantes())
+                ->map(fn ($c) => $nomesCampos[$c] ?? $c)
+                ->join(', ');
+
             $mensagem = $incidente->ehAditivoLegado()
-                ? 'Complete os novos campos exigidos pela atualização do Tribunal de Contas antes de gerar os documentos deste aditivo.'
-                : 'Preencha todos os campos obrigatórios (percentuais, limite legal etc.) nos cards acima antes de gerar este documento.';
+                ? 'Complete os novos campos exigidos pelo Tribunal de Contas antes de gerar os documentos: '.$faltantes.'.'
+                : 'Campos obrigatórios não preenchidos: '.$faltantes.'. Preencha-os no card "Solicitação do Aditivo" (ou Parecer Técnico para obras) e salve antes de gerar.';
 
             return redirect()
                 ->route($this->routeName('documentos'), ['contrato_id' => $contrato->id, 'incidente_id' => $incidente->id])

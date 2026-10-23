@@ -605,6 +605,16 @@
             const tr = btnElement.closest('tr').nextElementSibling;
             const bridgeContainer = tr ? tr.querySelector(`[data-assinante-bridge][data-tipo="${tipo}"]`) : null;
 
+            // Salva os campos do formulário do mesmo accordion antes de gerar o PDF.
+            // Isso evita que o usuário precise clicar "Salvar Informações" separadamente.
+            const camposForm = tr ? tr.querySelector(`[data-campos-form="${tipo}"]`) : null;
+            if (camposForm) {
+                try {
+                    const fd = new FormData(camposForm);
+                    await fetch(camposForm.action, { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }, body: fd });
+                } catch (e) { console.warn('Falha salvar campos antes de gerar PDF', e); }
+            }
+
             if (bridgeContainer) {
                 if (ehManual) {
                     // Para contratos manuais: salvar assinantes diretamente via rota própria
