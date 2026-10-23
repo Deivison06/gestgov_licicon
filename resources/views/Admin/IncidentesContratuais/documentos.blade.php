@@ -334,7 +334,8 @@
                                             @endif
 
                                             @if ($temCampos && $tipo !== 'dotacao_orcamentaria_aditivo')
-                                            <form action="{{ route("$rotaBase.atualizar-campos", ['contrato_id' => $contrato->id, 'incidente_id' => $incidente->id]) }}" method="POST" enctype="multipart/form-data">
+                                            <form action="{{ route("$rotaBase.atualizar-campos", ['contrato_id' => $contrato->id, 'incidente_id' => $incidente->id]) }}" method="POST" enctype="multipart/form-data"
+                                                  data-campos-form="{{ $tipo }}">
                                                 @csrf
                                                 <input type="hidden" name="tipo" value="{{ $incidente->tipo }}">
                                                 <input type="hidden" name="categoria" value="{{ $incidente->categoria }}">
@@ -560,6 +561,43 @@
                     });
                 }
             }));
+        });
+
+        // Garante que assinantes sejam salvos ANTES do submit de "Salvar Informações"
+        // (o debounce do bridge pode não completar antes do page reload causado pelo form submit)
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('[data-campos-form]').forEach(form => {
+                form.addEventListener('submit', async function (e) {
+                    const accordion = form.closest('[id^="accordion-collapse-"]');
+                    if (!accordion) return;
+                    const bridge = accordion.querySelector('[data-assinante-bridge]');
+                    if (!bridge) return;
+                    e.preventDefault();
+                    const assinantesItems = bridge.querySelectorAll('.assinante-item');
+                    const assinantes = [];
+                    assinantesItems.forEach(item => {
+                        const sel       = item.querySelector('.unidade-select');
+                        const unidadeId = sel?.value ?? '';
+                        const unidadeNome = sel?.options[sel.selectedIndex]?.text ?? '';
+                        const responsavel  = item.querySelector('.responsavel-input')?.value ?? '';
+                        const portaria     = item.querySelector('.portaria-input')?.value ?? '';
+                        const dataPortaria = item.querySelector('.data-portaria-input')?.value ?? '';
+                        if (unidadeId || responsavel) {
+                            assinantes.push({ unidade_id: unidadeId, unidade_nome: unidadeNome, responsavel, portaria, data_portaria: dataPortaria });
+                        }
+                    });
+                    if (assinantes.length > 0) {
+                        try {
+                            await fetch(bridge.dataset.salvarUrl, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                                body: JSON.stringify({ tipo_documento: bridge.dataset.tipo, assinantes }),
+                            });
+                        } catch (err) { console.warn('[assinantes] falha ao salvar antes do submit', err); }
+                    }
+                    form.submit();
+                });
+            });
         });
 
         async function gerarPdfAditivo(contratoId, incidenteId, tipo, dataSelecionada, btnElement) {

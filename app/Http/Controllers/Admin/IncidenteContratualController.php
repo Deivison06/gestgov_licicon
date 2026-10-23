@@ -1007,11 +1007,22 @@ class IncidenteContratualController extends Controller
         $dados = $request->validate([
             'tipo_documento' => 'required|string',
             'assinantes'     => 'required|array',
+            'assinantes.*.unidade_id'     => 'nullable',
             'assinantes.*.responsavel'    => 'nullable|string',
             'assinantes.*.unidade_nome'   => 'nullable|string',
             'assinantes.*.portaria'       => 'nullable|string',
+            'assinantes.*.numero_portaria' => 'nullable|string',
             'assinantes.*.data_portaria'  => 'nullable|string',
         ]);
+
+        // Normaliza: bridge script envia `numero_portaria`; view JS envia `portaria` — aceita ambos
+        $dados['assinantes'] = array_map(function ($a) {
+            if (empty($a['portaria']) && ! empty($a['numero_portaria'])) {
+                $a['portaria'] = $a['numero_portaria'];
+            }
+            unset($a['numero_portaria']);
+            return $a;
+        }, $dados['assinantes']);
 
         // Enriquecer com o nome da unidade a partir do id, se vier apenas o id
         $prefeitura = $contrato->prefeitura;

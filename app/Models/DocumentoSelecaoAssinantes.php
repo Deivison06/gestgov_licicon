@@ -17,6 +17,7 @@ class DocumentoSelecaoAssinantes extends Model
 
     protected $fillable = [
         'processo_id',
+        'incidente_id',
         'tipo_documento',
         'homologacao_id',
         'vencedor_id',
