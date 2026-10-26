@@ -50,10 +50,17 @@
         {{ $vm->tituloDocumento() }}
     </div>
 
+    @php
+        // Usa a unidade selecionada em "Definir Assinantes" pra esse documento,
+        // se houver; senão cai no órgão padrão do contrato (ou na prefeitura).
+        $orgaoSetorCapa = (isset($documentoSelecao) && is_array($documentoSelecao->assinantes) && count($documentoSelecao->assinantes) > 0 && ! empty($documentoSelecao->assinantes[0]['unidade_nome']))
+            ? $documentoSelecao->assinantes[0]['unidade_nome']
+            : ($contrato->dados_contratante['orgao_responsavel'] ?? $prefeitura->nome);
+    @endphp
     <table>
         <tr>
             <td class="td-label">ORGÃO/SETOR</td>
-            <td>{{ mb_strtoupper($contrato->dados_contratante['orgao_responsavel'] ?? $prefeitura->nome) }}</td>
+            <td>{{ mb_strtoupper($orgaoSetorCapa) }}</td>
         </tr>
         <tr>
             <td class="td-label">OBJETIVO</td>

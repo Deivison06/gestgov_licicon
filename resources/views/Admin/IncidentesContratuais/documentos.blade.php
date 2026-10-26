@@ -353,12 +353,24 @@
                                                                 @endif
                                                             </div>
                                                         @elseif($campo['tipo'] === 'file')
-                                                            <input type="file" name="{{ $campo['name'] }}" id="{{ $tipo }}_{{ $campo['name'] }}" accept=".pdf" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[var(--mint)] file:text-white hover:file:bg-[var(--teal-dark-bg)]">
-                                                            @if($campo['value'])
-                                                                <a href="{{ Storage::url($campo['value']) }}" target="_blank" class="inline-block mt-2 text-xs font-medium text-blue-600 hover:underline">
-                                                                    <i class="fas fa-file-pdf"></i> Visualizar arquivo atual
-                                                                </a>
-                                                            @endif
+                                                            <div x-data="{ marcadoParaRemover: false }">
+                                                                <input type="file" name="{{ $campo['name'] }}" id="{{ $tipo }}_{{ $campo['name'] }}" accept=".pdf" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[var(--mint)] file:text-white hover:file:bg-[var(--teal-dark-bg)]" @change="marcadoParaRemover = false">
+                                                                @if($campo['value'])
+                                                                    <input type="hidden" name="remover_{{ $campo['name'] }}" :value="marcadoParaRemover ? '1' : '0'">
+                                                                    <div class="flex items-center gap-3 mt-2">
+                                                                        <a x-show="!marcadoParaRemover" href="{{ Storage::url($campo['value']) }}" target="_blank" class="inline-block text-xs font-medium text-blue-600 hover:underline">
+                                                                            <i class="fas fa-file-pdf"></i> Visualizar arquivo atual
+                                                                        </a>
+                                                                        <button x-show="!marcadoParaRemover" type="button" @click="marcadoParaRemover = true" class="inline-flex items-center gap-1 text-xs font-medium text-red-600 hover:underline">
+                                                                            <i class="fas fa-trash"></i> Remover arquivo
+                                                                        </button>
+                                                                        <span x-show="marcadoParaRemover" x-cloak class="inline-flex items-center gap-2 text-xs font-medium text-red-600">
+                                                                            <i class="fas fa-triangle-exclamation"></i> Arquivo será removido ao salvar
+                                                                            <button type="button" @click="marcadoParaRemover = false" class="font-semibold underline">Desfazer</button>
+                                                                        </span>
+                                                                    </div>
+                                                                @endif
+                                                            </div>
                                                         @elseif($campo['tipo'] === 'number')
                                                             <input type="number" name="{{ $campo['name'] }}" id="{{ $tipo }}_{{ $campo['name'] }}" step="{{ $campo['step'] ?? '1' }}" value="{{ $campo['value'] }}" class="block w-full px-3 py-2 text-sm border-gray-300 rounded-md shadow-sm focus:ring-[var(--mint)] focus:border-[var(--mint)]">
                                                         @elseif($campo['tipo'] === 'string')

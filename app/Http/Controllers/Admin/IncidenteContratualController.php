@@ -353,26 +353,15 @@ class IncidenteContratualController extends Controller
         $validated = $request->validate($rules);
         $dados = $validated;
 
-        if ($request->hasFile('arquivo_solicitacao')) {
-            $path = $request->file('arquivo_solicitacao')->store('incidentes/solicitacoes', 'public');
-            $dados['arquivo_solicitacao_path'] = $path;
-        } else {
-            $dados['arquivo_solicitacao_path'] = $incidente->arquivo_solicitacao_path;
-        }
-
-        if ($request->hasFile('arquivo_orcamento_obra')) {
-            $path = $request->file('arquivo_orcamento_obra')->store('incidentes/orcamentos', 'public');
-            $dados['arquivo_orcamento_obra_path'] = $path;
-        } else {
-            $dados['arquivo_orcamento_obra_path'] = $incidente->arquivo_orcamento_obra_path;
-        }
-
-        if ($request->hasFile('arquivo_aceite_documentacao')) {
-            $path = $request->file('arquivo_aceite_documentacao')->store('incidentes/aceites', 'public');
-            $dados['arquivo_aceite_documentacao_path'] = $path;
-        } else {
-            $dados['arquivo_aceite_documentacao_path'] = $incidente->arquivo_aceite_documentacao_path;
-        }
+        $dados['arquivo_solicitacao_path'] = $this->resolverPathArquivo(
+            $request, 'arquivo_solicitacao', 'incidentes/solicitacoes', $incidente->arquivo_solicitacao_path
+        );
+        $dados['arquivo_orcamento_obra_path'] = $this->resolverPathArquivo(
+            $request, 'arquivo_orcamento_obra', 'incidentes/orcamentos', $incidente->arquivo_orcamento_obra_path
+        );
+        $dados['arquivo_aceite_documentacao_path'] = $this->resolverPathArquivo(
+            $request, 'arquivo_aceite_documentacao', 'incidentes/aceites', $incidente->arquivo_aceite_documentacao_path
+        );
 
         $dados['tipo'] = $incidente->tipo;
         $dados['categoria'] = $incidente->categoria;
@@ -380,6 +369,27 @@ class IncidenteContratualController extends Controller
         $this->incidenteService->atualizarAditivo($incidente, $contrato, $dados);
 
         return redirect()->back()->with('success', 'Configurações do aditivo salvas com sucesso.');
+    }
+
+    /**
+     * Resolve o path salvo de um campo de upload único: novo arquivo enviado
+     * substitui; "remover_{campo}=1" sem novo arquivo apaga o atual e some o
+     * path; caso contrário mantém o que já estava salvo. Usado pelos 3 uploads
+     * de atualizarCampos() (solicitação, orçamento de obra, aceite/regularidade),
+     * que antes só sabiam substituir — nunca remover sem trocar por outro.
+     */
+    private function resolverPathArquivo(Request $request, string $campo, string $diretorio, ?string $pathAtual): ?string
+    {
+        if ($request->hasFile($campo)) {
+            return $request->file($campo)->store($diretorio, 'public');
+        }
+
+        if ($request->boolean('remover_'.$campo) && $pathAtual) {
+            Storage::disk('public')->delete($pathAtual);
+            return null;
+        }
+
+        return $pathAtual;
     }
 
     /**
@@ -462,6 +472,7 @@ class IncidenteContratualController extends Controller
             'capa_aditivo' => [
                 'titulo' => 'Capa',
                 'cor' => '#9333ea', // roxo
+                'requer_assinatura' => $permitirSelecaoAssinante,
                 'campos' => [],
             ],
             'solicitacao_aditivo' => [
