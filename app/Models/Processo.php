@@ -361,5 +361,20 @@ class Processo extends Model
                 $processo->planejamento_ordem = 0;
             }
         });
+
+        // A FK etps.processo_id tem nullOnDelete(), então o banco já limpa o
+        // vínculo sozinho — mas só a coluna processo_id, não o status. Sem
+        // isso, o ETP fica preso em "em_processo" (sem processo nenhum de
+        // verdade) e some da lista de ETPs disponíveis pra vincular, já que
+        // vincularEtp() só aceita status 'aprovado'. Mesmo reset que
+        // ProcessoController::desvincularEtp() já faz manualmente.
+        static::deleting(function ($processo) {
+            if ($processo->etp) {
+                $processo->etp->update([
+                    'processo_id' => null,
+                    'status' => 'aprovado',
+                ]);
+            }
+        });
     }
 }
