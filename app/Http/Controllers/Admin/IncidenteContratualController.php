@@ -393,12 +393,14 @@ class IncidenteContratualController extends Controller
         $contrato = $this->resolverContrato($contrato_id);
         $incidente = $this->buscarIncidente($contrato, $incidente_id);
 
+        // Cada campo é opcional (antes exigia os 4 preenchidos juntos por linha —
+        // quem preenchia só 1 ou 2 não conseguia salvar nada).
         $validated = $request->validate([
             'dotacoes' => 'required|array|min:1',
-            'dotacoes.*.unidade_orcamentaria' => 'required|string|max:255',
-            'dotacoes.*.classificacao_funcional_programatica' => 'required|string|max:255',
-            'dotacoes.*.elemento_despesa' => 'required|string|max:255',
-            'dotacoes.*.fonte_recurso' => 'required|string|max:255',
+            'dotacoes.*.unidade_orcamentaria' => 'nullable|string|max:255',
+            'dotacoes.*.classificacao_funcional_programatica' => 'nullable|string|max:255',
+            'dotacoes.*.elemento_despesa' => 'nullable|string|max:255',
+            'dotacoes.*.fonte_recurso' => 'nullable|string|max:255',
             'dotacoes.*.valor' => 'nullable|numeric|min:0',
         ]);
 

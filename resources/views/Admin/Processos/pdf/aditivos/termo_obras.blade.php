@@ -15,11 +15,22 @@
         $blocos = $textoJuridico->clausulaObjetoTermoAditivo($vm);
         $resumo = $vm->resumoFinanceiro;
 
-        $representanteContratante = (isset($documentoSelecao) && is_array($documentoSelecao->assinantes) && count($documentoSelecao->assinantes) > 0)
-            ? $documentoSelecao->assinantes[0]['responsavel']
-            : ($prefeitura->autoridade_competente ?? 'Prefeito');
+        $temAssinanteSelecionado = isset($documentoSelecao) && is_array($documentoSelecao->assinantes) && count($documentoSelecao->assinantes) > 0;
 
-        $assinaturaContratanteExtrato = mb_strtoupper($representanteContratante);
+        $assinaturaContratanteExtrato = $temAssinanteSelecionado
+            ? mb_strtoupper($documentoSelecao->assinantes[0]['responsavel'])
+            : mb_strtoupper($prefeitura->autoridade_competente ?? 'Prefeito');
+
+        // Mesma frase de antes ("representada pelo seu titular, PREFEITO") quando
+        // ninguém foi selecionado; quando há um assinante selecionado, nomeia o
+        // órgão representado em vez de assumir sempre o prefeito.
+        $orgaoContratanteExtrato = $temAssinanteSelecionado && ! empty($documentoSelecao->assinantes[0]['unidade_nome'])
+            ? $documentoSelecao->assinantes[0]['unidade_nome']
+            : ($contrato->dados_contratante['orgao_responsavel'] ?? ($prefeitura->nome ?? 'Município'));
+
+        $representanteContratanteExtrato = $temAssinanteSelecionado
+            ? 'representada pelo titular da ' . $orgaoContratanteExtrato . ', ' . $assinaturaContratanteExtrato
+            : 'representada pelo seu titular, ' . $assinaturaContratanteExtrato;
 
         $fundamentacaoLegalExtrato = collect([
             $vm->envolvePrazo() ? ($vm->artigoFundamentacaoPrazo().' da Lei nº 14.133/2021') : null,
@@ -30,7 +41,7 @@
     <div class="title">{{ $vm->tituloDocumento() }}</div>
 
     <div class="clause-content">
-        Pelo presente instrumento, de um lado o Município de {{ $prefeitura->cidade ?? 'Cidade' }}, pessoa jurídica de direito público interno, CNPJ {{ $prefeitura->cnpj ?? 'CNPJ' }}, localizada a {{ $prefeitura->endereco ?? 'Endereço' }}, neste ato representada pelo seu titular, <strong>{{ mb_strtoupper($representanteContratante) }}</strong>, e do outro lado a empresa <strong>{{ $contrato->dados_contratante['razao_social'] ?? 'CONTRATADA' }}</strong>, CNPJ Nº {{ $contrato->dados_contratante['cnpj'] ?? 'CNPJ' }}, estabelecida à sede na {{ $contrato->dados_contratante['endereco'] ?? 'Endereço da Empresa' }}, neste ato devidamente representada por {{ $contrato->dados_contratante['representante'] ?? 'Representante Legal' }}, denominados <strong>CONTRATANTE</strong> e <strong>CONTRATADO</strong>, têm justo e acordado entre si o presente <strong>{{ $vm->numeroOrdinalFormatado() }} TERMO ADITIVO</strong> ao contrato de nº {{ $vm->numeroContrato }}, mediante as cláusulas e condições seguintes:
+        Pelo presente instrumento, de um lado o Município de {{ $prefeitura->cidade ?? 'Cidade' }}, pessoa jurídica de direito público interno, CNPJ {{ $prefeitura->cnpj ?? 'CNPJ' }}, localizada a {{ $prefeitura->endereco ?? 'Endereço' }}, neste ato <strong>{{ $representanteContratanteExtrato }}</strong>, e do outro lado a empresa <strong>{{ $contrato->dados_contratante['razao_social'] ?? 'CONTRATADA' }}</strong>, CNPJ Nº {{ $contrato->dados_contratante['cnpj'] ?? 'CNPJ' }}, estabelecida à sede na {{ $contrato->dados_contratante['endereco'] ?? 'Endereço da Empresa' }}, neste ato devidamente representada por {{ $contrato->dados_contratante['representante'] ?? 'Representante Legal' }}, denominados <strong>CONTRATANTE</strong> e <strong>CONTRATADO</strong>, têm justo e acordado entre si o presente <strong>{{ $vm->numeroOrdinalFormatado() }} TERMO ADITIVO</strong> ao contrato de nº {{ $vm->numeroContrato }}, mediante as cláusulas e condições seguintes:
     </div>
 
     <div class="clause-title">CLÁUSULA PRIMEIRA – DO OBJETO</div>
@@ -120,7 +131,7 @@
             </tr>
             <tr>
                 <td style="padding:6px; font-weight:bold;">CONTRATANTE:</td>
-                <td style="padding:6px;">{{ $contrato->dados_contratante['orgao_responsavel'] ?? ($prefeitura->nome ?? 'Município') }}</td>
+                <td style="padding:6px;">{{ $orgaoContratanteExtrato }}</td>
             </tr>
             <tr>
                 <td style="padding:6px; font-weight:bold;">CONTRATADO:</td>
