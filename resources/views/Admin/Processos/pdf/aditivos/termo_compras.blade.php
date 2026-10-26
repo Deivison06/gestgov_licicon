@@ -18,9 +18,11 @@
         $itensAcrescidos = $incidente->itens->filter(fn ($i) => $i->quantidade_aditivada > 0);
         $itensSuprimidos = $incidente->itens->filter(fn ($i) => $i->quantidade_aditivada < 0);
 
-        $assinaturaContratanteExtrato = (isset($documentoSelecao) && is_array($documentoSelecao->assinantes) && count($documentoSelecao->assinantes) > 0)
-            ? mb_convert_case($documentoSelecao->assinantes[0]['responsavel'], MB_CASE_TITLE)
-            : mb_convert_case($prefeitura->autoridade_competente ?? 'Prefeito', MB_CASE_TITLE);
+        $representanteContratante = (isset($documentoSelecao) && is_array($documentoSelecao->assinantes) && count($documentoSelecao->assinantes) > 0)
+            ? $documentoSelecao->assinantes[0]['responsavel']
+            : ($prefeitura->autoridade_competente ?? 'Prefeito');
+
+        $assinaturaContratanteExtrato = mb_convert_case($representanteContratante, MB_CASE_TITLE);
 
         $fundamentacaoLegalExtrato = collect([
             $vm->envolvePrazo() ? ($vm->artigoFundamentacaoPrazo().' da Lei nº 14.133/2021') : null,
@@ -31,7 +33,7 @@
     <div class="title">{{ $vm->tituloDocumento() }}</div>
 
     <div class="clause-content">
-        Pelo presente instrumento, de um lado o Município de {{ $prefeitura->cidade ?? 'Cidade' }}, pessoa jurídica de direito público interno, CNPJ {{ $prefeitura->cnpj ?? 'CNPJ' }}, localizada a {{ $prefeitura->endereco ?? 'Endereço' }}, neste ato representada pelo seu titular, <strong>{{ mb_strtoupper($prefeitura->autoridade_competente ?? 'Prefeito') }}</strong>, e do outro lado a empresa <strong>{{ $contrato->dados_contratante['razao_social'] ?? 'CONTRATADA' }}</strong>, CNPJ Nº {{ $contrato->dados_contratante['cnpj'] ?? 'CNPJ' }}, estabelecida à sede na {{ $contrato->dados_contratante['endereco'] ?? 'Endereço da Empresa' }}, neste ato devidamente representada por {{ $contrato->dados_contratante['representante'] ?? 'Representante Legal' }}, denominados <strong>CONTRATANTE</strong> e <strong>CONTRATADO</strong>, têm justo e acordado entre si o presente <strong>{{ $vm->numeroOrdinalFormatado() }} TERMO ADITIVO</strong> ao contrato de nº {{ $vm->numeroContrato }}, mediante as cláusulas e condições seguintes:
+        Pelo presente instrumento, de um lado o Município de {{ $prefeitura->cidade ?? 'Cidade' }}, pessoa jurídica de direito público interno, CNPJ {{ $prefeitura->cnpj ?? 'CNPJ' }}, localizada a {{ $prefeitura->endereco ?? 'Endereço' }}, neste ato representada pelo seu titular, <strong>{{ mb_strtoupper($representanteContratante) }}</strong>, e do outro lado a empresa <strong>{{ $contrato->dados_contratante['razao_social'] ?? 'CONTRATADA' }}</strong>, CNPJ Nº {{ $contrato->dados_contratante['cnpj'] ?? 'CNPJ' }}, estabelecida à sede na {{ $contrato->dados_contratante['endereco'] ?? 'Endereço da Empresa' }}, neste ato devidamente representada por {{ $contrato->dados_contratante['representante'] ?? 'Representante Legal' }}, denominados <strong>CONTRATANTE</strong> e <strong>CONTRATADO</strong>, têm justo e acordado entre si o presente <strong>{{ $vm->numeroOrdinalFormatado() }} TERMO ADITIVO</strong> ao contrato de nº {{ $vm->numeroContrato }}, mediante as cláusulas e condições seguintes:
     </div>
 
     <div class="clause-title">CLÁUSULA PRIMEIRA – DO OBJETO</div>
