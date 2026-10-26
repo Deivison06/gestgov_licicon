@@ -116,10 +116,41 @@
 <body>
 
     @php
-        $dataDfd = $processo->documentos->where('tipo_documento', 'formalizacao')->first();
-        $dataParecer = $processo->documentos->where('tipo_documento', 'parecer_juridico')->first();
-        $dataAdjudicacao = $processo->documentos->where('tipo_documento', 'termo_adjudicacao')->first();
+        // Dados compartilhados pelo Termo de Adjudicação, Termo de Homologação e Ato de Autorização.
+        $ehCompras = $processo->tipo_procedimento === \App\Enums\TipoProcedimentoEnum::COMPRAS;
+        $textoEscolha = $ehCompras ? 'do fornecedor' : 'do prestador de serviços';
+        $textoPreco = 'menor preço global';
+        $exibirPrazoExecucao = false;
+
+        $primeiroVencedor = $vencedores->first();
+        $contratadoTexto = $primeiroVencedor
+            ? "{$primeiroVencedor->razao_social} - {$primeiroVencedor->cnpj}"
+            : '';
+        $valorTotalTexto = 'R$ ' . number_format($vencedores->sum(fn ($vencedor) => $vencedor->lotes->sum('vl_total')), 2, ',', '.');
+        $fundamentoLegal = $processo->detalhe?->is_oriundo_fracassado
+            ? 'Art. 75, Inciso III, alínea "a", da Lei Federal nº 14.133/2021'
+            : 'Art. 75, Inciso II da Lei Federal 14.133/21';
+
+        $vigencia = is_array($processo->detalhe->prazo_vigencia ?? null)
+            ? $processo->detalhe->prazo_vigencia
+            : ['12_meses'];
+
+        $outro_vigencia = $processo->detalhe->prazo_vigencia_outro ?? '________________.';
+
+        if (in_array('exercicio_financeiro', $vigencia)) {
+            $textoVigencia = "até 31/12 do exercício financeiro da contratação";
+        } elseif (in_array('12_meses', $vigencia)) {
+            $textoVigencia = "12 meses";
+        } elseif (in_array('outro', $vigencia)) {
+            $textoVigencia = $outro_vigencia;
+        } else {
+            $textoVigencia = "________________";
+        }
     @endphp
+
+    {{-- Gerados junto com o Ato, nesta ordem: Adjudicação → Homologação → Ato de Autorização --}}
+    @include('Admin.Processos.pdf-finalizacao.dispensa.partials.termo_adjudicacao_dispensa')
+    @include('Admin.Processos.pdf-finalizacao.dispensa.partials.termo_homologacao_dispensa')
 
     {{-- ====================================================================== --}}
     {{-- BLOCO 1: CAPA DO DOCUMENTO --}}
@@ -135,7 +166,7 @@
     <div class="page-break"></div>
 
     {{-- ====================================================================== --}}
-    {{-- BLOCO 2: TERMO DE RECEBIMENTO --}}
+    {{-- BLOCO 2: ATO DE AUTORIZAÇÃO --}}
     {{-- ====================================================================== --}}
 
     <div>
@@ -180,7 +211,7 @@
                     CONTRATADO
                 </td>
                 <td style="border:1px solid #000; padding:6px;">
-                    @foreach($vencedores as $vencedor) {{ $vencedor->razao_social }} - {{ $vencedor->cnpj }} @break @endforeach,
+                    {{ $contratadoTexto }}
                 </td>
             </tr>
 
@@ -189,26 +220,6 @@
                     PRAZO DE VIGÊNCIA
                 </td>
                 <td style="border:1px solid #000; padding:6px;">
-                    @php
-                        $vigencia = is_array($processo->detalhe->prazo_vigencia ?? null)
-                            ? $processo->detalhe->prazo_vigencia
-                            : ['12_meses'];
-
-                        $outro_vigencia = $processo->detalhe->prazo_vigencia_outro ?? '________________.';
-
-                        $objeto_continuado = strtolower($processo->detalhe->objeto_continuado ?? 'nao');
-
-                        // Texto para preencher automaticamente
-                        if (in_array('exercicio_financeiro', $vigencia)) {
-                            $textoVigencia = "até 31/12 do exercício financeiro da contratação";
-                        } elseif (in_array('12_meses', $vigencia)) {
-                            $textoVigencia = "12 meses";
-                        } elseif (in_array('outro', $vigencia)) {
-                            $textoVigencia = $outro_vigencia;
-                        } else {
-                            $textoVigencia = "________________";
-                        }
-                    @endphp
                     {{ $textoVigencia }}
                 </td>
             </tr>
@@ -218,9 +229,7 @@
                     VALOR TOTAL
                 </td>
                 <td style="border:1px solid #000; padding:6px;">
-                    R$ {{ number_format($vencedores->sum(function($vencedor) {
-                        return $vencedor->lotes->sum('vl_total');
-                    }), 2, ',', '.') }}
+                    {{ $valorTotalTexto }}
                 </td>
             </tr>
 
@@ -229,43 +238,12 @@
                     FUNDAMENTO LEGAL
                 </td>
                 <td style="border:1px solid #000; padding:6px;">
-                    {{ ($processo->detalhe?->is_oriundo_fracassado) ? 'Art. 75, Inciso III, alínea "a", da Lei Federal nº 14.133/2021' : 'Art. 75, Inciso II da Lei Federal 14.133/21' }}
+                    {{ $fundamentoLegal }}
                 </td>
             </tr>
         </table>
 
-
-        {{-- Bloco de data e assinatura --}}
-        <div class="footer-signature">
-            {{ $processo->prefeitura->cidade }},
-            {{ \Carbon\Carbon::parse($dataSelecionada)->translatedFormat('d \d\e F \d\e Y') }}
-        </div>
-
-        @if ($hasSelectedAssinantes)
-            {{-- Renderiza APENAS O PRIMEIRO assinante da lista --}}
-            @php
-                $primeiroAssinante = $assinantes[0]; // Pega o segundo item
-            @endphp
-
-            <div style="margin-top: 40px; text-align: center;">
-                <div class="signature-block" style="display: inline-block; margin: 0 40px;">
-                    ___________________________________<br>
-                    <p style="line-height: 1.2;">
-                        {{ $primeiroAssinante['responsavel'] }} <br>
-                        <span>{{ $primeiroAssinante['unidade_nome'] }}</span>
-                    </p>
-                </div>
-            </div>
-        @else
-            {{-- Bloco Padrão (Fallback) --}}
-            <div class="signature-block" style="margin-top: 40px; text-align: center;">
-                ___________________________________<br>
-                <p style="line-height: 1.2;">
-                    {{ $processo->prefeitura->autoridade_competente }} <br>
-                    <span style="color: red;">[Cargo/Título Padrão - A ser ajustado]</span>
-                </p>
-            </div>
-        @endif
+        @include('Admin.Processos.pdf-finalizacao.dispensa.partials.assinatura_autoridade')
     </div>
 </body>
 
