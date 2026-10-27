@@ -6,7 +6,6 @@
     <title>Parecer Jurídico</title>
     <style>
         @include('Admin.Processos.pdf.aditivos.partials.estilo-base')
-        .check-box { font-family: monospace; font-size: 12pt; }
     </style>
 </head>
 <body>

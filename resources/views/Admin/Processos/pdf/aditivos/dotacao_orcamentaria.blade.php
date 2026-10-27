@@ -6,9 +6,6 @@
     <title>Informação de Disponibilidade Orçamentária</title>
     <style>
         @include('Admin.Processos.pdf.aditivos.partials.estilo-base')
-        table.dotacao { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 11pt; }
-        table.dotacao td { border: 1px solid #000; padding: 6px; }
-        table.dotacao td.label { font-weight: bold; width: 35%; }
     </style>
 </head>
 <body>
@@ -34,15 +31,15 @@
     </div>
 
     @forelse($vm->dotacoes as $dotacao)
-        <table class="dotacao">
-            <tr><td class="label">Dotação Orçamentária</td><td>{{ $dotacao->textoDotacao() }}</td></tr>
+        <table class="tabela">
+            <tr><td class="rotulo">Dotação Orçamentária</td><td>{{ $dotacao->textoDotacao() }}</td></tr>
             @if($dotacao->valor)
-                <tr><td class="label">Valor</td><td>R$ {{ number_format((float) $dotacao->valor, 2, ',', '.') }}</td></tr>
+                <tr><td class="rotulo">Valor</td><td>R$ {{ number_format((float) $dotacao->valor, 2, ',', '.') }}</td></tr>
             @endif
         </table>
     @empty
-        <table class="dotacao">
-            <tr><td class="label">Dotação Orçamentária</td><td>XXXXXXXXXXXXXXXXXXX</td></tr>
+        <table class="tabela">
+            <tr><td class="rotulo">Dotação Orçamentária</td><td>XXXXXXXXXXXXXXXXXXX</td></tr>
         </table>
     @endforelse
 

@@ -5,35 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Capa do Aditivo</title>
     <style>
-        @font-face {
-            font-family: 'Aptos';
-            src: url('{{ public_path('storage/fonts/Aptos.ttf') }}') format('truetype');
-            font-style: normal;
-        }
-
-        @font-face {
-            font-family: 'AptosExtraBold';
-            src: url('{{ public_path('storage/fonts/Aptos-ExtraBold.ttf') }}') format('truetype');
-            font-style: normal;
-        }
-
         @page { margin: 0; size: A4; }
 
         body {
             margin: 0; padding: 6cm 2cm;
-            font-size: 14pt; font-family: 'Aptos', sans-serif;
+            font-size: 12pt; font-family: Arial, Helvetica, sans-serif;
             background-image: url('{{ public_path($prefeitura->timbre ?? '') }}');
             background-repeat: no-repeat; background-position: top left; background-size: cover;
             text-align: center; line-height: 1.3;
         }
 
         .title {
-            font-weight: bold; font-size: 18pt; margin-top: 20px; margin-bottom: 40px;
-            font-family: 'AptosExtraBold', sans-serif; text-transform: uppercase;
+            font-weight: bold; font-size: 16pt; margin-top: 20px; margin-bottom: 40px;
+            text-transform: uppercase;
         }
 
         table {
-            width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14pt;
+            width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 12pt;
         }
 
         td {

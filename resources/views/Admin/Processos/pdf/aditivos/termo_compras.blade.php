@@ -76,24 +76,24 @@
 
     @if($itensAcrescidos->isNotEmpty())
         <div class="clause-content" style="text-indent: 0;">Itens acrescidos, conforme quadro abaixo:</div>
-        <table style="width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 15px; font-size: 10pt; text-align: left;">
+        <table class="tabela">
             <thead>
-                <tr style="background-color: #f3f4f6;">
-                    <th style="border: 1px solid #000; padding: 5px; text-align: center;">Item</th>
-                    <th style="border: 1px solid #000; padding: 5px;">Descrição</th>
-                    <th style="border: 1px solid #000; padding: 5px; text-align: center;">Qtd. Acrescida</th>
-                    <th style="border: 1px solid #000; padding: 5px; text-align: right;">V. Unitário</th>
-                    <th style="border: 1px solid #000; padding: 5px; text-align: right;">V. Total</th>
+                <tr>
+                    <th style="text-align: center;">Item</th>
+                    <th>Descrição</th>
+                    <th style="text-align: center;">Qtd. Acrescida</th>
+                    <th style="text-align: right;">V. Unitário</th>
+                    <th style="text-align: right;">V. Total</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($itensAcrescidos as $item)
                     <tr>
-                        <td style="border: 1px solid #000; padding: 5px; text-align: center;">{{ $item->loteContratado->lote->item ?? '-' }}</td>
-                        <td style="border: 1px solid #000; padding: 5px;">{{ $item->loteContratado->lote->descricao ?? 'Item sem descrição' }}</td>
-                        <td style="border: 1px solid #000; padding: 5px; text-align: center;">{{ number_format(abs($item->quantidade_aditivada), 2, ',', '.') }}</td>
-                        <td style="border: 1px solid #000; padding: 5px; text-align: right;">R$ {{ number_format($item->valor_unitario, 2, ',', '.') }}</td>
-                        <td style="border: 1px solid #000; padding: 5px; text-align: right;">R$ {{ number_format(abs($item->valor_total_aditivado), 2, ',', '.') }}</td>
+                        <td style="text-align: center;">{{ $item->loteContratado->lote->item ?? '-' }}</td>
+                        <td>{{ $item->loteContratado->lote->descricao ?? 'Item sem descrição' }}</td>
+                        <td style="text-align: center;">{{ number_format(abs($item->quantidade_aditivada), 2, ',', '.') }}</td>
+                        <td style="text-align: right;">R$ {{ number_format($item->valor_unitario, 2, ',', '.') }}</td>
+                        <td style="text-align: right;">R$ {{ number_format(abs($item->valor_total_aditivado), 2, ',', '.') }}</td>
                     </tr>
                 @endforeach
             </tbody>
@@ -102,24 +102,24 @@
 
     @if($itensSuprimidos->isNotEmpty())
         <div class="clause-content" style="text-indent: 0;">Itens suprimidos, conforme quadro abaixo:</div>
-        <table style="width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 15px; font-size: 10pt; text-align: left;">
+        <table class="tabela">
             <thead>
-                <tr style="background-color: #f3f4f6;">
-                    <th style="border: 1px solid #000; padding: 5px; text-align: center;">Item</th>
-                    <th style="border: 1px solid #000; padding: 5px;">Descrição</th>
-                    <th style="border: 1px solid #000; padding: 5px; text-align: center;">Qtd. Suprimida</th>
-                    <th style="border: 1px solid #000; padding: 5px; text-align: right;">V. Unitário</th>
-                    <th style="border: 1px solid #000; padding: 5px; text-align: right;">V. Total</th>
+                <tr>
+                    <th style="text-align: center;">Item</th>
+                    <th>Descrição</th>
+                    <th style="text-align: center;">Qtd. Suprimida</th>
+                    <th style="text-align: right;">V. Unitário</th>
+                    <th style="text-align: right;">V. Total</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($itensSuprimidos as $item)
                     <tr>
-                        <td style="border: 1px solid #000; padding: 5px; text-align: center;">{{ $item->loteContratado->lote->item ?? '-' }}</td>
-                        <td style="border: 1px solid #000; padding: 5px;">{{ $item->loteContratado->lote->descricao ?? 'Item sem descrição' }}</td>
-                        <td style="border: 1px solid #000; padding: 5px; text-align: center;">{{ number_format(abs($item->quantidade_aditivada), 2, ',', '.') }}</td>
-                        <td style="border: 1px solid #000; padding: 5px; text-align: right;">R$ {{ number_format($item->valor_unitario, 2, ',', '.') }}</td>
-                        <td style="border: 1px solid #000; padding: 5px; text-align: right;">R$ {{ number_format(abs($item->valor_total_aditivado), 2, ',', '.') }}</td>
+                        <td style="text-align: center;">{{ $item->loteContratado->lote->item ?? '-' }}</td>
+                        <td>{{ $item->loteContratado->lote->descricao ?? 'Item sem descrição' }}</td>
+                        <td style="text-align: center;">{{ number_format(abs($item->quantidade_aditivada), 2, ',', '.') }}</td>
+                        <td style="text-align: right;">R$ {{ number_format($item->valor_unitario, 2, ',', '.') }}</td>
+                        <td style="text-align: right;">R$ {{ number_format(abs($item->valor_total_aditivado), 2, ',', '.') }}</td>
                     </tr>
                 @endforeach
             </tbody>
@@ -140,10 +140,12 @@
         O Município de {{ $prefeitura->cidade ?? 'Cidade' }} providenciará, sem ônus para a CONTRATADA, a publicação do presente Termo Aditivo nos meios legais.
     </div>
 
-    <div class="clause-content" style="margin-top: 30px;">
+    <div class="clause-content">
         E, por estarem assim justos e acordados, as partes firmam o presente <strong>Termo Aditivo</strong> ao Contrato nº {{ $vm->numeroContrato }}, para que produza seus jurídicos e legais efeitos.
     </div>
 
+    {{-- Data + assinaturas juntas: não deixa a data sozinha no fim da página --}}
+    <div class="bloco-final">
     @include('Admin.Processos.pdf.aditivos.partials.data-local')
 
     @if(isset($documentoSelecao) && is_array($documentoSelecao->assinantes) && count($documentoSelecao->assinantes) > 0)
@@ -178,35 +180,36 @@
             </div>
         </div>
     @endif
+    </div>
 
     <div class="page-break"></div>
 
     <div>
-        <table style="width:100%; border-collapse:collapse; font-size:10px; margin-bottom:20px;" border="1">
+        <table class="tabela">
             <tr>
-                <td colspan="2" style="padding:8px; text-align:center; font-weight:bold;">
+                <td colspan="2" class="cabecalho">
                     EXTRATO DO {{ $vm->numeroOrdinalFormatado() }} TERMO ADITIVO AO CONTRATO Nº {{ $vm->numeroContrato }}
                 </td>
             </tr>
             <tr>
-                <td style="padding:6px; width:30%; font-weight:bold;">OBJETO:</td>
-                <td style="padding:6px;">{{ $vm->objetoContrato }}</td>
+                <td class="rotulo">OBJETO:</td>
+                <td>{{ $vm->objetoContrato }}</td>
             </tr>
             <tr>
-                <td style="padding:6px; font-weight:bold;">CONTRATANTE:</td>
-                <td style="padding:6px;">{{ $orgaoContratanteExtrato }}</td>
+                <td class="rotulo">CONTRATANTE:</td>
+                <td>{{ $orgaoContratanteExtrato }}</td>
             </tr>
             <tr>
-                <td style="padding:6px; font-weight:bold;">CONTRATADO:</td>
-                <td style="padding:6px;">{{ $contrato->dados_contratante['razao_social'] ?? 'CONTRATADA' }}</td>
+                <td class="rotulo">CONTRATADO:</td>
+                <td>{{ $contrato->dados_contratante['razao_social'] ?? 'CONTRATADA' }}</td>
             </tr>
             <tr>
-                <td style="padding:6px; font-weight:bold;">CNPJ (CONTRATADO):</td>
-                <td style="padding:6px;">{{ $contrato->dados_contratante['cnpj'] ?? 'CNPJ' }}</td>
+                <td class="rotulo">CNPJ (CONTRATADO):</td>
+                <td>{{ $contrato->dados_contratante['cnpj'] ?? 'CNPJ' }}</td>
             </tr>
             <tr>
-                <td style="padding:6px; font-weight:bold;">ALTERAÇÃO:</td>
-                <td style="padding:6px;">
+                <td class="rotulo">ALTERAÇÃO:</td>
+                <td>
                     @php
                         $mesesExtratoNum = (int) ($incidente->meses_prorrogacao ?? 0);
                         $mesesExtratoExt = strtoupper(\App\Helpers\ValorPorExtenso::numero($mesesExtratoNum));
@@ -221,20 +224,20 @@
                 </td>
             </tr>
             <tr>
-                <td style="padding:6px; font-weight:bold;">FUNDAMENTAÇÃO LEGAL:</td>
-                <td style="padding:6px; text-align:justify;">{{ $fundamentacaoLegalExtrato }}.</td>
+                <td class="rotulo">FUNDAMENTAÇÃO LEGAL:</td>
+                <td>{{ $fundamentacaoLegalExtrato }}.</td>
             </tr>
             <tr>
-                <td style="padding:6px; font-weight:bold;">ASSINATURA (CONTRATANTE):</td>
-                <td style="padding:6px;">{{ $assinaturaContratanteExtrato }}</td>
+                <td class="rotulo">ASSINATURA (CONTRATANTE):</td>
+                <td>{{ $assinaturaContratanteExtrato }}</td>
             </tr>
             <tr>
-                <td style="padding:6px; font-weight:bold;">ASSINATURA (CONTRATADO):</td>
-                <td style="padding:6px;">{{ $contrato->dados_contratante['representante'] ?? 'Representante Legal' }}</td>
+                <td class="rotulo">ASSINATURA (CONTRATADO):</td>
+                <td>{{ $contrato->dados_contratante['representante'] ?? 'Representante Legal' }}</td>
             </tr>
             <tr>
-                <td style="padding:6px; font-weight:bold;">DATA DA ASSINATURA:</td>
-                <td style="padding:6px;">{{ \Carbon\Carbon::parse($data_selecionada ?? now())->translatedFormat('d \d\e F \d\e Y') }}</td>
+                <td class="rotulo">DATA DA ASSINATURA:</td>
+                <td>{{ \Carbon\Carbon::parse($data_selecionada ?? now())->translatedFormat('d \d\e F \d\e Y') }}</td>
             </tr>
         </table>
     </div>

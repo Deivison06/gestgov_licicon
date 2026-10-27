@@ -144,7 +144,7 @@
         maior vantagem administrativa e operacional para a Administração do que a realização de nova contratação, observados os limites legais, os preços de mercado e a ausência de descaracterização do objeto originalmente contratado.
     </div>
 
-    <div class="clause-content" style="margin-top: 30px;">
+    <div class="clause-content">
         A conclusão definitiva quanto à vantajosidade fica condicionada à manifestação técnica da Engenharia/setor competente{{ $vm->exigeDotacaoOrcamentaria() ? ', à disponibilidade orçamentária' : '' }}, ao parecer jurídico e à autorização da autoridade competente.
     </div>
 

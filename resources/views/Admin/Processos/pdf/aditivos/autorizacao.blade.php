@@ -6,8 +6,6 @@
     <title>Autorização do Prefeito</title>
     <style>
         @include('Admin.Processos.pdf.aditivos.partials.estilo-base')
-        .title { margin-bottom: 50px; }
-        .signature-block { margin-top: 80px; }
     </style>
 </head>
 <body>
@@ -34,7 +32,7 @@
 
     @if(isset($documentoSelecao) && is_array($documentoSelecao->assinantes) && count($documentoSelecao->assinantes) > 0)
         @foreach($documentoSelecao->assinantes as $assinante)
-            <div class="signature-block" style="margin-top: 40px; text-align: center;">
+            <div class="signature-block">
                 ___________________________________<br>
                 <strong>{{ \App\Helpers\NomeProprio::formatar($assinante['responsavel']) }}</strong><br>
                 {{ $assinante['unidade_nome'] }}
