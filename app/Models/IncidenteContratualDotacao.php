@@ -17,6 +17,7 @@ class IncidenteContratualDotacao extends Model
 
     protected $fillable = [
         'incidente_contratual_id',
+        'dotacao_orcamentaria',
         'unidade_orcamentaria',
         'classificacao_funcional_programatica',
         'elemento_despesa',
@@ -27,6 +28,24 @@ class IncidenteContratualDotacao extends Model
     protected $casts = [
         'valor' => 'decimal:2',
     ];
+
+    /**
+     * Texto único da dotação. Registros legados (4 campos separados) são
+     * concatenados para continuar aparecendo.
+     */
+    public function textoDotacao(): string
+    {
+        if (filled($this->dotacao_orcamentaria)) {
+            return $this->dotacao_orcamentaria;
+        }
+
+        return collect([
+            $this->unidade_orcamentaria,
+            $this->classificacao_funcional_programatica,
+            $this->elemento_despesa,
+            $this->fonte_recurso,
+        ])->filter()->implode(' / ');
+    }
 
     public function incidenteContratual(): BelongsTo
     {

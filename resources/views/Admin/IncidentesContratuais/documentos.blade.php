@@ -309,15 +309,12 @@
                                             @endif
                                             
                                             @if ($tipo === 'dotacao_orcamentaria_aditivo')
-                                                <div x-data="dotacaoAditivo({{ json_encode($dotacoesAtuais->map(fn($d) => $d->only(['unidade_orcamentaria','classificacao_funcional_programatica','elemento_despesa','fonte_recurso','valor']))->values()) }}, {{ json_encode($dotacaoSugerida) }})">
+                                                <div x-data="dotacaoAditivo({{ json_encode($dotacoesAtuais->map(fn($d) => ['dotacao_orcamentaria' => $d->textoDotacao(), 'valor' => $d->valor])->values()) }}, {{ json_encode($dotacaoSugerida) }})">
                                                     <h4 class="mb-3 text-sm font-semibold text-gray-700">Linhas de Dotação Orçamentária</h4>
                                                     <p class="mb-3 text-xs text-gray-500">Sugerido a partir do cadastro do contrato — confira e ajuste antes de salvar.</p>
                                                     <template x-for="(linha, idx) in linhas" :key="idx">
-                                                        <div class="grid grid-cols-1 gap-2 p-3 mb-2 bg-white border border-gray-200 rounded-lg sm:grid-cols-5">
-                                                            <input type="text" x-model="linha.unidade_orcamentaria" placeholder="Unidade Orçamentária" class="px-2 py-1.5 text-sm border-gray-300 rounded-md">
-                                                            <input type="text" x-model="linha.classificacao_funcional_programatica" placeholder="Classificação Funcional Programática" class="px-2 py-1.5 text-sm border-gray-300 rounded-md">
-                                                            <input type="text" x-model="linha.elemento_despesa" placeholder="Elemento de Despesa" class="px-2 py-1.5 text-sm border-gray-300 rounded-md">
-                                                            <input type="text" x-model="linha.fonte_recurso" placeholder="Fonte de Recurso" class="px-2 py-1.5 text-sm border-gray-300 rounded-md">
+                                                        <div class="grid grid-cols-1 gap-2 p-3 mb-2 bg-white border border-gray-200 rounded-lg sm:grid-cols-[1fr_16rem]">
+                                                            <input type="text" x-model="linha.dotacao_orcamentaria" placeholder="Dotação Orçamentária" class="px-2 py-1.5 text-sm border-gray-300 rounded-md">
                                                             <div class="flex gap-2">
                                                                 <input type="number" step="0.01" x-model="linha.valor" placeholder="Valor (opcional)" class="w-full px-2 py-1.5 text-sm border-gray-300 rounded-md">
                                                                 <button type="button" @click="linhas.splice(idx, 1)" class="px-2 text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>
@@ -511,7 +508,7 @@
                 salvando: false,
 
                 adicionarLinha() {
-                    this.linhas.push({ unidade_orcamentaria: '', classificacao_funcional_programatica: '', elemento_despesa: '', fonte_recurso: '', valor: null });
+                    this.linhas.push({ dotacao_orcamentaria: '', valor: null });
                 },
 
                 salvar() {

@@ -103,7 +103,7 @@ class AditivoTextoJuridicoService
         }
 
         $linhas = $vm->dotacoes->map(function ($d) {
-            return "Unidade Orçamentária: {$d->unidade_orcamentaria}; Classificação Funcional Programática: {$d->classificacao_funcional_programatica}; Elemento de Despesa: {$d->elemento_despesa}; Fonte de Recurso: {$d->fonte_recurso}";
+            return $d->textoDotacao();
         })->implode(' | ');
 
         return "Parágrafo único. As despesas decorrentes deste Termo Aditivo correrão à conta da seguinte dotação orçamentária: {$linhas}.";

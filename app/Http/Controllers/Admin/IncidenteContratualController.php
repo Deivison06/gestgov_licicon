@@ -407,10 +407,7 @@ class IncidenteContratualController extends Controller
         // quem preenchia só 1 ou 2 não conseguia salvar nada).
         $validated = $request->validate([
             'dotacoes' => 'required|array|min:1',
-            'dotacoes.*.unidade_orcamentaria' => 'nullable|string|max:255',
-            'dotacoes.*.classificacao_funcional_programatica' => 'nullable|string|max:255',
-            'dotacoes.*.elemento_despesa' => 'nullable|string|max:255',
-            'dotacoes.*.fonte_recurso' => 'nullable|string|max:255',
+            'dotacoes.*.dotacao_orcamentaria' => 'nullable|string|max:500',
             'dotacoes.*.valor' => 'nullable|numeric|min:0',
         ]);
 
@@ -610,10 +607,12 @@ class IncidenteContratualController extends Controller
         $numeroOrdinal = $this->calculoFinanceiro->numeroOrdinal($incidente, $contrato);
         $dotacoesAtuais = $incidente->dotacoes()->get();
         $dotacaoSugerida = [
-            'unidade_orcamentaria' => $contrato->dotacao_unidade_orcamentaria ?? null,
-            'classificacao_funcional_programatica' => $contrato->dotacao_classificacao_funcional_programatica ?? null,
-            'elemento_despesa' => $contrato->dotacao_elemento_despesa ?? null,
-            'fonte_recurso' => $contrato->fonte_recurso ?? null,
+            'dotacao_orcamentaria' => collect([
+                $contrato->dotacao_unidade_orcamentaria ?? null,
+                $contrato->dotacao_classificacao_funcional_programatica ?? null,
+                $contrato->dotacao_elemento_despesa ?? null,
+                $contrato->fonte_recurso ?? null,
+            ])->filter()->implode(' / '),
         ];
         // O aviso/formulário de "dados pendentes" só aparece para aditivos
         // LEGADOS (criados antes desta atualização, sem os campos de
