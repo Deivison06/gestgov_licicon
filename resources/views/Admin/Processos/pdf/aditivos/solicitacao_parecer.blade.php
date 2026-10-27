@@ -30,7 +30,7 @@
 
     <div class="clause-content">Sr. Procurador(a)/Assessor(a) Jurídico(a),</div>
     <div class="clause-content">
-        Tendo em vista a solicitação da {{ $orgaoSolicitante }}, sobre o Aditivo ao Contrato nº {{ $vm->numeroContrato }}, solicitamos a Vossa Senhoria que emita parecer jurídico sobre a legalidade do justificado e requerido.
+        Tendo em vista a solicitação do(a) {{ $orgaoSolicitante }}, sobre o Aditivo ao Contrato nº {{ $vm->numeroContrato }}, solicitamos a Vossa Senhoria que emita parecer jurídico sobre a legalidade do justificado e requerido.
     </div>
     <div class="clause-content">Sem mais, pedimos a maior brevidade possível.</div>
     <div class="clause-content">Atenciosamente.</div>
