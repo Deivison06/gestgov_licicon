@@ -26,9 +26,12 @@
 
         // Órgão que assina o aditivo: a unidade/secretaria selecionada pra esse
         // documento, ou a prefeitura (titular = prefeito) se nada foi selecionado.
-        $orgaoContratanteExtrato = $temAssinanteSelecionado && ! empty($documentoSelecao->assinantes[0]['unidade_nome'])
-            ? $documentoSelecao->assinantes[0]['unidade_nome']
-            : ($contrato->dados_contratante['orgao_responsavel'] ?? ($prefeitura->nome ?? 'Município'));
+        // Unidade "Prefeito Municipal" vira o nome da Prefeitura (ver Prefeitura::nomeOrgaoContratante).
+        $orgaoContratanteExtrato = $prefeitura
+            ? $prefeitura->nomeOrgaoContratante($temAssinanteSelecionado && ! empty($documentoSelecao->assinantes[0]['unidade_nome'])
+                ? $documentoSelecao->assinantes[0]['unidade_nome']
+                : ($contrato->dados_contratante['orgao_responsavel'] ?? null))
+            : 'Município';
 
         // Mesma frase de antes ("representada pelo seu titular, PREFEITO") quando
         // ninguém foi selecionado; quando há um assinante selecionado, nomeia o

@@ -24,9 +24,12 @@
         // Mesma frase de antes ("representada pelo seu titular, PREFEITO") quando
         // ninguém foi selecionado; quando há um assinante selecionado, nomeia o
         // órgão representado em vez de assumir sempre o prefeito.
-        $orgaoContratanteExtrato = $temAssinanteSelecionado && ! empty($documentoSelecao->assinantes[0]['unidade_nome'])
-            ? $documentoSelecao->assinantes[0]['unidade_nome']
-            : ($contrato->dados_contratante['orgao_responsavel'] ?? ($prefeitura->nome ?? 'Município'));
+        // Unidade "Prefeito Municipal" vira o nome da Prefeitura (ver Prefeitura::nomeOrgaoContratante).
+        $orgaoContratanteExtrato = $prefeitura
+            ? $prefeitura->nomeOrgaoContratante($temAssinanteSelecionado && ! empty($documentoSelecao->assinantes[0]['unidade_nome'])
+                ? $documentoSelecao->assinantes[0]['unidade_nome']
+                : ($contrato->dados_contratante['orgao_responsavel'] ?? null))
+            : 'Município';
 
         $representanteContratanteExtrato = $temAssinanteSelecionado
             ? $assinaturaContratanteExtrato
