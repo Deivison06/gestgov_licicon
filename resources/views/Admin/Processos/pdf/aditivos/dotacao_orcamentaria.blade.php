@@ -35,20 +35,14 @@
 
     @forelse($vm->dotacoes as $dotacao)
         <table class="dotacao">
-            <tr><td class="label">Unidade Orçamentária</td><td>{{ $dotacao->textoDotacao() }}</td></tr>
-            <tr><td class="label">Classificação Funcional Programática</td><td>{{ $dotacao->textoDotacao() }}</td></tr>
-            <tr><td class="label">Elemento de Despesa</td><td>{{ $dotacao->textoDotacao() }}</td></tr>
-            <tr><td class="label">Fonte de Recurso</td><td>{{ $dotacao->textoDotacao() }}</td></tr>
+            <tr><td class="label">Dotação Orçamentária</td><td>{{ $dotacao->textoDotacao() }}</td></tr>
             @if($dotacao->valor)
                 <tr><td class="label">Valor</td><td>R$ {{ number_format((float) $dotacao->valor, 2, ',', '.') }}</td></tr>
             @endif
         </table>
     @empty
         <table class="dotacao">
-            <tr><td class="label">Unidade Orçamentária</td><td>XXXXXXXXXXXXXXXXXXX</td></tr>
-            <tr><td class="label">Classificação Funcional Programática</td><td>XXXXXXXXXXXXXXXXXXX</td></tr>
-            <tr><td class="label">Elemento de Despesa</td><td>XXXXXXXXXXXXXXXXXXX</td></tr>
-            <tr><td class="label">Fonte de Recurso</td><td>XXXXXXXXXXXXXXXXXXX</td></tr>
+            <tr><td class="label">Dotação Orçamentária</td><td>XXXXXXXXXXXXXXXXXXX</td></tr>
         </table>
     @endforelse
 
