@@ -378,6 +378,29 @@ class IncidenteContratualController extends Controller
      * de atualizarCampos() (solicitação, orçamento de obra, aceite/regularidade),
      * que antes só sabiam substituir — nunca remover sem trocar por outro.
      */
+    /**
+     * PDF anexado pelo usuário que deve sair logo abaixo do documento gerado.
+     * Usado tanto no "Gerar PDF" individual quanto no "Baixar Todos", para os
+     * dois nunca divergirem. Retorna o caminho absoluto, ou null se não houver.
+     */
+    private function anexoDoDocumento(IncidenteContratual $incidente, string $tipo): ?string
+    {
+        $path = match ($tipo) {
+            'solicitacao_aditivo' => $incidente->arquivo_solicitacao_path,
+            'aceite_documentacao_aditivo' => $incidente->arquivo_aceite_documentacao_path,
+            'termo_aditivo' => $incidente->categoria === 'obras' ? $incidente->arquivo_orcamento_obra_path : null,
+            default => null,
+        };
+
+        if (! $path) {
+            return null;
+        }
+
+        $absoluto = Storage::disk('public')->path($path);
+
+        return file_exists($absoluto) ? $absoluto : null;
+    }
+
     private function resolverPathArquivo(Request $request, string $campo, string $diretorio, ?string $pathAtual): ?string
     {
         if ($request->hasFile($campo)) {
@@ -973,14 +996,9 @@ class IncidenteContratualController extends Controller
         ))->setPaper('a4', 'portrait')->output();
 
         // Mesclar arquivo PDF anexado nos documentos que têm essa opção
-        $pathAnexoMesclavel = null;
-        if ($tipo === 'aceite_documentacao_aditivo' && $incidente->arquivo_aceite_documentacao_path) {
-            $pathAnexoMesclavel = Storage::disk('public')->path($incidente->arquivo_aceite_documentacao_path);
-        } elseif ($tipo === 'solicitacao_aditivo' && $incidente->arquivo_solicitacao_path) {
-            $pathAnexoMesclavel = Storage::disk('public')->path($incidente->arquivo_solicitacao_path);
-        }
+        $pathAnexoMesclavel = $this->anexoDoDocumento($incidente, $tipo);
 
-        if ($pathAnexoMesclavel && file_exists($pathAnexoMesclavel)) {
+        if ($pathAnexoMesclavel) {
             $tmpDeclaracao = tempnam(sys_get_temp_dir(), 'adit_decl_') . '.pdf';
             file_put_contents($tmpDeclaracao, $pdfOutput);
 
@@ -1183,12 +1201,9 @@ class IncidenteContratualController extends Controller
             file_put_contents($tmpPath, $pdfOutput);
             $arquivosTemp[] = $tmpPath;
 
-            // Mesclar arquivo anexado ao aceite, se existir
-            if ($tipo === 'aceite_documentacao_aditivo' && $incidente->arquivo_aceite_documentacao_path) {
-                $pathAnexo = Storage::disk('public')->path($incidente->arquivo_aceite_documentacao_path);
-                if (file_exists($pathAnexo)) {
-                    $arquivosTemp[] = $pathAnexo;
-                }
+            // PDF anexado ao documento entra logo abaixo dele, como no "Gerar PDF" individual
+            if ($pathAnexo = $this->anexoDoDocumento($incidente, $tipo)) {
+                $arquivosTemp[] = $pathAnexo;
             }
         }
 
@@ -1212,10 +1227,13 @@ class IncidenteContratualController extends Controller
         // Aplicar carimbo lateral com numeração de páginas
         $outputPath = tempnam(sys_get_temp_dir(), 'aditivo_carimbado_') . '.pdf';
         $carimbado = $this->aplicarCarimboNumeracao($mergedPath, $outputPath, $prefeitura);
-        @unlink($mergedPath);
 
-        if (! $carimbado) {
-            // Fallback: retorna sem carimbo se o FPDI falhar
+        if ($carimbado) {
+            @unlink($mergedPath);
+        } else {
+            // Fallback: retorna sem carimbo se o FPDI falhar (antes o merged era
+            // apagado antes deste fallback e a resposta saía vazia)
+            @unlink($outputPath);
             $outputPath = $mergedPath;
         }
 
