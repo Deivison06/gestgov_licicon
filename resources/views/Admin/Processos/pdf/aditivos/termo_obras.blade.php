@@ -29,7 +29,7 @@
             : ($contrato->dados_contratante['orgao_responsavel'] ?? ($prefeitura->nome ?? 'Município'));
 
         $representanteContratanteExtrato = $temAssinanteSelecionado
-            ? 'representada pelo titular da ' . $orgaoContratanteExtrato . ', ' . $assinaturaContratanteExtrato
+            ? $assinaturaContratanteExtrato
             : 'representada pelo seu titular, ' . $assinaturaContratanteExtrato;
 
         $fundamentacaoLegalExtrato = collect([
@@ -41,7 +41,7 @@
     <div class="title">{{ $vm->tituloDocumento() }}</div>
 
     <div class="clause-content">
-        Pelo presente instrumento, de um lado o Município de {{ $prefeitura->cidade ?? 'Cidade' }}, pessoa jurídica de direito público interno, CNPJ {{ $prefeitura->cnpj ?? 'CNPJ' }}, localizada a {{ $prefeitura->endereco ?? 'Endereço' }}, neste ato <strong>{{ $representanteContratanteExtrato }}</strong>, e do outro lado a empresa <strong>{{ $contrato->dados_contratante['razao_social'] ?? 'CONTRATADA' }}</strong>, CNPJ Nº {{ $contrato->dados_contratante['cnpj'] ?? 'CNPJ' }}, estabelecida à sede na {{ $contrato->dados_contratante['endereco'] ?? 'Endereço da Empresa' }}, neste ato devidamente representada por {{ $contrato->dados_contratante['representante'] ?? 'Representante Legal' }}, denominados <strong>CONTRATANTE</strong> e <strong>CONTRATADO</strong>, têm justo e acordado entre si o presente <strong>{{ $vm->numeroOrdinalFormatado() }} TERMO ADITIVO</strong> ao contrato de nº {{ $vm->numeroContrato }}, mediante as cláusulas e condições seguintes:
+        Pelo presente instrumento, de um lado o Município de {{ $prefeitura->cidade ?? 'Cidade' }}, pessoa jurídica de direito público interno, CNPJ {{ $prefeitura->cnpj ?? 'CNPJ' }}, localizada a {{ $prefeitura->endereco ?? 'Endereço' }}, neste ato representado por <strong>{{ $representanteContratanteExtrato }}</strong>, e do outro lado a empresa <strong>{{ $contrato->dados_contratante['razao_social'] ?? 'CONTRATADA' }}</strong>, CNPJ Nº {{ $contrato->dados_contratante['cnpj'] ?? 'CNPJ' }}, estabelecida à sede na {{ $contrato->dados_contratante['endereco'] ?? 'Endereço da Empresa' }}, neste ato devidamente representada por {{ $contrato->dados_contratante['representante'] ?? 'Representante Legal' }}, denominados <strong>CONTRATANTE</strong> e <strong>CONTRATADO</strong>, têm justo e acordado entre si o presente <strong>{{ $vm->numeroOrdinalFormatado() }} TERMO ADITIVO</strong> ao contrato de nº {{ $vm->numeroContrato }}, mediante as cláusulas e condições seguintes:
     </div>
 
     <div class="clause-title">CLÁUSULA PRIMEIRA – DO OBJETO</div>
@@ -100,6 +100,11 @@
                 @endif
             </div>
         @endforeach
+            <div class="signature-box">
+                ___________________________________<br>
+                <strong>{{ $contrato->dados_contratante['razao_social'] ?? 'CONTRATADA' }}</strong><br>
+                <strong>CONTRATADA</strong>
+            </div>
         </div>
     @else
         <div class="signature-section">
