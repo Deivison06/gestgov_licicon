@@ -407,7 +407,7 @@ class IncidenteContratualController extends Controller
         // quem preenchia só 1 ou 2 não conseguia salvar nada).
         $validated = $request->validate([
             'dotacoes' => 'required|array|min:1',
-            'dotacoes.*.dotacao_orcamentaria' => 'nullable|string|max:500',
+            'dotacoes.*.dotacao_orcamentaria' => 'nullable|string|max:3000',
             'dotacoes.*.valor' => 'nullable|numeric|min:0',
         ]);
 
@@ -529,12 +529,21 @@ class IncidenteContratualController extends Controller
             $documentos['dotacao_orcamentaria_aditivo'] = [
                 'titulo' => 'Informação de Disponibilidade Orçamentária',
                 'cor' => '#0891b2', // ciano
-                'requer_assinatura' => false,
+                // Quem assina varia por prefeitura (Finanças, Fazenda, Contabilidade...)
+                'requer_assinatura' => $permitirSelecaoAssinante,
                 'campos' => [], // tela própria (ver atualizarDotacoes()), não o form genérico
             ];
         }
 
         $documentos += [
+            // Ofício do Prefeito à Procuradoria — vem depois do aceite e da dotação
+            // (antes era a 2ª página da Solicitação do Aditivo, fora de ordem).
+            'solicitacao_parecer_aditivo' => [
+                'titulo' => 'Solicitação de Parecer Jurídico',
+                'cor' => '#be185d', // rosa
+                'requer_assinatura' => $permitirSelecaoAssinante,
+                'campos' => [],
+            ],
             'parecer_juridico_aditivo' => [
                 'titulo' => 'Parecer Jurídico',
                 'cor' => '#dc2626', // vermelho
@@ -873,6 +882,10 @@ class IncidenteContratualController extends Controller
                 $viewName = 'Admin.Processos.pdf.aditivos.dotacao_orcamentaria';
                 $tituloArquivo = 'Dotacao_Orcamentaria_Aditivo_'.$numContratoSafe;
                 break;
+            case 'solicitacao_parecer_aditivo':
+                $viewName = 'Admin.Processos.pdf.aditivos.solicitacao_parecer';
+                $tituloArquivo = 'Solicitacao_Parecer_Aditivo_'.$numContratoSafe;
+                break;
             case 'parecer_juridico_aditivo':
                 $viewName = 'Admin.Processos.pdf.aditivos.parecer';
                 $tituloArquivo = 'Parecer_Juridico_Aditivo_'.$numContratoSafe;
@@ -1114,23 +1127,21 @@ class IncidenteContratualController extends Controller
         $vm = app(\App\Services\Aditivos\AditivoViewModelFactory::class)->build($incidente, $contrato, $objetoContrato);
         $textoJuridico = app(\App\Services\Aditivos\AditivoTextoJuridicoService::class);
 
-        $tiposView = [
-            'capa_aditivo'               => 'Admin.Processos.pdf.aditivos.capa',
-            'solicitacao_aditivo'        => 'Admin.Processos.pdf.aditivos.solicitacao',
-            'aceite_documentacao_aditivo' => 'Admin.Processos.pdf.aditivos.aceite_documentacao',
-            'parecer_juridico_aditivo'   => 'Admin.Processos.pdf.aditivos.parecer',
+        // Mesma ordem cronológica da tela (documentos()): solicitação → aceite →
+        // [parecer técnico] → dotação → solicitação de parecer → parecer → autorização → termo.
+        $tiposView = array_filter([
+            'capa_aditivo'                 => 'Admin.Processos.pdf.aditivos.capa',
+            'solicitacao_aditivo'          => 'Admin.Processos.pdf.aditivos.solicitacao',
+            'aceite_documentacao_aditivo'  => 'Admin.Processos.pdf.aditivos.aceite_documentacao',
+            'parecer_tecnico_aditivo'      => $incidente->categoria === 'obras' ? 'Admin.Processos.pdf.aditivos.parecer_tecnico' : null,
+            'dotacao_orcamentaria_aditivo' => $incidente->temAcrescimoDeValor() ? 'Admin.Processos.pdf.aditivos.dotacao_orcamentaria' : null,
+            'solicitacao_parecer_aditivo'  => 'Admin.Processos.pdf.aditivos.solicitacao_parecer',
+            'parecer_juridico_aditivo'     => 'Admin.Processos.pdf.aditivos.parecer',
             'autorizacao_prefeito_aditivo' => 'Admin.Processos.pdf.aditivos.autorizacao',
-            'termo_aditivo'              => $incidente->categoria === 'obras'
+            'termo_aditivo'                => $incidente->categoria === 'obras'
                 ? 'Admin.Processos.pdf.aditivos.termo_obras'
                 : 'Admin.Processos.pdf.aditivos.termo_compras',
-        ];
-
-        if ($incidente->categoria === 'obras') {
-            $tiposView = array_merge(['parecer_tecnico_aditivo' => 'Admin.Processos.pdf.aditivos.parecer_tecnico'], $tiposView);
-        }
-        if ($incidente->temAcrescimoDeValor()) {
-            $tiposView['dotacao_orcamentaria_aditivo'] = 'Admin.Processos.pdf.aditivos.dotacao_orcamentaria';
-        }
+        ]);
 
         $arquivosTemp = [];
 

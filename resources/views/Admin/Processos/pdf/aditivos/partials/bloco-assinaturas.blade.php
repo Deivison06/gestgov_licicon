@@ -9,7 +9,7 @@
     @foreach($documentoSelecao->assinantes as $assinante)
         <div class="signature-block">
             ___________________________________<br>
-            <strong>{{ mb_strtoupper($assinante['responsavel']) }}</strong><br>
+            <strong>{{ \App\Helpers\NomeProprio::formatar($assinante['responsavel']) }}</strong><br>
             {{ $assinante['unidade_nome'] }}
             @if(!empty($assinante['portaria']))
                 <br>Portaria: {{ $assinante['portaria'] }}
@@ -19,7 +19,7 @@
 @else
     <div class="signature-block">
         ___________________________________<br>
-        <strong>{{ mb_strtoupper($nomeFallback ?? ($prefeitura->autoridade_competente ?? 'Prefeito')) }}</strong><br>
+        <strong>{{ \App\Helpers\NomeProprio::formatar($nomeFallback ?? ($prefeitura->autoridade_competente ?? 'Prefeito')) }}</strong><br>
         {{ $cargoFallback ?? 'Secretário(a)' }}
     </div>
 @endif

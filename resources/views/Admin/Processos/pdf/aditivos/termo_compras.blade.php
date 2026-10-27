@@ -21,8 +21,8 @@
         $temAssinanteSelecionado = isset($documentoSelecao) && is_array($documentoSelecao->assinantes) && count($documentoSelecao->assinantes) > 0;
 
         $assinaturaContratanteExtrato = $temAssinanteSelecionado
-            ? mb_convert_case($documentoSelecao->assinantes[0]['responsavel'], MB_CASE_TITLE)
-            : mb_convert_case($prefeitura->autoridade_competente ?? 'Prefeito', MB_CASE_TITLE);
+            ? \App\Helpers\NomeProprio::formatar($documentoSelecao->assinantes[0]['responsavel'])
+            : \App\Helpers\NomeProprio::formatar($prefeitura->autoridade_competente ?? 'Prefeito');
 
         // Órgão que assina o aditivo: a unidade/secretaria selecionada pra esse
         // documento, ou a prefeitura (titular = prefeito) se nada foi selecionado.
@@ -33,12 +33,11 @@
                 : ($contrato->dados_contratante['orgao_responsavel'] ?? null))
             : 'Município';
 
-        // Mesma frase de antes ("representada pelo seu titular, PREFEITO") quando
-        // ninguém foi selecionado; quando há um assinante selecionado, nomeia o
-        // órgão representado em vez de assumir sempre o prefeito.
+        // "neste ato representado por seu titular, Nome" quando ninguém foi
+        // selecionado; com assinante selecionado, "representado por Nome".
         $representanteContratanteExtrato = $temAssinanteSelecionado
-            ? mb_strtoupper($assinaturaContratanteExtrato)
-            : 'representada pelo seu titular, ' . mb_strtoupper($assinaturaContratanteExtrato);
+            ? $assinaturaContratanteExtrato
+            : 'seu titular, ' . $assinaturaContratanteExtrato;
 
         $fundamentacaoLegalExtrato = collect([
             $vm->envolvePrazo() ? ($vm->artigoFundamentacaoPrazo().' da Lei nº 14.133/2021') : null,
@@ -145,16 +144,14 @@
         E, por estarem assim justos e acordados, as partes firmam o presente <strong>Termo Aditivo</strong> ao Contrato nº {{ $vm->numeroContrato }}, para que produza seus jurídicos e legais efeitos.
     </div>
 
-    <div style="margin-top: 40px; text-align: left; margin-left: 40px;">
-        {{ $prefeitura->cidade ?? 'Cidade' }}, {{ \Carbon\Carbon::parse($data_selecionada ?? now())->translatedFormat('d \d\e F \d\e Y') }}.
-    </div>
+    @include('Admin.Processos.pdf.aditivos.partials.data-local')
 
     @if(isset($documentoSelecao) && is_array($documentoSelecao->assinantes) && count($documentoSelecao->assinantes) > 0)
         <div class="signature-section">
         @foreach($documentoSelecao->assinantes as $assinante)
             <div class="signature-box">
                 ___________________________________<br>
-                <strong>{{ mb_strtoupper($assinante['responsavel']) }}</strong><br>
+                <strong>{{ \App\Helpers\NomeProprio::formatar($assinante['responsavel']) }}</strong><br>
                 {{ $assinante['unidade_nome'] }}
                 @if(!empty($assinante['portaria']))
                 <br>Portaria: {{ $assinante['portaria'] }}
@@ -171,7 +168,7 @@
         <div class="signature-section">
             <div class="signature-box">
                 ___________________________________<br>
-                <strong>{{ mb_strtoupper($prefeitura->autoridade_competente ?? 'Prefeito') }}</strong><br>
+                <strong>{{ \App\Helpers\NomeProprio::formatar($prefeitura->autoridade_competente ?? 'Prefeito') }}</strong><br>
                 <strong>CONTRATANTE</strong>
             </div>
             <div class="signature-box">

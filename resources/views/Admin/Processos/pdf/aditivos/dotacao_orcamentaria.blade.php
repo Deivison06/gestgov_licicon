@@ -46,14 +46,18 @@
         </table>
     @endforelse
 
-    <div style="margin-top: 40px;">
-        {{ $prefeitura->cidade ?? 'Cidade' }}, {{ \Carbon\Carbon::parse($data_selecionada ?? now())->translatedFormat('d \d\e F \d\e Y') }}.
-    </div>
+    @include('Admin.Processos.pdf.aditivos.partials.data-local')
 
-    <div class="signature-block">
-        ___________________________________<br>
-        <strong>{{ mb_strtoupper($prefeitura->nome ?? 'Setor de Contabilidade') }}</strong><br>
-        Setor de Contabilidade
-    </div>
+    {{-- Assina quem for selecionado em "Definir Assinantes" (Secretaria de
+         Finanças, Fazenda, Contabilidade... varia por prefeitura). --}}
+    @if(isset($documentoSelecao) && is_array($documentoSelecao->assinantes) && count($documentoSelecao->assinantes) > 0)
+        @include('Admin.Processos.pdf.aditivos.partials.bloco-assinaturas')
+    @else
+        <div class="signature-block">
+            ___________________________________<br>
+            <strong>{{ mb_strtoupper($prefeitura->nome ?? 'Prefeitura Municipal') }}</strong><br>
+            Setor Financeiro/Contábil
+        </div>
+    @endif
 </body>
 </html>

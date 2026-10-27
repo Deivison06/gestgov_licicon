@@ -104,14 +104,14 @@
     <div class="section-title">IV – DAS CONDIÇÕES PARA A FORMALIZAÇÃO</div>
     <div class="clause-content" style="text-indent: 0;">
         Para a regularidade do aditivo, recomenda-se que:
-        <ul class="list-content" style="list-style-type: none; margin-left: 0;">
-            <li>✓ o termo aditivo seja devidamente motivado;</li>
-            <li>✓ haja autorização expressa da autoridade competente;</li>
-            <li>✓ sejam mantidas as cláusulas essenciais do contrato;</li>
+        <ul class="list-content">
+            <li>o termo aditivo seja devidamente motivado;</li>
+            <li>haja autorização expressa da autoridade competente;</li>
+            <li>sejam mantidas as cláusulas essenciais do contrato;</li>
             @if($vm->exigeDotacaoOrcamentaria())
-                <li>✓ exista prévia dotação orçamentária;</li>
+                <li>exista prévia dotação orçamentária;</li>
             @endif
-            <li>✓ seja providenciada a publicação do termo aditivo nos meios legais.</li>
+            <li>seja providenciada a publicação do termo aditivo nos meios legais.</li>
         </ul>
     </div>
 
@@ -126,16 +126,14 @@
         É o parecer.
     </div>
 
-    <div style="margin-top: 40px; text-align: left;">
-        {{ $prefeitura->cidade ?? 'Cidade' }}, {{ \Carbon\Carbon::parse($data_selecionada ?? now())->translatedFormat('d \d\e F \d\e Y') }}.
-    </div>
+    @include('Admin.Processos.pdf.aditivos.partials.data-local')
 
     @if(isset($documentoSelecao) && is_array($documentoSelecao->assinantes) && count($documentoSelecao->assinantes) > 0)
         @include('Admin.Processos.pdf.aditivos.partials.bloco-assinaturas')
     @else
         <div class="signature-block">
             ___________________________________<br>
-            <strong>{{ mb_strtoupper($incidente->nome_parecerista ?? '') }}</strong><br>
+            <strong>{{ \App\Helpers\NomeProprio::formatar($incidente->nome_parecerista ?? '') }}</strong><br>
             {{ $incidente->cargo_parecerista ?? '' }}
             @if($incidente->oab_parecerista)
                 <br>{{ $incidente->oab_parecerista }}

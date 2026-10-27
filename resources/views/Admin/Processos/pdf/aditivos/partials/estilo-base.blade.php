@@ -37,6 +37,7 @@ body {
 .clause-content { text-indent: 40px; margin-bottom: 10px; }
 .list-content { margin-left: 40px; margin-bottom: 10px; }
 .list-content li { margin-bottom: 5px; }
+.data-local { margin-top: 40px; text-align: right; text-indent: 0; }
 .signature-block, .signature-section { margin-top: 60px; text-align: center; }
 .signature-box { display: inline-block; width: 45%; vertical-align: top; margin-bottom: 40px; }
 .check-box { font-family: monospace; font-size: 12pt; }

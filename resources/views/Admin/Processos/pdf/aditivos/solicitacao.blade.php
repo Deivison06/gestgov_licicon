@@ -37,12 +37,7 @@
         @else
             de adequação quantitativa do objeto do Contrato nº {{ $vm->numeroContrato }} à demanda efetivamente verificada,
         @endif
-        vem solicitar a adoção das providências necessárias à formalização de Termo Aditivo que contemple
-        @if($vm->envolvePrazo() && $vm->envolveValor())
-            , simultaneamente:
-        @else
-            :
-        @endif
+        vem solicitar a adoção das providências necessárias à formalização de Termo Aditivo que contemple{{ $vm->envolvePrazo() && $vm->envolveValor() ? ', simultaneamente' : '' }}:
     </div>
 
     <ul class="list-content">
@@ -86,7 +81,7 @@
 
     @if($vm->envolveValor())
         <div class="clause-content">
-            Consideradas os aditivos anteriores, os acréscimos acumulados somam {{ number_format($resumo['percentual_acumulado_acrescimo'] ?? 0, 2, ',', '.') }}%
+            Considerados os aditivos anteriores, os acréscimos acumulados somam {{ number_format($resumo['percentual_acumulado_acrescimo'] ?? 0, 2, ',', '.') }}%
             e as supressões acumuladas {{ number_format($resumo['percentual_acumulado_supressao'] ?? 0, 2, ',', '.') }}% do valor inicial atualizado, passando o valor
             contratual para R$ {{ number_format($resumo['valor_final_contrato'] ?? 0, 2, ',', '.') }}.
         </div>
@@ -150,51 +145,15 @@
     </div>
 
     <div class="clause-content" style="margin-top: 30px;">
-        A conclusão definitiva quanto à vantajosidade fica condicionada à manifestação técnica da Engenharia/setor competente
-        @if($vm->exigeDotacaoOrcamentaria())
-            , à disponibilidade orçamentária
-        @endif
-        , ao parecer jurídico e à autorização da autoridade competente.
+        A conclusão definitiva quanto à vantajosidade fica condicionada à manifestação técnica da Engenharia/setor competente{{ $vm->exigeDotacaoOrcamentaria() ? ', à disponibilidade orçamentária' : '' }}, ao parecer jurídico e à autorização da autoridade competente.
     </div>
 
-    <div style="margin-top: 40px;">
-        {{ $prefeitura->cidade ?? 'Cidade' }}, {{ \Carbon\Carbon::parse($data_selecionada ?? now())->translatedFormat('d \d\e F \d\e Y') }}
-    </div>
+    @include('Admin.Processos.pdf.aditivos.partials.data-local')
 
     @include('Admin.Processos.pdf.aditivos.partials.bloco-assinaturas', [
         'nomeFallback' => $incidente->nome_solicitante ?? ($contrato->dados_contratante['orgao_responsavel'] ?? 'SECRETARIA MUNICIPAL'),
         'cargoFallback' => $incidente->cargo_solicitante ?? 'Secretário(a)',
     ])
 
-    <div class="page-break"></div>
-
-    @php
-        $orgaoSolicitante = $contrato->dados_contratante['orgao_responsavel'] ?? 'Secretaria';
-        $nomeOficio = (isset($documentoSelecao) && is_array($documentoSelecao->assinantes) && count($documentoSelecao->assinantes) > 0)
-            ? $documentoSelecao->assinantes[0]['responsavel']
-            : ($incidente->nome_solicitante ?? $orgaoSolicitante);
-        $cargoOficio = (isset($documentoSelecao) && is_array($documentoSelecao->assinantes) && count($documentoSelecao->assinantes) > 0)
-            ? ($documentoSelecao->assinantes[0]['unidade_nome'] ?? $orgaoSolicitante)
-            : ($incidente->cargo_solicitante ?? $orgaoSolicitante);
-    @endphp
-
-    <div style="margin-top: 40px; font-size: 11pt;">
-        <p>
-            <strong>De:</strong> {{ $prefeitura->autoridade_competente ?? 'Prefeito Municipal' }} <br>
-            <strong>Para:</strong> Procuradoria/Assessoria Jurídica
-        </p>
-        <p style="text-indent: 40px;">Sr. Procurador(a)/Assessor(a) Jurídico(a),</p>
-        <p style="text-indent: 40px;">
-            Tendo em vista a solicitação da {{ $orgaoSolicitante }}, sobre o Aditivo ao Contrato n. {{ $vm->numeroContrato }}, solicitamos a Vossa Senhoria que emita parecer jurídico sobre a legalidade do justificado e requerido.
-        </p>
-        <p style="text-indent: 40px;">Sem mais, pedimos a maior brevidade possível.</p>
-        <p style="text-indent: 40px;">Atenciosamente.</p>
-    </div>
-
-    <div class="signature-block">
-        ___________________________________<br>
-        <strong>{{ mb_strtoupper($prefeitura->autoridade_competente ?? 'Prefeito Municipal') }}</strong><br>
-        Prefeito Municipal
-    </div>
 </body>
 </html>

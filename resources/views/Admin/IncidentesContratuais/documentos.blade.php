@@ -314,7 +314,10 @@
                                                     <p class="mb-3 text-xs text-gray-500">Sugerido a partir do cadastro do contrato — confira e ajuste antes de salvar.</p>
                                                     <template x-for="(linha, idx) in linhas" :key="idx">
                                                         <div class="grid grid-cols-1 gap-2 p-3 mb-2 bg-white border border-gray-200 rounded-lg sm:grid-cols-[1fr_16rem]">
-                                                            <input type="text" x-model="linha.dotacao_orcamentaria" placeholder="Dotação Orçamentária" class="px-2 py-1.5 text-sm border-gray-300 rounded-md">
+                                                            <div>
+                                                                <textarea x-model="linha.dotacao_orcamentaria" rows="3" maxlength="3000" placeholder="Dotação Orçamentária" class="w-full px-2 py-1.5 text-sm border-gray-300 rounded-md"></textarea>
+                                                                <p class="mt-0.5 text-[11px] text-right text-gray-400"><span x-text="(linha.dotacao_orcamentaria || '').length"></span>/3000</p>
+                                                            </div>
                                                             <div class="flex gap-2">
                                                                 <input type="number" step="0.01" x-model="linha.valor" placeholder="Valor (opcional)" class="w-full px-2 py-1.5 text-sm border-gray-300 rounded-md">
                                                                 <button type="button" @click="linhas.splice(idx, 1)" class="px-2 text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>

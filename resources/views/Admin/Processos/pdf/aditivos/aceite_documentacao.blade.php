@@ -23,9 +23,7 @@
         regularidade fiscal, trabalhista e de habilitação exigida, anexada a este processo administrativo.
     </div>
 
-    <div style="margin-top: 40px;">
-        {{ $prefeitura->cidade ?? 'Cidade' }}, {{ \Carbon\Carbon::parse($data_selecionada ?? now())->translatedFormat('d \d\e F \d\e Y') }}
-    </div>
+    @include('Admin.Processos.pdf.aditivos.partials.data-local')
 
     @include('Admin.Processos.pdf.aditivos.partials.bloco-assinaturas', [
         'nomeFallback' => $incidente->nome_solicitante ?? ($contrato->dados_contratante['orgao_responsavel'] ?? 'SECRETARIA MUNICIPAL'),

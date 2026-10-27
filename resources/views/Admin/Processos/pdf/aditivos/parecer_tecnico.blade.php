@@ -91,16 +91,14 @@
     </div>
     <div class="clause-content">É o parecer técnico.</div>
 
-    <div style="margin-top: 40px; text-align: left;">
-        {{ $prefeitura->cidade ?? 'Cidade' }}, {{ \Carbon\Carbon::parse($data_selecionada ?? now())->translatedFormat('d \d\e F \d\e Y') }}.
-    </div>
+    @include('Admin.Processos.pdf.aditivos.partials.data-local')
 
     @if(isset($documentoSelecao) && is_array($documentoSelecao->assinantes) && count($documentoSelecao->assinantes) > 0)
         @include('Admin.Processos.pdf.aditivos.partials.bloco-assinaturas')
     @else
         <div class="signature-block">
             ___________________________________<br>
-            <strong>{{ mb_strtoupper($incidente->nome_engenheiro_parecer_tecnico ?? 'Engenheiro(a) Responsável') }}</strong><br>
+            <strong>{{ \App\Helpers\NomeProprio::formatar($incidente->nome_engenheiro_parecer_tecnico ?? 'Engenheiro(a) Responsável') }}</strong><br>
             {{ $incidente->cargo_engenheiro_parecer_tecnico ?? 'Engenheiro(a) Responsável' }}<br>
             {{ $incidente->registro_profissional_parecer_tecnico ?? 'CREA/CAU nº XXXXXXX' }}
         </div>
