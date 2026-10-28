@@ -127,6 +127,12 @@
                               id="delete-form{{$contrato->id}}" method="POST" class="inline">
                             @csrf
                             @method('DELETE')
+                            {{-- Preserva filtros/página da listagem após a exclusão --}}
+                            @foreach(request()->only(['search', 'prefeitura_id', 'modalidade', 'empresa_id', 'situacao', 'vencimento', 'page']) as $filtroNome => $filtroValor)
+                                @if(filled($filtroValor))
+                                    <input type="hidden" name="{{ $filtroNome }}" value="{{ $filtroValor }}">
+                                @endif
+                            @endforeach
                             <button type="button"
                                     onclick="confirmDelete{{$contrato->id}}()"
                                     class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-white bg-red-700/80 border border-red-600/40 rounded hover:bg-red-700 transition-colors">

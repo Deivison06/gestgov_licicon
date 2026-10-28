@@ -1102,7 +1102,7 @@ class ContratoManualController extends Controller
          }
     }
 
-    public function destroy(ContratoManual $contrato)
+    public function destroy(Request $request, ContratoManual $contrato)
     {
         Log::info('🗑️ Iniciando exclusão do contrato', [
             'contrato_id' => $contrato->id
@@ -1132,8 +1132,13 @@ class ContratoManualController extends Controller
             $contrato->delete();
             Log::info('✅ Contrato deletado com sucesso', ['contrato_id' => $contrato->id]);
 
-            return redirect()->route('admin.contratos.index')
-                ->with('success', 'Contrato excluído com sucesso!');
+            return redirect()->route('admin.contratos.index', array_merge(
+                ['tipo' => 'manual'],
+                array_filter(
+                    $request->only(['search', 'prefeitura_id', 'modalidade', 'empresa_id', 'situacao', 'vencimento', 'page']),
+                    fn ($valor) => filled($valor)
+                )
+            ))->with('success', 'Contrato excluído com sucesso!');
 
         } catch (\Exception $e) {
             Log::error('❌ Erro ao excluir contrato', [
