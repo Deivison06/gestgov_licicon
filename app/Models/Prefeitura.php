@@ -42,17 +42,20 @@ class Prefeitura extends Model
 
     /**
      * Representante no preâmbulo do Termo Aditivo: "pelo Prefeito Municipal,
-     * senhor(a) Fulano". A unidade não tem campo de cargo — o nome dela já é o
-     * cargo na prática ("Prefeito Municipal", "Pregoeiro"), exceto Secretarias,
-     * cadastradas pelo nome do órgão, que viram "Secretário(a) ...".
-     * Sem assinante selecionado, usa o Prefeito.
+     * senhor(a) Fulano". Usa o cargo gravado na seleção; sem ele (seleções
+     * antigas), o nome da unidade faz as vezes de cargo e Secretarias viram
+     * "Secretário(a) ...". Sem assinante selecionado, usa o Prefeito.
      */
     public function representanteContratante(?array $assinante): string
     {
         $nome = ($assinante['responsavel'] ?? null) ?: ($this->autoridade_competente ?? 'Prefeito');
-        $cargo = trim($assinante['unidade_nome'] ?? '') ?: 'Prefeito Municipal';
-
-        $cargo = preg_replace('/^secretaria\b/iu', 'Secretário(a)', $cargo);
+        // Cargo gravado na seleção (coluna unidades.cargo) tem prioridade; seleções
+        // antigas, sem cargo, derivam do nome da unidade como antes.
+        $cargo = trim((string) ($assinante['cargo'] ?? ''));
+        if ($cargo === '') {
+            $cargo = trim($assinante['unidade_nome'] ?? '') ?: 'Prefeito Municipal';
+            $cargo = preg_replace('/^secretaria\b/iu', 'Secretário(a)', $cargo);
+        }
         $primeiraPalavra = mb_strtolower(strtok($cargo, ' ') ?: '');
 
         $artigo = match (true) {

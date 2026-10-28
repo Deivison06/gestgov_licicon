@@ -378,7 +378,8 @@ class ProcessoPdfService extends AbstractService
             throw new \Exception('Ocorreu um erro ao processar a lista de assinantes. Tente novamente.');
         }
 
-        return $assinantes;
+        // O JSON da tela não traz o cargo; completa pela unidade (unidades.cargo).
+        return \App\Models\DocumentoSelecaoAssinantes::comCargoDasUnidades($assinantes ?? []);
     }
 
     private function validarAssinantes(string $documento, array $assinantes): void

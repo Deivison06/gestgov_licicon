@@ -238,6 +238,13 @@
                                             class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white transition-colors duration-200 bg-[var(--mint)] rounded-md hover:bg-[var(--teal-dark-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:ring-offset-2">
                                         <i class="fas fa-file-pdf"></i> Gerar PDF
                                     </button>
+                                    @if ($documentoGerado && $documentoGerado->gerado_em)
+                                        <a href="{{ route("$rotaBase.pdf", ['contrato_id' => $contrato->id, 'incidente_id' => $incidente->id, 'tipo' => $tipo, 'download' => 1]) }}"
+                                           title="Baixar PDF"
+                                           class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-[var(--teal-text)] transition-colors duration-200 bg-white border border-[var(--mint)] rounded-md hover:bg-[var(--mint)]/10 focus:outline-none focus:ring-2 focus:ring-[var(--mint)] focus:ring-offset-2">
+                                            <i class="fas fa-download"></i> Baixar
+                                        </a>
+                                    @endif
                                     @if ($requerAssinatura && !$ehManual)
                                         <x-botao-solicitar-assinatura
                                             :processo-id="$processo->id"
@@ -251,7 +258,7 @@
                         @if ($temCampos || $requerAssinatura)
                             <tr>
                                 <td colspan="3" class="p-0">
-                                    <div id="{{ $accordionId }}" class="{{ $requerAssinatura ? '' : 'hidden' }}">
+                                    <div id="{{ $accordionId }}" class="hidden">
                                         <div class="p-4 border-t border-gray-200 bg-gray-50">
                                             @if ($requerAssinatura)
                                                 <div class="pb-4 mb-6 border-b border-gray-200">
@@ -269,13 +276,13 @@
                                                         <div class="flex flex-col gap-3 p-4 bg-white border border-gray-200 rounded-lg assinante-item">
                                                             <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
                                                                 <div class="flex-1 min-w-[180px]">
-                                                                    <label class="block mb-1 text-xs font-medium text-gray-600">Unidade</label>
+                                                                    <label class="block mb-1 text-xs font-medium text-gray-600">Cargo / Unidade</label>
                                                                     <select name="assinante_unidade[]"
                                                                             class="block w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 unidade-select"
                                                                             onchange="updateResponsavel(this, '{{ $tipo }}-i{{ $incidente->id }}')">
-                                                                        <option value="">Selecione a Unidade</option>
+                                                                        <option value="">Selecione o Cargo</option>
                                                                         @foreach ($prefeitura->unidades as $unidade)
-                                                                            <option value="{{ $unidade->id }}">{{ $unidade->nome }}</option>
+                                                                            <option value="{{ $unidade->id }}" data-nome="{{ $unidade->nome }}">{{ $unidade->rotuloAssinante() }}</option>
                                                                         @endforeach
                                                                     </select>
                                                                 </div>
@@ -448,12 +455,12 @@
             novo.innerHTML = `
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
                     <div class="flex-1 min-w-[180px]">
-                        <label class="block mb-1 text-xs font-medium text-gray-600">Unidade</label>
+                        <label class="block mb-1 text-xs font-medium text-gray-600">Cargo / Unidade</label>
                         <select name="assinante_unidade[]"
                                 class="block w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 unidade-select"
                                 onchange="updateResponsavel(this, '${chaveDocumento}')">
-                            <option value="">Selecione a Unidade</option>
-                            ${unidadesAssinantes.map(u => `<option value="${u.id}">${u.nome}</option>`).join('')}
+                            <option value="">Selecione o Cargo</option>
+                            ${unidadesAssinantes.map(u => `<option value="${u.id}" data-nome="${u.nome}">${u.cargo && u.cargo.trim().toLowerCase() !== (u.nome || '').trim().toLowerCase() ? u.cargo + ' — ' + u.nome : u.nome}</option>`).join('')}
                         </select>
                     </div>
                     <div class="flex flex-col flex-1 gap-2 sm:flex-row sm:items-center sm:gap-3">
@@ -590,7 +597,7 @@
                     assinantesItems.forEach(item => {
                         const sel       = item.querySelector('.unidade-select');
                         const unidadeId = sel?.value ?? '';
-                        const unidadeNome = sel?.options[sel.selectedIndex]?.text ?? '';
+                        const unidadeNome = sel?.options[sel.selectedIndex]?.dataset.nome ?? sel?.options[sel.selectedIndex]?.text ?? '';
                         const responsavel  = item.querySelector('.responsavel-input')?.value ?? '';
                         const portaria     = item.querySelector('.portaria-input')?.value ?? '';
                         const dataPortaria = item.querySelector('.data-portaria-input')?.value ?? '';
@@ -635,11 +642,13 @@
                         const assinantes = [];
                         assinantesItems.forEach(item => {
                             const responsavel = item.querySelector('.responsavel-input')?.value ?? '';
-                            const unidadeNome = item.querySelector('.unidade-select option:checked')?.text ?? '';
+                            const unidadeId = item.querySelector('.unidade-select')?.value ?? '';
+                            const opcao = item.querySelector('.unidade-select option:checked');
+                            const unidadeNome = opcao?.dataset.nome ?? opcao?.text ?? '';
                             const portaria = item.querySelector('.portaria-input')?.value ?? '';
                             const dataPortaria = item.querySelector('.data-portaria-input')?.value ?? '';
                             if (responsavel) {
-                                assinantes.push({ responsavel, unidade_nome: unidadeNome, portaria, data_portaria: dataPortaria });
+                                assinantes.push({ unidade_id: unidadeId, responsavel, unidade_nome: unidadeNome, portaria, data_portaria: dataPortaria });
                             }
                         });
                         if (assinantes.length > 0) {

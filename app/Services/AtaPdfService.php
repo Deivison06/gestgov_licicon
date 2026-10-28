@@ -25,7 +25,8 @@ class AtaPdfService extends AbstractService
         $contratacoesIds = $data['contratacoes_selecionadas'] ?? [];
         $campos = $data['campos'] ?? [];
         $dataSelecionada = $data['data'] ?? now()->format('Y-m-d');
-        $assinantes = $data['assinantes'] ?? [];
+        // Cargo digitado na tela é mantido; vazio, completa pela unidade (unidades.cargo).
+        $assinantes = \App\Models\DocumentoSelecaoAssinantes::comCargoDasUnidades($data['assinantes'] ?? []);
         // Dados do Contratante editados na tela (snapshot deste contrato). Espelha o
         // fluxo da aba Contratos: valores em branco caem para os dados do processo.
         $contratante = $data['contratante'] ?? [];
@@ -273,6 +274,7 @@ class AtaPdfService extends AbstractService
         if (!is_array($assinantesAta)) {
             $assinantesAta = [];
         }
+        $assinantesAta = \App\Models\DocumentoSelecaoAssinantes::comCargoDasUnidades($assinantesAta);
 
         $dados = [
             'processo' => $processo,
@@ -295,7 +297,8 @@ class AtaPdfService extends AbstractService
             'assinantes' => $assinantesAta,
             'primeiroAssinante' => count($assinantesAta) > 0 ? [
                 'responsavel' => $assinantesAta[0]['responsavel'] ?? 'Responsável não informado',
-                'unidade_nome' => $assinantesAta[0]['unidade_nome'] ?? 'Unidade não informada'
+                'unidade_nome' => $assinantesAta[0]['unidade_nome'] ?? 'Unidade não informada',
+                'cargo' => $assinantesAta[0]['cargo'] ?? '',
             ] : [
                 'responsavel' => $processo->finalizacao->responsavel ?? $processo->prefeitura->autoridade_competente ?? 'Responsável não informado',
                 'unidade_nome' => $processo->finalizacao->orgao_responsavel ?? $processo->prefeitura->cidade ?? 'Unidade não informada'

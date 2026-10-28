@@ -1021,7 +1021,8 @@ class ContratoProcessoController extends Controller
             return [];
         }
 
-        return $assinantes;
+        // O JSON da tela não traz o cargo; completa pela unidade (unidades.cargo).
+        return \App\Models\DocumentoSelecaoAssinantes::comCargoDasUnidades($assinantes ?? []);
     }
 
     private function prepararDadosPdf(Processo $processo, array $validatedData): array

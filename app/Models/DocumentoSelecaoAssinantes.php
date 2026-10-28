@@ -32,6 +32,43 @@ class DocumentoSelecaoAssinantes extends Model
         'prazo_dias' => 'integer',
     ];
 
+    /**
+     * Grava o cargo de cada assinante junto da seleção (cópia, como já é feito
+     * com unidade_nome), para o documento não mudar se a unidade for editada
+     * depois. Cargo digitado na tela (Atas) é mantido; se veio vazio, usa o
+     * cargo da unidade. Unidade sem cargo => nada é gravado e os documentos
+     * seguem mostrando unidade_nome, como antes.
+     */
+    protected static function booted(): void
+    {
+        static::saving(function (self $selecao) {
+            if (is_array($selecao->assinantes)) {
+                $selecao->assinantes = self::comCargoDasUnidades($selecao->assinantes);
+            }
+        });
+    }
+
+    public static function comCargoDasUnidades(array $assinantes): array
+    {
+        $ids = collect($assinantes)
+            ->filter(fn ($a) => is_array($a) && blank($a['cargo'] ?? null) && ! empty($a['unidade_id']))
+            ->pluck('unidade_id')->map(fn ($id) => (int) $id)->unique()->values();
+
+        if ($ids->isEmpty()) {
+            return $assinantes;
+        }
+
+        $cargos = Unidade::whereIn('id', $ids)->whereNotNull('cargo')->where('cargo', '!=', '')->pluck('cargo', 'id');
+
+        return array_map(function ($a) use ($cargos) {
+            if (is_array($a) && blank($a['cargo'] ?? null) && isset($cargos[(int) ($a['unidade_id'] ?? 0)])) {
+                $a['cargo'] = $cargos[(int) $a['unidade_id']];
+            }
+
+            return $a;
+        }, $assinantes);
+    }
+
     public function processo(): BelongsTo
     {
         return $this->belongsTo(Processo::class);

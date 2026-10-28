@@ -153,7 +153,7 @@
             <div class="signature-box">
                 ___________________________________<br>
                 <strong>{{ \App\Helpers\NomeProprio::formatar($assinante['responsavel']) }}</strong><br>
-                {{ $assinante['unidade_nome'] }}
+                {{ \App\Helpers\Assinatura::cargo($assinante) }}
                 @if(!empty($assinante['portaria']))
                 <br>Portaria: {{ $assinante['portaria'] }}
                 @endif

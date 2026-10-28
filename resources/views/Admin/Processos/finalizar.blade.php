@@ -2374,14 +2374,14 @@
                     {{-- Select da Unidade --}}
                     <div class="flex-1 min-w-[180px]">
                         <label class="block mb-1 text-xs font-medium text-gray-600">
-                            Unidade
+                            Cargo / Unidade
                         </label>
                         <select name="assinante_unidade[]"
                                 class="block w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 unidade-select"
                                 onchange="updateResponsavel(this, '${tipoDocumento}')">
-                            <option value="">Selecione a Unidade</option>
+                            <option value="">Selecione o Cargo</option>
                             @foreach ($processo->prefeitura->unidades as $unidade)
-                                <option value="{{ $unidade->id }}">{{ $unidade->nome }}</option>
+                                <option value="{{ $unidade->id }}" data-nome="{{ $unidade->nome }}">{{ $unidade->rotuloAssinante() }}</option>
                             @endforeach
                         </select>
                     </div>

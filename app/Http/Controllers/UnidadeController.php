@@ -17,6 +17,7 @@ class UnidadeController extends Controller
         $request->validate([
             'nome' => 'required|string|max:255',
             'servidor_responsavel' => 'required|string|max:255',
+            'cargo' => 'nullable|string|max:255',
             'numero_portaria' => 'nullable|string|max:20',
             'data_portaria' => 'nullable|date',
         ]);
@@ -26,6 +27,7 @@ class UnidadeController extends Controller
                 'prefeitura_id' => $prefeituraId,
                 'nome' => $request->nome,
                 'servidor_responsavel' => $request->servidor_responsavel,
+                'cargo' => $request->cargo,
                 'numero_portaria' => $request->numero_portaria,
                 'data_portaria' => $request->data_portaria,
             ]);
@@ -44,6 +46,7 @@ class UnidadeController extends Controller
         $request->validate([
             'nome' => 'required|string|max:255',
             'servidor_responsavel' => 'required|string|max:255',
+            'cargo' => 'nullable|string|max:255',
             'numero_portaria' => 'nullable|string|max:20',
             'data_portaria' => 'nullable|date',
         ]);
@@ -53,6 +56,7 @@ class UnidadeController extends Controller
             $unidade->update([
                 'nome' => $request->nome,
                 'servidor_responsavel' => $request->servidor_responsavel,
+                'cargo' => $request->cargo,
                 'numero_portaria' => $request->numero_portaria,
                 'data_portaria' => $request->data_portaria,
             ]);

@@ -231,13 +231,13 @@
                                             <div class="flex flex-col gap-3 p-4 bg-white border border-gray-200 rounded-lg assinante-item">
                                                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
                                                     <div class="flex-1 min-w-[180px]">
-                                                        <label class="block mb-1 text-xs font-medium text-gray-600">Unidade</label>
+                                                        <label class="block mb-1 text-xs font-medium text-gray-600">Cargo / Unidade</label>
                                                         <select name="assinante_unidade[]"
                                                                 class="block w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 unidade-select"
                                                                 onchange="updateResponsavel(this, '{{ $tipo }}{{ $idSuffix }}')">
-                                                            <option value="">Selecione a Unidade</option>
+                                                            <option value="">Selecione o Cargo</option>
                                                             @foreach ($processo->prefeitura->unidades as $unidade)
-                                                                <option value="{{ $unidade->id }}">{{ $unidade->nome }}</option>
+                                                                <option value="{{ $unidade->id }}" data-nome="{{ $unidade->nome }}">{{ $unidade->rotuloAssinante() }}</option>
                                                             @endforeach
                                                         </select>
                                                     </div>

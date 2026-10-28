@@ -159,7 +159,7 @@
                 ___________________________________<br>
                 <p style="line-height: 1.2;">
                     {{ $primeiroAssinante['responsavel'] }} <br>
-                    <span>{{ $primeiroAssinante['unidade_nome'] }}</span>
+                    <span>{{ \App\Helpers\Assinatura::cargo($primeiroAssinante) }}</span>
                 </p>
             </div>
         </div>

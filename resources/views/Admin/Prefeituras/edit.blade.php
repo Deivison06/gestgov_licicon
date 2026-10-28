@@ -199,6 +199,7 @@
                                     <tr>
                                         <th class="px-6 py-3 text-xs font-semibold text-left text-[var(--ink-2)] uppercase">Nome</th>
                                         <th class="px-6 py-3 text-xs font-semibold text-left text-[var(--ink-2)] uppercase">Servidor Responsável</th>
+                                        <th class="px-6 py-3 text-xs font-semibold text-left text-[var(--ink-2)] uppercase">Cargo</th>
                                         <th class="px-6 py-3 text-xs font-semibold text-left text-[var(--ink-2)] uppercase">Nº Portaria</th>
                                         <th class="px-6 py-3 text-xs font-semibold text-left text-[var(--ink-2)] uppercase">Data da Portaria</th>
                                         <th class="px-6 py-3 text-xs font-semibold text-center text-[var(--ink-2)] uppercase">Ações</th>
@@ -209,6 +210,7 @@
                                         <tr id="unidade-row-{{ $unidade->id }}" class="hover:bg-[var(--hover-bg)] transition-colors">
                                             <td class="px-6 py-4 text-[var(--ink)] font-medium">{{ $unidade->nome }}</td>
                                             <td class="px-6 py-4 text-[var(--ink)]">{{ $unidade->servidor_responsavel }}</td>
+                                            <td class="px-6 py-4 text-[var(--ink-2)]">{{ $unidade->cargo ?? '—' }}</td>
                                             <td class="px-6 py-4 text-[var(--ink-2)]">{{ $unidade->numero_portaria ?? '—' }}</td>
                                             <td class="px-6 py-4 text-[var(--ink-2)]">
                                                 {{ $unidade->data_portaria ? \Carbon\Carbon::parse($unidade->data_portaria)->format('d/m/Y') : '—' }}
@@ -270,6 +272,7 @@
                         <label for="unidade-nome" class="block text-sm font-medium text-[var(--ink-2)]">
                             <span class="text-[var(--mint)]">*</span> Nome da Unidade
                         </label>
+                        <p class="text-xs text-[var(--ink-4)]">Órgão/setor — é o que aparece em "Secretaria / Órgão Contratante".</p>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                                 <svg class="w-5 h-5 text-[var(--ink-4)]" fill="none" stroke="currentColor"
@@ -304,6 +307,15 @@
                                 placeholder="Ex: João da Silva">
                         </div>
                         <p id="unidade-servidor-error" class="hidden text-sm text-red-400 animate-pulse"></p>
+                    </div>
+
+                    {{-- CARGO DO SERVIDOR --}}
+                    <div>
+                        <label for="unidade-cargo" class="block text-sm font-medium text-[var(--ink-2)]">Cargo do Servidor</label>
+                        <input type="text" name="cargo" id="unidade-cargo"
+                            class="block w-full mt-1 bg-[var(--bg)] border border-[var(--line)] text-[var(--ink)] rounded-md shadow-sm focus:ring-[var(--mint)] focus:border-[var(--mint)]"
+                            placeholder="Ex: Prefeito Municipal, Secretário de Educação">
+                        <p class="mt-1 text-xs text-[var(--ink-4)]">Aparece embaixo da assinatura nos documentos. Se ficar vazio, usa o nome da unidade.</p>
                     </div>
 
                     {{-- Nº PORTARIA --}}
@@ -436,6 +448,7 @@
                             unidadeId.value = data.id;
                             unidadeNome.value = data.nome;
                             unidadeServidor.value = data.servidor_responsavel;
+                            document.getElementById('unidade-cargo').value = data.cargo ?? '';
                             document.getElementById('numero_portaria').value = data.numero_portaria ??
                                 '';
                             document.getElementById('data_portaria').value = data.data_portaria ?? '';
@@ -478,6 +491,7 @@
                         body: JSON.stringify({
                             nome: unidadeNome.value,
                             servidor_responsavel: unidadeServidor.value,
+                            cargo: document.getElementById('unidade-cargo').value,
                             numero_portaria: document.getElementById('numero_portaria').value,
                             data_portaria: document.getElementById('data_portaria').value
                         })

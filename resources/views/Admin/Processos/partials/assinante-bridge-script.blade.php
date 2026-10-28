@@ -29,7 +29,8 @@
             if (!sel || !sel.value) return; // só itens com unidade escolhida
             out.push({
                 unidade_id:      sel.value,
-                unidade_nome:    sel.options[sel.selectedIndex]?.text || '',
+                // O texto da opção é o cargo; o nome da unidade fica em data-nome.
+                unidade_nome:    sel.options[sel.selectedIndex]?.dataset.nome ?? sel.options[sel.selectedIndex]?.text ?? '',
                 responsavel:     item.querySelector('.responsavel-input')?.value || '',
                 numero_portaria: item.querySelector('.portaria-input')?.value || '',
                 data_portaria:   item.querySelector('.data-portaria-input')?.value || '',

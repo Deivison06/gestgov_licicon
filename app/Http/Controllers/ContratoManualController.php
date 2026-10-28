@@ -626,11 +626,13 @@ class ContratoManualController extends Controller
             // Buscar apenas unidades da mesma prefeitura
             $secretarias = Unidade::with('prefeitura')
                 ->where('prefeitura_id', $user->prefeitura_id)
+                ->orgaos()
                 ->orderBy('nome')
                 ->get();
         } else {
             $prefeituras = Prefeitura::all();
             $secretarias = Unidade::with('prefeitura')
+                ->orgaos()
                 ->orderBy('nome')
                 ->get();
         }
@@ -909,11 +911,13 @@ class ContratoManualController extends Controller
             // Buscar apenas unidades da mesma prefeitura
             $secretarias = Unidade::with('prefeitura')
                 ->where('prefeitura_id', $user->prefeitura_id)
+                ->orgaos($contrato->unidade_id)
                 ->orderBy('nome')
                 ->get();
         } else {
             $prefeituras = Prefeitura::all();
             $secretarias = Unidade::with('prefeitura')
+                ->orgaos($contrato->unidade_id)
                 ->orderBy('nome')
                 ->get();
         }

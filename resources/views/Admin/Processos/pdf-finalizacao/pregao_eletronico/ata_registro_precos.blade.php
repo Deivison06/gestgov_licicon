@@ -865,7 +865,7 @@
             <div class="signature-block">
                 ___________________________________<br>
                 {{ $assinantePrincipal['responsavel'] }} <br>
-                {{ $assinantePrincipal['unidade_nome'] }}
+                {{ \App\Helpers\Assinatura::cargo($assinantePrincipal) }}
             </div>
         @else
             <div class="signature-block">

@@ -662,7 +662,7 @@ class IncidenteContratualController extends Controller
                 'id'                  => $u->id,
                 'nome'                => $u->nome,
                 'servidor_responsavel'=> $u->servidor_responsavel,
-                'cargo_responsavel'   => $u->cargo_responsavel,
+                'cargo'               => $u->cargo,
                 'numero_portaria'     => $u->numero_portaria,
                 'data_portaria'       => $dataPortaria ? $dataPortaria->format('Y-m-d') : null,
             ];
@@ -802,7 +802,9 @@ class IncidenteContratualController extends Controller
         // desta atualização, precisa do formulário de "dados pendentes" — ver
         // completarDadosTce()) vs. aditivo novo ainda no meio do preenchimento
         // normal do fluxo (basta continuar preenchendo os cards acima).
-        if (! $incidente->dadosTceCompletos()) {
+        // Capa, aceite, dotação e solicitação de parecer não usam esses campos.
+        $documentosSemDadosTce = ['capa_aditivo', 'aceite_documentacao_aditivo', 'dotacao_orcamentaria_aditivo', 'solicitacao_parecer_aditivo'];
+        if (! in_array($tipo, $documentosSemDadosTce, true) && ! $incidente->dadosTceCompletos()) {
             $nomesCampos = [
                 'natureza_alteracao'         => 'Natureza da Alteração',
                 'percentual_acrescimo'       => 'Percentual de Acréscimo',
@@ -956,6 +958,7 @@ class IncidenteContratualController extends Controller
                         'assinantes' => [[
                             'responsavel'  => $unidadeMatch->servidor_responsavel,
                             'unidade_nome' => $unidadeMatch->nome,
+                            'cargo'        => $unidadeMatch->cargo,
                             'portaria'     => $unidadeMatch->numero_portaria ?? '',
                             'data_portaria' => '',
                         ]],
@@ -964,9 +967,15 @@ class IncidenteContratualController extends Controller
             }
         }
 
+        // "Baixar" (?download=1) reaproveita a geração, sem mexer em "Gerado em".
+        $baixar = request()->boolean('download');
+        $disposition = $baixar ? 'attachment' : 'inline';
+
         // Marca como gerado
         if ($documento) {
-            $documento->update(['gerado_em' => now()]);
+            if (! $baixar) {
+                $documento->update(['gerado_em' => now()]);
+            }
         } else {
             $data_selecionada = now()->toDateString();
             Documento::create([
@@ -1013,7 +1022,7 @@ class IncidenteContratualController extends Controller
                 @unlink($tmpMesclado);
                 return response($conteudoMesclado, 200, [
                     'Content-Type'        => 'application/pdf',
-                    'Content-Disposition' => 'inline; filename="' . $tituloArquivo . '.pdf"',
+                    'Content-Disposition' => $disposition.'; filename="' . $tituloArquivo . '.pdf"',
                 ]);
             }
             @unlink($tmpMesclado);
@@ -1021,7 +1030,7 @@ class IncidenteContratualController extends Controller
 
         return response($pdfOutput, 200, [
             'Content-Type'        => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="' . $tituloArquivo . '.pdf"',
+            'Content-Disposition' => $disposition.'; filename="' . $tituloArquivo . '.pdf"',
         ]);
     }
 
@@ -1184,6 +1193,7 @@ class IncidenteContratualController extends Controller
                             'assinantes' => [[
                                 'responsavel'  => $unidadeMatch->servidor_responsavel,
                                 'unidade_nome' => $unidadeMatch->nome,
+                                'cargo'        => $unidadeMatch->cargo,
                                 'portaria'     => $unidadeMatch->numero_portaria ?? '',
                                 'data_portaria' => '',
                             ]],

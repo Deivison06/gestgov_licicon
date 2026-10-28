@@ -610,7 +610,7 @@
                     ___________________________________<br>
                     <p style="line-height: 1.2;">
                         {{ $primeiroAssinante['responsavel'] }} <br>
-                        <span>{{ $primeiroAssinante['unidade_nome'] }}</span>
+                        <span>{{ \App\Helpers\Assinatura::cargo($primeiroAssinante) }}</span>
                     </p>
                 </div>
             </div>
@@ -1628,7 +1628,7 @@
         @endphp
 
         <p style="text-align: justify; text-indent: 30px;">
-            O {{ $primeiroAssinante['unidade_nome'] ?? '____________________' }},
+            O {{ \App\Helpers\Assinatura::cargo($primeiroAssinante ?? null, '____________________') }},
             nos termos da Portaria nº{{  $primeiroAssinante['numero_portaria'] }},
             de
             {{
@@ -1652,7 +1652,7 @@
                     ___________________________________<br>
                     <p style="font-size:10pt; line-height:1.2; margin:0;">
                         {{ $primeiroAssinante['responsavel'] }}<br>
-                        <span style="color:#4b5563;">{{ $primeiroAssinante['unidade_nome'] }}</span>
+                        <span style="color:#4b5563;">{{ \App\Helpers\Assinatura::cargo($primeiroAssinante) }}</span>
                     </p>
                 </div>
             </div>
@@ -1754,7 +1754,7 @@
                         ___________________________________<br>
                         <p style="line-height: 1.2;">
                             {{ $primeiroAssinante['responsavel'] }} <br>
-                            <span>{{ $primeiroAssinante['unidade_nome'] }}</span>
+                            <span>{{ \App\Helpers\Assinatura::cargo($primeiroAssinante) }}</span>
                         </p>
                     </div>
                 </div>
@@ -1888,7 +1888,7 @@
                     ___________________________________<br>
                     <p style="line-height: 1.2;">
                         {{ $primeiroAssinante['responsavel'] }} <br>
-                        <span>{{ $primeiroAssinante['unidade_nome'] }}</span>
+                        <span>{{ \App\Helpers\Assinatura::cargo($primeiroAssinante) }}</span>
                     </p>
                 </div>
             </div>
