@@ -21,6 +21,17 @@
             ? \App\Helpers\NomeProprio::formatar($documentoSelecao->assinantes[0]['responsavel'])
             : \App\Helpers\NomeProprio::formatar($prefeitura->autoridade_competente ?? 'Prefeito');
 
+        // Órgão que assina o aditivo: a unidade selecionada pra esse documento,
+        // ou o órgão do contrato (ou a prefeitura) se nada foi selecionado.
+        // Unidade do prefeito ("Prefeito Municipal", "Secretaria Municipal" genérica ou
+        // cargo de prefeito) vira o nome da Prefeitura (ver Prefeitura::nomeOrgaoContratante).
+        $usaUnidadeSelecionada = $temAssinanteSelecionado && ! empty($documentoSelecao->assinantes[0]['unidade_nome']);
+        $orgaoContratanteExtrato = $prefeitura
+            ? $prefeitura->nomeOrgaoContratante(
+                $usaUnidadeSelecionada ? $documentoSelecao->assinantes[0]['unidade_nome'] : ($contrato->dados_contratante['orgao_responsavel'] ?? null),
+                $usaUnidadeSelecionada ? ($documentoSelecao->assinantes[0]['cargo'] ?? null) : null)
+            : 'Município';
+
         // "neste ato representado pelo Prefeito Municipal, senhor(a) Fulano" (ver Prefeitura::representanteContratante)
         $representanteContratanteTermo = $prefeitura
             ? $prefeitura->representanteContratante($temAssinanteSelecionado ? $documentoSelecao->assinantes[0] : null)

@@ -27,17 +27,23 @@ class Prefeitura extends Model
     ];
 
     /**
-     * Nome do órgão contratante para os documentos. As prefeituras costumam
-     * cadastrar a unidade "Prefeito Municipal" para o gabinete; quando ela é
-     * a selecionada, o contratante é a própria Prefeitura, não o cargo.
+     * Nome do órgão contratante para os documentos. Vira o nome da própria
+     * Prefeitura quando a unidade é a do prefeito — cadastrada como "Prefeito
+     * Municipal", renomeada para o genérico "Secretaria Municipal" (sem dizer
+     * qual secretaria) ou com cargo de prefeito.
      */
-    public function nomeOrgaoContratante(?string $nomeUnidade): string
+    public function nomeOrgaoContratante(?string $nomeUnidade, ?string $cargo = null): string
     {
-        if (blank($nomeUnidade) || preg_match('/\bprefeit(o|ura)\b/iu', $nomeUnidade)) {
+        $nome = trim(preg_replace('/\s+/u', ' ', (string) $nomeUnidade));
+
+        if ($nome === ''
+            || preg_match('/\bprefeit(o|a|ura)\b/iu', $nome)
+            || preg_match('/^secretaria municipal$/iu', $nome)
+            || preg_match('/\bprefeit(o|a)\b/iu', (string) $cargo)) {
             return $this->nome;
         }
 
-        return $nomeUnidade;
+        return $nome;
     }
 
     /**
