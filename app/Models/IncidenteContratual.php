@@ -39,6 +39,9 @@ class IncidenteContratual extends Model
         'natureza_alteracao',
         'percentual_acrescimo',
         'percentual_supressao',
+        'itens_origem_planilha',
+        'arquivo_planilha_itens_path',
+        'arquivo_planilha_itens_nome',
 
         // Compras e Serviços — Prazo e Valor
         'tem_valor_periodo_prorrogado',
@@ -70,6 +73,7 @@ class IncidenteContratual extends Model
         'contrato_continuo' => 'boolean',
         'percentual_acrescimo' => 'decimal:2',
         'percentual_supressao' => 'decimal:2',
+        'itens_origem_planilha' => 'boolean',
         'tem_valor_periodo_prorrogado' => 'boolean',
         'valor_periodo_prorrogado' => 'decimal:2',
         'percentual_execucao_fisica' => 'decimal:2',

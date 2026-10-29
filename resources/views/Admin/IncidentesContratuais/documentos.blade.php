@@ -315,6 +315,65 @@
                                                 </div>
                                             @endif
                                             
+                                            @if ($tipo === 'solicitacao_aditivo' && $podeImportarPlanilhaItens)
+                                                <div class="pb-4 mb-6 border-b border-gray-200">
+                                                    <h4 class="mb-3 text-sm font-semibold text-gray-700">Quantitativos Aditivados</h4>
+                                                    @if ($incidente->itens_origem_planilha)
+                                                        <div class="p-4 bg-white border border-gray-200 rounded-lg">
+                                                            <p class="mb-3 text-sm text-gray-600">
+                                                                Planilha importada: <span class="font-medium">{{ $incidente->arquivo_planilha_itens_nome }}</span>
+                                                            </p>
+                                                            <div class="overflow-x-auto">
+                                                                <table class="min-w-full text-sm divide-y divide-gray-200">
+                                                                    <thead>
+                                                                        <tr class="text-xs font-semibold text-left text-gray-500 uppercase">
+                                                                            <th class="py-2 pr-4">Item</th>
+                                                                            <th class="py-2 pr-4">Descrição</th>
+                                                                            <th class="py-2 pr-4">Unidade</th>
+                                                                            <th class="py-2 pr-4 text-right">Qtd. Aditivada</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody class="divide-y divide-gray-100">
+                                                                        @foreach ($itensAditivadosAtuais as $itemAditivado)
+                                                                            <tr>
+                                                                                <td class="py-2 pr-4">{{ $itemAditivado->loteContratado?->lote?->item }}</td>
+                                                                                <td class="py-2 pr-4">{{ $itemAditivado->loteContratado?->lote?->descricao }}</td>
+                                                                                <td class="py-2 pr-4">{{ $itemAditivado->loteContratado?->lote?->unidade }}</td>
+                                                                                <td class="py-2 pr-4 text-right {{ $itemAditivado->quantidade_aditivada < 0 ? 'text-red-600' : 'text-green-700' }}">
+                                                                                    {{ number_format($itemAditivado->quantidade_aditivada, 2, ',', '.') }}
+                                                                                </td>
+                                                                            </tr>
+                                                                        @endforeach
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                            <button type="button"
+                                                                    onclick="removerPlanilhaItensAditivo('{{ $contrato->id }}', '{{ $incidente->id }}')"
+                                                                    class="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 border border-red-200 rounded-md hover:bg-red-100">
+                                                                <i class="fas fa-trash-alt"></i> Remover planilha e voltar ao percentual
+                                                            </button>
+                                                        </div>
+                                                    @else
+                                                        <div class="p-4 bg-white border border-gray-200 rounded-lg">
+                                                            <p class="mb-2 text-xs text-gray-500">
+                                                                Alternativa ao percentual uniforme abaixo: importe uma planilha com a quantidade aditivada de cada item
+                                                                (mesmo modelo usado no Termo de Referência — coluna A: item, B: descrição, C: unidade, D: quantidade aditivada;
+                                                                use valores negativos para supressão).
+                                                            </p>
+                                                            <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+                                                                <input type="file" id="arquivo_planilha_itens_{{ $incidente->id }}" accept=".xlsx,.xls,.csv"
+                                                                       class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[var(--mint)] file:text-white hover:file:bg-[var(--teal-dark-bg)]">
+                                                                <button type="button"
+                                                                        onclick="importarPlanilhaItensAditivo('{{ $contrato->id }}', '{{ $incidente->id }}')"
+                                                                        class="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-medium text-white transition-colors duration-200 bg-[var(--mint)] rounded-md hover:bg-[var(--teal-dark-bg)] shrink-0">
+                                                                    <i class="fas fa-file-import"></i> Importar Planilha
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            @endif
+
                                             @if ($tipo === 'dotacao_orcamentaria_aditivo')
                                                 <div x-data="dotacaoAditivo({{ json_encode($dotacoesAtuais->map(fn($d) => ['dotacao_orcamentaria' => $d->textoDotacao(), 'valor' => $d->valor])->values()) }}, {{ json_encode($dotacaoSugerida) }})">
                                                     <h4 class="mb-3 text-sm font-semibold text-gray-700">Linhas de Dotação Orçamentária</h4>
@@ -618,6 +677,54 @@
                 });
             });
         });
+
+        async function importarPlanilhaItensAditivo(contratoId, incidenteId) {
+            const input = document.getElementById(`arquivo_planilha_itens_${incidenteId}`);
+            if (!input || !input.files.length) {
+                showMessage('Selecione um arquivo de planilha antes de importar.', 'error');
+                return;
+            }
+
+            const fd = new FormData();
+            fd.append('arquivo_planilha_itens', input.files[0]);
+
+            try {
+                const response = await fetch(`/admin/{{ $pathBase }}/${contratoId}/incidentes/${incidenteId}/itens/importar-planilha`, {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                    body: fd,
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    setTimeout(() => location.reload(), 1200);
+                } else {
+                    showMessage(data.message || 'Erro ao importar a planilha.', 'error');
+                }
+            } catch (e) {
+                showMessage('Erro ao importar a planilha.', 'error');
+            }
+        }
+
+        async function removerPlanilhaItensAditivo(contratoId, incidenteId) {
+            if (!confirm('Remover a planilha importada e voltar ao cálculo por percentual?')) return;
+
+            try {
+                const response = await fetch(`/admin/{{ $pathBase }}/${contratoId}/incidentes/${incidenteId}/itens/planilha`, {
+                    method: 'DELETE',
+                    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    setTimeout(() => location.reload(), 1200);
+                } else {
+                    showMessage(data.message || 'Erro ao remover a planilha.', 'error');
+                }
+            } catch (e) {
+                showMessage('Erro ao remover a planilha.', 'error');
+            }
+        }
 
         async function gerarPdfAditivo(contratoId, incidenteId, tipo, dataSelecionada, btnElement) {
             const ehManual = {{ $ehManual ? 'true' : 'false' }};

@@ -7,7 +7,10 @@ use App\Models\ContratoManual;
 use App\Models\IncidenteContratual;
 use App\Models\IncidenteContratualItem;
 use App\Models\LoteContratado;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class IncidenteContratualService
 {
@@ -47,41 +50,46 @@ class IncidenteContratualService
                 'limite_legal_aditivo_obras' => $dados['limite_legal_aditivo_obras'] ?? $incidente->limite_legal_aditivo_obras,
             ]);
 
-            // Clear previous items to avoid duplication if user changes the percentage
-            $incidente->itens()->delete();
+            // Quando os itens vieram de uma planilha importada (ver
+            // importarItensPlanilha()), eles não são recalculados/apagados aqui —
+            // só o recálculo automático por percentual passa por este bloco.
+            if (! $incidente->itens_origem_planilha) {
+                // Clear previous items to avoid duplication if user changes the percentage
+                $incidente->itens()->delete();
 
-            // Cálculo automático de itens aditivados (por percentual, a partir dos lotes
-            // contratados) só existe para Contratos do Sistema — Contratos Manuais/Externos
-            // não têm lotes formalizados no sistema (não vieram de um Processo licitatório).
-            // Para eles, o aditivo segue apenas com o texto/percentual informado.
-            if ($contrato instanceof Contrato
-                && in_array($dados['tipo'], ['valor', 'prazo_valor'])
-                && $dados['categoria'] === 'compras_servicos') {
-                $percentual_valor = $dados['percentual_valor'] ?? $incidente->percentual_valor;
-                $percentual = $percentual_valor / 100;
+                // Cálculo automático de itens aditivados (por percentual, a partir dos lotes
+                // contratados) só existe para Contratos do Sistema — Contratos Manuais/Externos
+                // não têm lotes formalizados no sistema (não vieram de um Processo licitatório).
+                // Para eles, o aditivo segue apenas com o texto/percentual informado.
+                if ($contrato instanceof Contrato
+                    && in_array($dados['tipo'], ['valor', 'prazo_valor'])
+                    && $dados['categoria'] === 'compras_servicos') {
+                    $percentual_valor = $dados['percentual_valor'] ?? $incidente->percentual_valor;
+                    $percentual = $percentual_valor / 100;
 
-                $lotesContratados = LoteContratado::where('contrato_id', $contrato->id)->get();
-                if ($lotesContratados->isEmpty()) {
-                    $lotesContratados = LoteContratado::where('processo_id', $contrato->processo_id)->get();
-                }
+                    $lotesContratados = LoteContratado::where('contrato_id', $contrato->id)->get();
+                    if ($lotesContratados->isEmpty()) {
+                        $lotesContratados = LoteContratado::where('processo_id', $contrato->processo_id)->get();
+                    }
 
-                foreach ($lotesContratados as $loteContratado) {
-                    $qtdOriginal = $loteContratado->quantidade_contratada;
-                    // Mantém precisão decimal se for menor que 1, ou arredonda se desejar,
-                    // usaremos o valor direto para não zerar (ex: 1 * 0.2 = 0.2)
-                    $qtdAditivada = $qtdOriginal * $percentual;
+                    foreach ($lotesContratados as $loteContratado) {
+                        $qtdOriginal = $loteContratado->quantidade_contratada;
+                        // Mantém precisão decimal se for menor que 1, ou arredonda se desejar,
+                        // usaremos o valor direto para não zerar (ex: 1 * 0.2 = 0.2)
+                        $qtdAditivada = $qtdOriginal * $percentual;
 
-                    if ($qtdAditivada > 0) {
-                        $valorUnitario = $loteContratado->valor_unitario;
-                        $valorTotalAditivado = $qtdAditivada * $valorUnitario;
+                        if ($qtdAditivada > 0) {
+                            $valorUnitario = $loteContratado->valor_unitario;
+                            $valorTotalAditivado = $qtdAditivada * $valorUnitario;
 
-                        IncidenteContratualItem::create([
-                            'incidente_contratual_id' => $incidente->id,
-                            'lote_contratado_id' => $loteContratado->id,
-                            'quantidade_aditivada' => $qtdAditivada,
-                            'valor_unitario' => $valorUnitario,
-                            'valor_total_aditivado' => $valorTotalAditivado,
-                        ]);
+                            IncidenteContratualItem::create([
+                                'incidente_contratual_id' => $incidente->id,
+                                'lote_contratado_id' => $loteContratado->id,
+                                'quantidade_aditivada' => $qtdAditivada,
+                                'valor_unitario' => $valorUnitario,
+                                'valor_total_aditivado' => $valorTotalAditivado,
+                            ]);
+                        }
                     }
                 }
             }
@@ -89,6 +97,113 @@ class IncidenteContratualService
             $this->aplicarEfeitosNoContrato($incidente, $contrato, $dados);
 
             return $incidente;
+        });
+    }
+
+    /**
+     * Importa os quantitativos aditivados de uma planilha (mesmo layout usado
+     * para o Termo de Referência: coluna A = item, B = descrição, C = unidade,
+     * D = quantidade aditivada — aceita negativo, para supressão). Casa cada
+     * linha com o item do contrato pelo número do item (Lote::item). Se algum
+     * item da planilha não existir no contrato, nada é alterado e a lista de
+     * itens não encontrados é retornada para o usuário corrigir o arquivo.
+     *
+     * @return array{sucesso: bool, itens?: \Illuminate\Support\Collection, nao_encontrados?: array<int>}
+     */
+    public function importarItensPlanilha(IncidenteContratual $incidente, Contrato $contrato, UploadedFile $arquivo): array
+    {
+        $spreadsheet = IOFactory::load($arquivo->getRealPath());
+        $linhas = $spreadsheet->getActiveSheet()->toArray();
+
+        $lotesContratados = LoteContratado::where('contrato_id', $contrato->id)
+            ->with('lote')
+            ->get()
+            ->keyBy(fn (LoteContratado $loteContratado) => trim((string) $loteContratado->lote?->item));
+
+        $paraImportar = [];
+        $naoEncontrados = [];
+
+        foreach ($linhas as $index => $linha) {
+            if ($index === 0) {
+                continue; // cabeçalho
+            }
+
+            $itemNumero = trim((string) ($linha[0] ?? ''));
+            $quantidade = trim((string) ($linha[3] ?? ''));
+
+            if ($itemNumero === '' && $quantidade === '') {
+                continue; // linha em branco
+            }
+
+            if (! is_numeric($quantidade) || (float) $quantidade == 0.0) {
+                continue; // sem quantidade aditivada informada para este item
+            }
+
+            $loteContratado = $lotesContratados->get($itemNumero);
+
+            if (! $loteContratado) {
+                $naoEncontrados[] = $itemNumero;
+
+                continue;
+            }
+
+            $paraImportar[] = [
+                'lote_contratado_id' => $loteContratado->id,
+                'quantidade_aditivada' => (float) $quantidade,
+                'valor_unitario' => $loteContratado->valor_unitario,
+            ];
+        }
+
+        if (! empty($naoEncontrados)) {
+            return ['sucesso' => false, 'nao_encontrados' => $naoEncontrados];
+        }
+
+        return DB::transaction(function () use ($incidente, $arquivo, $paraImportar) {
+            if ($incidente->arquivo_planilha_itens_path) {
+                Storage::disk('public')->delete($incidente->arquivo_planilha_itens_path);
+            }
+
+            $incidente->itens()->delete();
+
+            foreach ($paraImportar as $item) {
+                IncidenteContratualItem::create([
+                    'incidente_contratual_id' => $incidente->id,
+                    'lote_contratado_id' => $item['lote_contratado_id'],
+                    'quantidade_aditivada' => $item['quantidade_aditivada'],
+                    'valor_unitario' => $item['valor_unitario'],
+                    'valor_total_aditivado' => $item['quantidade_aditivada'] * $item['valor_unitario'],
+                ]);
+            }
+
+            $incidente->update([
+                'itens_origem_planilha' => true,
+                'arquivo_planilha_itens_path' => $arquivo->store('incidentes/planilhas-itens', 'public'),
+                'arquivo_planilha_itens_nome' => $arquivo->getClientOriginalName(),
+            ]);
+
+            return ['sucesso' => true, 'itens' => $incidente->itens()->with('loteContratado.lote')->get()];
+        });
+    }
+
+    /**
+     * Desfaz a importação por planilha e volta o aditivo ao modo "percentual" —
+     * o próximo salvamento da Solicitação do Aditivo recalcula os itens a
+     * partir do percentual_valor salvo (ver atualizarAditivo()).
+     */
+    public function removerItensPlanilha(IncidenteContratual $incidente): void
+    {
+        DB::transaction(function () use ($incidente) {
+            if ($incidente->arquivo_planilha_itens_path) {
+                Storage::disk('public')->delete($incidente->arquivo_planilha_itens_path);
+            }
+
+            $incidente->itens()->delete();
+
+            $incidente->update([
+                'itens_origem_planilha' => false,
+                'arquivo_planilha_itens_path' => null,
+                'arquivo_planilha_itens_nome' => null,
+            ]);
         });
     }
 

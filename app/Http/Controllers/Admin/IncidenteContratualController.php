@@ -409,6 +409,7 @@ class IncidenteContratualController extends Controller
 
         if ($request->boolean('remover_'.$campo) && $pathAtual) {
             Storage::disk('public')->delete($pathAtual);
+
             return null;
         }
 
@@ -487,6 +488,17 @@ class IncidenteContratualController extends Controller
         // Manual ou sistema: sempre permitir selecionar assinante para impressão física.
         // $temAssinaturaEletronica controla apenas o botão de assinatura eletrônica.
         $permitirSelecaoAssinante = true;
+
+        // Importação de planilha de quantitativos (alternativa ao percentual
+        // uniforme) — só para Contratos do Sistema (têm lotes/itens cadastrados)
+        // em aditivo de valor de compras/serviços, dentro do card "Solicitação
+        // do Aditivo" (ver IncidenteContratualService::importarItensPlanilha()).
+        $podeImportarPlanilhaItens = $contrato instanceof Contrato
+            && in_array($incidente->tipo, ['valor', 'prazo_valor'])
+            && $incidente->categoria === 'compras_servicos';
+        $itensAditivadosAtuais = $podeImportarPlanilhaItens
+            ? $incidente->itens()->with('loteContratado.lote')->get()
+            : collect();
 
         $documentos = [
             'capa_aditivo' => [
@@ -656,23 +668,81 @@ class IncidenteContratualController extends Controller
         $unidadesData = $prefeitura?->unidades->map(function ($u) {
             $dataPortaria = $u->data_portaria;
             if ($dataPortaria && ! ($dataPortaria instanceof \Carbon\Carbon)) {
-                try { $dataPortaria = \Carbon\Carbon::parse($dataPortaria); } catch (\Exception $e) { $dataPortaria = null; }
+                try {
+                    $dataPortaria = \Carbon\Carbon::parse($dataPortaria);
+                } catch (\Exception $e) {
+                    $dataPortaria = null;
+                }
             }
+
             return [
-                'id'                  => $u->id,
-                'nome'                => $u->nome,
-                'servidor_responsavel'=> $u->servidor_responsavel,
-                'cargo'               => $u->cargo,
-                'numero_portaria'     => $u->numero_portaria,
-                'data_portaria'       => $dataPortaria ? $dataPortaria->format('Y-m-d') : null,
+                'id' => $u->id,
+                'nome' => $u->nome,
+                'servidor_responsavel' => $u->servidor_responsavel,
+                'cargo' => $u->cargo,
+                'numero_portaria' => $u->numero_portaria,
+                'data_portaria' => $dataPortaria ? $dataPortaria->format('Y-m-d') : null,
             ];
         }) ?? collect();
 
         return view('Admin.IncidentesContratuais.documentos', compact(
             'contrato', 'incidente', 'processo', 'prefeitura', 'documentos', 'documentosGerados', 'temAssinaturaEletronica',
             'resumoFinanceiro', 'numeroOrdinal', 'dotacoesAtuais', 'dotacaoSugerida', 'ehAditivoLegado', 'camposAberturaFaltantes',
-            'unidadesData'
+            'unidadesData', 'podeImportarPlanilhaItens', 'itensAditivadosAtuais'
         ));
+    }
+
+    /**
+     * Importa os quantitativos aditivados a partir de uma planilha (mesmo
+     * layout usado para o Termo de Referência), como alternativa ao percentual
+     * uniforme — ver IncidenteContratualService::importarItensPlanilha().
+     */
+    public function importarItensPlanilha(Request $request, $contrato_id, $incidente_id)
+    {
+        $contrato = $this->resolverContrato($contrato_id);
+
+        if (! $contrato instanceof Contrato) {
+            return response()->json([
+                'success' => false,
+                'message' => 'A importação de planilha de quantitativos só está disponível para contratos do sistema.',
+            ], 422);
+        }
+
+        $incidente = $this->buscarIncidente($contrato, $incidente_id);
+
+        $request->validate([
+            'arquivo_planilha_itens' => 'required|file|mimes:xlsx,xls,csv|max:10240',
+        ]);
+
+        $resultado = $this->incidenteService->importarItensPlanilha(
+            $incidente, $contrato, $request->file('arquivo_planilha_itens')
+        );
+
+        if (! $resultado['sucesso']) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Os seguintes itens da planilha não foram encontrados neste contrato: '
+                    .implode(', ', $resultado['nao_encontrados']).'. Corrija o arquivo e importe novamente.',
+            ], 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Planilha importada com sucesso: '.$resultado['itens']->count().' item(ns).',
+        ]);
+    }
+
+    /**
+     * Desfaz a importação por planilha e volta o aditivo ao modo "percentual".
+     */
+    public function removerItensPlanilha($contrato_id, $incidente_id)
+    {
+        $contrato = $this->resolverContrato($contrato_id);
+        $incidente = $this->buscarIncidente($contrato, $incidente_id);
+
+        $this->incidenteService->removerItensPlanilha($incidente);
+
+        return response()->json(['success' => true, 'message' => 'Planilha removida. O aditivo voltou ao cálculo por percentual.']);
     }
 
     /**
@@ -806,12 +876,12 @@ class IncidenteContratualController extends Controller
         $documentosSemDadosTce = ['capa_aditivo', 'aceite_documentacao_aditivo', 'dotacao_orcamentaria_aditivo', 'solicitacao_parecer_aditivo'];
         if (! in_array($tipo, $documentosSemDadosTce, true) && ! $incidente->dadosTceCompletos()) {
             $nomesCampos = [
-                'natureza_alteracao'         => 'Natureza da Alteração',
-                'percentual_acrescimo'       => 'Percentual de Acréscimo',
-                'percentual_supressao'       => 'Percentual de Supressão',
+                'natureza_alteracao' => 'Natureza da Alteração',
+                'percentual_acrescimo' => 'Percentual de Acréscimo',
+                'percentual_supressao' => 'Percentual de Supressão',
                 'limite_legal_aditivo_obras' => 'Limite Legal Aplicável',
-                'contrato_continuo'          => 'Contrato Contínuo',
-                'tipo_objeto_contrato'       => 'Tipo de Objeto do Contrato',
+                'contrato_continuo' => 'Contrato Contínuo',
+                'tipo_objeto_contrato' => 'Tipo de Objeto do Contrato',
             ];
             $faltantes = collect($incidente->camposTceFaltantes())
                 ->map(fn ($c) => $nomesCampos[$c] ?? $c)
@@ -956,10 +1026,10 @@ class IncidenteContratualController extends Controller
                 if ($unidadeMatch && $unidadeMatch->servidor_responsavel) {
                     $documentoSelecao = (object) [
                         'assinantes' => [[
-                            'responsavel'  => $unidadeMatch->servidor_responsavel,
+                            'responsavel' => $unidadeMatch->servidor_responsavel,
                             'unidade_nome' => $unidadeMatch->nome,
-                            'cargo'        => $unidadeMatch->cargo,
-                            'portaria'     => $unidadeMatch->numero_portaria ?? '',
+                            'cargo' => $unidadeMatch->cargo,
+                            'portaria' => $unidadeMatch->numero_portaria ?? '',
                             'data_portaria' => '',
                         ]],
                     ];
@@ -1008,29 +1078,30 @@ class IncidenteContratualController extends Controller
         $pathAnexoMesclavel = $this->anexoDoDocumento($incidente, $tipo);
 
         if ($pathAnexoMesclavel) {
-            $tmpDeclaracao = tempnam(sys_get_temp_dir(), 'adit_decl_') . '.pdf';
+            $tmpDeclaracao = tempnam(sys_get_temp_dir(), 'adit_decl_').'.pdf';
             file_put_contents($tmpDeclaracao, $pdfOutput);
 
-            $tmpMesclado = tempnam(sys_get_temp_dir(), 'adit_merged_') . '.pdf';
-            exec('gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile=' . escapeshellarg($tmpMesclado)
-                . ' ' . escapeshellarg($tmpDeclaracao) . ' ' . escapeshellarg($pathAnexoMesclavel), $out, $exitCode);
+            $tmpMesclado = tempnam(sys_get_temp_dir(), 'adit_merged_').'.pdf';
+            exec('gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile='.escapeshellarg($tmpMesclado)
+                .' '.escapeshellarg($tmpDeclaracao).' '.escapeshellarg($pathAnexoMesclavel), $out, $exitCode);
 
             @unlink($tmpDeclaracao);
 
             if ($exitCode === 0 && file_exists($tmpMesclado) && filesize($tmpMesclado) > 0) {
                 $conteudoMesclado = file_get_contents($tmpMesclado);
                 @unlink($tmpMesclado);
+
                 return response($conteudoMesclado, 200, [
-                    'Content-Type'        => 'application/pdf',
-                    'Content-Disposition' => $disposition.'; filename="' . $tituloArquivo . '.pdf"',
+                    'Content-Type' => 'application/pdf',
+                    'Content-Disposition' => $disposition.'; filename="'.$tituloArquivo.'.pdf"',
                 ]);
             }
             @unlink($tmpMesclado);
         }
 
         return response($pdfOutput, 200, [
-            'Content-Type'        => 'application/pdf',
-            'Content-Disposition' => $disposition.'; filename="' . $tituloArquivo . '.pdf"',
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => $disposition.'; filename="'.$tituloArquivo.'.pdf"',
         ]);
     }
 
@@ -1053,7 +1124,7 @@ class IncidenteContratualController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => [
+            'data' => [
                 'assinantes' => $selecao?->assinantes ?? [],
             ],
         ]);
@@ -1070,13 +1141,13 @@ class IncidenteContratualController extends Controller
 
         $dados = $request->validate([
             'tipo_documento' => 'required|string',
-            'assinantes'     => 'required|array',
-            'assinantes.*.unidade_id'     => 'nullable',
-            'assinantes.*.responsavel'    => 'nullable|string',
-            'assinantes.*.unidade_nome'   => 'nullable|string',
-            'assinantes.*.portaria'       => 'nullable|string',
+            'assinantes' => 'required|array',
+            'assinantes.*.unidade_id' => 'nullable',
+            'assinantes.*.responsavel' => 'nullable|string',
+            'assinantes.*.unidade_nome' => 'nullable|string',
+            'assinantes.*.portaria' => 'nullable|string',
             'assinantes.*.numero_portaria' => 'nullable|string',
-            'assinantes.*.data_portaria'  => 'nullable|string',
+            'assinantes.*.data_portaria' => 'nullable|string',
         ]);
 
         // Normaliza: bridge script envia `numero_portaria`; view JS envia `portaria` — aceita ambos
@@ -1085,6 +1156,7 @@ class IncidenteContratualController extends Controller
                 $a['portaria'] = $a['numero_portaria'];
             }
             unset($a['numero_portaria']);
+
             return $a;
         }, $dados['assinantes']);
 
@@ -1096,21 +1168,22 @@ class IncidenteContratualController extends Controller
                 $a['unidade_nome'] = $unidade?->nome ?? '';
                 $responsavel = $unidade?->responsavel;
                 if ($responsavel) {
-                    $a['responsavel']   = $a['responsavel']   ?? $responsavel->nome ?? '';
-                    $a['portaria']      = $a['portaria']      ?? $responsavel->portaria ?? '';
+                    $a['responsavel'] = $a['responsavel'] ?? $responsavel->nome ?? '';
+                    $a['portaria'] = $a['portaria'] ?? $responsavel->portaria ?? '';
                     $a['data_portaria'] = $a['data_portaria'] ?? ($responsavel->data_portaria?->format('d/m/Y') ?? '');
                 }
             }
+
             return $a;
         })->values()->toArray();
 
         DocumentoSelecaoAssinantes::updateOrCreate(
             [
-                'processo_id'    => null,
-                'incidente_id'   => $incidente->id,
+                'processo_id' => null,
+                'incidente_id' => $incidente->id,
                 'tipo_documento' => $dados['tipo_documento'],
                 'homologacao_id' => null,
-                'vencedor_id'    => null,
+                'vencedor_id' => null,
             ],
             ['assinantes' => $assinantesEnriquecidos]
         );
@@ -1142,10 +1215,10 @@ class IncidenteContratualController extends Controller
         if ($contrato instanceof ContratoManual) {
             $empresa = $contrato->empresa;
             $contrato->dados_contratante = [
-                'razao_social'    => $empresa?->razao_social ?? 'CONTRATADA',
-                'cnpj'            => $empresa?->cnpj_formatado ?? $empresa?->cnpj ?? 'CNPJ',
-                'endereco'        => $empresa?->endereco ?? 'Endereço da Empresa',
-                'representante'   => $empresa?->representante ?? 'Representante não informado',
+                'razao_social' => $empresa?->razao_social ?? 'CONTRATADA',
+                'cnpj' => $empresa?->cnpj_formatado ?? $empresa?->cnpj ?? 'CNPJ',
+                'endereco' => $empresa?->endereco ?? 'Endereço da Empresa',
+                'representante' => $empresa?->representante ?? 'Representante não informado',
                 'cpf_representante' => 'CPF',
                 'orgao_responsavel' => $contrato->secretaria?->nome ?? 'Secretaria Municipal',
             ];
@@ -1157,15 +1230,15 @@ class IncidenteContratualController extends Controller
         // Mesma ordem cronológica da tela (documentos()): solicitação → aceite →
         // [parecer técnico] → dotação → solicitação de parecer → parecer → autorização → termo.
         $tiposView = array_filter([
-            'capa_aditivo'                 => 'Admin.Processos.pdf.aditivos.capa',
-            'solicitacao_aditivo'          => 'Admin.Processos.pdf.aditivos.solicitacao',
-            'aceite_documentacao_aditivo'  => 'Admin.Processos.pdf.aditivos.aceite_documentacao',
-            'parecer_tecnico_aditivo'      => $incidente->categoria === 'obras' ? 'Admin.Processos.pdf.aditivos.parecer_tecnico' : null,
+            'capa_aditivo' => 'Admin.Processos.pdf.aditivos.capa',
+            'solicitacao_aditivo' => 'Admin.Processos.pdf.aditivos.solicitacao',
+            'aceite_documentacao_aditivo' => 'Admin.Processos.pdf.aditivos.aceite_documentacao',
+            'parecer_tecnico_aditivo' => $incidente->categoria === 'obras' ? 'Admin.Processos.pdf.aditivos.parecer_tecnico' : null,
             'dotacao_orcamentaria_aditivo' => $incidente->temAcrescimoDeValor() ? 'Admin.Processos.pdf.aditivos.dotacao_orcamentaria' : null,
-            'solicitacao_parecer_aditivo'  => 'Admin.Processos.pdf.aditivos.solicitacao_parecer',
-            'parecer_juridico_aditivo'     => 'Admin.Processos.pdf.aditivos.parecer',
+            'solicitacao_parecer_aditivo' => 'Admin.Processos.pdf.aditivos.solicitacao_parecer',
+            'parecer_juridico_aditivo' => 'Admin.Processos.pdf.aditivos.parecer',
             'autorizacao_prefeito_aditivo' => 'Admin.Processos.pdf.aditivos.autorizacao',
-            'termo_aditivo'                => $incidente->categoria === 'obras'
+            'termo_aditivo' => $incidente->categoria === 'obras'
                 ? 'Admin.Processos.pdf.aditivos.termo_obras'
                 : 'Admin.Processos.pdf.aditivos.termo_compras',
         ]);
@@ -1191,10 +1264,10 @@ class IncidenteContratualController extends Controller
                     if ($unidadeMatch && $unidadeMatch->servidor_responsavel) {
                         $documentoSelecao = (object) [
                             'assinantes' => [[
-                                'responsavel'  => $unidadeMatch->servidor_responsavel,
+                                'responsavel' => $unidadeMatch->servidor_responsavel,
                                 'unidade_nome' => $unidadeMatch->nome,
-                                'cargo'        => $unidadeMatch->cargo,
-                                'portaria'     => $unidadeMatch->numero_portaria ?? '',
+                                'cargo' => $unidadeMatch->cargo,
+                                'portaria' => $unidadeMatch->numero_portaria ?? '',
                                 'data_portaria' => '',
                             ]],
                         ];
@@ -1207,7 +1280,7 @@ class IncidenteContratualController extends Controller
                 'objetoContrato', 'data_selecionada', 'documentoSelecao', 'vm', 'textoJuridico'
             ))->setPaper('a4', 'portrait')->output();
 
-            $tmpPath = tempnam(sys_get_temp_dir(), 'aditivo_') . '.pdf';
+            $tmpPath = tempnam(sys_get_temp_dir(), 'aditivo_').'.pdf';
             file_put_contents($tmpPath, $pdfOutput);
             $arquivosTemp[] = $tmpPath;
 
@@ -1221,9 +1294,9 @@ class IncidenteContratualController extends Controller
             return back()->withErrors(['pdf' => 'Nenhum documento gerado para baixar.']);
         }
 
-        $mergedPath = tempnam(sys_get_temp_dir(), 'aditivo_merged_') . '.pdf';
+        $mergedPath = tempnam(sys_get_temp_dir(), 'aditivo_merged_').'.pdf';
         $listaArquivos = implode(' ', array_map('escapeshellarg', $arquivosTemp));
-        exec("gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile=" . escapeshellarg($mergedPath) . " {$listaArquivos}", $saida, $status);
+        exec('gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile='.escapeshellarg($mergedPath)." {$listaArquivos}", $saida, $status);
 
         foreach ($arquivosTemp as $tmp) {
             if (str_starts_with($tmp, sys_get_temp_dir()) && file_exists($tmp)) {
@@ -1235,7 +1308,7 @@ class IncidenteContratualController extends Controller
         $nomeArquivo = "Aditivo_{$numContratoSafe}_Completo.pdf";
 
         // Aplicar carimbo lateral com numeração de páginas
-        $outputPath = tempnam(sys_get_temp_dir(), 'aditivo_carimbado_') . '.pdf';
+        $outputPath = tempnam(sys_get_temp_dir(), 'aditivo_carimbado_').'.pdf';
         $carimbado = $this->aplicarCarimboNumeracao($mergedPath, $outputPath, $prefeitura);
 
         if ($carimbado) {
@@ -1251,8 +1324,8 @@ class IncidenteContratualController extends Controller
         @unlink($outputPath);
 
         return response($conteudo, 200, [
-            'Content-Type'        => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="' . $nomeArquivo . '"',
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="'.$nomeArquivo.'"',
         ]);
     }
 
@@ -1279,26 +1352,26 @@ class IncidenteContratualController extends Controller
 
             for ($pagina = 1; $pagina <= $totalPages; $pagina++) {
                 $tplId = $fpdi->importPage($pagina);
-                $size  = $fpdi->getTemplateSize($tplId);
+                $size = $fpdi->getTemplateSize($tplId);
                 $orientation = $size['width'] > $size['height'] ? 'L' : 'P';
                 $fpdi->AddPage($orientation, [$size['width'], $size['height']]);
                 $fpdi->useTemplate($tplId);
 
                 // Carimbo lateral direito
-                $pageWidth  = $fpdi->GetPageWidth();
+                $pageWidth = $fpdi->GetPageWidth();
                 $pageHeight = $fpdi->GetPageHeight();
-                $boxWidth   = 8;
-                $boxHeight  = 150;
-                $x = $pageWidth  - $boxWidth - 1;
+                $boxWidth = 8;
+                $boxHeight = 150;
+                $x = $pageWidth - $boxWidth - 1;
                 $y = ($pageHeight - $boxHeight) / 2;
 
                 $fpdi->SetDrawColor(0, 0, 0);
                 $fpdi->Rect($x, $y, $boxWidth, $boxHeight, 'D');
                 $fpdi->SetTextColor(0, 0, 0);
 
-                $codigoAut  = ($prefeitura->id ?? '0') . now()->format('HisdmY');
-                $textoCarimbo = "Documento numerado | Pág. {$pagina}/{$totalPages} | " .
-                    "Plataforma GestGov - Licenciado para Prefeitura de " . ($prefeitura->cidade ?? 'Município') .
+                $codigoAut = ($prefeitura->id ?? '0').now()->format('HisdmY');
+                $textoCarimbo = "Documento numerado | Pág. {$pagina}/{$totalPages} | ".
+                    'Plataforma GestGov - Licenciado para Prefeitura de '.($prefeitura->cidade ?? 'Município').
                     ". Cod. de Autenticação: {$codigoAut} - Para autenticar acesse gestgov.com.br/autenticacao";
 
                 $fpdi->StartTransform();
@@ -1317,6 +1390,7 @@ class IncidenteContratualController extends Controller
             return file_exists($outputPath) && filesize($outputPath) > 0;
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Erro ao aplicar carimbo no aditivo', ['erro' => $e->getMessage()]);
+
             return false;
         }
     }
