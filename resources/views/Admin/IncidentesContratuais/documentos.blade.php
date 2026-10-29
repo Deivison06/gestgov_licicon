@@ -323,43 +323,80 @@
                                                             <p class="mb-3 text-sm text-gray-600">
                                                                 Planilha importada: <span class="font-medium">{{ $incidente->arquivo_planilha_itens_nome }}</span>
                                                             </p>
-                                                            <div class="overflow-x-auto">
-                                                                <table class="min-w-full text-sm divide-y divide-gray-200">
-                                                                    <thead>
-                                                                        <tr class="text-xs font-semibold text-left text-gray-500 uppercase">
-                                                                            <th class="py-2 pr-4">Item</th>
-                                                                            <th class="py-2 pr-4">Descrição</th>
-                                                                            <th class="py-2 pr-4">Unidade</th>
-                                                                            <th class="py-2 pr-4 text-right">Qtd. Aditivada</th>
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody class="divide-y divide-gray-100">
-                                                                        @foreach ($itensAditivadosAtuais as $itemAditivado)
-                                                                            <tr>
-                                                                                <td class="py-2 pr-4">{{ $itemAditivado->loteContratado?->lote?->item }}</td>
-                                                                                <td class="py-2 pr-4">{{ $itemAditivado->loteContratado?->lote?->descricao }}</td>
-                                                                                <td class="py-2 pr-4">{{ $itemAditivado->loteContratado?->lote?->unidade }}</td>
-                                                                                <td class="py-2 pr-4 text-right {{ $itemAditivado->quantidade_aditivada < 0 ? 'text-red-600' : 'text-green-700' }}">
-                                                                                    {{ number_format($itemAditivado->quantidade_aditivada, 2, ',', '.') }}
-                                                                                </td>
+                                                            @if ($contratoEhSistema)
+                                                                <div class="overflow-x-auto">
+                                                                    <table class="min-w-full text-sm divide-y divide-gray-200">
+                                                                        <thead>
+                                                                            <tr class="text-xs font-semibold text-left text-gray-500 uppercase">
+                                                                                <th class="py-2 pr-4">Item</th>
+                                                                                <th class="py-2 pr-4">Descrição</th>
+                                                                                <th class="py-2 pr-4">Unidade</th>
+                                                                                <th class="py-2 pr-4 text-right">Qtd. Aditivada</th>
                                                                             </tr>
-                                                                        @endforeach
-                                                                    </tbody>
-                                                                </table>
-                                                            </div>
+                                                                        </thead>
+                                                                        <tbody class="divide-y divide-gray-100">
+                                                                            @foreach ($itensAditivadosAtuais as $itemAditivado)
+                                                                                <tr>
+                                                                                    <td class="py-2 pr-4">{{ $itemAditivado->loteContratado?->lote?->item }}</td>
+                                                                                    <td class="py-2 pr-4">{{ $itemAditivado->loteContratado?->lote?->descricao }}</td>
+                                                                                    <td class="py-2 pr-4">{{ $itemAditivado->loteContratado?->lote?->unidade }}</td>
+                                                                                    <td class="py-2 pr-4 text-right {{ $itemAditivado->quantidade_aditivada < 0 ? 'text-red-600' : 'text-green-700' }}">
+                                                                                        {{ number_format($itemAditivado->quantidade_aditivada, 2, ',', '.') }}
+                                                                                    </td>
+                                                                                </tr>
+                                                                            @endforeach
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            @else
+                                                                <div class="overflow-x-auto">
+                                                                    <table class="min-w-full text-sm divide-y divide-gray-200">
+                                                                        @if (! empty($planilhaBrutaAtual))
+                                                                            <thead>
+                                                                                <tr class="text-xs font-semibold text-left text-gray-500 uppercase">
+                                                                                    @foreach ($planilhaBrutaAtual[0] ?? [] as $coluna)
+                                                                                        <th class="py-2 pr-4">{{ $coluna }}</th>
+                                                                                    @endforeach
+                                                                                </tr>
+                                                                            </thead>
+                                                                            <tbody class="divide-y divide-gray-100">
+                                                                                @foreach (array_slice($planilhaBrutaAtual, 1) as $linha)
+                                                                                    <tr>
+                                                                                        @foreach ($linha as $celula)
+                                                                                            <td class="py-2 pr-4">{{ $celula }}</td>
+                                                                                        @endforeach
+                                                                                    </tr>
+                                                                                @endforeach
+                                                                            </tbody>
+                                                                        @endif
+                                                                    </table>
+                                                                </div>
+                                                            @endif
                                                             <button type="button"
                                                                     onclick="removerPlanilhaItensAditivo('{{ $contrato->id }}', '{{ $incidente->id }}')"
                                                                     class="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 border border-red-200 rounded-md hover:bg-red-100">
-                                                                <i class="fas fa-trash-alt"></i> Remover planilha e voltar ao percentual
+                                                                <i class="fas fa-trash-alt"></i> Remover planilha{{ $contratoEhSistema ? ' e voltar ao percentual' : '' }}
                                                             </button>
                                                         </div>
                                                     @else
                                                         <div class="p-4 bg-white border border-gray-200 rounded-lg">
-                                                            <p class="mb-2 text-xs text-gray-500">
-                                                                Alternativa ao percentual uniforme abaixo: importe uma planilha com a quantidade aditivada de cada item
-                                                                (mesmo modelo usado no Termo de Referência — coluna A: item, B: descrição, C: unidade, D: quantidade aditivada;
-                                                                use valores negativos para supressão).
-                                                            </p>
+                                                            @if ($contratoEhSistema)
+                                                                <p class="mb-2 text-xs text-gray-500">
+                                                                    Alternativa ao percentual uniforme abaixo: importe uma planilha com a quantidade aditivada de cada item
+                                                                    (mesmo modelo usado no Termo de Referência — coluna A: item, B: descrição, C: unidade, D: quantidade aditivada;
+                                                                    use valores negativos para supressão).
+                                                                </p>
+                                                            @else
+                                                                <p class="mb-2 text-xs text-gray-500">
+                                                                    Importe a planilha com os quantitativos aditivados (mesmo modelo usado no Termo de Referência). O conteúdo
+                                                                    é exibido exatamente como enviado no quadro de itens do Termo Aditivo, sem validação contra o contrato.
+                                                                </p>
+                                                            @endif
+                                                            <button type="button"
+                                                                    onclick="baixarModeloPlanilhaItens()"
+                                                                    class="inline-flex items-center gap-1 mb-2 text-xs font-medium text-[var(--teal-dark-bg)] hover:underline">
+                                                                <i class="fas fa-download"></i> Baixar modelo da planilha
+                                                            </button>
                                                             <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
                                                                 <input type="file" id="arquivo_planilha_itens_{{ $incidente->id }}" accept=".xlsx,.xls,.csv"
                                                                        class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[var(--mint)] file:text-white hover:file:bg-[var(--teal-dark-bg)]">
@@ -558,6 +595,7 @@
         }
     </script>
 
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
     <script>
         function showMessage(message, type) {
             const container = document.getElementById('message-container');
@@ -677,6 +715,18 @@
                 });
             });
         });
+
+        function baixarModeloPlanilhaItens() {
+            const dados = [
+                ['Item', 'Descrição', 'Unidade', 'Quantidade Aditivada'],
+                [1, 'Exemplo de item acrescido', 'UN', 50],
+                [2, 'Exemplo de item suprimido', 'UN', -10],
+            ];
+            const ws = XLSX.utils.aoa_to_sheet(dados);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Modelo');
+            XLSX.writeFile(wb, 'modelo_planilha_quantitativos_aditivo.xlsx');
+        }
 
         async function importarPlanilhaItensAditivo(contratoId, incidenteId) {
             const input = document.getElementById(`arquivo_planilha_itens_${incidenteId}`);

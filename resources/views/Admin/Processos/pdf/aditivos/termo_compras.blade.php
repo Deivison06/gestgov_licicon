@@ -18,6 +18,13 @@
         $itensAcrescidos = $incidente->itens->filter(fn ($i) => $i->quantidade_aditivada > 0);
         $itensSuprimidos = $incidente->itens->filter(fn ($i) => $i->quantidade_aditivada < 0);
 
+        // Contrato Manual/Externo não tem lotes cadastrados para casar/calcular
+        // contra a planilha — o conteúdo importado é exibido tal como enviado
+        // (ver IncidenteContratualService::importarPlanilhaBruta()).
+        $planilhaBrutaPdf = ($contrato instanceof \App\Models\ContratoManual && $incidente->itens_origem_planilha)
+            ? ($incidente->arquivo_planilha_itens_dados ?? [])
+            : [];
+
         $temAssinanteSelecionado = isset($documentoSelecao) && is_array($documentoSelecao->assinantes) && count($documentoSelecao->assinantes) > 0;
 
         $assinaturaContratanteExtrato = $temAssinanteSelecionado
@@ -75,56 +82,78 @@
         <div class="clause-content">{{ $blocos['valor_global'] }}</div>
     @endif
 
-    @if($itensAcrescidos->isNotEmpty())
-        <div class="clause-content" style="text-indent: 0;">Itens acrescidos, conforme quadro abaixo:</div>
+    @if(!empty($planilhaBrutaPdf))
+        <div class="clause-content" style="text-indent: 0;">Os itens atingidos pela alteração são os seguintes, conforme planilha de quantitativos:</div>
         <table class="tabela">
             <thead>
                 <tr>
-                    <th style="text-align: center;">Item</th>
-                    <th>Descrição</th>
-                    <th style="text-align: center;">Qtd. Acrescida</th>
-                    <th style="text-align: right;">V. Unitário</th>
-                    <th style="text-align: right;">V. Total</th>
+                    @foreach($planilhaBrutaPdf[0] ?? [] as $coluna)
+                        <th>{{ $coluna }}</th>
+                    @endforeach
                 </tr>
             </thead>
             <tbody>
-                @foreach($itensAcrescidos as $item)
+                @foreach(array_slice($planilhaBrutaPdf, 1) as $linha)
                     <tr>
-                        <td style="text-align: center;">{{ $item->loteContratado->lote->item ?? '-' }}</td>
-                        <td>{{ $item->loteContratado->lote->descricao ?? 'Item sem descrição' }}</td>
-                        <td style="text-align: center;">{{ number_format(abs($item->quantidade_aditivada), 2, ',', '.') }}</td>
-                        <td style="text-align: right;">R$ {{ number_format($item->valor_unitario, 2, ',', '.') }}</td>
-                        <td style="text-align: right;">R$ {{ number_format(abs($item->valor_total_aditivado), 2, ',', '.') }}</td>
+                        @foreach($linha as $celula)
+                            <td>{{ $celula }}</td>
+                        @endforeach
                     </tr>
                 @endforeach
             </tbody>
         </table>
-    @endif
+    @else
+        @if($itensAcrescidos->isNotEmpty())
+            <div class="clause-content" style="text-indent: 0;">Itens acrescidos, conforme quadro abaixo:</div>
+            <table class="tabela">
+                <thead>
+                    <tr>
+                        <th style="text-align: center;">Item</th>
+                        <th>Descrição</th>
+                        <th style="text-align: center;">Qtd. Acrescida</th>
+                        <th style="text-align: right;">V. Unitário</th>
+                        <th style="text-align: right;">V. Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($itensAcrescidos as $item)
+                        <tr>
+                            <td style="text-align: center;">{{ $item->loteContratado->lote->item ?? '-' }}</td>
+                            <td>{{ $item->loteContratado->lote->descricao ?? 'Item sem descrição' }}</td>
+                            <td style="text-align: center;">{{ number_format(abs($item->quantidade_aditivada), 2, ',', '.') }}</td>
+                            <td style="text-align: right;">R$ {{ number_format($item->valor_unitario, 2, ',', '.') }}</td>
+                            <td style="text-align: right;">R$ {{ number_format(abs($item->valor_total_aditivado), 2, ',', '.') }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        @endif
 
-    @if($itensSuprimidos->isNotEmpty())
-        <div class="clause-content" style="text-indent: 0;">Itens suprimidos, conforme quadro abaixo:</div>
-        <table class="tabela">
-            <thead>
-                <tr>
-                    <th style="text-align: center;">Item</th>
-                    <th>Descrição</th>
-                    <th style="text-align: center;">Qtd. Suprimida</th>
-                    <th style="text-align: right;">V. Unitário</th>
-                    <th style="text-align: right;">V. Total</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($itensSuprimidos as $item)
+        @if($itensSuprimidos->isNotEmpty())
+            <div class="clause-content" style="text-indent: 0;">Itens suprimidos, conforme quadro abaixo:</div>
+            <table class="tabela">
+                <thead>
                     <tr>
-                        <td style="text-align: center;">{{ $item->loteContratado->lote->item ?? '-' }}</td>
-                        <td>{{ $item->loteContratado->lote->descricao ?? 'Item sem descrição' }}</td>
-                        <td style="text-align: center;">{{ number_format(abs($item->quantidade_aditivada), 2, ',', '.') }}</td>
-                        <td style="text-align: right;">R$ {{ number_format($item->valor_unitario, 2, ',', '.') }}</td>
-                        <td style="text-align: right;">R$ {{ number_format(abs($item->valor_total_aditivado), 2, ',', '.') }}</td>
+                        <th style="text-align: center;">Item</th>
+                        <th>Descrição</th>
+                        <th style="text-align: center;">Qtd. Suprimida</th>
+                        <th style="text-align: right;">V. Unitário</th>
+                        <th style="text-align: right;">V. Total</th>
                     </tr>
-                @endforeach
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach($itensSuprimidos as $item)
+                        <tr>
+                            <td style="text-align: center;">{{ $item->loteContratado->lote->item ?? '-' }}</td>
+                            <td>{{ $item->loteContratado->lote->descricao ?? 'Item sem descrição' }}</td>
+                            <td style="text-align: center;">{{ number_format(abs($item->quantidade_aditivada), 2, ',', '.') }}</td>
+                            <td style="text-align: right;">R$ {{ number_format($item->valor_unitario, 2, ',', '.') }}</td>
+                            <td style="text-align: right;">R$ {{ number_format(abs($item->valor_total_aditivado), 2, ',', '.') }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        @endif
     @endif
 
     @if(isset($blocos['dotacao']))

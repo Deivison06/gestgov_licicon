@@ -387,6 +387,10 @@ Route::prefix('admin')
         Route::middleware('role:diretor_licicon|gerente_licicon|colaborador_licicon')->group(function () {
             Route::post('/contratos-manuais/{contrato_id}/incidentes/{incidente_id}/atualizar-campos', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'atualizarCampos'])
                 ->name('incidentes-manual.atualizar-campos');
+            Route::post('/contratos-manuais/{contrato_id}/incidentes/{incidente_id}/itens/importar-planilha', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'importarItensPlanilha'])
+                ->name('incidentes-manual.itens.importar');
+            Route::delete('/contratos-manuais/{contrato_id}/incidentes/{incidente_id}/itens/planilha', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'removerItensPlanilha'])
+                ->name('incidentes-manual.itens.planilha.destroy');
             Route::get('/contratos-manuais/{contrato_id}/incidentes/{incidente_id}/documentos', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'documentos'])
                 ->name('incidentes-manual.documentos');
             Route::post('/contratos-manuais/{contrato_id}/incidentes/{incidente_id}/documentos/salvar-campo', [\App\Http\Controllers\Admin\IncidenteContratualController::class, 'salvarCampoDocumento'])

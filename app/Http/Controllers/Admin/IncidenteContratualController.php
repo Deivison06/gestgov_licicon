@@ -489,16 +489,22 @@ class IncidenteContratualController extends Controller
         // $temAssinaturaEletronica controla apenas o botão de assinatura eletrônica.
         $permitirSelecaoAssinante = true;
 
-        // Importação de planilha de quantitativos (alternativa ao percentual
-        // uniforme) — só para Contratos do Sistema (têm lotes/itens cadastrados)
-        // em aditivo de valor de compras/serviços, dentro do card "Solicitação
-        // do Aditivo" (ver IncidenteContratualService::importarItensPlanilha()).
-        $podeImportarPlanilhaItens = $contrato instanceof Contrato
-            && in_array($incidente->tipo, ['valor', 'prazo_valor'])
+        // Importação de planilha de quantitativos em aditivo de valor de
+        // compras/serviços, dentro do card "Solicitação do Aditivo". Para
+        // Contrato do Sistema é uma alternativa ao percentual uniforme, casada
+        // item a item contra os lotes cadastrados (importarItensPlanilha()).
+        // Para Contrato Manual/Externo não há lotes para casar — a planilha só
+        // é exibida tal como enviada no quadro de itens do Termo (ver
+        // IncidenteContratualService::importarPlanilhaBruta()).
+        $podeImportarPlanilhaItens = in_array($incidente->tipo, ['valor', 'prazo_valor'])
             && $incidente->categoria === 'compras_servicos';
-        $itensAditivadosAtuais = $podeImportarPlanilhaItens
+        $contratoEhSistema = $contrato instanceof Contrato;
+        $itensAditivadosAtuais = ($podeImportarPlanilhaItens && $contratoEhSistema)
             ? $incidente->itens()->with('loteContratado.lote')->get()
             : collect();
+        $planilhaBrutaAtual = ($podeImportarPlanilhaItens && ! $contratoEhSistema)
+            ? ($incidente->arquivo_planilha_itens_dados ?? [])
+            : [];
 
         $documentos = [
             'capa_aditivo' => [
@@ -688,7 +694,7 @@ class IncidenteContratualController extends Controller
         return view('Admin.IncidentesContratuais.documentos', compact(
             'contrato', 'incidente', 'processo', 'prefeitura', 'documentos', 'documentosGerados', 'temAssinaturaEletronica',
             'resumoFinanceiro', 'numeroOrdinal', 'dotacoesAtuais', 'dotacaoSugerida', 'ehAditivoLegado', 'camposAberturaFaltantes',
-            'unidadesData', 'podeImportarPlanilhaItens', 'itensAditivadosAtuais'
+            'unidadesData', 'podeImportarPlanilhaItens', 'itensAditivadosAtuais', 'contratoEhSistema', 'planilhaBrutaAtual'
         ));
     }
 
@@ -700,19 +706,22 @@ class IncidenteContratualController extends Controller
     public function importarItensPlanilha(Request $request, $contrato_id, $incidente_id)
     {
         $contrato = $this->resolverContrato($contrato_id);
-
-        if (! $contrato instanceof Contrato) {
-            return response()->json([
-                'success' => false,
-                'message' => 'A importação de planilha de quantitativos só está disponível para contratos do sistema.',
-            ], 422);
-        }
-
         $incidente = $this->buscarIncidente($contrato, $incidente_id);
 
         $request->validate([
             'arquivo_planilha_itens' => 'required|file|mimes:xlsx,xls,csv|max:10240',
         ]);
+
+        if (! $contrato instanceof Contrato) {
+            $resultado = $this->incidenteService->importarPlanilhaBruta(
+                $incidente, $request->file('arquivo_planilha_itens')
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Planilha importada com sucesso: '.$resultado['linhas'].' linha(s).',
+            ]);
+        }
 
         $resultado = $this->incidenteService->importarItensPlanilha(
             $incidente, $contrato, $request->file('arquivo_planilha_itens')

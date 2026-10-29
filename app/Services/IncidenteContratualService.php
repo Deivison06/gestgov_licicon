@@ -186,9 +186,41 @@ class IncidenteContratualService
     }
 
     /**
-     * Desfaz a importação por planilha e volta o aditivo ao modo "percentual" —
-     * o próximo salvamento da Solicitação do Aditivo recalcula os itens a
-     * partir do percentual_valor salvo (ver atualizarAditivo()).
+     * Para Contratos Manuais/Externos: não há lotes cadastrados no sistema para
+     * casar/calcular contra a planilha (o aditivo externo já é instruído fora
+     * do sistema, e a lei só exige que a planilha de quantitativos acompanhe o
+     * termo). Por isso aqui não se valida nem calcula nada — o conteúdo é
+     * guardado tal como enviado e exibido no quadro de itens do Termo Aditivo.
+     *
+     * @return array{linhas: int}
+     */
+    public function importarPlanilhaBruta(IncidenteContratual $incidente, UploadedFile $arquivo): array
+    {
+        $spreadsheet = IOFactory::load($arquivo->getRealPath());
+        $linhas = $spreadsheet->getActiveSheet()->toArray();
+
+        return DB::transaction(function () use ($incidente, $arquivo, $linhas) {
+            if ($incidente->arquivo_planilha_itens_path) {
+                Storage::disk('public')->delete($incidente->arquivo_planilha_itens_path);
+            }
+
+            $incidente->update([
+                'itens_origem_planilha' => true,
+                'arquivo_planilha_itens_path' => $arquivo->store('incidentes/planilhas-itens', 'public'),
+                'arquivo_planilha_itens_nome' => $arquivo->getClientOriginalName(),
+                'arquivo_planilha_itens_dados' => $linhas,
+            ]);
+
+            return ['linhas' => max(count($linhas) - 1, 0)];
+        });
+    }
+
+    /**
+     * Desfaz a importação por planilha. Para Contrato do Sistema, volta o
+     * aditivo ao modo "percentual" (o próximo salvamento da Solicitação do
+     * Aditivo recalcula os itens a partir do percentual_valor salvo — ver
+     * atualizarAditivo()); para Contrato Manual/Externo, só remove o anexo e
+     * os dados brutos exibidos no Termo.
      */
     public function removerItensPlanilha(IncidenteContratual $incidente): void
     {
@@ -203,6 +235,7 @@ class IncidenteContratualService
                 'itens_origem_planilha' => false,
                 'arquivo_planilha_itens_path' => null,
                 'arquivo_planilha_itens_nome' => null,
+                'arquivo_planilha_itens_dados' => null,
             ]);
         });
     }
