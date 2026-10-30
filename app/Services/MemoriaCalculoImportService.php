@@ -36,7 +36,7 @@ class MemoriaCalculoImportService
                 continue;
             }
 
-            if (preg_match('/^(?:Lote\s+(\S+)\s*·\s*)?Item\s+(\d+)\s*[-–—]\s*(.+)$/u', $colA, $m)) {
+            if (preg_match('/^(?:Lote\s+(\S+)\s*[·\-–—]\s*)?Item\s+(\d+)\s*[-–—]\s*(.+)$/u', $colA, $m)) {
                 $this->fecharFonte($itemAtual, $fonteAtual);
                 $this->fecharItem($itens, $itemAtual);
 
