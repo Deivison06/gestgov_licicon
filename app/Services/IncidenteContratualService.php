@@ -9,11 +9,39 @@ use App\Models\IncidenteContratualItem;
 use App\Models\LoteContratado;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class IncidenteContratualService
 {
+    /**
+     * Salva em public/uploads/{diretorio}, mesmo padrão usado em
+     * IncidenteContratualController::salvarArquivoPublico() — não usa o disco
+     * 'public' do Storage porque o link simbólico public/storage não existe em
+     * produção (é uma pasta normal), deixando o arquivo inacessível (404).
+     */
+    private function salvarArquivoPublico(UploadedFile $file, string $diretorio): string
+    {
+        $diretorioCompleto = "uploads/{$diretorio}";
+        $nomeArquivo = Str::random(40).'.'.$file->getClientOriginalExtension();
+
+        if (! file_exists(public_path($diretorioCompleto))) {
+            mkdir(public_path($diretorioCompleto), 0755, true);
+        }
+
+        $file->move(public_path($diretorioCompleto), $nomeArquivo);
+
+        return "{$diretorioCompleto}/{$nomeArquivo}";
+    }
+
+    private function removerArquivoPublico(string $path): void
+    {
+        $absoluto = public_path($path);
+        if (file_exists($absoluto)) {
+            @unlink($absoluto);
+        }
+    }
+
     public function atualizarAditivo(IncidenteContratual $incidente, Contrato|ContratoManual $contrato, array $dados)
     {
         return DB::transaction(function () use ($incidente, $contrato, $dados) {
@@ -160,7 +188,7 @@ class IncidenteContratualService
 
         return DB::transaction(function () use ($incidente, $arquivo, $paraImportar) {
             if ($incidente->arquivo_planilha_itens_path) {
-                Storage::disk('public')->delete($incidente->arquivo_planilha_itens_path);
+                $this->removerArquivoPublico($incidente->arquivo_planilha_itens_path);
             }
 
             $incidente->itens()->delete();
@@ -177,7 +205,7 @@ class IncidenteContratualService
 
             $incidente->update([
                 'itens_origem_planilha' => true,
-                'arquivo_planilha_itens_path' => $arquivo->store('incidentes/planilhas-itens', 'public'),
+                'arquivo_planilha_itens_path' => $this->salvarArquivoPublico($arquivo, 'incidentes/planilhas-itens'),
                 'arquivo_planilha_itens_nome' => $arquivo->getClientOriginalName(),
             ]);
 
@@ -201,12 +229,12 @@ class IncidenteContratualService
 
         return DB::transaction(function () use ($incidente, $arquivo, $linhas) {
             if ($incidente->arquivo_planilha_itens_path) {
-                Storage::disk('public')->delete($incidente->arquivo_planilha_itens_path);
+                $this->removerArquivoPublico($incidente->arquivo_planilha_itens_path);
             }
 
             $incidente->update([
                 'itens_origem_planilha' => true,
-                'arquivo_planilha_itens_path' => $arquivo->store('incidentes/planilhas-itens', 'public'),
+                'arquivo_planilha_itens_path' => $this->salvarArquivoPublico($arquivo, 'incidentes/planilhas-itens'),
                 'arquivo_planilha_itens_nome' => $arquivo->getClientOriginalName(),
                 'arquivo_planilha_itens_dados' => $linhas,
             ]);
@@ -226,7 +254,7 @@ class IncidenteContratualService
     {
         DB::transaction(function () use ($incidente) {
             if ($incidente->arquivo_planilha_itens_path) {
-                Storage::disk('public')->delete($incidente->arquivo_planilha_itens_path);
+                $this->removerArquivoPublico($incidente->arquivo_planilha_itens_path);
             }
 
             $incidente->itens()->delete();

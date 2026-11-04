@@ -461,7 +461,7 @@
                                                                 @if($campo['value'])
                                                                     <input type="hidden" name="remover_{{ $campo['name'] }}" :value="marcadoParaRemover ? '1' : '0'">
                                                                     <div class="flex items-center gap-3 mt-2">
-                                                                        <a x-show="!marcadoParaRemover" href="{{ Storage::url($campo['value']) }}" target="_blank" class="inline-block text-xs font-medium text-blue-600 hover:underline">
+                                                                        <a x-show="!marcadoParaRemover" href="{{ asset($campo['value']) }}" target="_blank" class="inline-block text-xs font-medium text-blue-600 hover:underline">
                                                                             <i class="fas fa-file-pdf"></i> Visualizar arquivo atual
                                                                         </a>
                                                                         <button x-show="!marcadoParaRemover" type="button" @click="marcadoParaRemover = true" class="inline-flex items-center gap-1 text-xs font-medium text-red-600 hover:underline">

@@ -14,7 +14,7 @@ use App\Models\Unidade;
 use App\Services\Aditivos\AditivoCalculoFinanceiroService;
 use App\Services\IncidenteContratualService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use setasign\Fpdi\Tcpdf\Fpdi;
 
@@ -264,8 +264,9 @@ class IncidenteContratualController extends Controller
         }
 
         if ($request->hasFile('arquivo_aditivo_externo')) {
-            $validated['arquivo_aditivo_externo_path'] = $request->file('arquivo_aditivo_externo')
-                ->store('incidentes/externos', 'public');
+            $validated['arquivo_aditivo_externo_path'] = $this->salvarArquivoPublico(
+                $request->file('arquivo_aditivo_externo'), 'incidentes/externos'
+            );
         }
 
         $this->incidenteService->atualizarAditivoExterno($incidente, $contrato, $validated);
@@ -396,7 +397,7 @@ class IncidenteContratualController extends Controller
             return null;
         }
 
-        $absoluto = Storage::disk('public')->path($path);
+        $absoluto = public_path($path);
 
         return file_exists($absoluto) ? $absoluto : null;
     }
@@ -404,16 +405,47 @@ class IncidenteContratualController extends Controller
     private function resolverPathArquivo(Request $request, string $campo, string $diretorio, ?string $pathAtual): ?string
     {
         if ($request->hasFile($campo)) {
-            return $request->file($campo)->store($diretorio, 'public');
+            return $this->salvarArquivoPublico($request->file($campo), $diretorio);
         }
 
         if ($request->boolean('remover_'.$campo) && $pathAtual) {
-            Storage::disk('public')->delete($pathAtual);
+            $this->removerArquivoPublico($pathAtual);
 
             return null;
         }
 
         return $pathAtual;
+    }
+
+    /**
+     * Salva um upload direto em public/uploads/{diretorio} (mesmo padrão já usado
+     * em ContratoManualController, PrefeituraController, FiscalizacaoController
+     * etc.) em vez do disco 'public' do Storage — que depende do link simbólico
+     * public/storage -> storage/app/public, e esse link não existe em produção
+     * (é uma pasta normal), deixando qualquer arquivo enviado por ali inacessível
+     * (404). Retorna o path relativo salvo no banco (ex.: "uploads/incidentes/
+     * externos/abc123.pdf"), igual ao que $file->store() devolvia antes.
+     */
+    private function salvarArquivoPublico(\Illuminate\Http\UploadedFile $file, string $diretorio): string
+    {
+        $diretorioCompleto = "uploads/{$diretorio}";
+        $nomeArquivo = Str::random(40).'.'.$file->getClientOriginalExtension();
+
+        if (! file_exists(public_path($diretorioCompleto))) {
+            mkdir(public_path($diretorioCompleto), 0755, true);
+        }
+
+        $file->move(public_path($diretorioCompleto), $nomeArquivo);
+
+        return "{$diretorioCompleto}/{$nomeArquivo}";
+    }
+
+    private function removerArquivoPublico(string $path): void
+    {
+        $absoluto = public_path($path);
+        if (file_exists($absoluto)) {
+            @unlink($absoluto);
+        }
     }
 
     /**

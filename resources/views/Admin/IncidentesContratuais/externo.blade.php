@@ -161,7 +161,7 @@
                 <input type="file" name="arquivo_aditivo_externo" accept=".pdf"
                        class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[var(--mint)] file:text-white hover:file:bg-[var(--teal-dark-bg)]">
                 @if($incidente->arquivo_aditivo_externo_path)
-                    <a href="{{ Storage::url($incidente->arquivo_aditivo_externo_path) }}" target="_blank" class="inline-block mt-2 text-xs font-medium text-blue-600 hover:underline">
+                    <a href="{{ asset($incidente->arquivo_aditivo_externo_path) }}" target="_blank" class="inline-block mt-2 text-xs font-medium text-blue-600 hover:underline">
                         <i class="fas fa-file-pdf"></i> Visualizar anexo atual
                     </a>
                 @endif
