@@ -253,6 +253,7 @@ class IncidenteContratualService
                 'data_aditivo' => $dados['data_aditivo'],
                 'justificativa' => $dados['justificativa'] ?? $incidente->justificativa,
                 'meses_prorrogacao' => $dados['meses_prorrogacao'] ?? $incidente->meses_prorrogacao,
+                'valor_acrescido' => $dados['valor_acrescido'] ?? $incidente->valor_acrescido,
                 'arquivo_aditivo_externo_path' => $dados['arquivo_aditivo_externo_path'] ?? $incidente->arquivo_aditivo_externo_path,
             ]);
 

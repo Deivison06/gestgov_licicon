@@ -65,13 +65,46 @@
 
             @if($temValor)
                 @if($ehManual)
-                    <div>
-                        <label class="block mb-1 text-sm font-medium text-gray-700">Valor Acrescido (R$) <span class="text-red-500">*</span></label>
-                        <input type="number" name="valor_acrescido" step="0.01" min="0.01" required
-                               value="{{ old('valor_acrescido') }}"
-                               class="block w-full max-w-xs px-3 py-2 text-sm border-gray-300 rounded-md shadow-sm focus:ring-[var(--mint)] focus:border-[var(--mint)]">
+                    @php
+                        $valorAtualContrato = (float) ($contrato->valor_total ?? 0);
+                        $valorAcrescidoAtual = old('valor_acrescido', $incidente->valor_acrescido);
+                    @endphp
+                    <div x-data="{
+                            valorAtual: {{ $valorAtualContrato }},
+                            valor: '{{ $valorAcrescidoAtual ?? '' }}',
+                            percentual: '',
+                            atualizarPercentual() {
+                                this.percentual = (this.valorAtual > 0 && this.valor !== '')
+                                    ? (parseFloat(this.valor) / this.valorAtual * 100).toFixed(4)
+                                    : '';
+                            },
+                            atualizarValor() {
+                                this.valor = (this.valorAtual > 0 && this.percentual !== '')
+                                    ? (this.valorAtual * parseFloat(this.percentual) / 100).toFixed(2)
+                                    : '';
+                            }
+                         }"
+                         x-init="atualizarPercentual()">
+                        <label class="block mb-1 text-sm font-medium text-gray-700">Valor Acrescido <span class="text-red-500">*</span></label>
+                        <div class="flex flex-wrap items-end gap-3">
+                            <div>
+                                <label class="block mb-1 text-xs text-gray-500">R$</label>
+                                <input type="number" name="valor_acrescido" step="0.01" min="0.01" required
+                                       x-model="valor" @input="atualizarPercentual()"
+                                       class="block w-full max-w-xs px-3 py-2 text-sm border-gray-300 rounded-md shadow-sm focus:ring-[var(--mint)] focus:border-[var(--mint)]">
+                            </div>
+                            <span class="pb-2 text-xs text-gray-400">ou</span>
+                            <div>
+                                <label class="block mb-1 text-xs text-gray-500">%</label>
+                                <input type="number" step="0.0001" min="0.0001"
+                                       x-model="percentual" @input="atualizarValor()"
+                                       :disabled="valorAtual <= 0"
+                                       class="block w-full max-w-[140px] px-3 py-2 text-sm border-gray-300 rounded-md shadow-sm focus:ring-[var(--mint)] focus:border-[var(--mint)] disabled:bg-gray-100 disabled:cursor-not-allowed">
+                            </div>
+                        </div>
                         <p class="mt-1 text-xs text-gray-500">
-                            Valor atual do contrato: R$ {{ number_format($contrato->valor_total ?? 0, 2, ',', '.') }}
+                            Valor atual do contrato: R$ {{ number_format($valorAtualContrato, 2, ',', '.') }}
+                            — preencha um dos dois campos; o outro é calculado automaticamente.
                         </p>
                     </div>
                 @else
