@@ -72,9 +72,14 @@ class UsuarioController extends Controller
 
     public function edit(User $usuario)
     {
+        // O formulário só aceita UMA função (radio). Quem também é assinante tem dois papéis;
+        // marca-se o papel principal — "assinante" é preservado à parte no UserService.
+        $roleAtualId = $usuario->roles->firstWhere('name', '!=', 'assinante')?->id
+            ?? $usuario->roles->first()?->id;
 
         return view('Admin.Usuarios.edit', [
             'usuario' => $usuario,
+            'roleAtualId' => $roleAtualId,
             'roles' => Role::all(),
             'permissions' => Permission::all(),
             'prefeituras' => Prefeitura::orderBy('nome')->get(),

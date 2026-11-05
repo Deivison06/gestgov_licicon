@@ -44,7 +44,7 @@ class FiscalizacaoController extends Controller
     {
         $user = auth()->user();
         $userPrefeituraId = $user->prefeitura_id;
-        $isPrefeituraUser = $user->hasRole('prefeitura') && $userPrefeituraId;
+        $isPrefeituraUser = (bool) $userPrefeituraId;
         $isLiciconAdmin = $user->hasAnyRole(['diretor_licicon', 'gerente_licicon']);
         $activeTab = $request->get('tab', 'fiscalizacoes');
 
@@ -179,7 +179,7 @@ class FiscalizacaoController extends Controller
     public function create(Request $request)
     {
         $user = auth()->user();
-        $isPrefeituraUser = $user->hasRole('prefeitura') && $user->prefeitura_id;
+        $isPrefeituraUser = (bool) $user->prefeitura_id;
 
         $tiposFiscalizacao = TipoFiscalizacaoEnum::cases();
         $conclusoes = ConclusaoFiscalEnum::cases();
@@ -235,7 +235,7 @@ class FiscalizacaoController extends Controller
             $prefeituraId = $this->resolverPrefeituraId($request);
 
             // Verificar acesso multi-tenant
-            if ($user->hasRole('prefeitura') && $user->prefeitura_id) {
+            if ($user->prefeitura_id) {
                 if ($prefeituraId != $user->prefeitura_id) {
                     Log::warning('🚫 Usuário da prefeitura tentando criar fiscalização para outra prefeitura');
 
@@ -397,7 +397,7 @@ class FiscalizacaoController extends Controller
         $this->authorizeAccess($fiscalizacao);
 
         $user = auth()->user();
-        $isPrefeituraUser = $user->hasRole('prefeitura') && $user->prefeitura_id;
+        $isPrefeituraUser = (bool) $user->prefeitura_id;
 
         $tiposFiscalizacao = TipoFiscalizacaoEnum::cases();
         $conclusoes = ConclusaoFiscalEnum::cases();
@@ -427,7 +427,7 @@ class FiscalizacaoController extends Controller
 
         $user = auth()->user();
 
-        if ($user->hasRole('prefeitura') && $user->prefeitura_id) {
+        if ($user->prefeitura_id) {
             if ($fiscalizacao->prefeitura_id != $user->prefeitura_id) {
                 abort(403, 'Acesso não autorizado.');
             }
@@ -493,7 +493,7 @@ class FiscalizacaoController extends Controller
         ]);
 
         $user = auth()->user();
-        if ($user->hasRole('prefeitura') && $user->prefeitura_id) {
+        if ($user->prefeitura_id) {
             if ($fiscalizacao->prefeitura_id != $user->prefeitura_id) {
                 abort(403, 'Acesso não autorizado.');
             }
@@ -558,9 +558,10 @@ class FiscalizacaoController extends Controller
         $user = auth()->user();
         $termo = $request->get('q', '');
         $isLiciconAdmin = $user->hasAnyRole(['diretor_licicon', 'gerente_licicon']);
-        // Só restringe por prefeitura quem de fato está vinculado a uma (role "prefeitura").
-        // Usuários Licicon sem prefeitura_id (ex.: gerente_licicon) atuam sobre todas.
-        $isPrefeituraUser = $user->hasRole('prefeitura') && $user->prefeitura_id;
+        // Restringe por prefeitura qualquer conta vinculada a uma (prefeitura_id preenchido),
+        // independente do papel — mesma regra do PrefeituraScope. Usuários Licicon sem
+        // prefeitura_id (ex.: gerente_licicon) atuam sobre todas.
+        $isPrefeituraUser = (bool) $user->prefeitura_id;
 
         if (strlen($termo) < 2) {
             return response()->json(['results' => []]);
@@ -662,7 +663,7 @@ class FiscalizacaoController extends Controller
             return;
         }
 
-        if ($user->hasRole('prefeitura') && $fiscalizacao->prefeitura_id != $user->prefeitura_id) {
+        if ($user->prefeitura_id && $fiscalizacao->prefeitura_id != $user->prefeitura_id) {
             abort(403, 'Acesso não autorizado à prefeitura.');
         }
 
@@ -769,11 +770,11 @@ class FiscalizacaoController extends Controller
     {
         $user = auth()->user();
         $isLiciconAdmin = $user->hasAnyRole(['diretor_licicon', 'gerente_licicon']);
-        // Só existe UMA prefeitura possível para quem tem a role "prefeitura".
-        // Demais perfis (equipe Licicon) podem atuar sobre qualquer prefeitura e,
-        // por isso, recebem um filtro opcional em vez de ficarem restritos à sua própria
-        // prefeitura_id (que normalmente é NULL para esses usuários).
-        $isPrefeituraUser = $user->hasRole('prefeitura') && $user->prefeitura_id;
+        // Qualquer conta com prefeitura_id fica restrita a ela, independente do papel
+        // (mesma regra do PrefeituraScope). Checar hasRole('prefeitura') aqui deixava contas
+        // de assinante/personalizadas verem e fiscalizarem contratos de outras prefeituras.
+        // A equipe Licicon (prefeitura_id NULL) recebe um filtro opcional.
+        $isPrefeituraUser = (bool) $user->prefeitura_id;
         $prefeituraId = $isPrefeituraUser ? $user->prefeitura_id : $request->input('prefeitura_id');
 
         $prefeituras = $isPrefeituraUser

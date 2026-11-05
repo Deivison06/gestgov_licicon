@@ -94,14 +94,18 @@ class UserService
 
             $this->userRepository->update($user, $data);
 
-            // Sincronizar role
+            // Sincronizar role. O papel "assinante" é gerenciado à parte (AssinanteController)
+            // e não aparece no formulário de usuário, então é preservado aqui — senão uma simples
+            // edição (ex.: trocar a senha) apagava o papel principal ou o de assinante.
+            $rolesMantidos = $user->hasRole('assinante') ? ['assinante'] : [];
+
             if (!empty($data['role'])) {
                 $role = Role::find($data['role']);
                 if ($role) {
-                    $user->syncRoles([$role->name]);
+                    $user->syncRoles(array_unique([$role->name, ...$rolesMantidos]));
                 }
             } else {
-                $user->syncRoles([]);
+                $user->syncRoles($rolesMantidos);
             }
 
             // Sincronizar permissões

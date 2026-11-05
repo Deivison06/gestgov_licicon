@@ -244,8 +244,9 @@
 
     /* ===== RADIO CONCLUSÃO ===== */
     .radio-conclusao:checked + label {
-        border-color: #2DC197;
-        background-color: #0d2a23;
+        /* Tokens do tema: o fundo fixo #0d2a23 ficava ilegível no tema claro (texto escuro em fundo escuro). */
+        border-color: var(--mint);
+        background-color: var(--hover-bg);
         box-shadow: 0 0 0 2px rgba(45, 193, 151, 0.25);
     }
 </style>
@@ -552,13 +553,13 @@
                         <input type="radio" name="regularidade_fiscal_trabalhista" value="Sim" id="regularidade_sim"
                                class="sr-only peer" disabled
                                {{ old('regularidade_fiscal_trabalhista') === 'Sim' ? 'checked' : '' }}>
-                        <span class="block p-2.5 font-bold text-center border-2 rounded-xl cursor-pointer transition-all border-[var(--line)] bg-[var(--bg)] text-[var(--ink-2)] peer-checked:border-green-500 peer-checked:bg-green-950/40 peer-checked:text-green-400">Sim</span>
+                        <span class="block p-2.5 font-bold text-center border-2 rounded-xl cursor-pointer transition-all border-[var(--line)] bg-[var(--bg)] text-[var(--ink-2)] peer-checked:border-[var(--ok)] peer-checked:bg-[var(--ok-bg)] peer-checked:text-[var(--ok)]">Sim</span>
                     </label>
                     <label class="flex-1">
                         <input type="radio" name="regularidade_fiscal_trabalhista" value="Não" id="regularidade_nao"
                                class="sr-only peer" disabled
                                {{ old('regularidade_fiscal_trabalhista') === 'Não' ? 'checked' : '' }}>
-                        <span class="block p-2.5 font-bold text-center border-2 rounded-xl cursor-pointer transition-all border-[var(--line)] bg-[var(--bg)] text-[var(--ink-2)] peer-checked:border-red-500 peer-checked:bg-red-950/40 peer-checked:text-red-400">Não</span>
+                        <span class="block p-2.5 font-bold text-center border-2 rounded-xl cursor-pointer transition-all border-[var(--line)] bg-[var(--bg)] text-[var(--ink-2)] peer-checked:border-[var(--bad-strong)] peer-checked:bg-[var(--bad-bg)] peer-checked:text-[var(--bad-strong)]">Não</span>
                     </label>
                 </div>
 

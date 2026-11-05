@@ -38,7 +38,7 @@ class OcorrenciaController extends Controller
     {
         $user = auth()->user();
         $isLiciconAdmin = $user->hasAnyRole(['diretor_licicon', 'gerente_licicon']);
-        $isPrefeituraUser = $user->hasRole('prefeitura') && $user->prefeitura_id;
+        $isPrefeituraUser = (bool) $user->prefeitura_id;
         $prefeituraId = $isPrefeituraUser ? $user->prefeitura_id : $request->input('prefeitura_id');
 
         $prefeituras = $isPrefeituraUser
@@ -133,7 +133,7 @@ class OcorrenciaController extends Controller
     public function create(Request $request)
     {
         $user = auth()->user();
-        $isPrefeituraUser = $user->hasRole('prefeitura') && $user->prefeitura_id;
+        $isPrefeituraUser = (bool) $user->prefeitura_id;
 
         $contratoPreSelecionado = null;
 
@@ -168,7 +168,7 @@ class OcorrenciaController extends Controller
         try {
             $prefeituraId = $this->resolverPrefeituraId($request);
 
-            if ($user->hasRole('prefeitura') && $user->prefeitura_id) {
+            if ($user->prefeitura_id) {
                 if ($prefeituraId != $user->prefeitura_id) {
                     return back()->withInput()->with('error', 'Você só pode registrar ocorrências para sua própria prefeitura.');
                 }
@@ -235,7 +235,7 @@ class OcorrenciaController extends Controller
         }
 
         $user = auth()->user();
-        $isPrefeituraUser = $user->hasRole('prefeitura') && $user->prefeitura_id;
+        $isPrefeituraUser = (bool) $user->prefeitura_id;
 
         $ocorrencia->contrato_info = $this->extrairInfoContrato($ocorrencia->fiscalizavel);
 
@@ -252,7 +252,7 @@ class OcorrenciaController extends Controller
         $this->authorizeAccess($ocorrencia);
 
         $user = auth()->user();
-        if ($user->hasRole('prefeitura') && $user->prefeitura_id && $ocorrencia->prefeitura_id != $user->prefeitura_id) {
+        if ($user->prefeitura_id && $ocorrencia->prefeitura_id != $user->prefeitura_id) {
             abort(403, 'Acesso não autorizado.');
         }
 
@@ -466,7 +466,7 @@ class OcorrenciaController extends Controller
             return;
         }
 
-        if ($user->hasRole('prefeitura') && $ocorrencia->prefeitura_id != $user->prefeitura_id) {
+        if ($user->prefeitura_id && $ocorrencia->prefeitura_id != $user->prefeitura_id) {
             abort(403, 'Acesso não autorizado à prefeitura.');
         }
 

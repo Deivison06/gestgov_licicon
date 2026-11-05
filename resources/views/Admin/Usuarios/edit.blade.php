@@ -116,7 +116,7 @@
                             <label for="role_{{ $role->id }}" class="flex items-center p-2 rounded-lg hover:bg-[var(--hover-bg)] cursor-pointer transition-colors">
                                 <input type="radio" name="role" value="{{ $role->id }}" id="role_{{ $role->id }}"
                                        class="h-4 w-4 text-[var(--mint)] focus:ring-[var(--mint)] border-[var(--line)] bg-[var(--bg)]"
-                                       {{ ($usuario->roles->contains($role->id) || old('role') == $role->id) ? 'checked' : '' }}>
+                                       {{ old('role', $roleAtualId) == $role->id ? 'checked' : '' }}>
                                 <span class="ml-2.5 text-sm text-[var(--ink)] font-medium">
                                     {{ $role->name }}
                                 </span>
