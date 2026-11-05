@@ -242,6 +242,19 @@
                                            title="{{ $incidente->ehExterno() ? 'Ver Aditivo Externo' : 'Gerenciar Documentos do Aditivo' }}">
                                             <i class="fas fa-file-alt"></i> {{ $incidente->ehExterno() ? 'Ver Aditivo' : 'Documentos' }}
                                         </a>
+                                        @if(auth()->user()->hasAnyRole(['diretor_licicon', 'gerente_licicon', 'colaborador_licicon']))
+                                            <form action="{{ route('admin.incidentes-manual.destroy', ['contrato_id' => $contrato->id, 'incidente_id' => $incidente->id]) }}"
+                                                  method="POST" class="inline"
+                                                  onsubmit="return confirm('Excluir este aditivo? O efeito dele no contrato (prazo/valor) será desfeito e os itens/documentos vinculados também serão apagados. Essa ação não pode ser desfeita.');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit"
+                                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[var(--bad-strong)] bg-[var(--card)] border border-[var(--line)] rounded-lg hover:bg-[var(--bad-bg)] transition-colors"
+                                                        title="Excluir Aditivo">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        @endif
                                     </div>
                                 </div>
                             @endforeach
