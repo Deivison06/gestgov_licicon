@@ -178,9 +178,29 @@ class Processo extends Model
      */
     public function getValorTotalVencedoresAttribute(): float
     {
-        return $this->vencedores->sum(function ($vencedor) {
+        $total = $this->vencedores->sum(function ($vencedor) {
             return $vencedor->valor_total;
         });
+
+        if ($total > 0) {
+            return $total;
+        }
+
+        // Inexigibilidade/Dispensa são contratação direta (um único fornecedor,
+        // sem a etapa competitiva de "vencedores" das demais modalidades) — o
+        // valor nunca chega a existir como número limpo em lugar nenhum, só
+        // como texto livre em detalhe->valor_estimado. Às vezes é só o número
+        // ("126.474,33"), às vezes vem embutido numa frase ("R$ 120.000,00
+        // (cento e vinte mil reais), a serem pagos em 12 parcelas..."). Extrai
+        // o primeiro valor em formato monetário brasileiro do texto — é
+        // sempre o total, mesmo quando a frase cita outros valores depois
+        // (parcela, percentual etc.).
+        $textoValor = $this->detalhe?->valor_estimado;
+        if ($textoValor && preg_match('/(\d{1,3}(?:\.\d{3})*,\d{2})/', $textoValor, $m)) {
+            return (float) str_replace(['.', ','], ['', '.'], $m[1]);
+        }
+
+        return 0.0;
     }
 
     // Accessor para garantir que campos nullable retornem null quando vazios
