@@ -340,28 +340,9 @@
                                     ?: $processo->finalizacao?->cnpj_empresa_vencedora
                                     ?: $processo->detalhe?->cnpj_empresa_vencedora;
 
-                                // Valor — parser de strings monetárias brasileiras
-                                $valorRaw = $processo->contrato->homologacao?->valor_total
-                                    ?? ($processo->vencedores->sum('valor_total') ?: null)
-                                    ?? $processo->finalizacao?->valor_total
-                                    ?? $processo->finalizacao?->valor_melhor_proposta
-                                    ?? $processo->detalhe?->valor_total
-                                    ?? $processo->detalhe?->valor_estimado
-                                    ?? 0;
-
-                                if (is_numeric($valorRaw)) {
-                                    $valor = (float) $valorRaw;
-                                } else {
-                                    $v = preg_replace('/\(.*$/u', '', (string) $valorRaw);
-                                    $v = preg_replace('/R\$|\s|\xc2\xa0/u', '', $v);
-                                    if (preg_match('/^[\d.]+,\d{1,2}$/', trim($v))) {
-                                        $v = str_replace('.', '', $v);
-                                        $v = str_replace(',', '.', $v);
-                                    } else {
-                                        $v = str_replace(',', '', $v);
-                                    }
-                                    $valor = is_numeric(trim($v)) ? (float) trim($v) : 0.0;
-                                }
+                                // Valor — mesma cadeia de fallback usada em toda a tela de
+                                // Contratos (ver Processo::getValorTotalVencedoresAttribute()).
+                                $valor = $processo->valor_total_vencedores;
 
                                 $vigenciaTexto = $processo->detalhe?->prazo_vigencia_texto;
                                 $vigenciaInicio = $processo->contrato->data_assinatura_contrato;

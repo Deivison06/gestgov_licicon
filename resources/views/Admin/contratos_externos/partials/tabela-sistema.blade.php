@@ -79,14 +79,10 @@
                     @endif
                 </td>
 
-                {{-- Valor Total (homologação do contrato ou soma dos vencedores) --}}
+                {{-- Valor Total — ver Processo::getValorTotalVencedoresAttribute() --}}
                 <td class="px-6 pt-5 pb-3 whitespace-nowrap text-sm">
-                    @php
-                        $valorContrato = $processo->contrato?->homologacao?->valor_total
-                            ?? $processo->vencedores->sum('valor_total');
-                    @endphp
                     <span class="font-semibold text-emerald-400">
-                        R$ {{ number_format($valorContrato ?? 0, 2, ',', '.') }}
+                        R$ {{ number_format($processo->valor_total_vencedores, 2, ',', '.') }}
                     </span>
                 </td>
 

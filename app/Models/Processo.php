@@ -174,7 +174,17 @@ class Processo extends Model
     }
 
     /**
-     * Get total value from all vencedores
+     * Valor total do processo — fonte canônica usada em toda a tela de Contratos
+     * (listagem, detalhe, relatórios). Cadeia de fallback, da fonte mais granular/
+     * confiável pra mais genérica: soma dos vencedores (Pregão/Concorrência) →
+     * homologação → finalização → valor estimado no detalhe (Dispensa/
+     * Inexigibilidade, contratação direta sem nenhuma das etapas acima).
+     *
+     * Todas essas colunas (exceto a soma de vencedores) são VARCHAR preenchidas
+     * à mão, às vezes um número limpo ("126.474,33"), às vezes um texto composto
+     * ("R$ 400.109,04 (Quatrocentos mil, cento e nove reais e quatro centavos)",
+     * às vezes citando outros valores depois — parcela, percentual etc.). Por
+     * isso cada uma passa por parseValorMonetario() antes de entrar na cadeia.
      */
     public function getValorTotalVencedoresAttribute(): float
     {
@@ -186,21 +196,67 @@ class Processo extends Model
             return $total;
         }
 
-        // Inexigibilidade/Dispensa são contratação direta (um único fornecedor,
-        // sem a etapa competitiva de "vencedores" das demais modalidades) — o
-        // valor nunca chega a existir como número limpo em lugar nenhum, só
-        // como texto livre em detalhe->valor_estimado. Às vezes é só o número
-        // ("126.474,33"), às vezes vem embutido numa frase ("R$ 120.000,00
-        // (cento e vinte mil reais), a serem pagos em 12 parcelas..."). Extrai
-        // o primeiro valor em formato monetário brasileiro do texto — é
-        // sempre o total, mesmo quando a frase cita outros valores depois
-        // (parcela, percentual etc.).
-        $textoValor = $this->detalhe?->valor_estimado;
-        if ($textoValor && preg_match('/(\d{1,3}(?:\.\d{3})*,\d{2})/', $textoValor, $m)) {
-            return (float) str_replace(['.', ','], ['', '.'], $m[1]);
+        $fontes = [
+            $this->contrato?->homologacao?->valor_total,
+            $this->finalizacao?->valor_total,
+            $this->finalizacao?->valor_melhor_proposta,
+            $this->detalhe?->valor_total,
+            $this->detalhe?->valor_estimado,
+        ];
+
+        foreach ($fontes as $fonte) {
+            $valor = self::parseValorMonetario($fonte);
+            if ($valor > 0) {
+                return $valor;
+            }
         }
 
         return 0.0;
+    }
+
+    /**
+     * Converte um valor monetário gravado como string livre (ou já numérico)
+     * num float. Cobre os formatos reais encontrados nessas colunas: número
+     * limpo em formato BR ("126.474,33"), texto composto com a parte em
+     * extenso entre parênteses ("R$ 120.000,00 (cento e vinte mil reais),
+     * a serem pagos em..." — pega só o primeiro valor, que é sempre o
+     * total), milhar sem decimal ("8.500"), e o typo "15.000.00" (ponto no
+     * lugar da vírgula decimal). Retorna 0.0 se não achar nada numérico
+     * (ex.: contrato por percentual, "4,5% do valor do crédito").
+     */
+    public static function parseValorMonetario(mixed $valor): float
+    {
+        if (is_null($valor)) {
+            return 0.0;
+        }
+
+        if (is_numeric($valor)) {
+            return (float) $valor;
+        }
+
+        $str = (string) $valor;
+        $str = preg_replace('/\(.*$/u', '', $str);
+        $str = trim(preg_replace('/R\$|\s|\xc2\xa0/u', '', $str));
+
+        if ($str === '' || ! preg_match('/\d/', $str)) {
+            return 0.0;
+        }
+
+        if (str_contains($str, ',')) {
+            // Formato brasileiro: ponto(s) = separador de milhar, última vírgula = decimal.
+            $str = str_replace('.', '', $str);
+            $str = str_replace(',', '.', $str);
+        } elseif (substr_count($str, '.') >= 2) {
+            // "15.000.00" (typo: usou ponto no lugar da vírgula decimal) — último ponto é o decimal.
+            $pos = strrpos($str, '.');
+            $str = str_replace('.', '', substr($str, 0, $pos)).'.'.substr($str, $pos + 1);
+        } elseif (preg_match('/^\d{1,3}(\.\d{3})+$/', $str)) {
+            // "8.500" sem vírgula nem decimais — ponto é separador de milhar.
+            $str = str_replace('.', '', $str);
+        }
+        // Senão: já é um número simples sem separadores, ou tem formato ambíguo — usa como está.
+
+        return is_numeric($str) ? (float) $str : 0.0;
     }
 
     // Accessor para garantir que campos nullable retornem null quando vazios
