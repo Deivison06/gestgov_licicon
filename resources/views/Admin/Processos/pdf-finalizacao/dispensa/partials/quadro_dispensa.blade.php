@@ -24,7 +24,7 @@
                 PRAZO DE EXECUÇÃO
             </td>
             <td style="border:1px solid #000; padding:6px;">
-                ________ dias
+                {{ $processo->detalhe->prazo_entrega ?? '' }}
             </td>
         </tr>
     @endif
